@@ -28,6 +28,71 @@ npx skills@latest add jununfly/ZAgentic
 
 4. Bam - you're ready to go.
 
+## Human-Agent Workflow
+
+These skills are meant to be used as a loop, not as isolated commands. Humans keep judgment; agents handle repeatable execution and verification.
+
+The workflow is issue-centered: humans own intent, priority, trade-offs, acceptance criteria, and final review. Agents gather context, slice work into issues, implement one issue at a time, run verification loops, and leave handoff notes when work moves between contributors.
+
+The ZJ-prefixed docs (`ZJ-CONTEXT.md`, `docs/zj-agents/`, `docs/zj-adr/`) keep this workflow's context, decisions, and coordination notes separate from other agents or human-maintained documentation.
+
+### Default Issue-Centered Loop
+
+```text
+Idea
+  ↓
+Align intent and language
+  ↓
+Slice into issues
+  ↓
+Triage when coordination is needed
+  ↓
+Implement one issue with tests
+  ↓
+Diagnose if stuck
+  ↓
+Review, merge, or hand off
+```
+
+1. **Align intent and language**
+   Use `/zj-grill-me` for general planning, or `/zj-grill-with-docs` when the repo's domain language and ADRs matter.
+
+2. **Slice the work into issues**
+   Use `/zj-to-issues` to turn the agreed plan into small, independently grabbable issues.
+
+3. **Triage when coordination is needed**
+   Use `/zj-triage` when an issue is ambiguous, missing context, blocked on a human decision, or needs an explicit human/agent readiness label.
+
+4. **Implement one issue at a time**
+   Use `/zj-tdd` to solve one issue with a red-green-refactor loop and explicit verification.
+
+5. **Diagnose if stuck**
+   Use `/zj-diagnose` when a test failure, bug, or performance regression needs root-cause analysis instead of guesswork.
+
+6. **Review, merge, or hand off**
+   Humans review the result and make the final call. Use `/zj-handoff` when another human or agent needs to continue from the current context.
+
+For solo work, you can often skip triage and move directly from a well-scoped issue to `/zj-tdd`.
+
+> **In multi-human or multi-agent workflows, triage becomes the coordination contract.** Keep issue labels accurate and state transitions explicit so contributors can pick up work without guessing, duplicating effort, or fighting hidden assumptions.
+
+### Example: Idea → Issue → Implementation
+
+1. Human: "We need to improve onboarding."
+2. Align the intent with `/zj-grill-me`.
+3. Turn the agreed plan into issues with `/zj-to-issues`.
+4. Pick one issue and implement it with `/zj-tdd`.
+5. If the implementation gets stuck, switch to `/zj-diagnose`.
+6. Use `/zj-handoff` when another human or agent needs to continue.
+
+### Variations
+
+- Need product framing before issue slicing? Use `/zj-to-prd`.
+- Need broader codebase context first? Use `/zj-zoom-out`.
+- Need architecture improvement? Use `/zj-improve-codebase-architecture`.
+- Need a throwaway design or logic spike before committing? Use `/zj-prototype`.
+- Need a compact operating mode for long sessions? Use `/zj-caveman`.
+
 ## Why These Skills Exist
 
 Jununfly maintains these skills as a way to fix common failure modes in Claude Code, Codex, and other coding agents.
