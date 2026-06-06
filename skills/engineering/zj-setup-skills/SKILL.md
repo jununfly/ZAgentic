@@ -1,6 +1,6 @@
 ---
 name: zj-setup-skills
-description: Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnose`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
+description: Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/zj-agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnose`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ Scaffold the per-repo configuration that the engineering skills assume:
 
 - **Issue tracker** — where issues live (GitHub by default; local markdown is also supported out of the box)
 - **Triage labels** — the strings used for the five canonical triage roles
-- **Domain docs** — where `CONTEXT.md` and ADRs live, and the consumer rules for reading them
+- **Domain docs** — where `ZJ-CONTEXT.md` and ADRs live, and the consumer rules for reading them
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -22,9 +22,9 @@ Look at the current repo to understand its starting state. Read whatever exists;
 
 - `git remote -v` and `.git/config` — is this a GitHub repo? Which one?
 - `AGENTS.md` and `CLAUDE.md` at the repo root — does either exist? Is there already an `## Agent skills` section in either?
-- `CONTEXT.md` and `CONTEXT-MAP.md` at the repo root
-- `docs/adr/` and any `src/*/docs/adr/` directories
-- `docs/agents/` — does this skill's prior output already exist?
+- `ZJ-CONTEXT.md` and `ZJ-CONTEXT-MAP.md` at the repo root
+- `docs/zj-adr/` and any `src/*/docs/zj-adr/` directories
+- `docs/zj-agents/` — does this skill's prior output already exist?
 - `.scratch/` — sign that a local-markdown issue tracker convention is already in use
 
 ### 2. Present findings and ask
@@ -60,19 +60,19 @@ Default: each role's string equals its name. Ask the user if they want to overri
 
 **Section C — Domain docs.**
 
-> Explainer: Some skills (`zj-improve-codebase-architecture`, `zj-diagnose`, `zj-tdd`) read a `CONTEXT.md` file to learn the project's domain language, and `docs/adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
+> Explainer: Some skills (`zj-improve-codebase-architecture`, `zj-diagnose`, `zj-tdd`) read a `ZJ-CONTEXT.md` file to learn the project's domain language, and `docs/zj-adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
 
 Confirm the layout:
 
-- **Single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. Most repos are this.
-- **Multi-context** — `CONTEXT-MAP.md` at the root pointing to per-context `CONTEXT.md` files (typically a monorepo).
+- **Single-context** — one `ZJ-CONTEXT.md` + `docs/zj-adr/` at the repo root. Most repos are this.
+- **Multi-context** — `ZJ-CONTEXT-MAP.md` at the root pointing to per-context `ZJ-CONTEXT.md` files (typically a monorepo).
 
 ### 3. Confirm and edit
 
 Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited (see step 4 for selection rules)
-- The contents of `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md`
+- The contents of `docs/zj-agents/ZJ-ISSUE-TRACKER.md`, `docs/zj-agents/ZJ-TRIAGE-LABELS.md`, `docs/zj-agents/ZJ-DOMAIN.md`
 
 Let them edit before writing.
 
@@ -95,27 +95,25 @@ The block:
 
 ### Issue tracker
 
-[one-line summary of where issues are tracked]. See `docs/agents/issue-tracker.md`.
+[one-line summary of where issues are tracked]. See `docs/zj-agents/ZJ-ISSUE-TRACKER.md`.
 
 ### Triage labels
 
-[one-line summary of the label vocabulary]. See `docs/agents/triage-labels.md`.
+[one-line summary of the label vocabulary]. See `docs/zj-agents/ZJ-TRIAGE-LABELS.md`.
 
 ### Domain docs
 
-[one-line summary of layout — "single-context" or "multi-context"]. See `docs/agents/domain.md`.
+[one-line summary of layout — "single-context" or "multi-context"]. See `docs/zj-agents/ZJ-DOMAIN.md`.
 ```
 
-Then write the three docs files using the seed templates in this skill folder as a starting point:
+Then create `docs/zj-agents/` and write the three docs files using the seed templates in this skill folder as a starting point:
 
-- [issue-tracker-github.md](./issue-tracker-github.md) — GitHub issue tracker
-- [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) — GitLab issue tracker
-- [issue-tracker-local.md](./issue-tracker-local.md) — local-markdown issue tracker
-- [triage-labels.md](./triage-labels.md) — label mapping
-- [domain.md](./domain.md) — domain doc consumer rules + layout
+- `docs/zj-agents/ZJ-ISSUE-TRACKER.md` from [issue-tracker-github.md](./issue-tracker-github.md), [issue-tracker-gitlab.md](./issue-tracker-gitlab.md), or [issue-tracker-local.md](./issue-tracker-local.md)
+- `docs/zj-agents/ZJ-TRIAGE-LABELS.md` from [triage-labels.md](./triage-labels.md)
+- `docs/zj-agents/ZJ-DOMAIN.md` from [domain.md](./domain.md)
 
-For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
+For "other" issue trackers, write `docs/zj-agents/ZJ-ISSUE-TRACKER.md` from scratch using the user's description.
 
 ### 5. Done
 
-Tell the user the setup is complete and which engineering skills will now read from these files. Mention they can edit `docs/agents/*.md` directly later — re-running this skill is only necessary if they want to switch issue trackers or restart from scratch.
+Tell the user the setup is complete and which engineering skills will now read from these files. Mention they can edit `docs/zj-agents/ZJ-*.md` directly later — re-running this skill is only necessary if they want to switch issue trackers or restart from scratch.

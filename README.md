@@ -75,7 +75,7 @@ Agents are usually dropped into a project and asked to figure out the jargon as 
 Example
 </summary>
 
-Here's an example `CONTEXT.md` from a course video manager repo. Which one is easier to read?
+Here's an example `ZJ-CONTEXT.md` from a course video manager repo. Which one is easier to read?
 
 - **BEFORE**: "There's a problem when a lesson inside a section of a course is made 'real' (i.e. given a spot in the file system)"
 - **AFTER**: "There's a problem with the materialization cascade"
@@ -145,9 +145,9 @@ Software engineering fundamentals matter more than ever. These skills condense t
 Skills I use daily for code work.
 
 - **[zj-diagnose](./skills/engineering/zj-diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
-- **[zj-grill-with-docs](./skills/engineering/zj-grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
+- **[zj-grill-with-docs](./skills/engineering/zj-grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `ZJ-CONTEXT.md` and ADRs inline.
 - **[zj-triage](./skills/engineering/zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
-- **[zj-improve-codebase-architecture](./skills/engineering/zj-improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `CONTEXT.md` and the decisions in `docs/adr/`.
+- **[zj-improve-codebase-architecture](./skills/engineering/zj-improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `ZJ-CONTEXT.md` and the decisions in `docs/zj-adr/`.
 - **zj-setup-skills** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnose`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
 - **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-to-issues](./skills/engineering/zj-to-issues/SKILL.md)** — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
