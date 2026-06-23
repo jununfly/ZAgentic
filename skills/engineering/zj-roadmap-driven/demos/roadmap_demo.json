@@ -1,0 +1,178 @@
+{
+  "title": "AI-Native 个人可复利工具系统",
+  "description": "基于AI-Native的个人可复利的工具系统",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "label": "任务自动化流水线 [时间复利]",
+      "status": "in_progress",
+      "mode": "explore",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3"
+      ],
+      "decisions": [
+        {
+          "q": "Q1 复利定义——复的是什么？",
+          "answer": "D",
+          "note": "时间 + 知识 + 能力，全部要；先建时间复利"
+        },
+        {
+          "q": "Q2 明天第一件事——建什么？",
+          "answer": "A",
+          "note": "任务自动化流水线"
+        }
+      ],
+      "notes": "根节点。Q1-Q2 定方向。"
+    },
+    "1-1": {
+      "id": "1-1",
+      "label": "信息处理",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-1-1",
+        "1-1-2"
+      ],
+      "decisions": [
+        {
+          "q": "Q3 最高频重复任务？",
+          "answer": "信息处理",
+          "note": "技术文章/论文阅读 → 结构化摘要"
+        }
+      ],
+      "notes": ""
+    },
+    "1-2": {
+      "id": "1-2",
+      "label": "代码相关自动化",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "待定义"
+    },
+    "1-3": {
+      "id": "1-3",
+      "label": "创作输出自动化",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "待定义"
+    },
+    "1-1-1": {
+      "id": "1-1-1",
+      "label": "技术文章处理",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [
+        "1-1-1-1",
+        "1-1-1-2",
+        "1-1-1-3",
+        "1-1-1-4"
+      ],
+      "decisions": [
+        {
+          "q": "Q4 典型消费场景",
+          "answer": "D",
+          "note": "A(社交媒体)最频繁，C(论文)最规整"
+        },
+        {
+          "q": "Q5 触发方式",
+          "answer": "D",
+          "note": "手动 + 定时批处理"
+        },
+        {
+          "q": "Q6 输出存储位置",
+          "answer": "Obsidian vault",
+          "note": "已有 Obsidian 生态"
+        },
+        {
+          "q": "Q7 对待 gbrain",
+          "answer": "C",
+          "note": "先跑通链路，数据量上来再选型"
+        },
+        {
+          "q": "Q9 实现形态",
+          "answer": "A",
+          "note": "WorkBuddy skill (zj-save-article)"
+        }
+      ],
+      "notes": ""
+    },
+    "1-1-2": {
+      "id": "1-1-2",
+      "label": "会议记录处理",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "待定义"
+    },
+    "1-1-1-1": {
+      "id": "1-1-1-1",
+      "label": "URL → 存原文 → Obsidian Inbox",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "Q8b 输出模板",
+          "answer": "先只存原文，不做摘要",
+          "note": "最小协议: Inbox/, frontmatter, markitdown"
+        },
+        {
+          "q": "Q10 vault 路径规则",
+          "answer": "A",
+          "note": "打破 vault 规则，加 Inbox/ 目录"
+        }
+      ],
+      "notes": "已实现: zj-save-article skill\nVault: C:\\workspace\\SyncthingDrive\\Obsidian AI-Memory\\\nScript: ~/.workbuddy/skills/zj-save-article/save_article.py\n依赖: managed Python venv + markitdown"
+    },
+    "1-1-1-2": {
+      "id": "1-1-1-2",
+      "label": "叠加摘要处理",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": "1-1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "下一步。TL;DR + 与工作关联 + 我的判断"
+    },
+    "1-1-1-3": {
+      "id": "1-1-1-3",
+      "label": "自动打标签、关联已有笔记",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1-1",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-1-1-4": {
+      "id": "1-1-1-4",
+      "label": "定时批处理",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "WorkBuddy automation 定时触发"
+    }
+  },
+  "metadata": {
+    "created": "2026-06-22 16:30:00",
+    "updated": "2026-06-22 17:28:01",
+    "md_file": "ROADMAP.md"
+  }
+}
