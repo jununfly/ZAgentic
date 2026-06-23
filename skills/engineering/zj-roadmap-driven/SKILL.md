@@ -2,12 +2,9 @@
 title: "zj-roadmap-driven"
 description: "路线图驱动开发——以地图导航形式，帮助 Agent 正确理解全貌，始终与 Human 保持地图颗粒度对齐"
 triggers:
-  - 路线图
-  - roadmap
-  - 地图导航
-  - 规划路线
-  - 树形结构
-  - 复利系统
+  - 路线图驱动
+  - roadmap driven
+  - 导航式开发
 ---
 
 # zj-roadmap-driven — 路线图驱动开发
