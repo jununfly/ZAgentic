@@ -429,18 +429,28 @@ class Roadmap:
             with open(md_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            # 查找并替换已有的 section
-            marker = "## ZJ Roadmap"
-            next_marker = "\n## "
-            idx = content.find(marker)
-            if idx >= 0:
-                # 找到下一个 ## section 或文件末尾
-                end = content.find(next_marker, idx + len(marker))
-                if end < 0:
-                    end = len(content)
-                content = content[:idx] + section + content[end:]
+            # 查找并替换已有的 auto-generated section. Prefer explicit
+            # ROADMAP_SECTION markers so repeated renders do not duplicate the
+            # opening marker; fall back to the historical heading-based replacement.
+            start_marker = "<!-- ROADMAP_SECTION_START -->"
+            end_marker = "<!-- ROADMAP_SECTION_END -->"
+            start = content.find(start_marker)
+            end = content.find(end_marker, start + len(start_marker)) if start >= 0 else -1
+            if start >= 0 and end >= 0:
+                end += len(end_marker)
+                content = content[:start] + section.rstrip() + content[end:]
             else:
-                content = content.rstrip() + "\n\n" + section
+                marker = "## ZJ Roadmap"
+                next_marker = "\n## "
+                idx = content.find(marker)
+                if idx >= 0:
+                    # 找到下一个 ## section 或文件末尾
+                    end = content.find(next_marker, idx + len(marker))
+                    if end < 0:
+                        end = len(content)
+                    content = content[:idx] + section + content[end:]
+                else:
+                    content = content.rstrip() + "\n\n" + section
         else:
             content = section
 
