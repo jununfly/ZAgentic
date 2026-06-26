@@ -405,12 +405,34 @@ class Roadmap:
 > 数据文件: `{os.path.basename(self.json_path)}` | 最后更新: {now}
 
 {tree_text}
-<!-- ROADMAP_SECTION_END -->
 """
         if focus_detail:
             section += focus_detail
 
+        section += "<!-- ROADMAP_SECTION_END -->\n"
+
         return section
+
+    @staticmethod
+    def _consume_legacy_focus_tail(content: str, end: int) -> int:
+        """Consume focus detail left outside old ROADMAP_SECTION markers.
+
+        Earlier light renders wrote `### 当前施工` after ROADMAP_SECTION_END.
+        Marker-based replacement therefore refreshed only the tree block and left
+        stale focus decisions behind. When that legacy tail appears immediately
+        after the marker, consume it up to the next top-level section.
+        """
+        tail = content[end:]
+        stripped = tail.lstrip()
+        whitespace_len = len(tail) - len(stripped)
+        if not stripped.startswith("### 当前施工"):
+            return end
+
+        focus_start = end + whitespace_len
+        next_section = content.find("\n## ", focus_start)
+        if next_section < 0:
+            return len(content)
+        return next_section
 
     def write_markdown_section(self) -> Optional[str]:
         """将 ZJ Roadmap section 写入关联的 md 文件。
@@ -438,6 +460,7 @@ class Roadmap:
             end = content.find(end_marker, start + len(start_marker)) if start >= 0 else -1
             if start >= 0 and end >= 0:
                 end += len(end_marker)
+                end = self._consume_legacy_focus_tail(content, end)
                 content = content[:start] + section.rstrip() + content[end:]
             else:
                 marker = "## ZJ Roadmap"
