@@ -32,6 +32,8 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   link    <json_path> <md_file>              # 关联 md 文件
 
+  unlock  <json_path>                        # 显式删除残留 lock 目录
+
   stats   <json_path>                        # 统计信息
 
   validate <json_path>                       # 验证数据完整性
@@ -51,7 +53,7 @@ import os
 
 # 将自身所在目录加入 path，确保能 import roadmap
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from roadmap import Roadmap
+from roadmap import Roadmap, RoadmapLockTimeout, roadmap_file_lock, unlock_roadmap
 
 
 def _parse_args(argv: list[str]) -> dict:
@@ -232,6 +234,11 @@ def cmd_focus(args: dict):
         print("(no in-progress leaf node)")
 
 
+def cmd_unlock(args: dict):
+    lock_dir = unlock_roadmap(args["positional"][0])
+    print(f"Unlocked: {lock_dir}")
+
+
 # ── 命令路由 ──────────────────────────────────────────────
 
 COMMANDS = {
@@ -246,6 +253,7 @@ COMMANDS = {
     "render": cmd_render,
     "section": cmd_section,
     "link": cmd_link,
+    "unlock": cmd_unlock,
     "stats": cmd_stats,
     "validate": cmd_validate,
     "path": cmd_path,
@@ -267,7 +275,16 @@ def main():
         sys.exit(1)
 
     args = _parse_args(sys.argv[2:])
-    COMMANDS[cmd](args)
+    lock_commands = {"init", "add", "update", "delete", "decide", "render", "link"}
+    try:
+        if cmd in lock_commands:
+            with roadmap_file_lock(args["positional"][0]):
+                COMMANDS[cmd](args)
+        else:
+            COMMANDS[cmd](args)
+    except RoadmapLockTimeout as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

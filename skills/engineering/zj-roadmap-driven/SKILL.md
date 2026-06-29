@@ -37,6 +37,7 @@ Agent 需要全貌 → 调 `tree` / `decisions` / `section`（全量）按需获
 - **Agent 做任何方向性决策前，先 `decide` 记录。** 决策不落盘 = 没发生。
 - **Human 随时可以通过 `tree` + `decisions` 了解全貌，无需翻对话历史。**
 - **Agent 禁止直接 Read/Edit md 的路线图 section。** 只能通过 CLI 操作 JSON，再 render 输出。
+- **Agent 禁止并行执行同一 JSON 的写类命令。** CLI 会用 per-roadmap lock 串行化写入并等待最多 10 秒，但 Agent 仍应按顺序调用 `init/add/update/delete/decide/render/link`。
 
 ## 数据结构
 
@@ -159,7 +160,7 @@ python roadmap_cli.py decisions <json_path> <node_id>
 
 ```bash
 # 轻量 Markdown section → 写入关联的 md 文件（给人看的）
-# 内容：树形 depth=2 + 当前焦点节点（决策+备注）
+# 内容：树形 depth=2 + 当前焦点节点（决策+备注）+ 焦点子树 depth=1
 python roadmap_cli.py render <json_path>
 
 # 全量 Markdown section → stdout（调试用）
@@ -168,6 +169,9 @@ python roadmap_cli.py section <json_path>
 
 # 关联 md 文件
 python roadmap_cli.py link <json_path> <md_file>
+
+# 显式清理残留 lock。只有确认没有 roadmap_cli 正在写时才使用。
+python roadmap_cli.py unlock <json_path>
 ```
 
 ### 导航
@@ -251,6 +255,8 @@ Agent 在 Skill 加载后，用 `$SKILL_DIR` 或绝对路径定位脚本。
 - JSON 是唯一真相源。所有数据操作必须通过 CLI，**禁止 Agent 直接 Read/Edit JSON 或 md 的路线图 section。**
 - md section 由 `render` 命令完全重写，手动修改会被覆盖。
 - `render` 输出轻量视图（树 depth=2 + 焦点），`section` 输出全量视图（stdout，调试用）。
+- 轻量视图的当前焦点子树固定只展开一层；更深节点会显示省略提示，可用 `tree <json_path> <node_id> --depth N` 查看。
+- CLI 写类命令使用 `<json_path>.lock/` 目录锁和原子写保护 JSON/Markdown。遇到 stale lock 时默认不自动清理；超时信息会显示 owner 和 lock 路径，确认安全后再运行 `unlock`。
 - 删除节点会递归删除所有子节点，操作前确认。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建。
 - 无 `import` 命令。md 不能反导回 JSON。

@@ -7,7 +7,11 @@ JSON 是唯一真相源，Markdown 只是渲染视图。
 
 import json
 import os
+import shutil
+import tempfile
+import time
 from datetime import datetime
+from contextlib import contextmanager
 from typing import Optional, Any
 
 # ── 状态常量 ──────────────────────────────────────────────
@@ -30,6 +34,9 @@ MODE_TAG = {
     MODE_EXPLORE: "[X+]",
     MODE_EXPLOIT: "[Y+]",
 }
+
+DEFAULT_LOCK_TIMEOUT_SECONDS = 10.0
+LOCK_RETRY_INTERVAL_SECONDS = 0.05
 
 # ── 节点 ID 生成 ──────────────────────────────────────────
 
@@ -66,6 +73,123 @@ def parent_id_of(node_id: str) -> Optional[str]:
     return parts[0]
 
 
+def _fsync_dir_best_effort(path: str):
+    """Best-effort directory fsync for atomic rename durability."""
+    if not hasattr(os, "O_DIRECTORY"):
+        return
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+def atomic_write_text(path: str, content: str):
+    """Atomically write text: temp file, fsync, replace, best-effort dir fsync."""
+    abs_path = os.path.abspath(path)
+    directory = os.path.dirname(abs_path)
+    os.makedirs(directory, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f".{os.path.basename(abs_path)}.",
+        suffix=".tmp",
+        dir=directory,
+        text=True,
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, abs_path)
+        _fsync_dir_best_effort(directory)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+class RoadmapLockTimeout(TimeoutError):
+    """Raised when a roadmap lock cannot be acquired before timeout."""
+
+    def __init__(self, lock_dir: str, owner: dict, timeout_seconds: float):
+        self.lock_dir = lock_dir
+        self.owner = owner
+        self.timeout_seconds = timeout_seconds
+        owner_text = json.dumps(owner, ensure_ascii=False, indent=2) if owner else "(unavailable)"
+        super().__init__(
+            "Roadmap file is locked; retry later or avoid parallel roadmap mutations.\n"
+            f"Lock path: {lock_dir}\n"
+            f"Owner: {owner_text}\n"
+            f"Timed out after {timeout_seconds:g}s. "
+            f"If no roadmap_cli process is writing, run: python roadmap_cli.py unlock <json_path>"
+        )
+
+
+def roadmap_lock_dir(json_path: str) -> str:
+    return os.path.abspath(json_path) + ".lock"
+
+
+def read_lock_owner(json_path: str) -> dict:
+    owner_path = os.path.join(roadmap_lock_dir(json_path), "owner.json")
+    try:
+        with open(owner_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return {}
+
+
+def unlock_roadmap(json_path: str) -> str:
+    lock_dir = roadmap_lock_dir(json_path)
+    if not os.path.isdir(lock_dir):
+        return lock_dir
+    shutil.rmtree(lock_dir)
+    return lock_dir
+
+
+@contextmanager
+def roadmap_file_lock(json_path: str, timeout_seconds: float = DEFAULT_LOCK_TIMEOUT_SECONDS):
+    """Cross-platform per-roadmap lock based on atomic directory creation."""
+    lock_dir = roadmap_lock_dir(json_path)
+    deadline = time.monotonic() + timeout_seconds
+    acquired = False
+    while not acquired:
+        try:
+            os.mkdir(lock_dir)
+            acquired = True
+        except FileExistsError:
+            if time.monotonic() >= deadline:
+                raise RoadmapLockTimeout(lock_dir, read_lock_owner(json_path), timeout_seconds)
+            time.sleep(LOCK_RETRY_INTERVAL_SECONDS)
+
+    owner = {
+        "pid": os.getpid(),
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "roadmap_path": os.path.abspath(json_path),
+    }
+    try:
+        atomic_write_text(
+            os.path.join(lock_dir, "owner.json"),
+            json.dumps(owner, ensure_ascii=False, indent=2),
+        )
+        yield
+    finally:
+        try:
+            os.unlink(os.path.join(lock_dir, "owner.json"))
+        except FileNotFoundError:
+            pass
+        try:
+            os.rmdir(lock_dir)
+        except FileNotFoundError:
+            pass
+
+
 # ── Roadmap 类 ────────────────────────────────────────────
 
 class Roadmap:
@@ -89,9 +213,8 @@ class Roadmap:
         """保存路线图数据到 JSON 文件，自动更新 metadata.updated。"""
         self.data.setdefault("metadata", {})
         self.data["metadata"]["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        os.makedirs(os.path.dirname(self.json_path), exist_ok=True)
-        with open(self.json_path, "w", encoding="utf-8") as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=2)
+        content = json.dumps(self.data, ensure_ascii=False, indent=2)
+        atomic_write_text(self.json_path, content)
         return self.json_path
 
     # ── 初始化 ─────────────────────────────────────────
@@ -300,11 +423,14 @@ class Roadmap:
         return [cid for cid in parent["children"] if cid != node_id]
 
     def get_current_focus(self) -> Optional[str]:
-        """找到第一个 in_progress 的叶子节点作为当前施工点。"""
-        for nid, node in self.data["nodes"].items():
-            if node["status"] == STATUS_IN_PROGRESS and not node["children"]:
-                return nid
-        return None
+        """找到最深的 in_progress 节点作为当前施工点。"""
+        candidates = [
+            nid for nid, node in self.data["nodes"].items()
+            if node["status"] == STATUS_IN_PROGRESS
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=node_depth)
 
     def _sync_parent_status(self, node_id: str):
         """自底向上级联同步父节点状态。
@@ -398,6 +524,9 @@ class Roadmap:
                 for d in decisions:
                     note = f" ({d.get('note', '')})" if d.get("note") else ""
                     focus_detail += f"- Q: {d['q']} → {d['answer']}{note}\n"
+            focus_subtree = self.get_focus_subtree(focus_id, max_depth=1)
+            if focus_subtree:
+                focus_detail += f"\n**当前子树：**\n{focus_subtree}\n"
 
         section = f"""<!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
@@ -412,6 +541,42 @@ class Roadmap:
         section += "<!-- ROADMAP_SECTION_END -->\n"
 
         return section
+
+    def get_focus_subtree(self, root_id: str, max_depth: int = 1) -> str:
+        """Render a bounded subtree under the focus node."""
+        if root_id not in self.data["nodes"]:
+            return ""
+
+        lines = []
+        root = self.data["nodes"][root_id]
+        children = root.get("children", [])
+
+        def _render(nid: str, prefix: str, is_last: bool, depth: int):
+            node = self.data["nodes"].get(nid)
+            if not node:
+                return
+            icon = STATUS_ICONS.get(node["status"], "[?]")
+            mode_tag = MODE_TAG.get(node.get("mode"), "")
+            connector = "└── " if is_last else "├── "
+            lines.append(f"{prefix}{connector}{icon}{mode_tag} {nid}. {node['label']}")
+
+            child_ids = node.get("children", [])
+            child_prefix = prefix + ("    " if is_last else "│   ")
+            if depth >= max_depth:
+                if child_ids:
+                    lines.append(
+                        f"{child_prefix}... {len(child_ids)} more child nodes; "
+                        f"run tree {nid} --depth 2 for full view"
+                    )
+                return
+
+            for i, cid in enumerate(child_ids):
+                _render(cid, child_prefix, i == len(child_ids) - 1, depth + 1)
+
+        for i, cid in enumerate(children):
+            _render(cid, "", i == len(children) - 1, 1)
+
+        return "\n".join(lines)
 
     @staticmethod
     def _consume_legacy_focus_tail(content: str, end: int) -> int:
@@ -477,9 +642,7 @@ class Roadmap:
         else:
             content = section
 
-        os.makedirs(os.path.dirname(md_file), exist_ok=True)
-        with open(md_file, "w", encoding="utf-8") as f:
-            f.write(content)
+        atomic_write_text(md_file, content)
 
         return md_file
 
