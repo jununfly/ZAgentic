@@ -111,6 +111,27 @@ class RoadmapCliTest(unittest.TestCase):
         self.assertNotIn("[ ][X+] 1-1-1-1. Hidden grandchild", rendered)
         self.assertIn("... 2 more child nodes; run tree 1-1-1 --depth 2 for full view", rendered)
 
+    def test_render_recovers_from_truncated_end_marker_without_duplicating(self):
+        md_file = self.workdir / "roadmap.md"
+        self.run_cli("init", self.roadmap, "--title", "Recovery roadmap", "--md-file", md_file)
+        self.run_cli("add", self.roadmap, "1", "First task")
+
+        self.run_cli("render", self.roadmap)
+
+        # 模拟缺陷 B:END 标记被截断丢失,只留 START(半写入/格式 flip 残留)
+        text = md_file.read_text(encoding="utf-8")
+        self.assertIn("<!-- ROADMAP_SECTION_END -->", text)
+        text = text.replace("<!-- ROADMAP_SECTION_END -->", "", 1)
+        md_file.write_text(text, encoding="utf-8")
+
+        self.run_cli("render", self.roadmap)
+        rendered = md_file.read_text(encoding="utf-8")
+
+        # 守卫后:只存在「指定的一段」,不再 append 出重复块 / 错拼
+        self.assertEqual(1, rendered.count("<!-- ROADMAP_SECTION_START -->"))
+        self.assertEqual(1, rendered.count("<!-- ROADMAP_SECTION_END -->"))
+        self.assertIn("[ ][X+] 1-1. First task", rendered)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -627,6 +627,12 @@ class Roadmap:
                 end += len(end_marker)
                 end = self._consume_legacy_focus_tail(content, end)
                 content = content[:start] + section.rstrip() + content[end:]
+            elif start >= 0 and end < 0:
+                # START 存在但 END 缺失(截断/半写入/格式 flip 残留):
+                # 绝不 append 第二段,否则会制造重复 marker,下次 render 时
+                # find 取首个 START/END 不配对 → 错拼(缺陷 B)。直接把从 START
+                # 到文件末尾整段替换掉,保证 render 后只存在「指定的一段」。
+                content = content[:start] + section.rstrip()
             else:
                 marker = "## ZJ Roadmap"
                 next_marker = "\n## "
