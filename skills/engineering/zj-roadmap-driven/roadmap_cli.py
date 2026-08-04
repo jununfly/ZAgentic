@@ -57,16 +57,28 @@ from roadmap import Roadmap, RoadmapLockTimeout, roadmap_file_lock, unlock_roadm
 
 
 def _parse_args(argv: list[str]) -> dict:
-    """解析命令行参数，返回命名参数 dict。"""
+    """解析命令行参数，返回命名参数 dict。
+
+    Supports both `--key value` and `--key=value` forms. Bare flags
+    (`--key` with no value) become the string `"true"`.
+    """
     args: dict = {"positional": []}
     i = 0
     while i < len(argv):
         a = argv[i]
         if a.startswith("--"):
-            key = a[2:]
+            stripped = a[2:]
+            # Support --key=value as a single token.
+            if "=" in stripped:
+                key, _, value = stripped.partition("=")
+                args[key] = value
+                i += 1
+                continue
+            key = stripped
             i += 1
             if i < len(argv) and not argv[i].startswith("--"):
                 args[key] = argv[i]
+                i += 1
             else:
                 args[key] = "true"  # flag 类参数
         else:
