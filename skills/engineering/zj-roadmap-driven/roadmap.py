@@ -180,14 +180,19 @@ def roadmap_file_lock(json_path: str, timeout_seconds: float = DEFAULT_LOCK_TIME
         )
         yield
     finally:
+        # Best-effort cleanup. Some interposers (e.g. safe-delete wrappers)
+        # turn os.unlink into a failing OSError instead of FileNotFoundError,
+        # so swallow OSError broadly to avoid crashing __exit__. If owner.json
+        # could not be removed, rmtree the whole lock dir as a fallback so
+        # stale lock directories never accumulate.
         try:
             os.unlink(os.path.join(lock_dir, "owner.json"))
-        except FileNotFoundError:
+        except OSError:
             pass
         try:
             os.rmdir(lock_dir)
-        except FileNotFoundError:
-            pass
+        except OSError:
+            shutil.rmtree(lock_dir, ignore_errors=True)
 
 
 # ── Roadmap 类 ────────────────────────────────────────────
