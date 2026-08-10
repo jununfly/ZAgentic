@@ -1,6 +1,6 @@
 ---
 name: zj-setup-skills
-description: Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/zj-agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnose`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
+description: Sets up an `## Agent skills` block in AGENTS.md/CLAUDE.md and `docs/zj-agents/` so the engineering skills know this repo's issue tracker (GitHub or local markdown), triage label vocabulary, and domain doc layout. Run before first use of `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
 disable-model-invocation: true
 ---
 
@@ -60,7 +60,7 @@ Default: each role's string equals its name. Ask the user if they want to overri
 
 **Section C — Domain docs.**
 
-> Explainer: Some skills (`zj-improve-codebase-architecture`, `zj-diagnose`, `zj-tdd`) read a `ZJ-CONTEXT.md` file to learn the project's domain language, and `docs/zj-adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
+> Explainer: Some skills (`zj-improve-codebase-architecture`, `zj-diagnosing-bugs`, `zj-tdd`) read a `ZJ-CONTEXT.md` file to learn the project's domain language, and `docs/zj-adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
 
 Confirm the layout:
 

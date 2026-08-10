@@ -2,7 +2,7 @@
 
 Skills I use daily for code work.
 
-- **[zj-diagnose](./zj-diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
+- **[zj-diagnosing-bugs](./zj-diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[zj-grill-with-docs](./zj-grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `ZJ-CONTEXT.md` and ADRs inline.
 - **[zj-triage](./zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[zj-improve-codebase-architecture](./zj-improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `ZJ-CONTEXT.md` and the decisions in `docs/zj-adr/`.
