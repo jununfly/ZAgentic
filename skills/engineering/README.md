@@ -5,7 +5,9 @@ Skills I use daily for code work.
 - **[zj-diagnosing-bugs](./zj-diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[zj-grill-with-docs](./zj-grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `ZJ-CONTEXT.md` and ADRs inline.
 - **[zj-triage](./zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
-- **[zj-improve-codebase-architecture](./zj-improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `ZJ-CONTEXT.md` and the decisions in `docs/zj-adr/`.
+- **[zj-codebase-design](./zj-codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.
+- **[zj-domain-modeling](./zj-domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms, stress-test with scenarios, update `CONTEXT.md` and ADRs inline.
+- **[zj-improve-codebase-architecture](./zj-improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[zj-roadmap-driven](./zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
 - **[zj-setup-skills](./zj-setup-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume.
 - **[zj-tdd](./zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
