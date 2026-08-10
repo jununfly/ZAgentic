@@ -87,6 +87,9 @@ Helps with documents.
 
 The bad example gives your agent no way to distinguish this from other document skills.
 
+> **Why this shape** — the description is the skill's top-level **context pointer**: its _wording_, not the target file, decides when the agent reaches this skill, and how reliably. It is forced to stay loaded every turn, so every word pays **context load**. Write it accordingly: front-load the leading word, one trigger per branch, and cut identity the body already carries.
+> See [`zj-writing-for-agents`](../zj-writing-for-agents/SKILL.md) — "Context pointers" and "The two loads".
+
 ## When to Add Scripts
 
 Add utility scripts when:
@@ -97,6 +100,8 @@ Add utility scripts when:
 
 Scripts save tokens and improve reliability vs generated code.
 
+> **Why** — the environment (`--help`, config, scripts) is a source of truth; a skill that restates it is a cache. Scripts earn their load by encoding what the agent cannot find by looking. See [`zj-writing-for-agents`](../zj-writing-for-agents/SKILL.md) — "Pruning: the environment is a source of truth".
+
 ## When to Split Files
 
 Split into separate files when:
@@ -104,6 +109,8 @@ Split into separate files when:
 - SKILL.md exceeds 100 lines
 - Content has distinct domains (finance vs sales schemas)
 - Advanced features are rarely needed
+
+> **Why the 100-line rule** — the top of a skill should stay legible. Push reference behind pointers (**progressive disclosure**) so only what every branch needs stays in-file; a bloated top buries the steps that drive behaviour. See [`zj-writing-for-agents`](../zj-writing-for-agents/SKILL.md) — "Information hierarchy".
 
 ## Review Checklist
 

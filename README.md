@@ -55,7 +55,7 @@ Review, merge, or hand off
 ```
 
 1. **Align intent and language**
-   Use `/zj-grill-me` for general planning, or `/zj-grill-with-docs` when the repo's domain language and ADRs matter.
+   Use `/zj-grilling` for general planning, or `/zj-grill-with-docs` when the repo's domain language and ADRs matter.
 
 2. **Slice the work into issues**
    Use `/zj-to-issues` to turn the agreed plan into small, independently grabbable issues.
@@ -79,7 +79,7 @@ For solo work, you can often skip triage and move directly from a well-scoped is
 ### Example: Idea → Issue → Implementation
 
 1. Human: "We need to improve onboarding."
-2. Align the intent with `/zj-grill-me`.
+2. Align the intent with `/zj-grilling`.
 3. Turn the agreed plan into issues with `/zj-to-issues`.
 4. Pick one issue and implement it with `/zj-tdd`.
 5. If the implementation gets stuck, switch to `/zj-diagnose`.
@@ -109,8 +109,8 @@ This is just the same in the AI age. There is a communication gap between you an
 
 **The Fix** is to use:
 
-- [`/zj-grill-me`](./skills/productivity/zj-grill-me/SKILL.md) - for non-code uses
-- [`/zj-grill-with-docs`](./skills/engineering/zj-grill-with-docs/SKILL.md) - same as [`/zj-grill-me`](./skills/productivity/zj-grill-me/SKILL.md), but adds more goodies (see below)
+- [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md) - for non-code uses
+- [`/zj-grill-with-docs`](./skills/engineering/zj-grill-with-docs/SKILL.md) - same as [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md), but adds more goodies (see below)
 
 These are my most popular skills. They help you align with the agent before you get started, and think deeply about the change you're making. Use them _every_ time you want to make a change.
 
@@ -217,9 +217,10 @@ Skills I use daily for code work.
 General workflow tools, not code-specific.
 
 - **[zj-caveman](./skills/productivity/zj-caveman/SKILL.md)** — Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler while keeping full technical accuracy.
-- **[zj-grill-me](./skills/productivity/zj-grill-me/SKILL.md)** — Get relentlessly interviewed about a plan or design until every branch of the decision tree is resolved.
+- **[zj-grilling](./skills/productivity/zj-grilling/SKILL.md)** — Grill the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved (frontier/rounds method).
 - **[zj-handoff](./skills/productivity/zj-handoff/SKILL.md)** — Compact the current conversation into a handoff document so another agent can continue the work.
 - **[zj-write-a-skill](./skills/productivity/zj-write-a-skill/SKILL.md)** — Create new skills with proper structure, progressive disclosure, and bundled resources.
+- **[zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md)** — Reference for writing any document an agent consumes (skills, AGENTS.md/CLAUDE.md, pointer-reached docs): context pointers, progressive disclosure, leading words, pruning.
 
 ### Misc
 

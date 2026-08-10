@@ -244,10 +244,10 @@ Skill 脚本位于 skill 目录本身，Agent 运行时按 skill 目录计算路
 
 Agent 在 Skill 加载后，用 `$SKILL_DIR` 或绝对路径定位脚本。
 
-## 与 zj-grill-me 配合
+## 与 zj-grilling 配合
 
-`zj-roadmap-driven` 是 `zj-grill-me` 的搭档：
-- `zj-grill-me` 负责逐层拷问，到达决策树叶子节点
+`zj-roadmap-driven` 是 `zj-grilling` 的搭档：
+- `zj-grilling` 负责逐层拷问，到达决策树叶子节点
 - `zj-roadmap-driven` 负责把每层决策沉淀到路线图 JSON + md section
 - 两者交替：grill 一个 Q → roadmap 记录决策 → grill 下一个 Q
 
