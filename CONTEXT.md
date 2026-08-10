@@ -5,11 +5,11 @@ A collection of agent skills (slash commands and behaviors) loaded by Claude Cod
 ## Language
 
 **Issue tracker**:
-The tool that hosts a repo's issues — GitHub Issues, Linear, a local `.scratch/` markdown convention, or similar. Skills like `zj-to-issues`, `zj-to-prd`, `zj-triage`, and `qa` read from and write to it.
+The tool that hosts a repo's issues — GitHub Issues, Linear, a local `.scratch/` markdown convention, or similar. Skills like `zj-to-tickets`, `zj-to-prd`, `zj-triage`, and `qa` read from and write to it.
 _Avoid_: backlog manager, backlog backend, issue host
 
 **Issue**:
-A single tracked unit of work inside an **Issue tracker** — a bug, task, PRD, or slice produced by `zj-to-issues`.
+A single tracked unit of work inside an **Issue tracker** — a bug, task, PRD, or slice produced by `zj-to-tickets`.
 _Avoid_: ticket (use only when quoting external systems that call them tickets)
 
 **Triage role**:

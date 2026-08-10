@@ -58,7 +58,7 @@ Review, merge, or hand off
    Use `/zj-grilling` for general planning, or `/zj-domain-modeling` when the repo's domain language and ADRs matter.
 
 2. **Slice the work into issues**
-   Use `/zj-to-issues` to turn the agreed plan into small, independently grabbable issues.
+   Use `/zj-to-tickets` to turn the agreed plan into small, independently grabbable tickets.
 
 3. **Triage when coordination is needed**
    Use `/zj-triage` when an issue is ambiguous, missing context, blocked on a human decision, or needs an explicit human/agent readiness label.
@@ -80,7 +80,7 @@ For solo work, you can often skip triage and move directly from a well-scoped is
 
 1. Human: "We need to improve onboarding."
 2. Align the intent with `/zj-grilling`.
-3. Turn the agreed plan into issues with `/zj-to-issues`.
+3. Turn the agreed plan into issues with `/zj-to-tickets`.
 4. Pick one issue and implement it with `/zj-tdd`.
 5. If the implementation gets stuck, switch to `/zj-diagnosing-bugs`.
 6. Use `/zj-handoff` when another human or agent needs to continue.
@@ -206,10 +206,10 @@ Skills I use daily for code work.
 - **[zj-domain-modeling](./skills/engineering/zj-domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms, stress-test with scenarios, update `ZJ-CONTEXT.md` and ADRs inline.
 - **[zj-improve-codebase-architecture](./skills/engineering/zj-improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[zj-roadmap-driven](./skills/engineering/zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
-- **[zj-setup-skills](./skills/engineering/zj-setup-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
+- **[zj-setup-skills](./skills/engineering/zj-setup-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-prd`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
 - **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-code-review](./skills/engineering/zj-code-review/SKILL.md)** — Two-axis review of a diff since a fixed point — Standards (does the code follow this repo's documented coding standards, plus a fixed code-smell baseline?) and Spec (does it faithfully implement the originating issue/spec?). Runs both reviews as parallel sub-agents and reports them side by side.
-- **[zj-to-issues](./skills/engineering/zj-to-issues/SKILL.md)** — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
+- **[zj-to-tickets](./skills/engineering/zj-to-tickets/SKILL.md)** — Break any plan, spec, PRD, or the current conversation into tracer-bullet tickets (vertical slices), each declaring its blocking edges, published to the configured tracker — one file per ticket locally or native blocking links on a real tracker.
 - **[zj-to-prd](./skills/engineering/zj-to-prd/SKILL.md)** — Turn the current conversation context into a PRD and submit it as a GitHub issue. No interview — just synthesizes what you've already discussed.
 - **[zj-zoom-out](./skills/engineering/zj-zoom-out/SKILL.md)** — Tell the agent to zoom out and give broader context or a higher-level perspective on an unfamiliar section of code.
 - **[zj-prototype](./skills/engineering/zj-prototype/SKILL.md)** — Build a throwaway prototype to flesh out a design — either a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route.
