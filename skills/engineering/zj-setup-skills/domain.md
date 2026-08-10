@@ -18,8 +18,8 @@ Single-context repo (most repos):
 /
 ├── ZJ-CONTEXT.md
 ├── docs/zj-adr/
-│   ├── ZJ-0001-event-sourced-orders.md
-│   └── ZJ-0002-postgres-for-write-model.md
+│   ├── 0001-event-sourced-orders.md
+│   └── 0002-postgres-for-write-model.md
 └── src/
 ```
 
