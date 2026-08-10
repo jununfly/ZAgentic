@@ -55,7 +55,7 @@ Review, merge, or hand off
 ```
 
 1. **Align intent and language**
-   Use `/zj-grilling` for general planning, or `/zj-grill-with-docs` when the repo's domain language and ADRs matter.
+   Use `/zj-grilling` for general planning, or `/zj-domain-modeling` when the repo's domain language and ADRs matter.
 
 2. **Slice the work into issues**
    Use `/zj-to-issues` to turn the agreed plan into small, independently grabbable issues.
@@ -110,7 +110,7 @@ This is just the same in the AI age. There is a communication gap between you an
 **The Fix** is to use:
 
 - [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md) - for non-code uses
-- [`/zj-grill-with-docs`](./skills/engineering/zj-grill-with-docs/SKILL.md) - same as [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md), but adds more goodies (see below)
+- [`/zj-domain-modeling`](./skills/engineering/zj-domain-modeling/SKILL.md) - grilling _plus_ the domain-language and ADR documentation goodies
 
 These are my most popular skills. They help you align with the agent before you get started, and think deeply about the change you're making. Use them _every_ time you want to make a change.
 
@@ -140,7 +140,7 @@ This concision pays off session after session.
 
 </details>
 
-This is built into [`/zj-grill-with-docs`](./skills/engineering/zj-grill-with-docs/SKILL.md). It's a grilling session, but that helps you build a shared language with the AI, and document hard-to-explain decisions in ADR's.
+This is built into [`/zj-domain-modeling`](./skills/engineering/zj-domain-modeling/SKILL.md) and [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md). Together they're a grilling session that helps you build a shared language with the AI, and document hard-to-explain decisions in ADRs.
 
 It's hard to explain how powerful this is. It might be the single coolest technique in this repo. Try it, and see.
 
@@ -201,10 +201,9 @@ Software engineering fundamentals matter more than ever. These skills condense t
 Skills I use daily for code work.
 
 - **[zj-diagnosing-bugs](./skills/engineering/zj-diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
-- **[zj-grill-with-docs](./skills/engineering/zj-grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `ZJ-CONTEXT.md` and ADRs inline.
 - **[zj-triage](./skills/engineering/zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[zj-codebase-design](./skills/engineering/zj-codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.
-- **[zj-domain-modeling](./skills/engineering/zj-domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms, stress-test with scenarios, update `CONTEXT.md` and ADRs inline.
+- **[zj-domain-modeling](./skills/engineering/zj-domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms, stress-test with scenarios, update `ZJ-CONTEXT.md` and ADRs inline.
 - **[zj-improve-codebase-architecture](./skills/engineering/zj-improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[zj-roadmap-driven](./skills/engineering/zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
 - **[zj-setup-skills](./skills/engineering/zj-setup-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-issues`, `zj-to-prd`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
