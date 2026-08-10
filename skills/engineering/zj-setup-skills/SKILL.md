@@ -45,6 +45,8 @@ Default posture: these skills were designed for GitHub. If a `git remote` points
 - **Local markdown** — issues live as files under `.scratch/<feature>/` in this repo (good for solo projects or repos without a remote)
 - **Other** (Jira, Linear, etc.) — ask the user to describe the workflow in one paragraph; the skill will record it as freeform prose
 
+Record the choice — it drives which seed template gets written to `docs/zj-agents/ZJ-ISSUE-TRACKER.md` in step 4.
+
 **Section B — Triage label vocabulary.**
 
 > Explainer: When the `zj-triage` skill processes an incoming issue, it moves it through a state machine — needs evaluation, waiting on reporter, ready for an AFK agent to pick up, ready for a human, or won't fix. To do that, it needs to apply labels (or the equivalent in your issue tracker) that match strings *you've actually configured*. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
@@ -59,14 +61,11 @@ The five canonical roles:
 
 Default: each role's string equals its name. Ask the user if they want to override any. If their issue tracker has no existing labels, the defaults are fine.
 
-**Section C — Domain docs.**
+**Section C — Domain docs.** Default to **single-context** — one `ZJ-CONTEXT.md` + `docs/zj-adr/` at the repo root. This fits almost every repo; write it without asking.
 
 > Explainer: Some skills (`zj-improve-codebase-architecture`, `zj-diagnosing-bugs`, `zj-tdd`) read a `ZJ-CONTEXT.md` file to learn the project's domain language, and `docs/zj-adr/` for past architectural decisions. They need to know whether the repo has one global context or multiple (e.g. a monorepo with separate frontend/backend contexts) so they look in the right place.
 
-Confirm the layout:
-
-- **Single-context** — one `ZJ-CONTEXT.md` + `docs/zj-adr/` at the repo root. Most repos are this.
-- **Multi-context** — `ZJ-CONTEXT-MAP.md` at the root pointing to per-context `ZJ-CONTEXT.md` files (typically a monorepo).
+Offer **multi-context** — a root `ZJ-CONTEXT-MAP.md` pointing to per-context `ZJ-CONTEXT.md` files — only when exploration found monorepo signals. Then confirm which layout they want:
 
 ### 3. Confirm and edit
 
