@@ -28,6 +28,48 @@ npx skills@latest add jununfly/ZAgentic
 
 4. Bam - you're ready to go.
 
+## Manual install & uninstall (from a local clone)
+
+The Quickstart above uses `skills.sh`, which installs individual skills onto Claude/Codex through its own UI. When you have this repo cloned locally and want to install the **whole set** onto Claude, Codex, or WorkBuddy in one go, use the bundled scripts instead.
+
+### Install with `scripts/link-skills.sh`
+
+This script flattens every skill in `skills/` into the agent's skills directory. It supports three platforms and two methods:
+
+| Platform  | Skill directory        |
+| --------- | ---------------------- |
+| `claude`    | `~/.claude/skills`     |
+| `codex`     | `~/.codex/skills`      |
+| `workbuddy` | `~/.workbuddy/skills`  |
+
+```bash
+# install into every agent skill dir that already exists
+scripts/link-skills.sh
+
+# install only into WorkBuddy
+scripts/link-skills.sh --platform workbuddy
+
+# install copied (default) vs. symlinked back to the repo
+scripts/link-skills.sh --platform workbuddy --method copy      # default
+scripts/link-skills.sh --platform workbuddy --method symlink   # live updates; auto-falls-back to copy if OS blocks symlinks
+
+# preview without changing anything
+scripts/link-skills.sh --dry-run
+```
+
+Notes:
+- Default method is `copy` — robust on Windows and immune to later edits in this repo. `symlink` links back to the repo for live updates while you develop, and silently falls back to `copy` when the OS refuses symlinks (e.g. Windows without Developer Mode).
+- Pre-existing skill folders are moved to `~/.workbuddy/.zagentic-prev/` (outside the skills dir) rather than deleted, so the agent's scanner never picks up leftovers as extra skills.
+- **WorkBuddy only**: after installing, run `/reload-plugins` (or restart WorkBuddy) so its skill scanner re-reads the directory. The scanner caches results in memory and does not watch the filesystem.
+
+### Uninstall the whole set with `scripts/zagentic-skills-list`
+
+This plain-text file is the single source of truth for "the entire skill set". To remove every ZAgentic skill from an agent, reference it in one prompt — no need to hunt names down:
+
+> Read `scripts/zagentic-skills-list`, then delete every listed directory from `~/.workbuddy/skills` (skip any that don't exist). Then tell me which were removed.
+
+Swap the path for `~/.claude/skills` or `~/.codex/skills` per agent, and remember to `/reload-plugins` (WorkBuddy) afterwards. Keep `zagentic-skills-list` in sync with the `skills/` tree by hand whenever you add or remove a skill.
+
 ## Human-Agent Workflow
 
 These skills are meant to be used as a loop, not as isolated commands. Humans keep judgment; agents handle repeatable execution and verification.
