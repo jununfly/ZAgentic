@@ -261,3 +261,12 @@ Agent 在 Skill 加载后，用 `$SKILL_DIR` 或绝对路径定位脚本。
 - 删除节点会递归删除所有子节点，操作前确认。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建。
 - 无 `import` 命令。md 不能反导回 JSON。
+
+## 与 zj-wayfinder 组合（推荐）
+
+`zj-roadmap-driven` 与 `zj-wayfinder` 是一套流水线的两半：**先规划、后跟踪**。wayfinder 把模糊的、大到单次会话装不下的任务，先拆成清晰的决策地图与决策票；roadmap-driven 再沿着既定路线导航、跟踪执行，始终与 Human 保持地图颗粒度对齐。Human + Agent 团队结合实际场景把两者组合用，收益更大：
+
+- **wayfinder 规划，roadmap-driven 跟踪。** 当一个松散 idea 大到一次会话装不下，先跑 `/zj-wayfinder` 规划出地图、逐个解决决策票，直到通往目的地的路径清晰；再把这条路线落到 roadmap JSON 作为本 skill 的输入，沿它导航执行——记录决策、更新状态、渲染轻量视图给 Human。
+- **交接点是缝。** wayfinder 的输出（清晰的路线 / 一组决策）成为 roadmap-driven 的输入（树节点 + 决策）。两者放同一仓库，让共享上下文（领域词汇表、ADRs、约定）跨过这道缝自然延续。
+- **按阶段选择，而非按偏好。** 如果任务已经是清晰、有尺寸的路线，跳过 wayfinder 直接用本 skill；如果是迷雾——路径不可见、爆炸半径大——先用 wayfinder，不要硬塞进一个过早成形的 roadmap。
+- **合作的两端。** Human 掌握目的地与决策，Agent 负责规划、解析、跟踪。两个 skill 并用时，Human 在规划期看到地图（wayfinder）、在执行期看到实时进度（roadmap-driven），整个工程的对齐贯穿始终。
