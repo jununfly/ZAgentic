@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ To PRD"
+  short_description: "Turn a conversation into a PRD"
+policy:
+  allow_implicit_invocation: false
