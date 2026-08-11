@@ -4,7 +4,7 @@ Engineering skills depend on per-repo config (issue tracker, triage label vocabu
 
 We split these into **hard-dependency** and **soft-dependency** skills:
 
-- **Hard dependency** (`zj-to-tickets`, `zj-to-prd`, `zj-triage`) — include an explicit one-liner: _"… should have been provided to you — run `/zj-setup-skills` if not."_ Without the mapping, output is wrong, not just fuzzy.
+- **Hard dependency** (`zj-to-tickets`, `zj-to-spec`, `zj-triage`) — include an explicit one-liner: _"… should have been provided to you — run `/zj-setup-skills` if not."_ Without the mapping, output is wrong, not just fuzzy.
 - **Soft dependency** (`zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, `zj-zoom-out`) — reference "the project's domain glossary" and "ADRs in the area you're touching" in vague prose only. If the docs aren't there, the skill still works; output is just less sharp.
 
 The split keeps soft-dependency skills token-light and avoids cargo-culting the setup pointer into places where it isn't load-bearing.
