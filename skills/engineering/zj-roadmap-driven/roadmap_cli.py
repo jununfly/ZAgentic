@@ -24,6 +24,9 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   decide  <json_path> <node_id> "<question>" "<answer>" ["<note>"]
 
+  remove-decision <json_path> <node_id> --index N | --question "..."
+              # 删除决策 (按索引或按问题文本), 用于清理重复/误记
+
   decisions <json_path> [node_id]            # 列出决策
 
   render  <json_path>                        # 渲染 Markdown section 到关联 md 文件
@@ -171,6 +174,17 @@ def cmd_decisions(args: dict):
     _print_json(r.get_decisions(node_id))
 
 
+def cmd_remove_decision(args: dict):
+    r = Roadmap(args["positional"][0])
+    r.load()
+    node_id = args["positional"][1]
+    index = int(args["index"]) if args.get("index") is not None else None
+    question = args.get("question")
+    removed = r.remove_decision(node_id, index=index, question=question)
+    r.save()
+    print(f"Removed: {removed} decision(s) from {node_id}")
+
+
 def cmd_render(args: dict):
     r = Roadmap(args["positional"][0])
     r.load()
@@ -262,6 +276,7 @@ COMMANDS = {
     "tree": cmd_tree,
     "decide": cmd_decide,
     "decisions": cmd_decisions,
+    "remove-decision": cmd_remove_decision,
     "render": cmd_render,
     "section": cmd_section,
     "link": cmd_link,
@@ -287,7 +302,7 @@ def main():
         sys.exit(1)
 
     args = _parse_args(sys.argv[2:])
-    lock_commands = {"init", "add", "update", "delete", "decide", "render", "link"}
+    lock_commands = {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link"}
     try:
         if cmd in lock_commands:
             with roadmap_file_lock(args["positional"][0]):

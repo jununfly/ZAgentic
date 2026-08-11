@@ -155,6 +155,10 @@ python roadmap_cli.py decide <json_path> <node_id> "问题" "答案" ["备注"]
 # 列出所有决策（或指定节点）
 python roadmap_cli.py decisions <json_path>
 python roadmap_cli.py decisions <json_path> <node_id>
+
+# 删除决策（清理重复或误记）——按索引 或 按问题文本精确匹配
+python roadmap_cli.py remove-decision <json_path> <node_id> --index N
+python roadmap_cli.py remove-decision <json_path> <node_id> --question "<问题文本>"
 ```
 
 ### 渲染

@@ -359,6 +359,26 @@ class Roadmap:
         node["decisions"].append(decision)
         return decision
 
+    def remove_decision(self, node_id: str, index: Optional[int] = None,
+                        question: Optional[str] = None) -> int:
+        """删除节点决策。按 index 或按 question 精确匹配删除，返回删除条数。
+
+        用于清理重复决策或撤销误记。index 与 question 都未提供时报错；
+        两者都提供时优先 index。
+        """
+        node = self.get_node(node_id)
+        decisions = node["decisions"]
+        if index is not None:
+            if not (0 <= index < len(decisions)):
+                raise IndexError(f"决策索引越界: {index} (共 {len(decisions)} 条)")
+            removed = [decisions.pop(index)]
+            return len(removed)
+        if question is not None:
+            before = len(decisions)
+            node["decisions"] = [d for d in decisions if d.get("q") != question]
+            return before - len(node["decisions"])
+        raise ValueError("remove_decision 需提供 index 或 question 之一")
+
     def get_decisions(self, node_id: Optional[str] = None) -> list:
         """获取决策记录。无 node_id 则返回全部。"""
         if node_id:
