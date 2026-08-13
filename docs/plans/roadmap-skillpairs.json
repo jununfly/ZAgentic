@@ -716,12 +716,69 @@
       "status": "pending",
       "mode": "explore",
       "parent": "1",
-      "children": [],
+      "children": [
+        "1-6-1",
+        "1-6-2",
+        "1-6-3"
+      ],
       "decisions": [
         {
           "q": "1-2 范围 scope (CLI 实际分配 1-6, 用户原说 1-2)",
           "answer": "A. 跨阶段 skill 抽象 (用户选)",
           "note": "不属于 A 也不属于 B, 但工程里需要的中性 skill: 抛砖引玉型 (zj-prototype)、视角切换型 (zj-zoom-out)、认知压缩型 (zj-caveman) 等。A 仓此类 skill 已有 4 个 (caveman/zoom-out/edit-article/obsidian-vault 在 1-5 维护), 但未抽象出'跨阶段 skill'元方法论。1-6 (用户口头说 1-2, 因 1-1 跳过 CLI 自动分配 1-6) explore 阶段: 列出 1-5 之外的候选, 评估是否需要 (A) 进一步拆细 (B) 合并抽象 (C) 维持现状仅文档化。id 命名小问题, 留作 follow-up。"
+        },
+        {
+          "q": "Q3 元规则: 候选落地标准",
+          "answer": "A. 必须有对应 A 或 B 已有 skill 的互补关系",
+          "note": "用户选 A: 候选落地必须满足'对应 A 或 B 已有 skill 的互补关系'。判定方式: 列出该 skill 拟互补的现有 skill (如 zj-debrief ↔ zj-grilling), 写明互补点 (前/中/后时段或前向/反向作用)。无明确互补点的不立 skill, 避免重复建设。**注意**: 此规则仅 1-6 用作'元方法论约束', 1-3/1-4/1-5 子节点不强制。"
+        }
+      ],
+      "notes": ""
+    },
+    "1-6-1": {
+      "id": "1-6-1",
+      "label": "回顾反思型: zj-debrief (完工后复盘, 沉淀 ZJ-CONTEXT.md)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [
+        {
+          "q": "互补关系分析",
+          "answer": "待评估: debrief ↔ grilling + grill-me + grill-with-docs",
+          "note": "**互补对象**: zj-grilling (开工前问怎么做) + zj-grill-me (口语入口) + zj-grill-with-docs (grill+写文档)。**互补点**: 时段互补 — grilling 类在'前' (开工前), zj-debrief 在'后' (完工后)。**潜在能力**: 1) 走查本次工作的实际路径 vs 计划路径, 标 drift; 2) 提取新出现的领域概念/隐喻, 调 /zj-domain-modeling 同步到 ZJ-CONTEXT.md; 3) 标记'下次会改进的具体动作' (如'开工前先 grill 范围')。**落点**: user-only (disable-model-invocation), 完工后用户主动触发。**待评估**: A 仓是否真需要这个 skill? 1-3-3-1 Rule 3 已强制'新术语先更新 ZJ-CONTEXT.md', debrief 是它的主动形式。需 1-6-1 explore 进一步确认。"
+        }
+      ],
+      "notes": ""
+    },
+    "1-6-2": {
+      "id": "1-6-2",
+      "label": "自我质疑型: zj-steelman (先帮方案找最强论据, 避免早期被否)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [
+        {
+          "q": "互补关系分析",
+          "answer": "待评估: steelman ↔ grilling + handoff",
+          "note": "**互补对象**: zj-grilling (主动挑战) + zj-handoff (交接总结)。**互补点**: 方向互补 — grilling 是'找方案的弱点' (反向), zj-steelman 是'找方案的强点' (正向)。两者并用 = 全面 stress test。**潜在能力**: 1) 列方案的核心假设, 逐条写最强支持论据 (steelman 本身); 2) 如果最强论据都不强, 才建议 grill; 3) 把最强论据写进 /zj-handoff 或 /zj-prototype 备注里。**落点**: 探索中 — 可能做成 zj-grilling 的 flag/前置段, 而非独立 skill。**待评估**: A 仓是否需要独立 skill? 'steelman 失败则 grill' 是 1 步动作, 不一定需要包装成 skill。需 1-6-2 explore 进一步确认是否独立还是作为 flag 合并到 zj-grilling。"
+        }
+      ],
+      "notes": ""
+    },
+    "1-6-3": {
+      "id": "1-6-3",
+      "label": "预演型: zj-dry-run (推演 N 步后卡点, 提前定位决策瓶颈)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [
+        {
+          "q": "互补关系分析",
+          "answer": "待评估: dry-run ↔ triage + to-spec + to-tickets",
+          "note": "**互补对象**: zj-triage (PR/issue 入口评估) + zj-to-spec (需求形式化) + zj-to-tickets (拆工单)。**互补点**: 时段互补 — to-spec/to-tickets 在'前' (开工前拆计划), zj-dry-run 在'中' (commit 前预演); triage 在'中后' (PR 合入前评估)。**潜在能力**: 1) 拿 to-tickets 拆好的工单, 模拟执行 N 步, 在每步标'卡点/歧义/依赖'; 2) 把卡点/歧义反推回 to-spec/to-tickets 修订; 3) 输出'决策瓶颈清单'给 zj-grilling (精准烤问)。**落点**: 探索中 — 可能做成 zj-implement 的前置 flag (类似 'before commit, run dry-run')。**待评估**: A 仓是否需要独立 skill? zj-implement 已有 'use /zj-tdd at pre-agreed seams', dry-run 是更宏观的预演。需 1-6-3 explore 进一步确认是否独立还是作为 flag 合并到 zj-implement。"
         }
       ],
       "notes": ""
@@ -729,7 +786,7 @@
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-13 21:27:55",
+    "updated": "2026-08-13 21:35:28",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }
