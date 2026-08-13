@@ -446,7 +446,43 @@
       "mode": "explore",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "Q3: wait-what 引用的语言源在 A 里指什么?",
+          "answer": "B: the project's domain glossary (ZJ-CONTEXT.md if present, else plain English)",
+          "note": "B 的 CONTEXT.md 概念对应 A 的 ZJ-CONTEXT.md(领域词汇表), 非现有 CONTEXT.md(triage 词表); 当前无 ZJ-CONTEXT.md 时降级 plain English, 符合 B 设计"
+        },
+        {
+          "q": "Q5: 领域语言对齐时序?",
+          "answer": "B: 先找回 zj-grill-with-docs 跑一次对齐(生成 ZJ-CONTEXT.md), 再合并逻辑进当前 skills, 最后删",
+          "note": "对齐先生成 ZJ-CONTEXT.md 作合并参照物; 从 a895f47^ 恢复 3 文件"
+        },
+        {
+          "q": "A 块 5 项决策",
+          "answer": "A1-A3 进 ZJ-CONTEXT.md, A4 不进, A5 统一英文",
+          "note": "A1=4 bucket, A2=3 颗粒度 (skill/skill-pair/wave), A3=zj- 命名, A4=AB 关系暂不定义, A5=absorb/adopt/replace/reject/strict-align"
+        },
+        {
+          "q": "B 块 10 项决策",
+          "answer": "B1/B2/B3/B4/B8/B10 进, 其余不进",
+          "note": "B1=Roadmap, B2=Node, B3=Decision, B4=Focus, B8=Seam, B10=Status; 不进: B5=Frontier(暂缓), B6=Lock(技术), B7=Render(技术), B9=Mode(暂缓)"
+        },
+        {
+          "q": "Q1: ticket/Issue 怎么定?",
+          "answer": "C: 分层定义, 以 ticket 为新引入概念做 enrich",
+          "note": "Issue=领域内抽象工作单元; Ticket=外部 issue tracker 系统里的具体载体(GitHub/Linear issue); zj-to-tickets=把 Issue 写到外部系统变 ticket; 原 _Avoid: ticket 作废"
+        },
+        {
+          "q": "Q2: docs/adr/ 怎么迁?",
+          "answer": "A: git mv docs/adr/ → docs/zj-adr/, 同步 zj-merge-skill-pair 引用",
+          "note": "8/10 ZJ- 命名统一时漏了这个文件, 现在补; 历史 commit 里的路径不破坏, git rename 可追踪"
+        },
+        {
+          "q": "Q3: CONTEXT.md 怎么处理?",
+          "answer": "复制 C1-C3 到 ZJ-CONTEXT.md, 删 CONTEXT.md",
+          "note": "CONTEXT.md 是通用根级文件名, ZJ-CONTEXT.md 是 zj-grill-with-docs 领域词汇表; 本仓当前无其他用途, 复制后删"
+        }
+      ],
       "notes": ""
     },
     "1-4-6": {
@@ -533,7 +569,7 @@
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-11 15:24:55",
+    "updated": "2026-08-13 17:41:43",
     "md_file": "C:/workspace/github/jununfly/ZAgentic/.workbuddy/roadmap-skillpairs.md"
   }
 }
