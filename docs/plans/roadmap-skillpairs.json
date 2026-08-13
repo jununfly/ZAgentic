@@ -12,7 +12,8 @@
       "children": [
         "1-3",
         "1-4",
-        "1-5"
+        "1-5",
+        "1-6"
       ],
       "decisions": [
         {
@@ -26,12 +27,12 @@
           "note": ""
         }
       ],
-      "notes": "1-3 同源对 11/11 完成; 1-4 已处理 1-4-1/2/3/4/5/6 (剩 1-4-7 wizard/implement/ask-matt/resolving-merge-conflicts 4 合一); 1-5 已处理 1-5-1 (剩 1-5-2/3/4)。⚠️ 1-3 复查: 1-3-10(setup) + 1-3-3(triage) PR flag 联动 + Q4=D + 1-3-6/7 误删恢复 (zj-grill-me + zj-grill-with-docs 已恢复, commit 7227350)。下一步: 1-4-7 评估。"
+      "notes": "1 阶段完成 (commit 7ee608b + 后续 roadmap 同步): 1-3 同源对 11/11 + 1-3-3-1 A-only PR flag 补充段; 1-4 B独有 7/7 (含 1-4-7 4 合一); 1-5 A独有 4/4。**1 根节点 2026-08-13 状态**: completed, 全阶段闭环。\\n\\n**累计决策**: 1-3 (Q1/Q2/Q3/Q4=Q4=D + A/B/C 块 + 子节点决策) + 1-4 (1-4-5/6/7 烤问) + 1-5 (4 子节点 sidecar + label 偏移) + 1-3-3-1 A-only 3 rule + 1-3 父 Q4=D 标准化 ≈ 70+ 条 decision 落盘。\\n\\n**关键 A↔B 处理动作** (统一英文): absorb / adopt / replace / reject / strict-align + A-only (A 环境私有化规则, 例 1-3-3-1)。\\n\\n**ZAgentic 私有化** (写进 zj-triage/A-ONLY.md): plugin.json 挂接 (AGENTS.md); zj-git 包装 (避免 shim); ZJ-CONTEXT.md 词汇表 (下游 skill 一致性)。\\n\\n**下一步**: 1-2 (跨阶段 skill 抽象, Q5=A, explore 模式待开)。"
     },
     "1-3": {
       "id": "1-3",
       "label": "同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -52,6 +53,11 @@
           "q": "1-3 复查 — 恢复 zj-grill-me + zj-grill-with-docs (2026-08-13)",
           "answer": "用户在 1-4-6 推进后指出: B 仓 grill-me (productivity) + grill-with-docs (engineering) 真实存在, 都是 disable-model-invocation: true 的用户专用入口, 1-3-6/1-3-7 当时删掉是判断错误。理由复盘: (1) B 自己就 grill-me + grilling + grill-with-docs 三并存, 无'认知负载'; (2) grill-me = 'grill a design' 口语入口, grill-with-docs = 'grill + 顺便写文档' 组合入口, 都是给人类用的触发器, 删掉等于让用户必须记 /zj-grilling 全名; (3) 违反 1-3 阶段统一策略 '严格对齐 B', 11 个同源对里 9 个是替换/吸纳, 1-3-6/7 是删除, 2 个 outlier 无充足理由; (4) 影响 1-4-7 ask-matt 移植 — 当时决策'改指 /zj-grilling' 是错的方向, ask-matt 应能引用 /zj-grill-me + /zj-grill-with-docs",
           "note": "处理: 作为 1-3 复查项, 恢复 zj-grill-me (productivity) + zj-grill-with-docs (engineering), 严格对齐 B 原文 + zj- 化 (name + display_name)"
+        },
+        {
+          "q": "Q4=D 模式: 复查项异步挂子节点",
+          "answer": "D. 复查项异步挂子节点",
+          "note": "Q4=D 模式: 复杂节点完成后追加 1 条 decision 声明'⚠️ 本节点是在其他工作合并过程中完成的(非孤立事项), 须在其他工作结束后再复查一遍, 避免遗漏', 实际复查时建 sub-node 落地。1-3 阶段 5 节点(1-3-3/4/5/7/10)用此模式声明复查项; 1-3 阶段 11 节点 5/11 触发复查项。本质: 'PR 复查' 思想移植到 roadmap — 复杂合并必须有事后闭环。"
         }
       ],
       "notes": "1-3 复查: 1-3-10 (setup) + 1-3-3 (triage) PR flag 联动 (Q4=D 处理) + 恢复 zj-grill-me + zj-grill-with-docs (1-3-6/7 误删恢复, 2026-08-13 复盘)"
@@ -104,7 +110,9 @@
       "status": "completed",
       "mode": "explore",
       "parent": "1-3",
-      "children": [],
+      "children": [
+        "1-3-3-1"
+      ],
       "decisions": [
         {
           "q": "PR-as-request-surface 维度是否移植",
@@ -299,7 +307,7 @@
           "note": "2026-08-10 用户要求记录: 特别是 zj-setup-skills 与后来 1-3-3 triage 的 PR flag 联动是否一致"
         }
       ],
-      "notes": "核对微调完成: 修复 openai.yaml 缺失 / qa 悬空引用 / ADR 文件名 ZJ- 前缀过度 / 恢复 monorepo 探测。第二轮微调: Section C 跳过逻辑 + Section A 记录动作 + allow_implicit_invocation:false。A 其余有意改动(ZJ- 化、UX 增强、移除 wayfinder/PRs 段)保留。⚠️ 完成于合并过程中, 其他工作结束后需复查。"
+      "notes": "核对微调完成: 修复 openai.yaml 缺失 / qa 悬空引用 / ADR 文件名 ZJ- 前缀过度 / 恢复 monorepo 探测。第二轮微调: Section C 跳过逻辑 + Section A 记录动作 + allow_implicit_invocation:false。A 其余有意改动(ZJ- 化、UX 增强、移除 wayfinder 专属 Wayfinding 段)保留。⚠️ 完成于合并过程中, 其他工作结束后需复查。**修订 2026-08-13**: 原 notes 表述'不移植 B 的 PRs-MRs-as-triage-surface 段'不准确 — 实际是'不移植 wayfinder 专属 Wayfinding 段'(那是 wayfinder 跨阶段入口, A 无 /wayfinder, 死引用); PR-as-triage-surface flag 本身在 1-3-3 落地时已采纳 (zj-setup-skills issue-tracker-github.md / gitlab.md 补上), 两者不冲突, 都是 PR 但作用不同 (1-3-10 = setup 配置层, 1-3-3 = triage 使用层)。"
     },
     "1-3-11": {
       "id": "1-3-11",
@@ -675,11 +683,53 @@
       "children": [],
       "decisions": [],
       "notes": "B resolving-merge-conflicts 严格对齐采纳为 zj-resolving-merge-conflicts。5 步流程: 看状态 → 找 primary source → 逐 hunk 按意图解决 (不 --abort) → 跑 typecheck/test/format → 完成 merge/rebase。不 disable (Agent 遇到冲突自动用)。openai.yaml 含 interface, 无 policy。2 文件落地。"
+    },
+    "1-3-3-1": {
+      "id": "1-3-3-1",
+      "label": "A-only PR flag 补充段 (plugin.json / zj-git / ZJ-CONTEXT)",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "A-only 3 rule 范围",
+          "answer": "1+5+7 三项 (用户选)",
+          "note": "Rule 1: skills/ 改动必查 .codex-plugin/plugin.json (AGENTS.md 硬约定); Rule 2: git 操作必走 ./scripts/zj-git 包装 (避免 shim 破坏 .git/); Rule 3: 新术语必先更新 ZJ-CONTEXT.md 才合并 (避免下游 skill 跨会话词汇漂移)。3 规则都是硬要求, 非偏好。"
+        },
+        {
+          "q": "A-ONLY.md 落地形式",
+          "answer": "A. 子节点 + 独立文件 (推荐)",
+          "note": "skills/engineering/zj-triage/A-ONLY.md 新建, 作为 reference doc 挂在 SKILL.md Reference docs 段 (不进入 step 流程, 纯参考)。disable-model-invocation 不变 (用户专用 skill), 路由不变。"
+        },
+        {
+          "q": "PR flag 联动逻辑统一",
+          "answer": "A. 保留采纳, 改 1-3-10 表述",
+          "note": "用户选 A: PR flag 采纳不变, 1-3-10 notes 修订去掉'不移植 PRs-MRs-as-triage-surface 段'矛盾表述。两个 PR 维度作用不同: 1-3-10 = setup 配置层 (issue-tracker config 写 flag), 1-3-3 = triage 使用层 (读 flag 并落 PR 流程)。"
+        }
+      ],
+      "notes": "落地: skills/engineering/zj-triage/A-ONLY.md (4.3KB, 3 rule 详写) + zj-triage/SKILL.md Reference docs 段挂载引用。3 rule 全硬要求: skills/ 改动必查 plugin.json (AGENTS.md); git 操作必走 zj-git 包装 (避免 shim); 新术语必先更新 ZJ-CONTEXT.md (避免下游漂移)。与 1-3-10 setup 层的 PR flag config 配合: setup 写, triage 读。"
+    },
+    "1-6": {
+      "id": "1-6",
+      "label": "跨阶段 skill 抽象 (中性, 不属于 A 也不属于 B, 但工程需要)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "1-2 范围 scope (CLI 实际分配 1-6, 用户原说 1-2)",
+          "answer": "A. 跨阶段 skill 抽象 (用户选)",
+          "note": "不属于 A 也不属于 B, 但工程里需要的中性 skill: 抛砖引玉型 (zj-prototype)、视角切换型 (zj-zoom-out)、认知压缩型 (zj-caveman) 等。A 仓此类 skill 已有 4 个 (caveman/zoom-out/edit-article/obsidian-vault 在 1-5 维护), 但未抽象出'跨阶段 skill'元方法论。1-6 (用户口头说 1-2, 因 1-1 跳过 CLI 自动分配 1-6) explore 阶段: 列出 1-5 之外的候选, 评估是否需要 (A) 进一步拆细 (B) 合并抽象 (C) 维持现状仅文档化。id 命名小问题, 留作 follow-up。"
+        }
+      ],
+      "notes": ""
     }
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-13 20:44:25",
+    "updated": "2026-08-13 21:27:55",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }

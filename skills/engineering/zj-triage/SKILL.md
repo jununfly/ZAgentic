@@ -20,6 +20,7 @@ Every comment or issue posted to the issue tracker during triage **must** start 
 
 - [AGENT-BRIEF.md](AGENT-BRIEF.md) — how to write durable agent briefs
 - [OUT-OF-SCOPE.md](OUT-OF-SCOPE.md) — how the `.zj-out-of-scope/` knowledge base works
+- [A-ONLY.md](A-ONLY.md) — ZAgentic-only PR flag rules (plugin.json, zj-git, ZJ-CONTEXT). Read before triaging any PR in this repo.
 
 ## Roles
 
