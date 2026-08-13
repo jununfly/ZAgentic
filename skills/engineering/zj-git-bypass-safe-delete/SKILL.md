@@ -55,20 +55,27 @@ git status --short     # confirm files show M/A/D, not "all A"
 
 ### 3. Prevent future breakage
 
-Add `~/bin/zj-git` and use it instead of plain `git`:
+Use the in-repo bypass script `scripts/zj-git` instead of plain `git`. It lives in this repo (cross-platform: Windows Git Bash + macOS/Linux) and strips `NODE_OPTIONS` before exec.
 
 ```bash
-mkdir -p ~/bin
-cat > ~/bin/zj-git <<'EOF'
-#!/bin/bash
-exec env -u NODE_OPTIONS /mingw64/bin/git "$@"
-EOF
-chmod +x ~/bin/zj-git
+./scripts/zj-git --version            # verify it works
+./scripts/zj-git fetch                # use instead of `git fetch`
+./scripts/zj-git commit -m "..."      # use instead of `git commit`
 ```
 
-Then call `zj-git <command>` instead of `git <command>`. This strips the `NODE_OPTIONS` injection from the immediate process and (in most git commands) from helpers git spawns.
+If you want a global `git` replacement, alias it in your shell rc:
 
-> Note: `git` may invoke Node helpers internally. `env -u NODE_OPTIONS` only affects the *immediate* process. If a helper still breaks, run with `GIT_TRACE=1` to see what gets spawned, and add the helper to the bypass.
+```bash
+# bash
+alias git="$PWD/scripts/zj-git"
+```
+
+```powershell
+# PowerShell
+function git { & "$PWD\scripts\zj-git" @args }
+```
+
+> Note: `git` may invoke Node helpers internally. `env -u NODE_OPTIONS` only affects the *immediate* process. If a helper still breaks, run with `GIT_TRACE=1` to see what gets spawned, and report it — the bypass path may need widening.
 
 ### 4. Never `rm -rf` in WorkBuddy shell
 

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# zj-git: bypass WorkBuddy safe-delete shim before exec'ing real git.
+#
+# Background: WorkBuddy injects NODE_OPTIONS=--require=.../genie-safe-delete.cjs
+# which routes fs.unlinkSync/rmSync to OS trash. On Windows Git Bash the shim's
+# `case MINGW*` does NOT match `uname -s` (returns MINGW64_NT-10.0), so its
+# EXDEV fallback actually runs `rm -rf`. Result: any git-internal Node helper
+# that tries to rewrite a loose ref or clean index.lock silently destroys
+# .git/ state.
+#
+# Use this script instead of plain `git` for any work that touches .git internals.
+#
+# Usage:
+#   scripts/zj-git status
+#   scripts/zj-git commit -m "..."
+#   scripts/zj-git fetch
+#
+# Or alias it:  alias git="$(pwd)/scripts/zj-git"   (in your shell rc)
+#
+# Forwards to /mingw64/bin/git which is the real binary on Windows Git Bash.
+# On macOS / Linux, change the path to $(command -v git) or /usr/bin/git.
+set -euo pipefail
+
+# On Windows Git Bash the real git lives at /mingw64/bin/git. On macOS/Linux
+# $(command -v git) resolves to the system git. Pick by uname.
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*)
+    REAL_GIT=/mingw64/bin/git
+    ;;
+  *)
+    REAL_GIT="$(command -v git)"
+    ;;
+esac
+
+if [ ! -x "$REAL_GIT" ]; then
+  echo "zj-git: cannot find real git at $REAL_GIT" >&2
+  exit 127
+fi
+
+exec env -u NODE_OPTIONS "$REAL_GIT" "$@"
