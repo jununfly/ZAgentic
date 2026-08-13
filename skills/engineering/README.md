@@ -6,6 +6,7 @@ Skills I use daily for code work.
 - **[zj-triage](./zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[zj-codebase-design](./zj-codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.
 - **[zj-domain-modeling](./zj-domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms, stress-test with scenarios, update `ZJ-CONTEXT.md` and ADRs inline.
+- **[zj-grill-with-docs](./zj-grill-with-docs/SKILL.md)** — User-only entry point: run a `/zj-grilling` session, using `/zj-domain-modeling` (writes ADR's and glossary as it goes).
 - **[zj-improve-codebase-architecture](./zj-improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[zj-merge-skill-pair](./zj-merge-skill-pair/SKILL.md)** — Execute one skill-pair merge as an atomic commit. Reads strategy from a zj-roadmap-driven node, applies 12 classes of side effects, commits, leaves roadmap update to human. Pair with zj-merge-skills-wave.
 - **[zj-merge-skills-wave](./zj-merge-skills-wave/SKILL.md)** — Plan a whole merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, lays out a skill-pair plan as a roadmap subtree, delegates each pair to zj-merge-skill-pair.

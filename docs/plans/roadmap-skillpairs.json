@@ -47,8 +47,14 @@
         "1-3-10",
         "1-3-11"
       ],
-      "decisions": [],
-      "notes": ""
+      "decisions": [
+        {
+          "q": "1-3 复查 — 恢复 zj-grill-me + zj-grill-with-docs (2026-08-13)",
+          "answer": "用户在 1-4-6 推进后指出: B 仓 grill-me (productivity) + grill-with-docs (engineering) 真实存在, 都是 disable-model-invocation: true 的用户专用入口, 1-3-6/1-3-7 当时删掉是判断错误。理由复盘: (1) B 自己就 grill-me + grilling + grill-with-docs 三并存, 无'认知负载'; (2) grill-me = 'grill a design' 口语入口, grill-with-docs = 'grill + 顺便写文档' 组合入口, 都是给人类用的触发器, 删掉等于让用户必须记 /zj-grilling 全名; (3) 违反 1-3 阶段统一策略 '严格对齐 B', 11 个同源对里 9 个是替换/吸纳, 1-3-6/7 是删除, 2 个 outlier 无充足理由; (4) 影响 1-4-7 ask-matt 移植 — 当时决策'改指 /zj-grilling' 是错的方向, ask-matt 应能引用 /zj-grill-me + /zj-grill-with-docs",
+          "note": "处理: 作为 1-3 复查项, 恢复 zj-grill-me (productivity) + zj-grill-with-docs (engineering), 严格对齐 B 原文 + zj- 化 (name + display_name)"
+        }
+      ],
+      "notes": "1-3 复查: 1-3-10 (setup) + 1-3-3 (triage) PR flag 联动 (Q4=D 处理) + 恢复 zj-grill-me + zj-grill-with-docs (1-3-6/7 误删恢复, 2026-08-13 复盘)"
     },
     "1-3-1": {
       "id": "1-3-1",
@@ -189,7 +195,7 @@
           "note": "影响 zj-domain-modeling / zj-codebase-design / zj-improve-codebase-architecture / zj-diagnosing-bugs / zj-tdd 共 5 个 B-originals"
         }
       ],
-      "notes": "第二步(2026-08-10): 删除目录 skills/engineering/zj-grill-with-docs/ 并清理所有外部引用; 将 CONTEXT.md→ZJ-CONTEXT.md, docs/adr/→docs/zj-adr/ 在 5 个 B-originals 内统一"
+      "notes": "完成: 删除目录 skills/engineering/zj-grill-with-docs/ 并清理所有外部引用; 将 CONTEXT.md→ZJ-CONTEXT.md, docs/adr/→docs/zj-adr/ 在 5 个 B-originals 内统一。⚠️ 2026-08-13 复盘: 1-3-6 当时判断'避免两个 grill skill 并存的认知负载'是错的方向, B 仓 grill-me + grilling + grill-with-docs 三并存, 删 grill-with-docs 让用户失去 'grill + 顺便写文档' 的语义化入口。1-3 复查项: 恢复 zj-grill-with-docs (engineering 桶, 严格对齐 B 原文 + zj- 化)。"
     },
     "1-3-7": {
       "id": "1-3-7",
@@ -215,7 +221,7 @@
           "note": ""
         }
       ],
-      "notes": "完成: 删 zj-grill-me, 新增 zj-grilling(英文原文与B一致, frontier/rounds机制); 全仓引用已改(README/bucket README/zj-roadmap-driven SKILL.md); 已安装目录同步"
+      "notes": "完成: 删 zj-grill-me, 新增 zj-grilling(英文原文与B一致, frontier/rounds机制); 全仓引用已改(README/bucket README/zj-roadmap-driven SKILL.md); 已安装目录同步。⚠️ 2026-08-13 复盘: 1-3-7 当时判断'避免两个 grill skill 并存的认知负载'是错的方向, B 仓 grill-me + grilling 是并存的, 删 grill-me 让用户失去 'grill me' 的口语入口。1-3 复查项: 恢复 zj-grill-me (productivity 桶, 严格对齐 B 原文 + zj- 化)。"
     },
     "1-3-8": {
       "id": "1-3-8",
@@ -605,7 +611,7 @@
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-13 19:25:00",
+    "updated": "2026-08-13 19:48:00",
     "md_file": "C:/workspace/github/jununfly/ZAgentic/.workbuddy/roadmap-skillpairs.md"
   }
 }

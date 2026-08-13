@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Grill Me"
+  short_description: "Grill a design"
+policy:
+  allow_implicit_invocation: false
