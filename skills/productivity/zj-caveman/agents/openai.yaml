@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Caveman"
+  short_description: "Ultra-compressed communication mode (~75% token cut)"
+policy:
+  allow_implicit_invocation: false

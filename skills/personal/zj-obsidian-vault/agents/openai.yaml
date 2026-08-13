@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Obsidian Vault"
+  short_description: "Search, create, and manage notes in the Obsidian vault"
+policy:
+  allow_implicit_invocation: false

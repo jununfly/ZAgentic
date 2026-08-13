@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Edit Article"
+  short_description: "Edit and improve articles for clarity and flow"
+policy:
+  allow_implicit_invocation: false

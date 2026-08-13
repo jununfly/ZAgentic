@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-13 20:08:45
+> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-13 20:17:07
 
 [~][X+] 1. A↔B skill-pair 对比与处理
 ├── [ ][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)
@@ -24,11 +24,11 @@
 │   ├── [x][X+] 1-4-5. wait-what (B独有): 评估移植
 │   ├── [x][X+] 1-4-6. to-questionnaire (B独有): 评估移植
 │   └── [ ][X+] 1-4-7. wizard/implement/ask-matt/resolving-merge-conflicts (B独有): 评估
-└── [ ][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
+└── [x][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
     ├── [x][X+] 1-5-1. zj-roadmap-driven (A独有): 保留 + 修 Windows lock 清理 bug
-    ├── [ ][X+] 1-5-2. zj-caveman (A独有): 保留
-    ├── [ ][X+] 1-5-3. zj-zoom-out (A独有): 保留
-    └── [ ][X+] 1-5-4. zj-edit-article + zj-obsidian-vault (A独有 personal): 保留
+    ├── [x][X+] 1-5-2. zj-caveman (A独有): 保留
+    ├── [x][X+] 1-5-3. zj-zoom-out (A独有 engineering): 保留 + sidecar 补齐
+    └── [x][X+] 1-5-4. zj-edit-article + zj-obsidian-vault (A独有 personal): 保留
 
 ### 当前施工：1. A↔B skill-pair 对比与处理
 
@@ -43,6 +43,6 @@
 │   ... 11 more child nodes; run tree 1-3 --depth 2 for full view
 ├── [ ][X+] 1-4. B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)
 │   ... 7 more child nodes; run tree 1-4 --depth 2 for full view
-└── [ ][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
+└── [x][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
     ... 4 more child nodes; run tree 1-5 --depth 2 for full view
 <!-- ROADMAP_SECTION_END -->

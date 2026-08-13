@@ -555,7 +555,7 @@
     "1-5": {
       "id": "1-5",
       "label": "A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -564,8 +564,14 @@
         "1-5-3",
         "1-5-4"
       ],
-      "decisions": [],
-      "notes": ""
+      "decisions": [
+        {
+          "q": "label 语义偏移",
+          "answer": "1-5 父 label 'A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)' 暗示全部在 productivity 桶, 但实际: roadmap-driven + zoom-out 在 engineering, caveman 在 productivity, edit-article + obsidian-vault 在 personal。子 label 已修正 (1-5-3 注明 engineering)。父 label 是否需要新建 sub-node 拆分? 待用户确认。现状: 父 label 暂不动, 走 notes 标注。",
+          "note": "skill 规则: 语义偏移触发'新建 sub-node 对应偏差'询问"
+        }
+      ],
+      "notes": "1-5 收尾: 4/4 全部 completed。1-5-1 早前完成 (lock 修复), 1-5-2/3/4 现状保留 + sidecar 补齐 (4 skill × 2 平台: disable-model-invocation: true + agents/openai.yaml allow_implicit_invocation: false)。⚠️ 1-5 label 误把 zoom-out 放 productivity 旁, 实际 engineering — 1-5-3 子 label 已修正。父 label 暂不动 (语义偏移需用户确认是否新建 sub-node)。"
     },
     "1-5-1": {
       "id": "1-5-1",
@@ -586,37 +592,37 @@
     "1-5-2": {
       "id": "1-5-2",
       "label": "zj-caveman (A独有): 保留",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-5",
       "children": [],
       "decisions": [],
-      "notes": ""
+      "notes": "sidecar 补齐 (disable-model-invocation: true + agents/openai.yaml allow_implicit_invocation: false)。保持 zj- 化原样, 不动 body。commit 待。"
     },
     "1-5-3": {
       "id": "1-5-3",
-      "label": "zj-zoom-out (A独有): 保留",
-      "status": "pending",
+      "label": "zj-zoom-out (A独有 engineering): 保留 + sidecar 补齐",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-5",
       "children": [],
       "decisions": [],
-      "notes": ""
+      "notes": "实际位置 skills/engineering/ (roadmap 1-5 父 label 误把 zoom-out 放 productivity 旁, 实际 engineering)。已有 disable-model-invocation: true, 补 agents/openai.yaml。"
     },
     "1-5-4": {
       "id": "1-5-4",
       "label": "zj-edit-article + zj-obsidian-vault (A独有 personal): 保留",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-5",
       "children": [],
       "decisions": [],
-      "notes": ""
+      "notes": "sidecar 补齐 (2 skill 全部 disable + openai.yaml)。personal 桶按 AGENTS.md 不出现在顶层 README / plugin.json, 但 sidecar 行为一致性仍保证。commit 待。"
     }
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-13 20:08:45",
+    "updated": "2026-08-13 20:17:07",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }
