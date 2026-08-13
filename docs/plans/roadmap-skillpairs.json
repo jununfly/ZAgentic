@@ -26,7 +26,7 @@
           "note": ""
         }
       ],
-      "notes": "推进中: 1-3 同源对 11/11 完成; 1-4 已处理 1-4-1/2/3。⚠️ 复查项: 1-3-10(setup)与 1-3-3(triage)在合并过程中完成, 须复查(尤其 PR flag 联动)。剩余 1-4: teach/wait-what/to-questionnaire/wizard 等。1-4-3 已翻转『不移植 Wayfinding』决定。"
+      "notes": "1-3 同源对 11/11 完成; 1-4 已处理 1-4-1/2/3/4/5/6 (剩 1-4-7 wizard/implement/ask-matt/resolving-merge-conflicts 4 合一); 1-5 已处理 1-5-1 (剩 1-5-2/3/4)。⚠️ 1-3 复查: 1-3-10(setup) + 1-3-3(triage) PR flag 联动 + Q4=D + 1-3-6/7 误删恢复 (zj-grill-me + zj-grill-with-docs 已恢复, commit 7227350)。下一步: 1-4-7 评估。"
     },
     "1-3": {
       "id": "1-3",
@@ -352,9 +352,14 @@
           "q": "移植 B 独有时的依赖注意事项",
           "answer": "1) ask-matt(1-4-7) 引用 /triage + /grill-me + /grill-with-docs — 后两者 A 已删(并入 zj-grilling), 移植时须改指 /zj-grilling; 2) wayfinder(1-4-3) 不直接引 /triage, 但依赖 issue-tracker 的 Wayfinding operations 段(1-3-3 未移植, 评估 wayfinder 时须回看该决定) + /research(1-4-2) /prototype(已处理)",
           "note": "wayfinder 的 /setup 引用移植时改 /zj-setup-skills"
+        },
+        {
+          "q": "修订 (2026-08-13): 旧决策 2 '移植 B 独有时的依赖注意事项' 中提到的 grill-me / grill-with-docs A 已删状态已失效",
+          "answer": "1-3 复查已恢复 zj-grill-me (productivity) + zj-grill-with-docs (engineering), commit 7227350。ask-matt (1-4-7) 移植时应引用 /zj-grill-me + /zj-grill-with-docs, 不再改指 /zj-grilling (改指是当时误判)。详见 1-4 notes。",
+          "note": "CLI 不支持 remove-decision, 历史决策保留作轨迹"
         }
       ],
-      "notes": "评估移植顺序建议: research(1-4-2) → wayfinder(1-4-3, 依赖 research + Wayfinding 段回看) → ask-matt(1-4-7, 依赖 triage + grill 改名)。"
+      "notes": "1-4 评估移植: 1-4-1/2/3/4/5/6 完成, 剩 1-4-7 wizard/implement/ask-matt/resolving-merge-conflicts 4 合一待评估。⚠️ 旧决策 2 中 'grill-me / grill-with-docs A 已删' 已过时: 1-3 复查时已恢复 (commit 7227350), ask-matt 移植时应引用 /zj-grill-me + /zj-grill-with-docs, 不再改指 /zj-grilling。"
     },
     "1-4-1": {
       "id": "1-4-1",
@@ -611,7 +616,7 @@
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-13 19:48:00",
-    "md_file": "C:/workspace/github/jununfly/ZAgentic/.workbuddy/roadmap-skillpairs.md"
+    "updated": "2026-08-13 20:08:45",
+    "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }
