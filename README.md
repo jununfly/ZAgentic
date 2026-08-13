@@ -270,6 +270,7 @@ General workflow tools, not code-specific.
 - **[zj-write-a-skill](./skills/productivity/zj-write-a-skill/SKILL.md)** — Create new skills with proper structure, progressive disclosure, and bundled resources.
 - **[zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md)** — Reference for writing any document an agent consumes (skills, AGENTS.md/CLAUDE.md, pointer-reached docs): context pointers, progressive disclosure, leading words, pruning.
 - **[zj-teach](./skills/productivity/zj-teach/SKILL.md)** — Teach the user a new skill or concept over multiple sessions via a stateful teaching workspace (mission, resources, lessons, reference, glossary, learning records).
+- **[zj-wait-what](./skills/productivity/zj-wait-what/SKILL.md)** — Re-pitch the last message — it didn't land. User-only; supplements with project glossary terms from `ZJ-CONTEXT.md` and ASD-STE100 simplified English.
 
 ### Misc
 

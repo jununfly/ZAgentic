@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Wait What"
+  short_description: "Re-pitch the last message — it didn't land"
+policy:
+  allow_implicit_invocation: false
