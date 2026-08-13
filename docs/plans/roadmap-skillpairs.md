@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-13 20:17:07
+> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-13 20:44:25
 
 [~][X+] 1. A↔B skill-pair 对比与处理
 ├── [ ][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)
@@ -16,14 +16,14 @@
 │   ├── [x][X+] 1-3-9. zj-improve-codebase-architecture ↔ B: 吸收『scope before scan』
 │   ├── [x][X+] 1-3-10. zj-setup-skills ↔ setup-matt-pocock-skills: 核对微调
 │   └── [x][X+] 1-3-11. zj-write-a-skill ↔ writing-for-agents: 深度吸收 B 元方法论
-├── [ ][X+] 1-4. B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)
+├── [x][X+] 1-4. B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)
 │   ├── [x][X+] 1-4-1. code-review (B独有): 评估移植进 A
 │   ├── [x][X+] 1-4-2. research (B独有): 吸纳为 zj-research
 │   ├── [x][X+] 1-4-3. wayfinder (B独有): 移植为 zj-wayfinder
 │   ├── [x][X+] 1-4-4. teach (B独有): 评估移植进 A
 │   ├── [x][X+] 1-4-5. wait-what (B独有): 评估移植
 │   ├── [x][X+] 1-4-6. to-questionnaire (B独有): 评估移植
-│   └── [ ][X+] 1-4-7. wizard/implement/ask-matt/resolving-merge-conflicts (B独有): 评估
+│   └── [x][Y+] 1-4-7. wizard/implement/ask-matt/resolving-merge-conflicts (B独有 4 合一): 评估移植
 └── [x][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
     ├── [x][X+] 1-5-1. zj-roadmap-driven (A独有): 保留 + 修 Windows lock 清理 bug
     ├── [x][X+] 1-5-2. zj-caveman (A独有): 保留
@@ -41,7 +41,7 @@
 **当前子树：**
 ├── [ ][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)
 │   ... 11 more child nodes; run tree 1-3 --depth 2 for full view
-├── [ ][X+] 1-4. B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)
+├── [x][X+] 1-4. B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)
 │   ... 7 more child nodes; run tree 1-4 --depth 2 for full view
 └── [x][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
     ... 4 more child nodes; run tree 1-5 --depth 2 for full view

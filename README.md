@@ -98,6 +98,7 @@ Review, merge, or hand off
 
 1. **Align intent and language**
    Use `/zj-grilling` for general planning, or `/zj-domain-modeling` when the repo's domain language and ADRs matter.
+   Don't know which skill fits? Use `/zj-guide` — the user-only router over every skill in this repo.
 
 2. **Slice the work into issues**
    Use `/zj-to-tickets` to turn the agreed plan into small, independently grabbable tickets.
@@ -254,6 +255,10 @@ Skills I use daily for code work.
 - **[zj-setup-skills](./skills/engineering/zj-setup-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
 - **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-wayfinder](./skills/engineering/zj-wayfinder/SKILL.md)** — Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on the issue tracker, resolving them one at a time until the way to the destination is clear.
+- **[zj-guide](./skills/engineering/zj-guide/SKILL.md)** — User-only router: when you don't know which skill fits, ask. Maps the main flow (idea→ship), on-ramps (bugs/big-effort/codebase-health), vocabulary underneath (domain-modeling/codebase-design), and standalone. See PHASE-BOUNDARIES.md for context-window decisions.
+- **[zj-implement](./skills/engineering/zj-implement/SKILL.md)** — User-only total commander: implement a piece of work from a spec or tickets. Drives `/zj-tdd` internally at pre-agreed seams, ends with `/zj-code-review`, commits to the current branch.
+- **[zj-resolving-merge-conflicts](./skills/engineering/zj-resolving-merge-conflicts/SKILL.md)** — Resolve in-progress git merge/rebase conflicts hunk by hunk, by intent traced to each side's primary source. Never `--abort`.
+- **[zj-wizard](./skills/engineering/zj-wizard/SKILL.md)** — Generate an interactive bash script that walks a human through steps only they can perform (provisioning, CI secrets, third-party dashboards, one-off migrations). Bundles a `scripts/template.sh` library for the consistent UX.
 - **[zj-code-review](./skills/engineering/zj-code-review/SKILL.md)** — Two-axis review of a diff since a fixed point — Standards (does the code follow this repo's documented coding standards, plus a fixed code-smell baseline?) and Spec (does it faithfully implement the originating issue/spec?). Runs both reviews as parallel sub-agents and reports them side by side.
 - **[zj-to-tickets](./skills/engineering/zj-to-tickets/SKILL.md)** — Break any plan, spec, or the current conversation into tracer-bullet tickets (vertical slices), each declaring its blocking edges, published to the configured tracker — one file per ticket locally or native blocking links on a real tracker.
 - **[zj-to-spec](./skills/engineering/zj-to-spec/SKILL.md)** — Turn the current conversation context into a spec and submit it as an issue. No interview — just synthesizes what you've already discussed.

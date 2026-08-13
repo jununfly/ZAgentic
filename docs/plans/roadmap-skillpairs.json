@@ -330,7 +330,7 @@
     "1-4": {
       "id": "1-4",
       "label": "B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -544,13 +544,18 @@
     },
     "1-4-7": {
       "id": "1-4-7",
-      "label": "wizard/implement/ask-matt/resolving-merge-conflicts (B独有): 评估",
-      "status": "pending",
-      "mode": "explore",
+      "label": "wizard/implement/ask-matt/resolving-merge-conflicts (B独有 4 合一): 评估移植",
+      "status": "completed",
+      "mode": "exploit",
       "parent": "1-4",
-      "children": [],
+      "children": [
+        "1-4-7-1",
+        "1-4-7-2",
+        "1-4-7-3",
+        "1-4-7-4"
+      ],
       "decisions": [],
-      "notes": ""
+      "notes": "1-4-7 拆 4 子节点, 全部 completed (1-4-7-1/2/3/4)。6 轮烤问决策: 策略=严格对齐 B / ask-matt 引用=全部 zj- 化 / 安全姿态=按 B 原文 (implement + ask-matt disable, wizard + resolving-merge-conflicts 不 disable) / wizard 库=带 template.sh / commit=1 个原子 / roadmap=label 拆 4 子节点。"
     },
     "1-5": {
       "id": "1-5",
@@ -618,11 +623,63 @@
       "children": [],
       "decisions": [],
       "notes": "sidecar 补齐 (2 skill 全部 disable + openai.yaml)。personal 桶按 AGENTS.md 不出现在顶层 README / plugin.json, 但 sidecar 行为一致性仍保证。commit 待。"
+    },
+    "1-4-7-1": {
+      "id": "1-4-7-1",
+      "label": "wizard (B独有): 移植为 zj-wizard (含 template.sh 库)",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-4-7",
+      "children": [],
+      "decisions": [
+        {
+          "q": "修订 (2026-08-13): 烤问漏点承认 + 修正",
+          "answer": "1-4-7 烤问 6 轮里没问 'wizard name 是否 zj- 化', 默认沿用 B 仓 name=wizard 不加 zj- 前缀, 然后在 notes 里编了 'wizard 是 B 中性名, 像 grill-me 也是原名' 错误理由 (实际 grill-me 移植后是 zj-grill-me, 加了 zj- 前缀)。用户问 '为什么不能加 zj- 前缀' 才承认。修正: name 改 zj-wizard, 跟 28 个其他 skill 一致。教训: 默认不改时不能让 Agent 自己编理由, 必须显式让用户烤问",
+          "note": "教训: 别让 Agent 编理由, 必须让用户烤问"
+        }
+      ],
+      "notes": "B wizard 严格对齐采纳为 zj-wizard。**修订 2026-08-13**: 原落地 name=wizard 未加 zj- 前缀, notes 编了 'wizard 是 B 中性名' 错误理由 (实际 B 仓所有 skill 移植到 A 仓都加 zj- 前缀, grill-me/grill-with-docs/wait-what 都已加)。用户问出 wizard 为什么不能加 zj- 前缀, 承认是烤问漏点。**name 改 zj-wizard 跟 28 个其他 skill 一致**。openai.yaml display_name 已是 'ZJ Wizard', 不动。SKILL.md 正文 / template.sh 无 /wizard 自引用, 不动。README 挂接已是 zj-wizard 路径, 不动。"
+    },
+    "1-4-7-2": {
+      "id": "1-4-7-2",
+      "label": "implement (B独有): 移植为 zj-implement (user-only 总指挥)",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-4-7",
+      "children": [],
+      "decisions": [],
+      "notes": "B implement 严格对齐采纳。zj- 化 = name=zj-implement (B 用 implement)。disable-model-invocation: true + openai.yaml allow_implicit_invocation: false (user-only 总指挥)。5 行流程: 实现 + 内部用 /zj-tdd + 跑 typecheck/test + 收尾 /zj-code-review + commit 当前分支。"
+    },
+    "1-4-7-3": {
+      "id": "1-4-7-3",
+      "label": "ask-matt (B独有): 移植为 zj-guide (skill 路由中枢, 全部 zj- 化)",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-4-7",
+      "children": [],
+      "decisions": [
+        {
+          "q": "重命名决策: ask-matt → guide",
+          "answer": "B 仓 'ask-matt' 是作者名 (Matt Pocock), A 仓无此人, 字面 'ask Matt' 不通; 改 zj-guide 跟 zj-wayfinder/zj-setup-skills 同风格 (名词, 1 词, 表 '引导到对的 skill')。目录重命名 zj-ask-matt/ → zj-guide/, 跨仓引用同步更新 (顶层 README + bucket README + 流程 step 1)。SKILL.md 正文保留 (B ask-matt 原文), PHASE-BOUNDARIES.md 不动。",
+          "note": ""
+        }
+      ],
+      "notes": "B ask-matt 严格对齐采纳。原计划 name=zj-ask-matt, 重命名决策: B 仓 'ask-matt' 是作者名 (Matt Pocock), A 仓无此人, 'ask-matt' 字面不通; 改 zj-guide (名词, 1 词, 跟 zj-wayfinder/zj-setup-skills 同风格)。PHASE-BOUNDARIES.md 内容不动。disable + openai.yaml (user-only)。全部 zj- 化 (24 个 /xxx → /zj-xxx): grill-with-docs/grill-me/handoff/prototype/to-spec/to-tickets/implement/tdd/code-review/triage/diagnosing-bugs/wayfinder/improve-codebase-architecture/domain-modeling/codebase-design/research/to-questionnaire/wizard/wait-what/teach/writing-for-agents/grilling/resolving-merge-conflicts/setup-skills。precondition: zj-setup-skills。CONTEXT.md → ZJ-CONTEXT.md 引用更新。3 文件: SKILL.md (frontmatter name=zj-guide) + PHASE-BOUNDARIES.md + agents/openai.yaml (display_name=ZJ Guide)。目录重命名: skills/engineering/zj-ask-matt/ → zj-guide/ (git mv)。"
+    },
+    "1-4-7-4": {
+      "id": "1-4-7-4",
+      "label": "resolving-merge-conflicts (B独有): 移植为 zj-resolving-merge-conflicts",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-4-7",
+      "children": [],
+      "decisions": [],
+      "notes": "B resolving-merge-conflicts 严格对齐采纳为 zj-resolving-merge-conflicts。5 步流程: 看状态 → 找 primary source → 逐 hunk 按意图解决 (不 --abort) → 跑 typecheck/test/format → 完成 merge/rebase。不 disable (Agent 遇到冲突自动用)。openai.yaml 含 interface, 无 policy。2 文件落地。"
     }
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-13 20:17:07",
+    "updated": "2026-08-13 20:44:25",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }
