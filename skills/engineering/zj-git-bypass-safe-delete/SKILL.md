@@ -86,6 +86,33 @@ If you genuinely need a destructive delete, do it from a non-WorkBuddy process (
 - You're on macOS or Linux — the shim works correctly there. Use `git` directly.
 - The repo is genuinely corrupted at the object level (missing blobs in `objects/`). Recovery is impossible without `git fsck` + remote re-fetch.
 
+## When in doubt — decision tree
+
+If you don't know whether the corruption is shim-caused or something else, walk this:
+
+```
+1. Run `uname -s` in your shell.
+   - Returns MINGW* on Windows Git Bash  →  SHIM-CORRUPTED is the default assumption. Go to step 2.
+   - Returns Darwin / Linux              →  shim works correctly. Use `zj-diagnosing-bugs` instead.
+
+2. `bash scripts/diagnose.sh <repo>` — read the report.
+   - Any RED line? (refs missing / HEAD unresolvable / FETCH_HEAD empty) → shim-corrupted, go to step 3.
+   - All green?                          → not shim corruption. Use `zj-diagnosing-bugs`.
+
+3. `git reflog` (plain `git`, NOT zj-git) — is `.git/logs/HEAD` non-empty?
+   - Empty  → unrecoverable. `rm -rf .git && git init && git remote add origin <url> && git fetch && git reset --hard origin/main`. Re-clone may be faster.
+   - Non-empty → recoverable. Go to step 4.
+
+4. `bash scripts/recover-refs.sh <repo> <branch>` (last reflog entry as HEAD).
+   - `git log --oneline -3` confirms history
+   - `git status --short` shows real M/A/D (not "all A")
+   - Still broken?  →  re-run with explicit `<commit>` from `git reflog`.
+
+5. Prevention: use `~/bin/zj-git` going forward. See step 3 in the main workflow above.
+```
+
+**Time budget**: most shim-corrupted repos recover in under 30 seconds (diagnose + one recover-refs call). If you've spent more than 2 minutes, stop and re-read the tree — you're probably on the wrong branch.
+
 ## Files
 
 - `scripts/diagnose.sh` — read-only inspection of `.git/` state

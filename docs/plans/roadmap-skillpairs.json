@@ -1,0 +1,539 @@
+{
+  "title": "A↔B skill-pair 对比与处理",
+  "description": "以 skill-pair 为颗粒度,沉淀 ZAgentic(A) vs mattpocock(B) 调研,依次处理每对",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "label": "A↔B skill-pair 对比与处理",
+      "status": "in_progress",
+      "mode": "explore",
+      "parent": null,
+      "children": [
+        "1-3",
+        "1-4",
+        "1-5"
+      ],
+      "decisions": [
+        {
+          "q": "调研基线",
+          "answer": "A是B的中文化派生: engineering同源对几乎逐字对应, misc四对diff=0。B优势在架构拆细(grilling/domain-modeling/codebase-design独立可组合)与元方法论(writing-for-agents)",
+          "note": ""
+        },
+        {
+          "q": "处理策略",
+          "answer": "以skill-pair为颗粒度依次处理: 同源对吸收B优点; B独有评估移植; A独有保留维护",
+          "note": ""
+        }
+      ],
+      "notes": "推进中: 1-3 同源对 11/11 完成; 1-4 已处理 1-4-1/2/3。⚠️ 复查项: 1-3-10(setup)与 1-3-3(triage)在合并过程中完成, 须复查(尤其 PR flag 联动)。剩余 1-4: teach/wait-what/to-questionnaire/wizard 等。1-4-3 已翻转『不移植 Wayfinding』决定。"
+    },
+    "1-3": {
+      "id": "1-3",
+      "label": "同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-3-1",
+        "1-3-2",
+        "1-3-3",
+        "1-3-4",
+        "1-3-5",
+        "1-3-6",
+        "1-3-7",
+        "1-3-8",
+        "1-3-9",
+        "1-3-10",
+        "1-3-11"
+      ],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-3-1": {
+      "id": "1-3-1",
+      "label": "zj-tdd ↔ tdd: 吸收『测试只落预商定 seam』纪律",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "tdd 待吸收",
+          "answer": "B要求测试只落在预商定的seam(先写下seams并确认), A缺此纪律",
+          "note": ""
+        },
+        {
+          "q": "实现方式",
+          "answer": "用户决策: 严格对齐B。zj-tdd 直接替换为 B tdd 原文(含 Seams/Tautological 反模式/Refactoring不属loop), 内部 /codebase-design 引用→/zj-codebase-design",
+          "note": ""
+        }
+      ],
+      "notes": "完成: zj-tdd 替换为 B tdd(4文件, SKILL.md逐字一致), 删 A 独有 deep-modules/interface-design/refactoring; 由 zj-codebase-design 承载词汇"
+    },
+    "1-3-2": {
+      "id": "1-3-2",
+      "label": "zj-diagnose ↔ diagnosing-bugs: 吸收『Redact 脱敏纪律』",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "候选下一个",
+          "answer": "按深度收益降序, 1-3-2 diagnose (B 的 Redact 脱敏前置纪律) 安全价值最高, 推荐; 其余: tdd(seam)/prototype(throwaway)/improve-arch(scope-before-scan)",
+          "note": ""
+        },
+        {
+          "q": "实现方式",
+          "answer": "diagnosing-bugs 完全覆盖 zj-diagnose; 采用用户既定策略: 删除 zj-diagnose + 新增 zj-diagnosing-bugs 保持 B 原样(含 scripts/hitl-loop.template.sh, 不重新验证)",
+          "note": ""
+        }
+      ],
+      "notes": "完成: 删 zj-diagnose, 新增 zj-diagnosing-bugs(英文原文与B一致, Redact/completion-criterion/Minimise机制); 全仓引用已改(README/engineering README/zj-setup-skills SKILL.md/docs/adr/0001); 已安装目录已同步"
+    },
+    "1-3-3": {
+      "id": "1-3-3",
+      "label": "zj-triage ↔ triage: 完整移植 B 含 PR-as-request-surface 维度",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "PR-as-request-surface 维度是否移植",
+          "answer": "完整移植: B 将 triage 覆盖外部 PR(PR=带代码的 issue), 含 intro/roles/分桶[PR][issue]/外部PR过滤/step1 diff/step3 verify PR diff/step5 wontfix PR 处理/AGENT-BRIEF PR 例/OUT-OF-SCOPE PR 拒绝",
+          "note": "用户选『完整移植 B 含 PR 维度』(非 1-3-10 的微调方向)"
+        },
+        {
+          "q": "PR 维度的配置依赖",
+          "answer": "B 的 PR 维度读 issue-tracker 的 'PRs as a request surface' flag(默认 off)。已在 zj-setup-skills 的 issue-tracker-github.md / gitlab.md 补上该 flag(/zj-triage 读取); local 无 PR surface(B 同, 无此节)",
+          "note": "不移植 Wayfinding 段(A 无 /wayfinder, 死引用)"
+        },
+        {
+          "q": "随移植一并吸收的硬改进",
+          "answer": "1) 冗余检查(step1a: 按领域概念搜已实现→already-implemented wontfix); 2) already-implemented wontfix 不写 out-of-scope; 3) frontmatter 加 disable-model-invocation: true; 4) 补 agents/openai.yaml(allow_implicit_invocation: false); 5) step4 捌问改 /zj-grilling + /zj-domain-modeling(更新 ZJ-CONTEXT.md/ADRs)",
+          "note": "全部 zj- 化(.zj-out-of-scope/ 命名, /zj-* skill 引用)"
+        },
+        {
+          "q": "复查项",
+          "answer": "⚠️ 本节点是在其他工作合并过程中完成的(非孤立事项), 须在其他工作结束后再复查一遍, 避免遗漏",
+          "note": "2026-08-10 用户要求记录: 检查 PR 维度/冗余检查是否与其他 skill 改动冲突或有遗漏"
+        }
+      ],
+      "notes": "完成: zj-triage 3 文件(SKILL/AGENT-BRIEF/OUT-OF-SCOPE)完整移植 B 的 PR 维度 + 冗余检查等硬改进, 补 agents/openai.yaml + disable-model-invocation; zj-setup-skills 的 github/gitlab issue-tracker 补 PR/MR flag。全部 zj- 化一致。⚠️ 完成于合并过程中, 其他工作结束后需复查。"
+    },
+    "1-3-4": {
+      "id": "1-3-4",
+      "label": "zj-to-issues ↔ to-tickets: 采纳 B 的 to-tickets 为 zj-to-tickets, 删除 zj-to-issues",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "zj-to-issues 的处理方式",
+          "answer": "用户选『采纳 to-tickets，为 zj-to-tickets，删除 zj-to-issues』(严格对齐 B, 同 1-3-1/9)。B 的 to-tickets 是超集: 含 wide-refactor expand-contract、prefactor 纪律、slice 单上下文窗口尺寸、本地文件发布(one file per ticket) + frontier 工作队列、blocking edges 表述",
+          "note": "保留 A 的 HITL/AFK 特性被 B 丢弃(未保留); 采纳 B 的完整设计"
+        },
+        {
+          "q": "zj- 化改动",
+          "answer": "name: to-tickets → zj-to-tickets; /setup-matt-pocock-skills → /zj-setup-skills; display_name: ZJ To Tickets; 其余逐字保留 B 原文(含 .scratch/ 本地约定、ready-for-agent 标签)",
+          "note": "删除 skills/engineering/zj-to-issues/; 新建 zj-to-tickets(SKILL.md + agents/openai.yaml)"
+        },
+        {
+          "q": "外部引用更新",
+          "answer": "/zj-to-issues → /zj-to-tickets: README.md(4处)、skills/engineering/README.md、zj-setup-skills/SKILL.md(2处)、CONTEXT.md(2处)、docs/adr/0001(1处)",
+          "note": "CONTEXT.md 原本 _Avoid_: ticket(仅引外部系统时用), 现 zj-to-tickets 采纳后 ticket 成为正式领域词 — 已在 CONTEXT.md 标注此张力, 待后续 domain-modeling 明确"
+        }
+      ],
+      "notes": "完成: 新建 zj-to-tickets(B to-tickets 原文 + zj- 化), 删除 zj-to-issues, 全仓库引用更新。installed 同步(zj-to-tickets 新增, zj-to-issues 删除)。"
+    },
+    "1-3-5": {
+      "id": "1-3-5",
+      "label": "zj-to-prd ↔ to-spec: 强化 seam 确认环节",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "吸收项",
+          "answer": "微调(diff 极小, 无需决策): 1) seam 段补 B 的强化句『The fewer seams across the codebase, the better - the ideal number is one.』; 2) frontmatter 加 disable-model-invocation: true; 3) 新增 agents/openai.yaml(allow_implicit_invocation: false)",
+          "note": "A 的 PRD 术语是有意统一(此前 1-3-10 已核对不破坏消费侧), 保留; /zj-setup-skills 引用已 zj- 化"
+        },
+        {
+          "q": "补充操作: 更名 zj-to-prd → zj-to-spec",
+          "answer": "用户预期『to-spec 吸纳为 zj-to-spec, 删除 zj-to-prd』(同 1-3-4 模式): 采纳 B to-spec 原文(SKILL.md+agents) + zj- 化, 删除 zj-to-prd。天然覆盖 1-3-5 微调成果(seam 句/disable-model-invocation/openai.yaml 都在 B 原文中)",
+          "note": "全仓库引用更新: README/engineering-README/CONTEXT.md(含 PRD 名词→spec)/ADR0001/zj-setup-skills; CONTEXT.md 的 _Avoid: ticket 规则未动(待 domain-modeling)"
+        }
+      ],
+      "notes": "完成: zj-to-prd → zj-to-spec 采纳 B to-spec 原文, 删除 zj-to-prd; 全仓库引用 + installed 同步。PRD 术语随 spec 采纳统一为 spec。"
+    },
+    "1-3-6": {
+      "id": "1-3-6",
+      "label": "zj-grill-with-docs: 删除(内容并入 zj-grilling + zj-domain-modeling), 统一 ZJ- 文档命名",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "zj-grill-with-docs 与 zj-grilling / zj-domain-modeling 的交集",
+          "answer": "删除 zj-grill-with-docs: 其内容是 grilling 与 domain-modeling 的合并, 二者现已独立可组合, 重叠无保留价值",
+          "note": "外部引用全部改指 /zj-domain-modeling(+/zj-grilling): README.md, skills/engineering/README.md, zj-setup-skills/domain.md, zj-triage/SKILL.md"
+        },
+        {
+          "q": "领域文档命名约定",
+          "answer": "统一为 ZJ- 约定: 消费侧 skill 引用 ZJ-CONTEXT.md / docs/zj-adr/ / ZJ-CONTEXT-MAP.md, 与 zj-setup-skills 生成物对齐",
+          "note": "影响 zj-domain-modeling / zj-codebase-design / zj-improve-codebase-architecture / zj-diagnosing-bugs / zj-tdd 共 5 个 B-originals"
+        }
+      ],
+      "notes": "第二步(2026-08-10): 删除目录 skills/engineering/zj-grill-with-docs/ 并清理所有外部引用; 将 CONTEXT.md→ZJ-CONTEXT.md, docs/adr/→docs/zj-adr/ 在 5 个 B-originals 内统一"
+    },
+    "1-3-7": {
+      "id": "1-3-7",
+      "label": "zj-grill-me ↔ grilling: 吸收 B『frontier/rounds 机制』",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "grill-me 待吸收",
+          "answer": "B的grilling有frontier/rounds机制(每轮问整条frontier+编号+推荐), A的zj-grill-me是简化版(逐题无frontier)",
+          "note": ""
+        },
+        {
+          "q": "处理顺序",
+          "answer": "1-3-11 完成后继续, 1-3-7 grilling 是方法论深度较大的下一个",
+          "note": ""
+        },
+        {
+          "q": "实现方式",
+          "answer": "grilling 完全覆盖 zj-grill-me; 因 A 无独立 grilling, 采用用户决策: 删除 zj-grill-me + 新增 zj-grilling 保持 B 原样(避免两个 grill skill 并存的认知负载)",
+          "note": ""
+        }
+      ],
+      "notes": "完成: 删 zj-grill-me, 新增 zj-grilling(英文原文与B一致, frontier/rounds机制); 全仓引用已改(README/bucket README/zj-roadmap-driven SKILL.md); 已安装目录同步"
+    },
+    "1-3-8": {
+      "id": "1-3-8",
+      "label": "zj-prototype ↔ prototype: 删除原 zj-prototype, 吸纳 B prototype 为 zj-prototype",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "处理方式",
+          "answer": "用户指令『删除原来的 zj-prototype, 吸纳 prototype 为 zj-prototype』(严格对齐 B, 同 1-3-4/1-3-5): 用 B prototype 4 文件(SKILL/LOGIC/UI/agents)替换 A 版",
+          "note": ""
+        },
+        {
+          "q": "关键形态差异",
+          "answer": "LOGIC 分支: A 是 TUI 终端 app → B 是单个自包含 HTML 文件(可发非开发者/PM/设计师的 shareable demo); 验收用『原型提交 throwaway 分支』(B 的 Capture it when done: 提交到 throwaway 分支 out of main + context pointer + 主分支只留验证后的决策), A 是『删除或吸收』",
+          "note": ""
+        },
+        {
+          "q": "zj- 化",
+          "answer": "SKILL.md name → zj-prototype; UI.md 路由 /prototype/<name> → /zj-prototype/<name>; openai.yaml display_name → ZJ Prototype; 其余逐字保留 B 原文",
+          "note": "LOGIC.md 无路径命名无需改; 相对链接 [SKILL]/[UI.md]/[LOGIC.md] 保留"
+        }
+      ],
+      "notes": "完成: zj-prototype 用 B prototype 原文替换(4 文件), 含 throwaway 分支验收 + HTML shareable 形态; README 描述同步; installed 重建。1-3 同源对全部 11 项完成。"
+    },
+    "1-3-9": {
+      "id": "1-3-9",
+      "label": "zj-improve-codebase-architecture ↔ B: 吸收『scope before scan』",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "实现方式",
+          "answer": "用户决策: 严格对齐B。zj-improve-codebase-architecture 替换为 B 原文(薄编排者, 引用 /zj-codebase-design /zj-grilling /zj-domain-modeling), 删 A 独有 LANGUAGE/DEEPENING/INTERFACE-DESIGN",
+          "note": ""
+        },
+        {
+          "q": "新增依赖 skill",
+          "answer": "第一步按 B 架构拆出 zj-codebase-design(词汇表) + zj-domain-modeling(领域模型), 供 improve-arch/tdd 跨引用; zj-grill-with-docs 交集问题留待第二步讨论",
+          "note": ""
+        }
+      ],
+      "notes": "完成: zj-improve-codebase-architecture 替换为 B 原版(3文件, SKILL.md逐字一致+引用zj化); 新增 zj-codebase-design + zj-domain-modeling 两个独立 skill"
+    },
+    "1-3-10": {
+      "id": "1-3-10",
+      "label": "zj-setup-skills ↔ setup-matt-pocock-skills: 核对微调",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "zj-setup-skills 相对 B 的改动性质",
+          "answer": "A 有意 ZJ- 化(ZJ-CONTEXT.md/docs/zj-adr/docs/zj-agents/ZJ-*.md)并增强 UX(逐条解释/一次一问/domain 布局总确认);移除 wayfinder 专属 Wayfinding 段与 PRs/MRs-as-triage-surface 段(A 未采纳 wayfinder, 且 zj-triage 不依赖该 flag, 安全)",
+          "note": "保留这些有意改动, 仅修 3 个 bug"
+        },
+        {
+          "q": "微调修复项",
+          "answer": "1) 补建缺失的 agents/openai.yaml(UI 元数据, display_name=Setup ZAgentic Skills); 2) 删除 SKILL.md 中悬空 `qa` 引用(仓库无 qa skill); 3) domain.md 的 ADR 文件名 ZJ- 前缀过度应用, 改回 0001-slug.md 以对齐 zj-domain-modeling/ADR-FORMAT.md; 4) SKILL.md 探索步恢复 monorepo 信号探测行(对齐 B, 辅助推荐 multi-context)",
+          "note": "spec→PRD 重命名经核对不破坏任何消费侧 skill(zj-to-prd/zj-to-issues 未引用 spec.md), 保留"
+        },
+        {
+          "q": "微调方向(第二轮)",
+          "answer": "用户选『微调(推荐)』: 保留 A 的详尽 explainer 教学风格, 只吸收 B 三处真改进 — 1) Section C 默认 single-context 且无 monorepo 信号时跳过(不再总是询问); 2) Section A 增加『记录 tracker 选择』的明确动作(驱动 step4 写哪个模板); 3) agents/openai.yaml 增加 policy: allow_implicit_invocation: false(与 B 对齐)",
+          "note": "不移植 B 的 wayfinder/PRs-MRs-as-triage-surface 段(A 无 /wayfinder, 会是死引用; zj-triage 不依赖该 flag, 保留 A 移除决定)"
+        },
+        {
+          "q": "复查项",
+          "answer": "⚠️ 本节点是在其他工作合并过程中完成的(非孤立事项), 须在其他工作结束后再复查一遍, 避免遗漏",
+          "note": "2026-08-10 用户要求记录: 特别是 zj-setup-skills 与后来 1-3-3 triage 的 PR flag 联动是否一致"
+        }
+      ],
+      "notes": "核对微调完成: 修复 openai.yaml 缺失 / qa 悬空引用 / ADR 文件名 ZJ- 前缀过度 / 恢复 monorepo 探测。第二轮微调: Section C 跳过逻辑 + Section A 记录动作 + allow_implicit_invocation:false。A 其余有意改动(ZJ- 化、UX 增强、移除 wayfinder/PRs 段)保留。⚠️ 完成于合并过程中, 其他工作结束后需复查。"
+    },
+    "1-3-11": {
+      "id": "1-3-11",
+      "label": "zj-write-a-skill ↔ writing-for-agents: 深度吸收 B 元方法论",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "write-a-skill 待吸收",
+          "answer": "B的writing-for-agents含leading words/progressive disclosure/context-vs-cognitive-load元方法论, 深度远超A的zj-write-a-skill",
+          "note": ""
+        },
+        {
+          "q": "处理顺序",
+          "answer": "按深度收益降序: writing-for-agents 元方法论深度最大优先; 焦点 1-3-1 → 1-3-11",
+          "note": ""
+        },
+        {
+          "q": "实现方式",
+          "answer": "保留两个skill功能分离: 新增 zj-writing-for-agents(英文原文, 不重新验证), zj-write-a-skill 在为什么处跨skill引用其原理",
+          "note": ""
+        }
+      ],
+      "notes": "完成: 新增 zj-writing-for-agents(英文原文吸收, 含 SKILL-MECHANICS.md); zj-write-a-skill 在3处为什么跨skill引用 zj-writing-for-agents, 未并进正文"
+    },
+    "1-4": {
+      "id": "1-4",
+      "label": "B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-4-1",
+        "1-4-2",
+        "1-4-3",
+        "1-4-4",
+        "1-4-5",
+        "1-4-6",
+        "1-4-7"
+      ],
+      "decisions": [
+        {
+          "q": "1-3-3(zj-triage)与未处理 skills 的依赖检查(2026-08-11)",
+          "answer": "出向(zj-triage 引用): 仅 /zj-setup-skills /zj-domain-modeling /zj-grilling /zj-triage(自身), 全部已处理, 无未处理依赖。反向: A 侧 1-5 全部无引用; B 侧未移植中仅 ask-matt(1-4-7) 引用 /triage",
+          "note": "zj-triage 内其余 /xxx(updates/handler/types/processing/skill/dark-mode) 均为文本子串, 已逐一核对"
+        },
+        {
+          "q": "移植 B 独有时的依赖注意事项",
+          "answer": "1) ask-matt(1-4-7) 引用 /triage + /grill-me + /grill-with-docs — 后两者 A 已删(并入 zj-grilling), 移植时须改指 /zj-grilling; 2) wayfinder(1-4-3) 不直接引 /triage, 但依赖 issue-tracker 的 Wayfinding operations 段(1-3-3 未移植, 评估 wayfinder 时须回看该决定) + /research(1-4-2) /prototype(已处理)",
+          "note": "wayfinder 的 /setup 引用移植时改 /zj-setup-skills"
+        }
+      ],
+      "notes": "评估移植顺序建议: research(1-4-2) → wayfinder(1-4-3, 依赖 research + Wayfinding 段回看) → ask-matt(1-4-7, 依赖 triage + grill 改名)。"
+    },
+    "1-4-1": {
+      "id": "1-4-1",
+      "label": "code-review (B独有): 评估移植进 A",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "code-review 状态?",
+          "answer": "已在 1-3 阶段完成(zj-code-review, commit 02064cc), 但 1-4-1 节点此前未标记; 现补标记 completed",
+          "note": "修正遗漏"
+        }
+      ],
+      "notes": ""
+    },
+    "1-4-2": {
+      "id": "1-4-2",
+      "label": "research (B独有): 吸纳为 zj-research",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "处理方式",
+          "answer": "用户指令『吸纳 research 为 zj-research』(严格对齐 B): 新建 zj-research(B research 原文 2 文件), zj- 化 = name + display_name",
+          "note": "B research 极简(3 步: 后台 agent 查 primary sources → 写单 md 文件 → 存到 repo 既有约定位置), 无其他 skill 引用, 无需额外适配"
+        },
+        {
+          "q": "外部引用/配置",
+          "answer": "README + engineering/README 新增条目; .codex-plugin 自动包含(路径文件); zj-setup-skills 消费列表不加(A 不需 issue-tracker/triage/domain 配置)",
+          "note": "research 是 wayfinder(1-4-3) 的依赖, 先行移植符合建议顺序"
+        }
+      ],
+      "notes": "完成: zj-research 新增(2 文件), installed 同步, README 双列表更新。"
+    },
+    "1-4-3": {
+      "id": "1-4-3",
+      "label": "wayfinder (B独有): 移植为 zj-wayfinder",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "处理方式",
+          "answer": "用户指令『移植 wayfinder 为 zj-wayfinder』(严格对齐 B): 复制 B wayfinder 2 文件(SKILL/agents), zj- 化 name + 全部 skill 引用(/setup→/zj-setup-skills, /grilling→/zj-grilling, /domain-modeling→/zj-domain-modeling, /research→/zj-research, /prototype→/zj-prototype)",
+          "note": "与 zj-roadmap-driven 对比(plan vs track)后确认: 非竞争, 是流水线两段, 净新增"
+        },
+        {
+          "q": "配套: 补回 Wayfinding operations 段",
+          "answer": "zj-wayfinder 依赖 issue-tracker 的 Wayfinding 段(1-3-3 时未移植)。已给 zj-setup-skills 的 issue-tracker-github/gitlab/local 三个模板补回 Wayfinding 段(/zj-wayfinder), 并加 zj-wayfinder 到 setup 消费列表",
+          "note": "这翻转了 1-3-3『不移植 Wayfinding』的决定 — 因为 wayfinder 已存在, 该段成为必需"
+        },
+        {
+          "q": "组合建议 + 双模式 todo",
+          "answer": "1) 在 zj-wayfinder 与 zj-roadmap-driven 的 SKILL.md 各加『组合使用』建议(plan then track, 交接点为缝); 2) 后置 research&design todo 到 docs/prds/: 两 skill 都应同时支持 依赖/不依赖 issue-tracker 两模式, 未来 multi-agent&multi-human&multi-device 基于 shared context 的 co-design&co-work 解锁高阶用法",
+          "note": ""
+        }
+      ],
+      "notes": "完成: zj-wayfinder 移植(2 文件)+ setup 三 tracker 补 Wayfinding 段 + 消费列表; 两 skill 加组合建议; docs/prds/ 双模式 todo。installed 同步。"
+    },
+    "1-4-4": {
+      "id": "1-4-4",
+      "label": "teach (B独有): 评估移植进 A",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "teach 提供什么能力?",
+          "answer": "多会话状态化教学: 在当前目录建教学工作区(MISSION.md 理由/RESOURCES.md 高信任资源/learning-records 学习记录(类ADR)/lessons HTML 单课/HTML参考件/GLOSSARY 术语表/assets 可复用组件/NOTES 偏好), 逐课在用户最近发展区内教学",
+          "note": "哲学: Knowledge/Skills/Wisdom 三层次 + Fluency vs Storage strength + desirable difficulty(检索练习/间隔/交错)"
+        },
+        {
+          "q": "teach 的分类?",
+          "answer": "B 的 teach 在 productivity 桶(非 engineering), 含 SKILL.md + 4 个 FORMAT(MISSION/LEARNING-RECORD/RESOURCES/GLOSSARY) + openai.yaml",
+          "note": "A 对应 skills/productivity/ 桶"
+        },
+        {
+          "q": "移植方式?",
+          "answer": "用户指令『严格对齐 B(采纳为 zj-teach 到 productivity 桶)』: 复制 B teach 全部 6 文件(SKILL + 4 FORMAT + agents)到 skills/productivity/zj-teach/, zj- 化 name + display_name",
+          "note": "FORMAT 的 /xxx 均为目录路径或英文文本, 无 skill 引用; RESOURCES-FORMAT 的 [SKILL.md] 相对链接保留"
+        }
+      ],
+      "notes": ""
+    },
+    "1-4-5": {
+      "id": "1-4-5",
+      "label": "wait-what (B独有): 评估移植",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-4-6": {
+      "id": "1-4-6",
+      "label": "to-questionnaire (B独有): 评估移植",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-4-7": {
+      "id": "1-4-7",
+      "label": "wizard/implement/ask-matt/resolving-merge-conflicts (B独有): 评估",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-5": {
+      "id": "1-5",
+      "label": "A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-5-1",
+        "1-5-2",
+        "1-5-3",
+        "1-5-4"
+      ],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-5-1": {
+      "id": "1-5-1",
+      "label": "zj-roadmap-driven (A独有): 保留 + 修 Windows lock 清理 bug",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [
+        {
+          "q": "lock bug 根因",
+          "answer": "非roadmap.py代码bug: 仓库版已有OSError+rmtree兜底。真实原因是受限沙箱+Windows下safe-delete拦截CLI进程的删除,导致lock目录残留。在无沙箱/正常环境CLI正常。",
+          "note": ""
+        }
+      ],
+      "notes": "已定位: 沙箱拦截删除导致lock残留, 非代码bug; 用无沙箱跑CLI即可; 已安装版已同步仓库最新(含OSError兜底)"
+    },
+    "1-5-2": {
+      "id": "1-5-2",
+      "label": "zj-caveman (A独有): 保留",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-5-3": {
+      "id": "1-5-3",
+      "label": "zj-zoom-out (A独有): 保留",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    },
+    "1-5-4": {
+      "id": "1-5-4",
+      "label": "zj-edit-article + zj-obsidian-vault (A独有 personal): 保留",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": ""
+    }
+  },
+  "metadata": {
+    "created": "2026-08-10 13:43:44",
+    "updated": "2026-08-11 15:24:55",
+    "md_file": "C:/workspace/github/jununfly/ZAgentic/.workbuddy/roadmap-skillpairs.md"
+  }
+}
