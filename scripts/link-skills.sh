@@ -111,14 +111,13 @@ while IFS= read -r -d '' skill_md; do
       continue
     fi
 
-    # replace any pre-existing target safely (mv to a backup, not rm).
-    # The backup lives OUTSIDE the skills dir so the agent's skill scanner
-    # never picks these leftovers up as extra skills.
+    # Replace any pre-existing target directly. The whole set is treated
+    # as a single snapshot: if a skill has been renamed, removed, or its
+    # content diverged from the repo, the previous copy is discarded.
+    # Use --method symlink to make this section a no-op (symlink target
+    # is overwritten in place below).
     if [[ -e "$target" ]] || [[ -L "$target" ]]; then
-      backup_parent="$(dirname "$dir")/.zagentic-prev"
-      [[ $DRY_RUN -eq 1 ]] || mkdir -p "$backup_parent"
-      backup="$backup_parent/$(date +%s)-$name"
-      run mv "$target" "$backup"
+      run rm -rf "$target"
     fi
 
     if [[ "$METHOD" == symlink ]]; then

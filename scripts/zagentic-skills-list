@@ -1,40 +1,58 @@
 # ZAgentic skills — reconciliation list (对账单)
 #
-# Purpose: when you need to UNINSTALL every ZAgentic skill from an agent's
-# skills directory (e.g. ~/.workbuddy/skills, ~/.claude/skills, ~/.codex/skills),
-# reference THIS file. Each non-comment, non-blank line is a skill directory
-# name. Delete every listed directory in one prompt — no need to hunt them
-# down one by one.
+# THIS FILE IS GENERATED. Source of truth: scripts/list-skills.sh
+# Regenerate whenever skills/ changes:
+#   scripts/list-skills.sh > scripts/zagentic-skills-list
 #
-# Install side: this list is install-agnostic. The skills land flattened into
-# the agent's skills dir, so only the bare directory name matters here.
+# Purpose: when you need to UNINSTALL every ZAgentic skill from an
+# agent's skills directory (e.g. ~/.workbuddy/skills, ~/.claude/skills,
+# ~/.codex/skills), reference THIS file. Each non-comment, non-blank
+# line is a skill directory name. Delete every listed directory in one
+# prompt — no need to hunt them down one by one.
 #
-# NOTE: keep this list in sync with the skills/ tree by hand when you add or
-# remove a skill. It is the single source of truth for "what is the whole set".
+# Install side: this list is install-agnostic. The skills land
+# flattened into the agent's skills dir, so only the bare directory
+# name matters here.
+#
+# Categories: engineering / productivity / misc / personal.
+# Order within each category matches the scripts/list-skills.sh sort.
 
 # ---- engineering ----
-zj-code-review
 zj-codebase-design
+zj-code-review
+zj-debrief
 zj-diagnosing-bugs
 zj-domain-modeling
+zj-dry-run
 zj-git-bypass-safe-delete
+zj-grill-with-docs
+zj-guide
+zj-implement
 zj-improve-codebase-architecture
+zj-merge-skill-pair
+zj-merge-skills-wave
 zj-prototype
 zj-research
+zj-resolving-merge-conflicts
 zj-roadmap-driven
 zj-setup-skills
+zj-steelman
 zj-tdd
 zj-to-spec
 zj-to-tickets
 zj-triage
 zj-wayfinder
+zj-wizard
 zj-zoom-out
 
 # ---- productivity ----
 zj-caveman
 zj-grilling
+zj-grill-me
 zj-handoff
 zj-teach
+zj-to-questionnaire
+zj-wait-what
 zj-write-a-skill
 zj-writing-for-agents
 
