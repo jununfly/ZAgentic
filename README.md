@@ -19,9 +19,9 @@ If you want to keep up with changes to these skills, follow the ZAgentic reposit
 npx skills@latest add jununfly/ZAgentic
 ```
 
-2. Pick the skills you want, and which coding agents you want to install them on. **Make sure you select `/zj-setup-skills`**.
+2. Pick the skills you want, and which coding agents you want to install them on. **Make sure you select `/zj-agents-init`**.
 
-3. Run `/zj-setup-skills` in your agent. It will:
+3. Run `/zj-agents-init` in your agent. It will:
    - Ask you which issue tracker you want to use (GitHub, Linear, or local files)
    - Ask you what labels you apply to tickets when you triage them (`/zj-triage` uses labels)
    - Ask you where you want to save any docs we create
@@ -263,7 +263,7 @@ Skills I use daily for code work.
 - **[zj-merge-skills-wave](./skills/engineering/zj-merge-skills-wave/SKILL.md)** — Plan a whole merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, lays out a skill-pair plan as a roadmap subtree, delegates each pair to zj-merge-skill-pair.
 - **[zj-roadmap-driven](./skills/engineering/zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
 - **[zj-research](./skills/engineering/zj-research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
-- **[zj-setup-skills](./skills/engineering/zj-setup-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
+- **[zj-agents-init](./skills/engineering/zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
 - **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-wayfinder](./skills/engineering/zj-wayfinder/SKILL.md)** — Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on the issue tracker, resolving them one at a time until the way to the destination is clear.
 - **[zj-guide](./skills/engineering/zj-guide/SKILL.md)** — User-only router: when you don't know which skill fits, ask. Maps the main flow (idea→ship), on-ramps (bugs/big-effort/codebase-health), vocabulary underneath (domain-modeling/codebase-design), and standalone. See PHASE-BOUNDARIES.md for context-window decisions.

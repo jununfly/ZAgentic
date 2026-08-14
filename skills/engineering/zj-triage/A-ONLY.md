@@ -19,7 +19,7 @@ Read this file **before** triaging any PR. If the PR touches `skills/` or `docs/
 - renamed directory (git rename detection) → must update the entry's `path`
 - changed bucket (`engineering/` ↔ `productivity/`) → must update the entry
 
-**Outcome if missing:** wontfix (`enhancement` if reasoning is documented) + comment listing missing entries + ask author to run `/zj-setup-skills` to fix.
+**Outcome if missing:** wontfix (`enhancement` if reasoning is documented) + comment listing missing entries + ask author to run `/zj-agents-init` to fix.
 
 **Note:** do **not** accept the PR on the promise that the author will fix it later — that's how marketplace publishing breaks silently.
 

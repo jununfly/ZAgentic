@@ -7,7 +7,7 @@
 
 `zj-wayfinder` 与 `zj-roadmap-driven` 是 ZAgentic 中两个互补的工程 skill（前者规划、后者跟踪）。当前两者的"底层事实"不对称：
 
-- **`zj-wayfinder` 依赖 issue-tracker**。它把地图、决策票、阻塞边、frontier 查询放在 issue-tracker 上（GitHub/GitLab/本地 md），通过 `/zj-setup-skills` 配置的 `Wayfinding operations` 段工作。优势是**便于 teamwork**（多 Agent 并发靠 claim + 原生 blocking 避让、人类在 tracker UI 可视化看到前沿），劣势是**依赖外部载体**、单点上下文分散在 tracker 上。
+- **`zj-wayfinder` 依赖 issue-tracker**。它把地图、决策票、阻塞边、frontier 查询放在 issue-tracker 上（GitHub/GitLab/本地 md），通过 `/zj-agents-init` 配置的 `Wayfinding operations` 段工作。优势是**便于 teamwork**（多 Agent 并发靠 claim + 原生 blocking 避让、人类在 tracker UI 可视化看到前沿），劣势是**依赖外部载体**、单点上下文分散在 tracker 上。
 - **`zj-roadmap-driven` 无三方依赖**。它以本地 JSON 为唯一真相源 + 纯 Python stdlib CLI，完全独立。优势是 **context 完整、Human 能通盘把握**（md 轻量视图 + JSON 全量可查），劣势是单写者、不擅长多 Agent 并发。
 
 这一不对称，使得同一类"规划/跟踪"工作，在两种工作方式（团队协作 vs 个人全盘掌握）下不得不各用各的 skill，而无法在同一个 skill 内无缝切换。
@@ -26,7 +26,7 @@
 - **抽象一层"载体（carrier）"接口**：把 wayfinder 的地图/票/阻塞/frontier，与 roadmap-driven 的树节点/决策/状态，统一抽象为"共享工作空间（shared workspace）"的一组原语，背后可由 issue-tracker 或本地文件实现。skill 的流程逻辑与载体解耦。
 - **模式选择**：由场景/偏好决定（团队协作 → tracker 模式；个人全盘掌握/离线 → 本地模式），并在文档中给出切换指引。
 - **一致性**：两种模式产出同样的心智模型（地图/路线 + 决策记录），只是物理载体不同——这样跨模式迁移（从个人探索转为团队协作）时，认知模型不变。
-- **配置**：复用 `/zj-setup-skills` 的配置通道，新增"载体模式"这一配置维度。
+- **配置**：复用 `/zj-agents-init` 的配置通道，新增"载体模式"这一配置维度。
 
 ## 高阶展望（未来解锁）
 
@@ -43,6 +43,6 @@
 - [ ] 定义"shared workspace / carrier"原语抽象（地图/票/节点/决策/阻塞/frontier 的最小公共接口）
 - [ ] 为 `zj-wayfinder` 设计 tracker 模式 ↔ 本地模式的双后端
 - [ ] 为 `zj-roadmap-driven` 设计 tracker 模式 ↔ 本地模式的双后端
-- [ ] 复用 `/zj-setup-skills` 增加"载体模式"配置维度
+- [ ] 复用 `/zj-agents-init` 增加"载体模式"配置维度
 - [ ] 文档化两种模式的切换指引与适用场景
 - [ ] （高阶，future）multi-agent & multi-human & multi-device 基于 shared context 的 co-design & co-work

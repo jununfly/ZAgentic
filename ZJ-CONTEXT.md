@@ -102,14 +102,14 @@ _Avoid_: issue record, issue row (these are the same thing, just less specific)
 A canonical state-machine label applied to an **Issue** during triage
 (e.g. `needs-triage`, `ready-for-agent`, `ready-for-human`, `needs-info`,
 `wontfix`). Each role maps to a real label string in the **Issue tracker**
-configured by `zj-setup-skills`.
+configured by `zj-agents-init`.
 _Avoid_: status label, workflow state, kanban column
 
 **Hard dependency**:
 A skill whose correctness depends on per-repo config (issue tracker, triage
-labels, domain doc layout). Without `zj-setup-skills` output, the skill's
+labels, domain doc layout). Without `zj-agents-init` output, the skill's
 output is **wrong, not just fuzzy**. Such skills include an explicit one-
-liner: "_… should have been provided to you — run `/zj-setup-skills` if not._"
+liner: "_… should have been provided to you — run `/zj-agents-init` if not._"
 _Avoid_: required dependency, mandatory module
 
 **Soft dependency**:
@@ -120,7 +120,7 @@ _Avoid_: optional dependency, nice-to-have
 
 **Setup pointer**:
 The explicit one-liner inside a **hard dependency** skill's body that
-tells the agent to run `/zj-setup-skills` if the per-repo config is missing.
+tells the agent to run `/zj-agents-init` if the per-repo config is missing.
 See ADR `0001` for the rationale.
 _Avoid_: setup hint, setup reminder, bootstrap call
 
