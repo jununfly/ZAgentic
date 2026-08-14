@@ -38,6 +38,14 @@ The `zj-` prefix applied to every skill name in this repo. Prevents collision
 with source skills collections (e.g. `mattpocock/skills`) that share names.
 _Avoid_: underscore, hyphen-separated, namespace
 
+**Name-field coupling**:
+A skill's directory name, its frontmatter `name:` field, and its invocation
+name `/zj-<name>` must stay identical — the WorkBuddy scanner routes by the
+frontmatter `name:`. Renaming a skill is therefore a three-way coordinated
+change (mv the dir, update frontmatter, update all references), verified by grepping the old
+name down to zero repo-wide (append-only history logs exempt).
+_Avoid_: rename-in-place, dir-only rename
+
 ### Roadmap
 
 **Roadmap**:
@@ -166,6 +174,9 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 🔄 (recurring actions pinned at the top)
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
+
+- 改名前先 grep 定量引用清单，执行后 grep 清零验证，不凭记忆列文件  — docs/zj-retros/2026-08-14-retro.md#2100
+- skill 改名后本地同步用仓源 cp 覆盖，只 mv 目录会让 frontmatter name 失配  — docs/zj-retros/2026-08-14-retro.md#2100
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 
