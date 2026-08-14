@@ -6,7 +6,7 @@
     "1": {
       "id": "1",
       "label": "A↔B skill-pair 对比与处理",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": null,
       "children": [
@@ -713,7 +713,7 @@
     "1-6": {
       "id": "1-6",
       "label": "跨阶段 skill 抽象 (中性, 不属于 A 也不属于 B, 但工程需要)",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -865,7 +865,7 @@
     "1-6-3": {
       "id": "1-6-3",
       "label": "预演型: zj-dry-run (推演 N 步后卡点, 提前定位决策瓶颈)",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-6",
       "children": [],
@@ -896,12 +896,12 @@
           "note": "**原则**: 1-6 下三个 skill 的 grilling 只问需要用户拍板的问题 (主要是文件归置), 其余维度直接引用原文。1-6-3 的文件归置已在 Q1 解决 (就地输出不写文件)。**原文覆盖的维度**: (1) 独立 skill (命名形式 zj-dry-run 与 1-6-1/1-6-2 一致, 均已确认独立); (2) 桶=engineering (与 grilling/steelman/debrief 同桶); (3) 核心动作=拿 to-tickets 拆好的工单→模拟执行 N 步→每步标卡点/歧义/依赖→输出决策瓶颈清单; (4) 互补关系=时段互补 (to-spec/to-tickets 在前, dry-run 在中, triage 在中后), 卡点反推回 to-spec/to-tickets 作为建议, 决策瓶颈清单路由给 zj-grilling。"
         }
       ],
-      "notes": "1-6-3 实现启动: 17:40 8/14, handoff 顺序最后一个。grilling 2 决策已齐, 复用原文, 不重 grill. 与 1-6-1/1-6-2 设计同步: 独立 / engineering / 就地输出不写文件"
+      "notes": "完成: 17:42 8/14 commit f514fbb push 成功, 5 文件 (64 行 SKILL.md + 5 行 openai.yaml + 2 README 挂接 + json 状态). 1-6 三个 skill 全部实现"
     }
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-14 17:40:23",
+    "updated": "2026-08-14 17:41:43",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }

@@ -1,9 +1,9 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-14 17:37:36
+> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-14 17:41:43
 
-[~][X+] 1. A↔B skill-pair 对比与处理
+[x][X+] 1. A↔B skill-pair 对比与处理
 ├── [x][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)
 │   ├── [x][X+] 1-3-1. zj-tdd ↔ tdd: 吸收『测试只落预商定 seam』纪律
 │   ├── [x][X+] 1-3-2. zj-diagnose ↔ diagnosing-bugs: 吸收『Redact 脱敏纪律』
@@ -29,26 +29,8 @@
 │   ├── [x][X+] 1-5-2. zj-caveman (A独有): 保留
 │   ├── [x][X+] 1-5-3. zj-zoom-out (A独有 engineering): 保留 + sidecar 补齐
 │   └── [x][X+] 1-5-4. zj-edit-article + zj-obsidian-vault (A独有 personal): 保留
-└── [ ][X+] 1-6. 跨阶段 skill 抽象 (中性, 不属于 A 也不属于 B, 但工程需要)
+└── [x][X+] 1-6. 跨阶段 skill 抽象 (中性, 不属于 A 也不属于 B, 但工程需要)
     ├── [x][X+] 1-6-1. 回顾反思型: zj-debrief (完工后复盘, 沉淀 ZJ-CONTEXT.md)
     ├── [x][X+] 1-6-2. 自我质疑型: zj-steelman (先帮方案找最强论据, 避免早期被否)
-    └── [ ][X+] 1-6-3. 预演型: zj-dry-run (推演 N 步后卡点, 提前定位决策瓶颈)
-
-### 当前施工：1. A↔B skill-pair 对比与处理
-
-1 阶段完成 (commit 7ee608b + 后续 roadmap 同步): 1-3 同源对 11/11 + 1-3-3-1 A-only PR flag 补充段; 1-4 B独有 7/7 (含 1-4-7 4 合一); 1-5 A独有 4/4。**1 根节点 2026-08-13 状态**: completed, 全阶段闭环。\n\n**累计决策**: 1-3 (Q1/Q2/Q3/Q4=Q4=D + A/B/C 块 + 子节点决策) + 1-4 (1-4-5/6/7 烤问) + 1-5 (4 子节点 sidecar + label 偏移) + 1-3-3-1 A-only 3 rule + 1-3 父 Q4=D 标准化 ≈ 70+ 条 decision 落盘。\n\n**关键 A↔B 处理动作** (统一英文): absorb / adopt / replace / reject / strict-align + A-only (A 环境私有化规则, 例 1-3-3-1)。\n\n**ZAgentic 私有化** (写进 zj-triage/A-ONLY.md): plugin.json 挂接 (AGENTS.md); zj-git 包装 (避免 shim); ZJ-CONTEXT.md 词汇表 (下游 skill 一致性)。\n\n**下一步**: 1-2 (跨阶段 skill 抽象, Q5=A, explore 模式待开)。
-
-**决策：**
-- Q: 调研基线 → A是B的中文化派生: engineering同源对几乎逐字对应, misc四对diff=0。B优势在架构拆细(grilling/domain-modeling/codebase-design独立可组合)与元方法论(writing-for-agents)
-- Q: 处理策略 → 以skill-pair为颗粒度依次处理: 同源对吸收B优点; B独有评估移植; A独有保留维护
-
-**当前子树：**
-├── [x][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)
-│   ... 11 more child nodes; run tree 1-3 --depth 2 for full view
-├── [x][X+] 1-4. B独有评估移植进A(code-review/research/wayfinder/teach/wait-what/to-questionnaire等)
-│   ... 7 more child nodes; run tree 1-4 --depth 2 for full view
-├── [x][X+] 1-5. A独有保留维护(roadmap-driven/caveman/zoom-out/edit-article/obsidian-vault)
-│   ... 4 more child nodes; run tree 1-5 --depth 2 for full view
-└── [ ][X+] 1-6. 跨阶段 skill 抽象 (中性, 不属于 A 也不属于 B, 但工程需要)
-    ... 3 more child nodes; run tree 1-6 --depth 2 for full view
+    └── [x][X+] 1-6-3. 预演型: zj-dry-run (推演 N 步后卡点, 提前定位决策瓶颈)
 <!-- ROADMAP_SECTION_END -->
