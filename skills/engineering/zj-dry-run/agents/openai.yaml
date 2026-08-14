@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Dry Run"
+  short_description: "Rehearse tickets before committing — surface friction, route to spec/tickets/grilling"
+policy:
+  allow_implicit_invocation: false
