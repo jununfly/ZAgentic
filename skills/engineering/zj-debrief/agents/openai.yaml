@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Debrief"
+  short_description: "Reflect on a finished task — drift, concepts, actions"
+policy:
+  allow_implicit_invocation: false

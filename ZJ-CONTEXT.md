@@ -139,6 +139,18 @@ _Avoid_: setup hint, setup reminder, bootstrap call
 - An **Issue** carries one **Triage role** at a time
 - A **Seam** is a point a **Skill-pair** merge must explicitly resolve
 
+## Retros
+
+Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retros/YYYY-MM-DD.md` file. The full retro content lives in those files; this section is the agent's morning-reading path — what to do differently on the next task, without opening any file.
+
+🔄 (recurring actions pinned at the top)
+
+- *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
+
+**Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
+
+Done actions are removed from this index. The retro file itself stays in `docs/zj-retros/` as permanent history (git-tracked).
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

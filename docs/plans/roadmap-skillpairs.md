@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-13 21:35:28
+> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-14 17:19:30
 
 [~][X+] 1. A↔B skill-pair 对比与处理
 ├── [x][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)
@@ -30,7 +30,7 @@
 │   ├── [x][X+] 1-5-3. zj-zoom-out (A独有 engineering): 保留 + sidecar 补齐
 │   └── [x][X+] 1-5-4. zj-edit-article + zj-obsidian-vault (A独有 personal): 保留
 └── [ ][X+] 1-6. 跨阶段 skill 抽象 (中性, 不属于 A 也不属于 B, 但工程需要)
-    ├── [ ][X+] 1-6-1. 回顾反思型: zj-debrief (完工后复盘, 沉淀 ZJ-CONTEXT.md)
+    ├── [x][X+] 1-6-1. 回顾反思型: zj-debrief (完工后复盘, 沉淀 ZJ-CONTEXT.md)
     ├── [ ][X+] 1-6-2. 自我质疑型: zj-steelman (先帮方案找最强论据, 避免早期被否)
     └── [ ][X+] 1-6-3. 预演型: zj-dry-run (推演 N 步后卡点, 提前定位决策瓶颈)
 

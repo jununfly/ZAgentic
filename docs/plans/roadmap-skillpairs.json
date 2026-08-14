@@ -738,7 +738,7 @@
     "1-6-1": {
       "id": "1-6-1",
       "label": "回顾反思型: zj-debrief (完工后复盘, 沉淀 ZJ-CONTEXT.md)",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-6",
       "children": [],
@@ -804,7 +804,7 @@
           "note": "**设计**: (1) retro 文件按天 append, 同一天多 task 用 H2+时间戳分隔; (2) ZJ-CONTEXT.md Retros 段只存路径+改进动作摘要, agent 下次开工直接看到摘要不需打开 retro 文件; (3) Retros 段上限 7 条, 滚动淘汰已执行动作, 反复出现的标 🔄 定格顶部; (4) 已执行动作从 Retros 段移除指针, retro 文件本身保留为历史档案 (git 可追溯); (5) retro 文件放 docs/zj-retros/ 方便定期人工整理。**理由**: 闭环不断 (Retros 段在标准读取路径) + 不膨胀 (只存指针+摘要) + 可追溯 (retro 文件永久档案, git 可追踪) + 结构化 (文件级模板)。代价是两层写入, 但在 skill 内封装后用户无感。优于 A (不可追溯) 和 B (ZJ-CONTEXT 膨胀)。"
         }
       ],
-      "notes": ""
+      "notes": "落地: skills/engineering/zj-debrief/{SKILL.md (87行) + agents/openai.yaml}; 1-6-1 6 轮 Q 决策全 A (Q1独立 user-only / Q2 engineering 桶 / Q3 三步全保留 / Q4 每 task 完工触发 / Q5 grilling 软依赖 / Q6 retro 文件 + ZJ-CONTEXT Retros 段)。ZJ-CONTEXT.md 新增 Retros 段 (7 条上限 + 🔄 反复出现定格顶部)。skills/engineering/README.md + 顶层 README.md 挂接。**借鉴 B 模式** (claude-handoff 等 user-only skill): disable + openai.yaml 双平台拦, SKILL.md < 100 行。**B 仓无 debrief/retro 原文** (本地 clone C:\\workspace\\github\\mattpocock\\skills + 远端 mattpocock/skills 均确认 35 skill 无反思类), 1-6-1 zj-debrief 走 A 独有路径, 非 1-4-7 严格对齐。"
     },
     "1-6-2": {
       "id": "1-6-2",
@@ -901,7 +901,7 @@
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-14 02:31:25",
+    "updated": "2026-08-14 17:19:30",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }
