@@ -139,6 +139,26 @@ _Avoid_: setup hint, setup reminder, bootstrap call
 - An **Issue** carries one **Triage role** at a time
 - A **Seam** is a point a **Skill-pair** merge must explicitly resolve
 
+## Cross-stage skills
+
+Vocabulary for the three skills that span multiple workflow stages — not bound to A↔B processing, but to any skill-pair work.
+
+**Debrief**:
+The post-task close-out. Walks drift between the planned path and the actual path, surfaces new domain terms, captures 1-3 "do differently next time" actions. Writes to `docs/zj-retros/YYYY-MM-DD.md` and updates the `## Retros` pointer index in this file.
+_Avoid_: post-mortem, retrospective (overloaded with agile ceremony meaning), notes dump
+
+**Steelman**:
+The pre-plan reality check. Assumes the plan is worth defending, finds its strongest case, and judges whether the case actually holds. Routes to `zj-grilling` only if a case is weak. One-shot, in-place, no file written.
+_Avoid_: pre-mortem, argue both sides (mixes attack and defense roles), devil's advocate
+
+**Dry-run**:
+The pre-commit rehearsal. Walks each ticket, flags friction as blocker / ambiguity / dependency, and produces a per-ticket table plus a decision-bottleneck list. Routes friction to `zj-to-spec` / `zj-to-tickets` (suggestions only, no auto-edit) and bottlenecks to `zj-grilling`. In-place output, no file written.
+_Avoid_: trace through, simulate (too general), risk analysis (different goal)
+
+**Complementarity check**:
+The rule for adding a new skill: it must name a specific existing skill it complements, and the complement must be on a clear axis — time (before/after/during), direction (defense/attack), or scope (micro/macro). A skill that doesn't name its complement is rejected as duplicating existing capability.
+_Avoid_: useful in principle, fills a gap, nice to have
+
 ## Retros
 
 Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retros/YYYY-MM-DD.md` file. The full retro content lives in those files; this section is the agent's morning-reading path — what to do differently on the next task, without opening any file.
