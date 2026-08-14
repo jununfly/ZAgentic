@@ -809,7 +809,7 @@
     "1-6-2": {
       "id": "1-6-2",
       "label": "自我质疑型: zj-steelman (先帮方案找最强论据, 避免早期被否)",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1-6",
       "children": [],
@@ -860,7 +860,7 @@
           "note": "**原则**: 1-6 下三个 skill 的 grilling 只问需要用户拍板的问题 (主要是文件归置), 其余维度直接引用原文。1-6-2 的文件归置已在 Q2 解决 (就地输出不写文件)。**原文覆盖的维度**: (1) 桶=engineering (与 zj-grilling 同属自我质疑型, 同桶); (2) 触发时机=方案早期, 避免过早否定; (3) 核心动作=列核心假设→逐条写最强支持论据→判定论据强度→不强才建议 grill; (4) 互补关系=与 grilling 方向互补 (辩护 vs 攻击), steelman 失败路由到 grill。"
         }
       ],
-      "notes": ""
+      "notes": "1-6-2 实现启动: 17:35 8/14, 按 handoff 顺序, 1-6-1 zj-debrief 已完成 (commit 8473463), 现在动 zj-steelman。grilling 4 决策已齐, 复用原文, 不重 grill"
     },
     "1-6-3": {
       "id": "1-6-3",
@@ -901,7 +901,7 @@
   },
   "metadata": {
     "created": "2026-08-10 13:43:44",
-    "updated": "2026-08-14 17:19:30",
+    "updated": "2026-08-14 17:35:15",
     "md_file": "C:\\workspace\\github\\jununfly\\ZAgentic\\docs\\plans\\roadmap-skillpairs.md"
   }
 }

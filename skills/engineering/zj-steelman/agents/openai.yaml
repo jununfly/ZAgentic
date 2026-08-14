@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Steelman"
+  short_description: "Steelman a proposal — strongest case, then route to grilling if it fails"
+policy:
+  allow_implicit_invocation: false
