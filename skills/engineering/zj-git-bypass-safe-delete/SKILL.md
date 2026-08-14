@@ -120,6 +120,67 @@ If you don't know whether the corruption is shim-caused or something else, walk 
 
 **Time budget**: most shim-corrupted repos recover in under 30 seconds (diagnose + one recover-refs call). If you've spent more than 2 minutes, stop and re-read the tree — you're probably on the wrong branch.
 
+## Known shim symptoms beyond the obvious
+
+The three symptoms above (refs missing, `all A` status, broken commit/fetch) are the loud ones. The shim also produces three quieter symptoms that won't break git but will mislead you. Recognise them or you'll chase the wrong fix.
+
+### Symptom A — `git fetch` reports success but the local ref doesn't move
+
+You run `git fetch origin main` (or via `zj-git`), the command exits 0, you see `From github.com:... * branch main -> FETCH_HEAD`. But `git rev-parse origin/main` still points to the old commit, and `git status -sb` says `## main...origin/main [ahead N]` even though the remote is actually caught up.
+
+**Root cause**: the shim's `fs.unlinkSync` wrapper intercepts the loose-ref rewrite that follows a successful fetch. The fetch itself completes, but the ref file write is routed to the trash. So Git's in-memory state advances, but the on-disk ref is left stale.
+
+**Detection**:
+```bash
+git ls-remote origin main            # what the remote actually has
+git rev-parse origin/main            # what your local ref says (stale?)
+# If they differ, symptom A is active
+```
+
+**Fix** (in order — stop at the first that works):
+
+1. `git pack-refs --all` — forces loose refs to be merged into `packed-refs`, which the shim doesn't touch.
+2. `git update-ref refs/remotes/origin/main <correct-sha>` — directly writes the ref. **Use `zj-git update-ref`, not plain `git`**, because `update-ref` internally unlinks the old ref file (which the shim would route to trash).
+3. Manual fix from outside the shim (no WorkBuddy process): create a loose ref by writing directly to `.git/refs/remotes/origin/main`. From inside WorkBuddy Bash, use `mv` from `/tmp/` rather than `printf >` to dodge the shim:
+   ```bash
+   echo "<correct-sha>" > /tmp/origin-main-new
+   mkdir -p .git/refs/remotes/origin
+   mv /tmp/origin-main-new .git/refs/remotes/origin/main
+   ```
+
+### Symptom B — `git status` shows fewer M/A files than the commit actually contains
+
+You run `git add -A` then `git status --short` and only see some of your changes — but `git commit` succeeds and `git log --stat` shows all the right files. Or you run `git commit` and afterwards `git status` shows the files as if they were never staged, even though the commit object really does include them.
+
+**Root cause**: the shim's `fs.unlinkSync` wrapper also intercepts operations on `.git/index`. The index entry is added in memory and committed to the commit object, but the index file on disk gets its entries stripped shortly after. `git status` reads the on-disk index and is fooled.
+
+**Verification rule**: **never trust `git status` to confirm what's in a commit. Use `git ls-tree -r <sha>`.** That command reads the commit object directly from `.git/objects/`, bypassing the index.
+
+```bash
+git ls-tree -r HEAD | grep <filepath>   # authoritative — what's actually in the commit
+# or for a specific past commit:
+git ls-tree -r <sha> | grep <filepath>
+```
+
+**Don't** rely on `git show <sha>:<path>` for this purpose. If the loose ref for that path is missing, Git falls back to the working tree file and will *lie* — it'll show you a file that isn't actually in the commit. `git ls-tree` doesn't have this fallback.
+
+### Symptom C — `git commit -F <path>` fails with "could not read log file"
+
+You run `git commit -F /tmp/my-message.txt` and get `fatal: could not open '/tmp/my-message.txt' for reading`, even though `ls /tmp/my-message.txt` shows the file is there with the right contents.
+
+**Root cause**: the shim sometimes intercepts the syscall that Git uses to stat the `-F` path, returning ENOENT. The path exists, but Git can't see it through the shim's wrapped syscall layer.
+
+**Fix**: read the file and pipe it into Git on stdin:
+```bash
+cat /tmp/my-message.txt | git commit -F -
+```
+
+This bypasses the `-F` path entirely. The shim doesn't intercept stdin reads.
+
+### Prevention
+
+All three symptoms disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. They only reappear when you fall back to plain `git` for `fetch`, `commit -F`, or direct ref writes. If you must do one of those by hand, expect to hit one of the three symptoms above and apply the corresponding fix.
+
 ## Files
 
 - `scripts/diagnose.sh` — read-only inspection of `.git/` state

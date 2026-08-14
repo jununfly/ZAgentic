@@ -448,10 +448,16 @@ class Roadmap:
         return [cid for cid in parent["children"] if cid != node_id]
 
     def get_current_focus(self) -> Optional[str]:
-        """找到最深的 in_progress 节点作为当前施工点。"""
+        """找到最深的 in_progress 节点作为当前施工点。
+
+        只考虑 in_progress 叶子节点（非叶 in_progress 是 _sync_parent_status 的级联降级
+        临时态，不是用户主动设置的施工点）。无 in_progress 叶子时返回 None，
+        调用方应据此判断"全部完工或全部未开工"状态。
+        """
         candidates = [
             nid for nid, node in self.data["nodes"].items()
             if node["status"] == STATUS_IN_PROGRESS
+            and not node.get("children")  # 排除非叶 (级联降级临时态)
         ]
         if not candidates:
             return None

@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-14 17:41:43
+> 数据文件: `roadmap-skillpairs.json` | 最后更新: 2026-08-14 17:51:19
 
 [x][X+] 1. A↔B skill-pair 对比与处理
 ├── [x][X+] 1-3. 同源对逐个吸收B优点(zj-tdd/diagnose/triage/to-issues/to-prd/grill-with-docs/grill-me/prototype/improve-arch/setup/write-a-skill)

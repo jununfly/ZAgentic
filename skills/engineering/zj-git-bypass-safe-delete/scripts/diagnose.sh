@@ -62,6 +62,32 @@ hdr "FETCH_HEAD / packed-refs / ORIG_HEAD"
 [ -s .git/packed-refs ] && gray "  packed-refs present"                    || gray "  no packed-refs"
 [ -s .git/ORIG_HEAD ]   && gray "  ORIG_HEAD present"                      || gray "  no ORIG_HEAD"
 
+hdr "origin/main ref vs remote (Symptom A detection)"
+LOCAL_ORIGIN_MAIN=""
+# packed-refs takes priority over loose refs; check both
+if [ -s .git/packed-refs ]; then
+  LOCAL_ORIGIN_MAIN=$(awk '/refs\/remotes\/origin\/main$/ {print $1}' .git/packed-refs | head -1)
+fi
+if [ -z "$LOCAL_ORIGIN_MAIN" ] && [ -s .git/refs/remotes/origin/main ]; then
+  LOCAL_ORIGIN_MAIN=$(cat .git/refs/remotes/origin/main)
+fi
+if [ -z "$LOCAL_ORIGIN_MAIN" ]; then
+  red "  local origin/main ref MISSING (Symptom A: shim blocked the ref write)"
+else
+  gray "  local origin/main: $LOCAL_ORIGIN_MAIN"
+  # Compare to remote via git ls-remote. We use plain `git` (not zj-git) here
+  # because we're just reading; the shim doesn't intercept read paths.
+  REMOTE_MAIN=$(git ls-remote origin main 2>/dev/null | awk '{print $1}' | head -1)
+  if [ -z "$REMOTE_MAIN" ]; then
+    gray "  remote main: (could not query — offline or auth issue)"
+  elif [ "$LOCAL_ORIGIN_MAIN" = "$REMOTE_MAIN" ]; then
+    green "  origin/main matches remote: $REMOTE_MAIN"
+  else
+    red "  origin/main STALE: local=$LOCAL_ORIGIN_MAIN, remote=$REMOTE_MAIN"
+    red "  ACTION: Symptom A — see SKILL.md for the 3-step fix (pack-refs / update-ref / mv from /tmp)"
+  fi
+fi
+
 hdr "reflog"
 if [ -s .git/logs/HEAD ]; then
   last=$(tail -1 .git/logs/HEAD)
