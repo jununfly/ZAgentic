@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>QuickTodo</title>
+</head>
+<body>
+  <h1>QuickTodo</h1>
+  <input id="text" placeholder="要做什么？" />
+  <button onclick="addTodo()">添加</button>
+  <ul id="list"></ul>
+  <script>
+    async function refresh() {
+      const todos = await (await fetch("/api/todos")).json();
+      document.getElementById("list").innerHTML = todos
+        .map((t) => `<li>${t.done ? "✅" : "⬜"} ${t.text}</li>`)
+        .join("");
+    }
+    async function addTodo() {
+      const text = document.getElementById("text").value;
+      await fetch("/api/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      document.getElementById("text").value = "";
+      refresh();
+    }
+    refresh();
+  </script>
+</body>
+</html>

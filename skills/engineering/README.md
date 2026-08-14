@@ -20,6 +20,7 @@ Skills I use daily for code work.
 - **[zj-research](./zj-research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
 - **[zj-hv-analysis](./zj-hv-analysis/SKILL.md)** — 横纵分析法深度研究：纵轴追踪对象从诞生到当下的生命历程，横轴在当下截面与竞品系统对比，交叉产出洞察，最终输出 PDF 研究报告（源自 khazix-skills）。
 - **[zj-leader](./zj-leader/SKILL.md)** — 把一句话想法拆成 agent 能独立跑完的 /goal 任务书：先实测调研、一轮 ≤5 问、产出含验收与断点续跑的任务书，跑完由管理者角色验收（源自 khazix-skills）。
+- **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — 知识/治理收尾：把项目文档、规则文件、Agent 记忆和工作区残留与代码实际运行态对齐，让下一次会话从唯一现役答案开始（源自 khazix-skills，含 evals/）。
 - **[zj-agents-init](./zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume.
 - **[zj-tdd](./zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-wayfinder](./zj-wayfinder/SKILL.md)** — Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on the issue tracker, resolving them one at a time until the way to the destination is clear.

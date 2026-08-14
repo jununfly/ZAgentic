@@ -1,0 +1,24 @@
+[
+  {"query": "用洁癖技能把这次 API 重构后的文档、规则和记忆收尾一下", "should_trigger": true},
+  {"query": "/neat 部署和线上验收都结束了，开始知识收尾和清场前审计", "should_trigger": true},
+  {"query": "please use neat-freak to reconcile the repo docs and production truth before cleanup", "should_trigger": true},
+  {"query": "项目 CLAUDE.md 明确规定部署后运行 neat-freak；现在 live verify 已通过，请继续收尾", "should_trigger": true},
+  {"query": "这一阶段做完了，帮我把文档、规则、记忆和工作区一起收尾", "should_trigger": true},
+  {"query": "tidy up the project docs and agent memory after the auth migration, they've drifted from the code", "should_trigger": true},
+  {"query": "代码、README、docs 和 CLAUDE.md 好像各说各的，全部同步掉", "should_trigger": true},
+  {"query": "新人周一接手，帮我做一次 clean handoff，把文档和 AI 记忆先理顺", "should_trigger": true},
+  {"query": "这个 workspace 很久没做规范体检了，审一下命名、同源和死引用", "should_trigger": true},
+  {"query": "vibe 了两周代码能跑了，文档一个字没写，帮我把项目文档和 AI 规则文件的底子搭起来，下次开新会话能接上", "should_trigger": true},
+  {"query": "把这个项目的文档和记忆理一理，上次定的技术方案我怕你下次又忘了", "should_trigger": true},
+
+  {"query": "整理", "should_trigger": false},
+  {"query": "把已经 merge 的 old-feature 分支删掉，别做其他检查", "should_trigger": false},
+  {"query": "写一篇 changelog 公告，语气热闹一点，我要发给用户", "should_trigger": false},
+  {"query": "更新一下记忆，我们最后决定用 Clerk，旧认证方案都不用了", "should_trigger": true},
+  {"query": "帮我把这个 JSON 文件格式化整理一下，key 排个序", "should_trigger": false},
+  {"query": "帮我整理一下这周的周报，按项目分组", "should_trigger": false},
+  {"query": "把 utils.ts 里没用到的函数清理掉，顺便重构一下命名", "should_trigger": false},
+  {"query": "帮我给这个函数补注释，再加两个单元测试", "should_trigger": false},
+  {"query": "README 英文有点烂，帮我润色一下措辞", "should_trigger": false},
+  {"query": "sync up my fork with upstream main", "should_trigger": false}
+]

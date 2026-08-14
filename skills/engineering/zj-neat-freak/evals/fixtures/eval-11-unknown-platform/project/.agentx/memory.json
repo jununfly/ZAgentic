@@ -1,0 +1,9 @@
+{
+  "generator": "agentx-memd/0.4",
+  "note": "machine-consolidated memory; edits outside agentx may be overwritten",
+  "entries": [
+    { "date": "2026-05-10", "fact": "storage is an in-memory list, resets on restart" },
+    { "date": "2026-06-01", "fact": "planned /export endpoint, not implemented yet" },
+    { "date": "2026-06-02", "fact": "owner prefers Chinese comments in code" }
+  ]
+}

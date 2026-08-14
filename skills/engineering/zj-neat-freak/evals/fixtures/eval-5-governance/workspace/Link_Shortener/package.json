@@ -1,0 +1,7 @@
+{
+  "name": "link-shortener",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": { "start": "node src/server.js" },
+  "dependencies": { "express": "^4.19.0", "nanoid": "^5.0.0" }
+}

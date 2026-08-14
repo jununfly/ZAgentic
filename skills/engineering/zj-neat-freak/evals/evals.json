@@ -1,0 +1,166 @@
+{
+  "skill_name": "neat-freak",
+  "evals": [
+    {
+      "id": 1,
+      "name": "routine-dev-sync",
+      "prompt": "我刚把 TaskFlow 项目的 API 从 Express REST 全部重构成了 tRPC，部署方案也最终确定用 Railway（因为需要 WebSocket 支持）。代码已经改完了，帮我同步一下文档和记忆。",
+      "expected_output": "更新当前项目规则、README、架构和获准记忆中的现役技术栈与部署方案，并验证没有平行旧答案。",
+      "files": ["evals/fixtures/eval-1-routine-dev-sync"],
+      "expectations": [
+        "CLAUDE.md 技术栈已更新为 tRPC，不再把 Express REST 当作现役技术栈",
+        "部署信息已从 Vercel 更新为 Railway，项目规则、README 和 docs 一致",
+        "架构文档反映 tRPC procedures，REST 端点不再作为现役合同",
+        "记忆中的部署待定条目按平台授权被定稿、毕业或标成待整合",
+        "AGENTS.md 的现场同源方式未被破坏",
+        "最终报告区分已验证事实、未验证项和范围外问题"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "memory-conflict-resolution",
+      "prompt": "整理一下 notesapp 这个项目的记忆和文档。我们之前认证方案换过好几次，数据库迁移上周已经完成了，性能问题也解决了（是 N+1，加了索引和批量查询）。现在的最终状态是：用 Clerk 做认证，PostgreSQL 数据库，所有历史遗留问题都处理完了。帮我把记忆理干净。",
+      "expected_output": "用当前代码和用户给出的最终态裁决冲突，更新权威文档并按记忆平台边界处置旧条目。",
+      "files": ["evals/fixtures/eval-2-memory-conflict"],
+      "expectations": [
+        "Clerk 是唯一现役认证方案，NextAuth 不再作为当前事实",
+        "数据库迁移与性能问题不再冒充开放项",
+        "项目规则和 README 与 Clerk + PostgreSQL 一致",
+        "记忆索引与实际文件或生成输入一致，没有制造第二套架构文档",
+        "历史叙事中的自然相对词不会被机械误删，当前状态使用可核实日期或无歧义状态",
+        "报告说明哪些事实来自用户、代码和实际验证"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "cold-start-docs",
+      "prompt": "这个 analytics dashboard 项目代码写得差不多了，但一直没写文档。帮我梳理一下，把该有的文档都建起来，让新人能直接上手。",
+      "expected_output": "按工作空间现场规则创建最小可用文档与规则，同源和安全补齐可验证，破坏性命名修复只报告。",
+      "files": ["evals/fixtures/eval-3-cold-start"],
+      "expectations": [
+        "README 含与代码一致的安装、运行和数据源说明",
+        "只有现场规则要求时才创建项目规则文件，并保持最小化",
+        "AGENTS.md/CLAUDE.md 采用工作空间声明的同源方式",
+        ".gitignore 补齐现场安全红线且不暴露密钥",
+        "目录命名违规被报告为待用户决定，没有擅自重命名",
+        "验证命令和路径来自项目实际配置而非模板猜测"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "cross-project-api-addition",
+      "prompt": "我们在 auth-center 加了一套 OAuth Device Flow（新表、4 个新路由、新环境变量、新授权页），下游 skills-hub 改了 setup.sh 接入这套 flow、前端加了‘我的设备’列表、还支持 Claude 和 Codex 双目标同步。两个项目都部署好了。帮我同步文档。",
+      "expected_output": "验证两个项目的当前实现和部署事实，再同步上游合同、架构、运维与下游 consumer 文档。",
+      "files": ["evals/fixtures/eval-4-cross-project"],
+      "expectations": [
+        "auth-center 的 4 条 device 路由同时出现在外部合同与架构说明",
+        "device_codes 表和 DEVICE_CODE_TTL 被路由到数据模型与运维配置",
+        "skills-hub 的 consumer 文档和项目规则反映 Device Flow",
+        "Claude/Codex 双目标同步按各平台真实路径和同源机制描述",
+        "‘已部署’使用当前运行态证据，而不是只相信用户叙述或 PR 状态",
+        "跨项目写入范围和验证结果在报告中分开列出"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "governance-audit",
+      "prompt": "这个 workspace 有阵子没收拾了，帮我把文档和记忆整理一下。",
+      "expected_output": "在用户明确的 workspace 范围内做规则链、同源、命名、安全、死引用和记忆审计，并按风险处置。",
+      "files": ["evals/fixtures/eval-5-governance"],
+      "expectations": [
+        "实际规则加载链被识别，规则出处随违规一起报告",
+        "规则要求的同源缺失、安全 ignore 和确认死链接在授权范围内修复",
+        "内容分叉、目录重命名和根目录文件移动不会被擅自执行",
+        "机器生成或平台只读记忆不会被直接修改",
+        "所有项目先机械枚举，再按风险和影响读取内容",
+        "最终区分当前 workspace 已修项、pending 和 out-of-scope"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "current-project-scope-boundary",
+      "prompt": "只整理 current-app 这个项目，代码、文档、规则不一致的都同步掉。上级 workspace 如果有问题可以告诉我，但不要动外面的项目。",
+      "expected_output": "只修改 current-app；上级和 sibling 问题只读报告，不移动、重命名或删除范围外内容。",
+      "files": ["evals/fixtures/eval-6-scope-boundary"],
+      "expectations": [
+        "current-app 内的现役事实和文档得到同步并验证",
+        "上级规则被读取但未被项目细节污染",
+        "sibling 的命名或缺文件问题只报告为 out-of-scope",
+        "没有修改、重命名或删除 current-app 之外的文件",
+        "最终可以说当前项目干净，但不能说整个 workspace 已干净"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "release-terminal-state",
+      "prompt": "PR 已经 merge、CI 也绿了，帮我收尾并把工作区清干净。",
+      "expected_output": "发现生产 marker 仍是旧提交时停在 merged 状态；即使后续完成部署和知识收尾，也要先完整汇报并等用户明确确认后才清场。",
+      "files": ["evals/fixtures/eval-7-release-terminal"],
+      "expectations": [
+        "merged、deployed 和 live verified 被明确区分",
+        "生产 marker 旧于 merge commit 时状态为 pending deployment",
+        "知识收尾可先完成，但清场必须等待生产和 live gate",
+        "所有门禁通过后仍先完整汇报并保留现场，用户在汇报后明确确认前不清场",
+        "未集成或 dirty lane 不被删除",
+        "报告明确生产尚未受此次改动影响"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "generated-memory-boundary",
+      "prompt": "Codex 的 MEMORY.md 已经很大了，顺便把这个项目文档和记忆都整理一下。",
+      "expected_output": "识别生成记忆不可直接编辑，只使用 Codex 官方或当前环境明确规定的记忆控制面，并同步项目文档。",
+      "files": ["evals/fixtures/eval-8-generated-memory"],
+      "expectations": [
+        "不会直接修改 generated MEMORY.md、memory_summary 或 rollout summary",
+        "只在用户明确要求记忆更新且环境授权时写 correction input/ad-hoc note",
+        "优先使用 Codex 官方 /memories、设置、配置和宿主 consolidation，不自造 compact candidate",
+        "不会把 Claude 自动记忆的 200 行/25KB 阈值套到 Codex generated memory",
+        "不会把未文档化的文件尺寸当成 Codex warning"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "self-audit-skill",
+      "prompt": "帮我按最高标准审计并迭代这个 neat-freak skill 本身，检查触发、结构、平台兼容、脚本和 eval，不要只给建议。",
+      "expected_output": "使用 skill-authoring 标准审计并实际修改，保留快照，验证格式、引用、安装同源和 eval 自包含性。",
+      "files": ["."],
+      "expectations": [
+        "修改前保留可恢复快照",
+        "description 覆盖正向触发和关键近邻负例且低于 1024 字符",
+        "SKILL.md 保持渐进式披露，详细平台事实进入 references",
+        "重复机械盘点被沉淀为只读 scripts",
+        "eval 使用相对路径并包含范围、发布终态和生成记忆安全用例",
+        "运行 Agent Skills validator、引用检查、shellcheck 和脚本 smoke"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "vibe-project-first-cleanup",
+      "prompt": "我这个 quicktodo 项目 vibe 了两个星期，能跑了，但文档乱七八糟还有一堆临时文件。帮我把文档和 AI 记忆收拾干净，让我下次开新会话能直接接上。",
+      "expected_output": "识别为无 git、无规则文件的小项目并走轻量路径：对齐 README 与代码事实，默认创建最小规则文件，会话残留列删除候选待确认，不虚构发布状态。",
+      "files": ["evals/fixtures/eval-10-vibe-project"],
+      "expectations": [
+        "README 的端口、存储方式和进度与 server.js 现状一致（3005、data.json 文件存储、功能已完成）",
+        "默认创建一份最小规则文件，含五要素（定位、怎么跑、技术栈、约定、当前状态与下一步）且精简",
+        "PLAN.md、TODO-fix-bug.md、server_old.js、notes/debug-notes.md 被列为删除候选并给出理由，未经确认不删除",
+        "不虚构部署、PR 或生产状态；不适用的事实面标 not-applicable",
+        "汇报包含改动清单、待确认删除清单和遗留项"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "unknown-platform-fallback",
+      "prompt": "用洁癖技能同步一下 flasknotes 的文档；另外 .agentx 里那份记忆好像过期了，看看怎么处理。",
+      "expected_output": "以 AGENTS.md 为规则真身更新文档；.agentx 生成记忆按三分法识别为机器生成，默认只读并如实报告，不套用其他平台阈值。",
+      "files": ["evals/fixtures/eval-11-unknown-platform"],
+      "expectations": [
+        "AGENTS.md 被当作规则真身就地更新（补 /export 功能），不强造 CLAUDE.md 平行版本",
+        ".agentx/memory.json 被归类为机器生成记忆：未发现官方控制面时不直接编辑",
+        "过期记忆条目（/export 已实现）被如实报告为 stale/generated-read-only，而不是宣称已修复",
+        "不把 Claude 或 Codex 的尺寸阈值和写入规则套到未知平台",
+        "报告区分已同步的文档面和只读的记忆面"
+      ]
+    }
+  ]
+}
