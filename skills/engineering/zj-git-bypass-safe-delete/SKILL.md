@@ -177,9 +177,38 @@ cat /tmp/my-message.txt | git commit -F -
 
 This bypasses the `-F` path entirely. The shim doesn't intercept stdin reads.
 
+### Symptom D — `git rm <path>` trashes the path's entire ancestor tree (worktree loss)
+
+You run `git rm docs/plans/some-file.json` (even with `env -u NODE_OPTIONS`), it prints `rm 'docs/plans/some-file.json'` and exits 0 — but the **whole ancestor directory tree** (`docs/` including subdirs you never touched) lands in the Recycle Bin. `git status` shows unstaged ` D` for files you never modified; `ls docs/` returns ENOENT.
+
+**Root cause**: git's directory pruning after unlink gets routed through the shim's trash path, and the trash operation is applied to ancestor dirs that are *not* actually empty — the shim recursively trashes live content. `env -u NODE_OPTIONS` does **not** prevent this (it happens below the node-injection layer).
+
+**Evidence** (2026-08-15 incident): `$Recycle.Bin/<SID>/` metadata files (`$I*`, UTF-16LE) listed three same-minute items: `...ZAgentic\docs`, `...ZAgentic\docs\plans`, `...ZAgentic\docs\plans\roadmap-khazix-wave.json`. The `$R*` counterpart dir contained `designs/`, `zj-adr/`, `zj-retros/` — untouched content.
+
+**Fix**:
+```bash
+git restore <dir>          # recovers every git-tracked file (objects are untouched)
+```
+Untracked new files lost this way must be rewritten from elsewhere (context, backup). Zero git-history loss — only the worktree was hit.
+
+**Prevention**: after **any** `git rm`, immediately `ls` the parent tree and `git status --short`. If files show unexpected ` D`, restore before doing anything else. For single-file removals inside shared dirs, `git rm --cached` + `mv` to a backup dir is the shim-proof route.
+
+### Symptom E — `.git/refs/remotes/origin/` vanishes right after `fetch` / `update-ref`
+
+`git fetch` prints `e41b9e6..91fd3aa main -> origin/main` (success), but `git log origin/main` still resolves to the **old** commit and `git status -sb` says `[ahead N]`. Inspection: `.git/refs/remotes/origin/` doesn't exist; git is falling back to stale `packed-refs`. Worse, `git update-ref refs/remotes/origin/main <sha>` can write the loose ref and have the directory vanish **within the same command chain**.
+
+**Ground truth**: `git ls-remote origin main` — trust this over local refs after any fetch/push.
+
+**Fix that actually sticks** — write the loose ref by hand in a standalone Bash invocation, with **no git command after it in the same chain**:
+```bash
+mkdir -p .git/refs/remotes/origin
+echo -n "<correct-sha>" > .git/refs/remotes/origin/main
+```
+Then verify in a *separate* invocation (`git log --oneline origin/main -2`). If a git command runs in the same chain, the freshly written ref dir can be trashed again.
+
 ### Prevention
 
-All three symptoms disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. They only reappear when you fall back to plain `git` for `fetch`, `commit -F`, or direct ref writes. If you must do one of those by hand, expect to hit one of the three symptoms above and apply the corresponding fix.
+Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/E are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification: `ls` the parent tree + `git status --short` after every `git rm`, and `git ls-remote` (not local refs) as ground truth after every `fetch`/`push`. If you must do one of those by hand, expect to hit one of the five symptoms above and apply the corresponding fix.
 
 ## Files
 
