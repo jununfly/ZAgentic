@@ -100,7 +100,7 @@ Do NOT conflate with:
 
 - `source-skills-list` (transient report — no commit)
 - `base-skills-list` (transient report — no commit)
-- `docs/plans/roadmap-skillpairs.json` (the plan, persisted via zj-roadmap-driven)
+- `docs/plans/roadmap-<wave>.json` (the per-wave plan, persisted via zj-roadmap-driven; e.g. `roadmap-khazix-wave.json` — past waves live in git history after close-out)
 
 ## Output
 

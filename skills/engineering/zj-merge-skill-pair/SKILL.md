@@ -123,6 +123,6 @@ zj-merge-skills-wave  (plan layer for a whole wave)
 - `skills/engineering/zj-agents-init/domain.md` (if domain terms changed)
 - `ZJ-CONTEXT.md` (if domain terms changed)
 - `docs/zj-adr/*.md` (if ADR refs old name)
-- `docs/plans/roadmap-skillpairs.json` (when human runs `update` after)
+- `docs/plans/roadmap-<wave>.json` (the active wave's roadmap JSON, when human runs `update` after)
 
 Never touches: scratch dirs, source dirs (read-only), `~/.workbuddy/` (out of repo).

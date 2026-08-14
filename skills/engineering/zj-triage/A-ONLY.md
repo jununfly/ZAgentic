@@ -64,5 +64,5 @@ All three rules are hard requirements, not preferences. PRs that pass B's flow b
 ## What is *not* covered here
 
 - **WorkBuddy mcp tools** (70+ connectors like agent-mail / mcp__weixinpay / mcp__sheetagent) — triage should be aware they exist but doesn't need to refuse PRs that ignore them. Note in the brief; let the maintainer decide.
-- **Roadmap JSON edits** — that's governed by `roadmap_cli.py`; if a PR touches `docs/plans/roadmap-skillpairs.json`, note that `roadmap_cli.py` should be used (mention, don't reject).
+- **Roadmap JSON edits** — that's governed by `roadmap_cli.py`; if a PR touches a roadmap JSON (`docs/plans/roadmap-*.json`), note that `roadmap_cli.py` should be used (mention, don't reject).
 - **Personal/ bucket skills** — `personal/` skills don't appear in `plugin.json` per `AGENTS.md`; Rule 1 doesn't apply to them. But Rule 2 and Rule 3 still do.

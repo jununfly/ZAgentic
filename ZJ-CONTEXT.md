@@ -49,8 +49,9 @@ _Avoid_: rename-in-place, dir-only rename
 ### Roadmap
 
 **Roadmap**:
-A tree of `Node`s persisted as `docs/plans/roadmap-skillpairs.json`, with a
-lightweight Markdown view rendered into `docs/plans/roadmap-skillpairs.md`.
+A tree of `Node`s persisted as a per-wave JSON under `docs/plans/roadmap-*.json`
+(e.g. `roadmap-khazix-wave.json`; past waves live in git history after close-out),
+with an optional lightweight Markdown view rendered alongside via `render`.
 Two senses: (i) the JSON tree itself, (ii) the discipline of "track work as a
 shared tree with a human in the loop." In this repo, both senses are governed
 by `zj-roadmap-driven`.
