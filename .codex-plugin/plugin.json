@@ -1,7 +1,7 @@
 {
   "name": "zagentic",
   "version": "0.1.0",
-  "description": "Jununfly's composable agent skills for real engineering workflows.",
+  "description": "Jununfly's composable agent skills for engineering, evidence-backed research, and delivery workflows.",
   "author": {
     "name": "Jununfly",
     "url": "https://github.com/jununfly"
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "ZAgentic",
     "shortDescription": "Composable skills for human-agent engineering workflows",
-    "longDescription": "ZAgentic packages Jununfly's engineering and productivity skills for planning, triage, TDD, diagnosis, roadmap-driven work, and handoffs.",
+    "longDescription": "ZAgentic packages Jununfly's engineering and productivity skills for planning, evidence-backed research, triage, TDD, diagnosis, roadmap-driven work, and handoffs.",
     "developerName": "Jununfly",
     "category": "Developer Tools",
     "capabilities": [
@@ -33,7 +33,8 @@
     "defaultPrompt": [
       "Grill me on this implementation plan",
       "Break this plan into issues",
-      "Set up a roadmap for this project"
+      "Set up a roadmap for this project",
+      "Research these repositories and draft a cited comparison"
     ],
     "brandColor": "#2563EB",
     "screenshots": []

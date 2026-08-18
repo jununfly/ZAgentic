@@ -1,0 +1,121 @@
+{
+  "schema": "zj-research-report-ir/v1",
+  "family": "zj-draft/v1",
+  "title": "百人技术团队的 Harness Engineering 选型",
+  "summary": "在当前 commit-pinned 证据范围内，deepseek-harness 最适合作为百人团队的组织级底座：它把插件组合、持久事实、策略、沙箱和文档治理放在同一工程体系中。pi 更适合需要轻量内核与高自由度扩展的小团队或嵌入式场景；awesome-agent-harness 是生态地图和候选发现源，不是可直接承担组织级运行时职责的 harness。",
+  "ledgerFingerprint": "cc685fbc8e5bf7289198d5dd245296e783bcb365142eb85f91fc763a45d6f8a6",
+  "concepts": [],
+  "diagrams": [],
+  "candidates": [
+    {
+      "repository": { "owner": "earendil-works", "name": "pi" },
+      "stars": 92808,
+      "topicMatch": 7,
+      "evidenceIds": ["307daf860132117dc8cc8973", "ad95f3df564a808abbf6e156", "f0712382de15af63da2aa15f"]
+    },
+    {
+      "repository": { "owner": "AutoJunjie", "name": "awesome-agent-harness" },
+      "stars": 513,
+      "topicMatch": 7,
+      "evidenceIds": ["61acbb432e472923f552394f", "627882abb304c0f3eadcab74"]
+    },
+    {
+      "repository": { "owner": "deepseek-ai", "name": "deepseek-harness" },
+      "stars": 156898,
+      "topicMatch": 14,
+      "evidenceIds": ["5034ceda2dc527928700103e", "3c73f886e995596623c209d6", "4ecd9540b448e53894a97d08", "55fb75382d79c825de6dc378", "bcc4b876af4c260252c58d19"]
+    }
+  ],
+  "cards": [],
+  "claims": [
+    {
+      "id": "pi-extension-model",
+      "text": "pi 提供项目级与全局 extension 自动发现，并允许注册工具、拦截事件和自定义 compaction，适合快速定制 agent 行为。",
+      "critical": true,
+      "evidenceIds": ["307daf860132117dc8cc8973"]
+    },
+    {
+      "id": "pi-governance-hooks",
+      "text": "pi 的治理主要通过 extension hook 组合实现，官方示例覆盖危险命令确认、路径保护和 Git checkpoint。",
+      "critical": true,
+      "evidenceIds": ["f0712382de15af63da2aa15f", "ca814386180f42085e8b9fc7"]
+    },
+    {
+      "id": "pi-evals",
+      "text": "pi 已提供基于真实 AgentSession 的 model-backed behavioral eval harness，可比较 prompt、tool、skill、model 和 harness 配置。",
+      "critical": true,
+      "evidenceIds": ["ad95f3df564a808abbf6e156"]
+    },
+    {
+      "id": "awesome-landscape",
+      "text": "awesome-agent-harness 的核心产物是 agent harness landscape report 与生态分层资料，而不是一个可部署的 agent runtime。",
+      "critical": true,
+      "evidenceIds": ["61acbb432e472923f552394f", "627882abb304c0f3eadcab74"]
+    },
+    {
+      "id": "dsh-plugin-composition",
+      "text": "deepseek-harness 把模型适配器、工具注册表、session log 与 agent loop 都作为 Cordis plugin，并通过 profile、bundle 和 patch layer 组装部署。",
+      "critical": true,
+      "evidenceIds": ["5034ceda2dc527928700103e", "3c73f886e995596623c209d6"]
+    },
+    {
+      "id": "dsh-governance",
+      "text": "deepseek-harness 用仓库级 AGENTS.md、Agent Notes 和文档门禁承载可执行规则、架构决策与持续维护约定。",
+      "critical": true,
+      "evidenceIds": ["ac4868213c4cc614e45dffcb", "0698bced22fc7caa841cf470", "3a03b460826a51ed6dd2ce87"]
+    },
+    {
+      "id": "dsh-sandbox",
+      "text": "deepseek-harness 在架构层显式区分 filesystem policy 与 process sandbox provider，并要求 consumer 在 spawn 前包装 argv。",
+      "critical": true,
+      "evidenceIds": ["4ecd9540b448e53894a97d08", "00f901fe777a56e3b61a51a0"]
+    },
+    {
+      "id": "dsh-evaluation",
+      "text": "deepseek-harness 的 Web 测试使用真实 HTTP 与 Chromium 驱动完整组合，并把测试机制放在最低所属文档层级。",
+      "critical": true,
+      "evidenceIds": ["55fb75382d79c825de6dc378", "5eaaa9de18dc25ce52b762d6"]
+    },
+    {
+      "id": "dsh-team-adoption",
+      "text": "deepseek-harness 用 bundle、preset、package README 与双语文档约定把运行组合和团队知识治理标准化。",
+      "critical": true,
+      "evidenceIds": ["e90fef311a528345c088e24c", "bcc4b876af4c260252c58d19", "ae3b4aaed07561bb26d5421e"]
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "runtime-depth",
+      "text": "pi 与 deepseek-harness 都是实际运行时，但 pi 的优势集中在轻量 extension 与快速定制；deepseek-harness 覆盖组合、持久事实、策略、沙箱与治理，更接近组织级平台。",
+      "claimIds": ["pi-extension-model", "pi-governance-hooks", "dsh-plugin-composition", "dsh-sandbox", "dsh-governance"]
+    },
+    {
+      "id": "evaluation-readiness",
+      "text": "pi 已具备 model-backed behavioral eval；deepseek-harness 同时展示真实组合测试和文档／规则治理。两者都可评测，但 deepseek-harness 的组织控制面更完整。",
+      "claimIds": ["pi-evals", "dsh-evaluation", "dsh-team-adoption"]
+    },
+    {
+      "id": "catalog-role",
+      "text": "awesome-agent-harness 适合作为候选发现与行业地图输入，不应与可执行 runtime 按同一交付责任比较。",
+      "claimIds": ["awesome-landscape"]
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "overall-choice",
+      "text": "百人技术团队优先选择 deepseek-harness 作为组织级 Harness Engineering 基座；先以少量 preset 和强制治理规则落地，再逐步扩展 provider 与工具组合。",
+      "comparisonIds": ["runtime-depth", "evaluation-readiness"]
+    },
+    {
+      "id": "conditional-pi",
+      "text": "当目标是小团队快速实验、嵌入现有产品或最大化 extension 自由度时，选择 pi；需要额外建设集中策略、发布治理和组织级隔离基线。",
+      "comparisonIds": ["runtime-depth", "evaluation-readiness"]
+    },
+    {
+      "id": "use-awesome-as-input",
+      "text": "保留 awesome-agent-harness 作为持续扫描生态与补充候选的资料源，不把它作为 runtime 选型终点。",
+      "comparisonIds": ["catalog-role"]
+    }
+  ],
+  "metrics": []
+}

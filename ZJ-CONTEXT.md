@@ -46,6 +46,30 @@ change (mv the dir, update frontmatter, update all references), verified by grep
 name down to zero repo-wide (append-only history logs exempt).
 _Avoid_: rename-in-place, dir-only rename
 
+**Evidence Compiler**:
+The versioned research component that accepts one shared comparison brief, fixes every repository to a commit, performs bounded source reads, and returns a **Sealed ledger**. `zj-research` reaches it through the **Research CLI protocol** rather than reproducing collection logic in a prompt.
+_Avoid_: research agent, GitHub scraper, report generator
+
+**Sealed ledger**:
+An immutable `zj-verified-evidence-ledger/v1` result containing **Canonical evidence**, uncovered repository/criterion pairs, navigation diagnostics, and the normalized brief fingerprint. Reports may cite it but cannot add evidence to it.
+_Avoid_: notes, findings file, source dump
+
+**Canonical evidence**:
+A source excerpt read from a repository at a fixed commit, identified by repository, commit, path, URL, and Evidence ID. It can support a report claim; **Derived navigation** cannot.
+_Avoid_: search result, hint, summary
+
+**Derived navigation**:
+Non-authoritative candidate paths produced by DeepWiki or deterministic heuristics. It controls where the Evidence Compiler reads next but never becomes report evidence.
+_Avoid_: evidence, citation, source
+
+**Report IR**:
+The versioned `zj-research-report-ir/v1` graph linking Evidence IDs to claims, comparisons, metrics, diagrams, and recommendations. The compiler validates references before producing the Markdown fact source.
+_Avoid_: Markdown template, report outline, prose draft
+
+**Research CLI protocol**:
+The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and the versioned standalone ZHarness compiler. Missing or incompatible executables fail loudly; there is no prompt-only fallback for technical comparisons.
+_Avoid_: shell wrapper, internal API, compatibility mode
+
 ### Roadmap
 
 **Roadmap**:

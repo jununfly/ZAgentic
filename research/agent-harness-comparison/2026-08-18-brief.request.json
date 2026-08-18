@@ -1,0 +1,51 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "Which harness engineering approach best fits a one-hundred-person technical team?",
+    "criteria": [
+      {
+        "id": "architecture",
+        "question": "How is the harness decomposed and extended?",
+        "critical": true,
+        "keywords": ["plugin", "architecture", "agent"]
+      },
+      {
+        "id": "governance",
+        "question": "How are policies, permissions, and team-wide conventions enforced?",
+        "critical": true,
+        "keywords": ["policy", "permission", "hook"]
+      },
+      {
+        "id": "evaluation",
+        "question": "How are behavior quality and regressions evaluated?",
+        "critical": true,
+        "keywords": ["evaluation", "test", "benchmark"]
+      },
+      {
+        "id": "team-adoption",
+        "question": "What supports repeatable adoption across a large engineering team?",
+        "critical": true,
+        "keywords": ["team", "workflow", "preset"]
+      },
+      {
+        "id": "sandbox",
+        "question": "How is model-generated execution isolated and controlled?",
+        "critical": true,
+        "keywords": ["sandbox", "isolation", "permission"]
+      }
+    ],
+    "repositories": [
+      { "owner": "earendil-works", "name": "pi" },
+      { "owner": "AutoJunjie", "name": "awesome-agent-harness" },
+      { "owner": "deepseek-ai", "name": "deepseek-harness" }
+    ],
+    "policyVersion": "harness-team-selection/v1",
+    "budget": {
+      "maxFiles": 30,
+      "maxBytes": 1500000,
+      "deadlineMs": 180000
+    }
+  }
+}

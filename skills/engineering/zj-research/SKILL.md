@@ -1,12 +1,23 @@
 ---
 name: zj-research
-description: Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo. Use when the user wants a topic researched, docs or API facts gathered, or reading legwork delegated to a background agent.
+description: Investigate a question against high-trust primary sources and capture cited findings in the repo. Use for documentation or API reading legwork and for multi-repository technical comparisons that need commit-pinned GitHub evidence.
 ---
 
-Spin up a **background agent** to do the research, so you keep working while it reads.
+Choose one branch.
 
-Its job:
+## Primary-source reading
 
-1. Investigate the question against **primary sources** — official docs, source code, specs, first-party APIs — not a secondary write-up of them. Follow every claim back to the source that owns it.
-2. Write the findings to a single Markdown file, citing each claim's source.
-3. Save it where the repo already keeps such notes; match the existing convention, and if there is none, put it somewhere sensible and say where.
+Spin up a background agent so the parent can keep working. Give it the question and output path, but not an intended answer. It must follow every claim to official documentation, source code, a specification, or a first-party API; write one cited Markdown findings file; and match the repository's existing research-note location.
+
+Completion criterion: every non-trivial finding names a re-verifiable primary source, and the parent reports the saved path.
+
+## Multi-repository technical comparison
+
+Read [references/research-cli.md](references/research-cli.md), then:
+
+1. Write one complete `zj-research-brief/v1` request with the same criteria for every repository. Include explicit repositories, deterministic GitHub discovery, or both. Separate popularity from topic relevance.
+2. Run `python <this-skill>/scripts/research_cli.py request.json --output ledger-response.json`.
+3. Save the response's sealed ledger beside the findings. Use only its canonical evidence for GitHub claims.
+4. Write the cited findings from the ledger. Each `unknownCriteria` entry remains unknown; it is not a negative capability claim.
+
+Completion criterion: every selected repository is pinned to a commit, stars and topic match come from the sealed ledger, each claim traces to an Evidence ID, and every uncovered repository/criterion pair is explicit.

@@ -1,0 +1,108 @@
+{
+  "cases": [
+    {
+      "request": {
+        "protocol": "zj-research-cli/v1",
+        "operation": "compile-report",
+        "report": {
+          "schema": "zj-research-report-ir/v1",
+          "family": "zj-draft/v1",
+          "title": "Golden contract",
+          "summary": "Shared compiler output.",
+          "ledgerFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "concepts": [],
+          "diagrams": [],
+          "candidates": [],
+          "cards": [],
+          "claims": [],
+          "comparisons": [],
+          "recommendations": [],
+          "metrics": []
+        },
+        "ledger": {
+          "schema": "zj-verified-evidence-ledger/v1",
+          "compilerVersion": "research/v1",
+          "briefFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "policyVersion": "v1",
+          "observedAt": "2026-08-18T00:00:00.000Z",
+          "repositories": [],
+          "candidates": [],
+          "evidence": [],
+          "unknownCriteria": [],
+          "navigation": [],
+          "collection": { "filesRead": 0, "sourceBytesRead": 0, "durationMs": 0, "cacheHit": false }
+        }
+      },
+      "expected": {
+        "protocol": "zj-research-cli/v1",
+        "operation": "compile-report",
+        "result": {
+          "markdown": "# Golden contract\n\n## 1. Executive summary\nShared compiler output.\n\n\n## 2. Key findings\n\n## 3. Analysis & synthesis\n## 4. Information gaps & next steps\n| Gap | Nature | Next step |\n|---|---|---|\n\n## 6. Source list\n",
+          "reportHash": "73a64f20b9bcc61afde100e65e056bd9adaf2c2aea2f82988d570be944a9f109"
+        }
+      }
+    },
+    {
+      "request": {
+        "protocol": "zj-research-cli/v1",
+        "operation": "evaluate",
+        "report": {
+          "schema": "zj-research-report-ir/v1",
+          "family": "zj-draft/v1",
+          "title": "Golden contract",
+          "summary": "Shared compiler output.",
+          "ledgerFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "concepts": [],
+          "diagrams": [],
+          "candidates": [],
+          "cards": [],
+          "claims": [],
+          "comparisons": [],
+          "recommendations": [],
+          "metrics": []
+        },
+        "ledger": {
+          "schema": "zj-verified-evidence-ledger/v1",
+          "compilerVersion": "research/v1",
+          "briefFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "policyVersion": "v1",
+          "observedAt": "2026-08-18T00:00:00.000Z",
+          "repositories": [],
+          "candidates": [],
+          "evidence": [],
+          "unknownCriteria": [],
+          "navigation": [],
+          "collection": { "filesRead": 0, "sourceBytesRead": 0, "durationMs": 0, "cacheHit": false }
+        },
+        "publication": {
+          "reportHash": "73a64f20b9bcc61afde100e65e056bd9adaf2c2aea2f82988d570be944a9f109",
+          "markdownPath": "/tmp/report.md",
+          "htmlPath": "/tmp/report.html",
+          "publishCount": 1
+        }
+      },
+      "expected": {
+        "protocol": "zj-research-cli/v1",
+        "operation": "evaluate",
+        "result": {
+          "reportHash": "73a64f20b9bcc61afde100e65e056bd9adaf2c2aea2f82988d570be944a9f109",
+          "reportFamily": "zj-draft/v1",
+          "compilerVersion": "research/v1",
+          "healthy": true,
+          "correctness": {
+            "revisionPinned": true,
+            "provenanceComplete": true,
+            "criticalClaimsEvidence": true,
+            "scoringAxesSeparated": true,
+            "publishExactlyOnce": true,
+            "receiptConsistent": true
+          },
+          "evidenceCount": 0,
+          "unknownCount": 0,
+          "navigationFailureCount": 0,
+          "collection": { "filesRead": 0, "sourceBytesRead": 0, "durationMs": 0, "cacheHit": false }
+        }
+      }
+    }
+  ]
+}

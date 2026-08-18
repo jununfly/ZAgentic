@@ -1,0 +1,29 @@
+{
+  "markdownPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/research/agent-harness-comparison/2026-08-18-skill-report.md",
+  "htmlPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/research/agent-harness-comparison/2026-08-18-skill-report.html",
+  "reportHash": "c25e804fca89872ccc299525eb5b15ba9eccfd9e723761b44ce59900b1f1f7dd",
+  "publishCount": 1,
+  "evaluation": {
+    "reportHash": "c25e804fca89872ccc299525eb5b15ba9eccfd9e723761b44ce59900b1f1f7dd",
+    "reportFamily": "zj-draft/v1",
+    "compilerVersion": "research/v1",
+    "healthy": true,
+    "correctness": {
+      "revisionPinned": true,
+      "provenanceComplete": true,
+      "criticalClaimsEvidence": true,
+      "scoringAxesSeparated": true,
+      "publishExactlyOnce": true,
+      "receiptConsistent": true
+    },
+    "evidenceCount": 70,
+    "unknownCount": 0,
+    "navigationFailureCount": 1,
+    "collection": {
+      "filesRead": 30,
+      "sourceBytesRead": 546588,
+      "durationMs": 46661,
+      "cacheHit": false
+    }
+  }
+}

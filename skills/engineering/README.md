@@ -17,7 +17,8 @@ Skills I use daily for code work.
 - **[zj-merge-skills-wave](./zj-merge-skills-wave/SKILL.md)** — Plan a whole merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, lays out a skill-pair plan as a roadmap subtree, delegates each pair to zj-merge-skill-pair.
 - **[zj-resolving-merge-conflicts](./zj-resolving-merge-conflicts/SKILL.md)** — Resolve in-progress git merge/rebase conflicts hunk by hunk, by intent traced to each side's primary source. Never `--abort`.
 - **[zj-roadmap-driven](./zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
-- **[zj-research](./zj-research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
+- **[zj-research](./zj-research/SKILL.md)** — Investigate primary sources or compile commit-pinned evidence for a multi-repository technical comparison.
+- **[zj-research-report](./zj-research-report/SKILL.md)** — Turn cited findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated decision draft.
 - **[zj-hv-analysis](./zj-hv-analysis/SKILL.md)** — 横纵分析法深度研究：纵轴追踪对象从诞生到当下的生命历程，横轴在当下截面与竞品系统对比，交叉产出洞察，最终输出 PDF 研究报告（源自 khazix-skills）。
 - **[zj-leader](./zj-leader/SKILL.md)** — 把一句话想法拆成 agent 能独立跑完的 /goal 任务书：先实测调研、一轮 ≤5 问、产出含验收与断点续跑的任务书，跑完由管理者角色验收（源自 khazix-skills）。
 - **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — 知识/治理收尾：把项目文档、规则文件、Agent 记忆和工作区残留与代码实际运行态对齐，让下一次会话从唯一现役答案开始（源自 khazix-skills，含 evals/）。
