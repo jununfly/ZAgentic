@@ -87,7 +87,10 @@ def bundled_command() -> list[str]:
                     invalid_kind = not member.isfile() and not member.isdir()
                     if path.is_absolute() or ".." in path.parts or member.issym() or member.islnk() or invalid_kind:
                         raise RuntimeError("bundled compiler artifact contains an unsafe path")
-                archive.extractall(temporary)
+                if hasattr(tarfile, "data_filter"):
+                    archive.extractall(temporary, filter="data")
+                else:
+                    archive.extractall(temporary)
             if not (temporary / "lib" / "bin.js").is_file():
                 raise RuntimeError("bundled compiler artifact has no executable")
             try:
