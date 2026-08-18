@@ -1,15 +1,22 @@
 # Shared research compiler
 
-Use the ZHarness `dsh-research` executable for technical GitHub evidence and Report IR compilation. The adapter accepts only `zj-research-cli/v1` and fails loudly when the executable is missing or incompatible.
+Use the commit-pinned ZHarness compiler artifact for technical GitHub evidence and Report IR compilation. The adapter accepts only `zj-research-cli/v1` and fails loudly when the artifact is missing, modified, or incompatible. This skill remains an independent workflow entry alongside the hosted Research Agent; both consume the same compiler and evaluation facts.
 
 Resolve the executable in this order:
 
 1. `ZJ_RESEARCH_CLI`, for a local ZHarness build during development.
-2. `dsh-research` on `PATH`, for the released standalone artifact.
+2. `artifacts/compiler-lock.json`, whose SHA-256 pins the bundled compiler to one ZHarness commit.
+
+The adapter verifies the artifact hash before use and extracts it to the user cache under a hash-named directory. `ZJ_RESEARCH_COMPILER_CACHE` changes that cache root. Build ZHarness normally, then update the pinned artifact mechanically from a clean `packages/` tree:
+
+```sh
+pnpm install && pnpm run build
+python scripts/update-research-compiler-artifact.py /path/to/ZHarness
+```
 
 Each adapter invocation is bounded to 300 seconds. Set `ZJ_RESEARCH_CLI_TIMEOUT_SECONDS` to a positive number when a collection brief deliberately has a longer deadline.
 
-Run `python scripts/research_cli.py --check` before creating artifacts. Its failure message is the setup instruction; the skill has no Markdown-only compatibility path.
+Run `python scripts/research_cli.py --check` before creating reports. Its failure message identifies the invalid lock, missing artifact, hash mismatch, or protocol incompatibility; the skill has no Markdown-only compatibility path.
 
 ## Operations
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Verify the ZAgentic adapter against a configured ZHarness research CLI."""
 
+import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -15,8 +17,6 @@ FIXTURE = Path(__file__).with_name("golden-contract.json")
 
 
 def main() -> int:
-    if not os.environ.get("ZJ_RESEARCH_CLI"):
-        raise RuntimeError("set ZJ_RESEARCH_CLI to the ZHarness dsh-research command")
     run([sys.executable, str(ADAPTER), "--check"])
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory(prefix="zj-research-contract-") as directory:
@@ -76,8 +76,39 @@ def main() -> int:
         )
         if bounded.returncode == 0 or "must be a positive number" not in bounded.stderr:
             raise AssertionError("adapter accepted a non-positive timeout")
-    print("zj-research golden contract: 5 cases passed")
+        verify_artifact_failures(root)
+    print("zj-research golden contract: 7 cases passed")
     return 0
+
+
+def verify_artifact_failures(root: Path) -> None:
+    spec = importlib.util.spec_from_file_location("research_cli_contract", ADAPTER)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("could not load research adapter")
+    adapter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(adapter)
+    source = ROOT / "artifacts"
+    copied = root / "artifacts"
+    shutil.copytree(source, copied)
+    adapter.ARTIFACTS = copied
+    lock = json.loads((copied / "compiler-lock.json").read_text(encoding="utf-8"))
+    artifact = copied / lock["artifact"]
+    artifact.write_bytes(artifact.read_bytes() + b"tampered")
+    try:
+        adapter.command()
+    except RuntimeError as error:
+        if "SHA-256 mismatch" not in str(error):
+            raise
+    else:
+        raise AssertionError("adapter accepted a tampered compiler artifact")
+    artifact.unlink()
+    try:
+        adapter.command()
+    except RuntimeError as error:
+        if "artifact is unavailable" not in str(error):
+            raise
+    else:
+        raise AssertionError("adapter accepted a missing compiler artifact")
 
 
 def run(command: list[str]) -> None:

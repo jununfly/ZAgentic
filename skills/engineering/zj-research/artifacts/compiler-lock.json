@@ -1,0 +1,9 @@
+{
+  "schema": "zj-research-compiler-lock/v1",
+  "repository": "https://github.com/jununfly/ZHarness",
+  "commit": "c75d466055f993328a903436c67830de1667a0ca",
+  "protocol": "zj-research-cli/v1",
+  "artifact": "dsh-research-cli-c75d466.tgz",
+  "sha256": "23d2be622c2baeb7ce4d028cd7252cb3fe7b154bcca28357051025a873c83ecc",
+  "minimumNodeMajor": 22
+}

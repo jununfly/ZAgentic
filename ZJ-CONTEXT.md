@@ -70,6 +70,10 @@ _Avoid_: Markdown template, report outline, prose draft
 The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and the versioned standalone ZHarness compiler. Missing or incompatible executables fail loudly; there is no prompt-only fallback for technical comparisons.
 _Avoid_: shell wrapper, internal API, compatibility mode
 
+**Compiler artifact lock**:
+The `zj-research-compiler-lock/v1` record that fixes the bundled Evidence Compiler to one ZHarness commit and SHA-256. ZAgentic verifies it before extracting the compiler into a hash-named user cache; `ZJ_RESEARCH_CLI` is the explicit local-development override.
+_Avoid_: latest compiler, PATH fallback, vendored source
+
 ### Roadmap
 
 **Roadmap**:
