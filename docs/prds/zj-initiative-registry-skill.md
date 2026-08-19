@@ -81,6 +81,8 @@ Skill 执行本地 schema 校验、三层关系校验、ID 唯一性校验、路
 
 Skill 对已登记的 Initiative 仓库执行只读检查，报告被删除的引用、未登记的 PRD/Plan、仓库迁移、默认分支变化和 Spec/Plan 归属失效。漂移报告不自动修改 Registry。
 
+Registry control-plane 文件可以在 `registry.config.json` 中以带理由的 `excludedPaths` 显式排除。排除项不是普通 Plan Node，不进入全局三层导航，也不产生未登记文件 warning；validator 会校验排除项的 Initiative、路径、理由以及与已登记路径的互斥关系。
+
 ### Closeout check
 
 Skill 对已登记的 roadmap Plan 执行只读 closeout 检查。Plan 的全部节点完成时，Skill 提醒 Human 将临时材料沉淀为 durable 文档、更新必要的 Registry 导航并重新生成校验；Plan 被阻塞时，Skill 提醒 Human 先完成决策。checkout 或源文件不可用时报告 warning，不推断完成。该检查不删除 Registry 条目、不压缩历史，也不修改 Initiative 仓库。

@@ -46,6 +46,7 @@ The wrapper delegates to the versioned scripts in the Registry repository. Run `
 - Paths are repository-relative and contain no device-local absolute paths.
 - Plan status, decisions, and focus stay in the Plan JSON and are managed by `zj-roadmap-driven`.
 - Broken registered references are errors; unregistered repository documents are warnings.
+- Registry control-plane files may be explicitly excluded with a reason in `registry.config.json`; excluded paths are not Plan Nodes and do not produce drift warnings.
 - Remote movement, dirty publication state, validation failure, or ambiguous ownership stops publication.
 - Credentials stay in the user's Git/GitHub credential store and never enter Registry files or logs.
 
