@@ -5,6 +5,8 @@ Skills are organized into bucket folders under `skills/`:
 - `misc/` — kept around but rarely used
 - `personal/` — tied to my own setup, not promoted
 
+Before adding, moving, or removing an Initiative, spec, or roadmap plan in `docs/plans/global-initiative-roadmap.json`, read [its maintenance rules](docs/plans/global-initiative-roadmap.agent.md); the global index uses a fixed three-level model that differs from `zj-roadmap-driven` execution roadmaps.
+
 Every skill in `engineering/`, `productivity/`, or `misc/` must have a reference in the top-level `README.md` and an entry in `.codex-plugin/plugin.json`. Skills in `personal/` must not appear in either.
 
 Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.

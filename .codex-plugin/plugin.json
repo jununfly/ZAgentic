@@ -13,6 +13,7 @@
     "agent-skills",
     "engineering",
     "productivity",
+    "initiative-registry",
     "roadmap",
     "tdd",
     "triage"
@@ -34,6 +35,7 @@
       "Grill me on this implementation plan",
       "Break this plan into issues",
       "Set up a roadmap for this project",
+      "Register this project in my shared Initiative registry",
       "Research these repositories and draft a cited comparison"
     ],
     "brandColor": "#2563EB",

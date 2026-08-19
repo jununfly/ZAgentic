@@ -1,0 +1,206 @@
+{
+  "$schema": "zj-global-initiative-roadmap/v1",
+  "title": "Global Initiative Roadmap",
+  "description": "Cross-repository navigation from initiatives to owned specs and executable roadmap plans.",
+  "initiatives": [
+    {
+      "id": "zharness",
+      "type": "initiative",
+      "label": "ZHarness",
+      "path": "../../../ZHarness",
+      "specs": [
+        {
+          "id": "zharness-federated-context",
+          "type": "spec",
+          "label": "Federated Context",
+          "path": "../../../ZHarness/docs/prds/federated-context.md",
+          "plans": [
+            {
+              "id": "zharness-federated-context-implementation",
+              "type": "plan",
+              "label": "Federated Context implementation roadmap",
+              "path": "../../../ZHarness/docs/plans/federated-context-roadmap.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zagentic",
+      "type": "initiative",
+      "label": "ZAgentic",
+      "path": "../..",
+      "specs": [
+        {
+          "id": "zagentic-initiative-registry-skill",
+          "type": "spec",
+          "label": "zj-initiative-registry Skill",
+          "path": "../../docs/prds/zj-initiative-registry-skill.md",
+          "plans": [
+            {
+              "id": "zagentic-initiative-registry-implementation",
+              "type": "plan",
+              "label": "zj-initiative-registry Skill implementation",
+              "path": "../../docs/plans/zj-initiative-registry-roadmap.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zagentic-loop",
+      "type": "initiative",
+      "label": "ZAgenticLoop",
+      "path": "../../../ZAgenticLoop",
+      "specs": [
+        {
+          "id": "zagentic-loop-opn-product-blueprint",
+          "type": "spec",
+          "label": "OPN product blueprint",
+          "path": "../../../ZAgenticLoop/docs/prds/opn-product-blueprint.md",
+          "plans": [
+            {
+              "id": "zagentic-loop-graph-engineering-integration",
+              "type": "plan",
+              "label": "Loop graph engineering integration",
+              "path": "../../../ZAgenticLoop/docs/plans/loop-graph-engineering-integration-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-cross-device-transport",
+              "type": "plan",
+              "label": "Cross-device transport next milestone",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-cross-device-transport-next-milestone-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-development-runtime-artifact",
+              "type": "plan",
+              "label": "Development runtime artifact",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-development-runtime-artifact-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-graph-atom-human-decision",
+              "type": "plan",
+              "label": "Graph atom human decision",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-graph-atom-human-decision-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-graph-atom-next-milestone",
+              "type": "plan",
+              "label": "Graph atom next milestone",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-graph-atom-next-milestone-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-multi-node-graph-atom",
+              "type": "plan",
+              "label": "Multi-node graph atom next milestone",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-multi-node-graph-atom-next-milestone-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-native-agent-provider-adapter",
+              "type": "plan",
+              "label": "Native agent provider adapter next milestone",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-native-agent-provider-adapter-next-milestone-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-native-agent-runtime",
+              "type": "plan",
+              "label": "Native agent runtime next milestone",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-native-agent-runtime-next-milestone-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-real-agent-dogfood",
+              "type": "plan",
+              "label": "Real agent dogfood next milestone",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-real-agent-dogfood-next-milestone-roadmap.json"
+            },
+            {
+              "id": "zagentic-loop-real-use-validation",
+              "type": "plan",
+              "label": "Real use validation milestones",
+              "path": "../../../ZAgenticLoop/docs/plans/opn-real-use-validation-milestones-roadmap.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zbrain",
+      "type": "initiative",
+      "label": "ZBrain",
+      "path": "../../../ZBrain",
+      "specs": []
+    },
+    {
+      "id": "zcodegraph",
+      "type": "initiative",
+      "label": "ZCodeGraph",
+      "path": "../../../ZCodeGraph",
+      "specs": [
+        {
+          "id": "zcodegraph-rust-indexing-core",
+          "type": "spec",
+          "label": "Rust indexing core vertical slice",
+          "path": "../../../ZCodeGraph/docs/prds/2026-06-12-rust-indexing-core-vertical-slice.md",
+          "plans": []
+        },
+        {
+          "id": "zcodegraph-rust-hybrid-first-release",
+          "type": "spec",
+          "label": "Rust hybrid first user release",
+          "path": "../../../ZCodeGraph/docs/prds/2026-06-18-rust-hybrid-first-user-release.md",
+          "plans": []
+        },
+        {
+          "id": "zcodegraph-rust-hybrid-architecture",
+          "type": "spec",
+          "label": "Rust hybrid architecture and performance optimization",
+          "path": "../../../ZCodeGraph/docs/prds/2026-06-19-rust-hybrid-architecture-and-performance-optimization.md",
+          "plans": []
+        },
+        {
+          "id": "zcodegraph-rust-language-semantics",
+          "type": "spec",
+          "label": "Rust language semantic support",
+          "path": "../../../ZCodeGraph/docs/prds/2026-06-26-rust-language-semantic-support.md",
+          "plans": []
+        },
+        {
+          "id": "zcodegraph-rust-owned-migration",
+          "type": "spec",
+          "label": "Rust-owned migration roadmap",
+          "path": "../../../ZCodeGraph/docs/prds/2026-07-03-rust-owned-migration-roadmap.md",
+          "plans": []
+        }
+      ]
+    },
+    {
+      "id": "zcodereview",
+      "type": "initiative",
+      "label": "ZCodeReview",
+      "path": "../../../ZCodeReview",
+      "specs": []
+    },
+    {
+      "id": "zinitiatives",
+      "type": "initiative",
+      "label": "ZInitiatives",
+      "path": "../../../ZInitiatives",
+      "specs": [
+        {
+          "id": "zinitiatives-registry-protocol",
+          "type": "spec",
+          "label": "Initiative Registry Protocol",
+          "path": "../../../ZInitiatives/docs/prds/initiative-registry-protocol.md",
+          "plans": []
+        }
+      ]
+    },
+    {
+      "id": "zprototypes",
+      "type": "initiative",
+      "label": "ZPrototypes",
+      "path": "../../../ZPrototypes",
+      "specs": []
+    }
+  ]
+}

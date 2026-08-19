@@ -1,0 +1,100 @@
+{
+  "title": "zj-initiative-registry Skill implementation",
+  "description": "Implement the ZAgentic Skill that manages the GitHub-hosted ZInitiatives Registry.",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "label": "zj-initiative-registry Skill implementation",
+      "status": "completed",
+      "mode": "explore",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3",
+        "1-4",
+        "1-5",
+        "1-6"
+      ],
+      "decisions": [
+        {
+          "q": "共享 Registry 的事实源采用什么形式？",
+          "answer": "ZInitiatives GitHub repository；分片 manifests 是维护输入，global-initiative-registry.json/Markdown/Mermaid 是确定性生成物",
+          "note": "ZAgentic 只实现管理 Skill，不持有共享 Registry 数据"
+        },
+        {
+          "q": "第一阶段实施范围是什么？",
+          "answer": "先完成 bootstrap、compile、validate 最小闭环，再实现 register/drift 和 Git PR 协作",
+          "note": "不在第一阶段自动修改 Initiative 仓库，不聚合 Plan 运行时状态"
+        }
+      ],
+      "notes": ""
+    },
+    "1-1": {
+      "id": "1-1",
+      "label": "Bootstrap ZInitiatives Registry structure and protocol fixtures",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "ZInitiatives bootstrap fixture, protocol schemas, generated JSON/Markdown/Mermaid, and maintenance rules added."
+    },
+    "1-2": {
+      "id": "1-2",
+      "label": "Deterministic manifest compiler and generated registry outputs",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "Deterministic Python compiler generates JSON, Markdown, and Mermaid views from sorted manifests."
+    },
+    "1-3": {
+      "id": "1-3",
+      "label": "Schema, path, and roadmap validation",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "Manifest schema, cross-reference, local path, generated freshness, and roadmap validation added."
+    },
+    "1-4": {
+      "id": "1-4",
+      "label": "Register, remove, show, and semantic diff workflows",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "Registry admin CLI supports register, remove with confirmation, show, and ID-level semantic diff."
+    },
+    "1-5": {
+      "id": "1-5",
+      "label": "Git branch, PR, sync, and checkout-map workflows",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "Safe Git workflow helper supports dry-run/execute sync, scoped branch naming, publish command plans, and device-local checkout maps."
+    },
+    "1-6": {
+      "id": "1-6",
+      "label": "Skill packaging, plugin registration, and end-to-end acceptance",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "Skill packaged with wrapper and command reference; bucket, top-level catalog, plugin metadata, and glossary updated; local Registry E2E passed."
+    }
+  },
+  "metadata": {
+    "created": "2026-08-19 22:23:35",
+    "updated": "2026-08-19 23:13:38",
+    "md_file": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/docs/plans/zj-initiative-registry-roadmap.md"
+  }
+}

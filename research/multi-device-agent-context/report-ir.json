@@ -1,0 +1,56 @@
+{
+  "schema":"zj-research-report-ir/v1",
+  "family":"technical-c4/v1",
+  "title":"多设备多 Agent 协同开发的上下文与记忆层选型",
+  "summary":"对于 Human-led federation 场景，TencentDB-Agent-Memory 最适合作为共享记忆与协作元数据底座；MyContext 更适合作为个人工作上下文层，MineContext 更适合作为本地优先的个人上下文伙伴。三者都不能单独替代 Git、canonical roadmap、Work Packet、任务 claim、预算协调或发布治理，因此推荐将 TencentDB-Agent-Memory 接入现有 ZHarness/ZAgentic control plane，而不是让记忆系统承担控制面职责。",
+  "ledgerFingerprint":"299299409d8779435aa7c58252af6a203bb44abfe7caed15b4f0c153a8fa4d96",
+  "concepts":[
+    {"key":"Human-led federation","value":"Human Lead 跨设备做方向、边界、预算和发布决策；设备与 Agent 是隔离执行单元。"},
+    {"key":"Memory layer","value":"保存可检索的对话、事实、persona、技能和上下文，不等于任务控制面。"},
+    {"key":"Collaboration control plane","value":"保存 Work Packet、owner、依赖、状态、claim、审计、版本、预算和发布门。"},
+    {"key":"Shared context","value":"跨设备和 Agent 可按权限检索、带来源和版本的工作事实。"},
+    {"key":"Recommendation","value":"TencentDB-Agent-Memory 作为共享 memory/metadata layer，ZHarness/ZAgentic 继续拥有 control plane。"}
+  ],
+  "diagrams":[
+    {"title":"协同全景图","kind":"landscape","mermaid":"flowchart LR\n  H[Human Lead] --> CP[ZHarness/ZAgentic control plane]\n  CP --> WP[Versioned Work Packets]\n  CP --> RM[Roadmap and release gates]\n  CP --> EX[Experiment coordinator]\n  CP --> ML[TencentDB-Agent-Memory]\n  ML --> D[Devices and Agents]\n  D --> ML\n  D --> CP"},
+    {"title":"记忆层与控制面分工","kind":"container","mermaid":"flowchart TB\n  subgraph Control[Control plane]\n    G[Git and branches]\n    R[Canonical roadmap]\n    W[Owner and claim ledger]\n    B[Budget and release gates]\n  end\n  subgraph Memory[Memory layer]\n    M[Conversations and memories]\n    A[Agent and task metadata]\n    K[Knowledge retrieval]\n  end\n  Control --> Memory\n  Memory -.retrievable context.-> Control"}
+  ],
+  "candidates":[
+    {"repository":{"owner":"volcengine","name":"MineContext"},"stars":5468,"topicMatch":0,"evidenceIds":["80fab05c83d9214a24f7b9a8","c1670d9d33d1395b02484b66","4f94f3db9db3b45787bf3254","46a23e06545555264946319f","f5afc3d0b3536e1f3f9ad043","9c9efea4647f3d4a7d5a98ff"]},
+    {"repository":{"owner":"openTrinity","name":"mycontext"},"stars":1549,"topicMatch":2,"evidenceIds":["b694a2b9b94a8ba7e6b47ef4","6953f661bac7a6ee6f695ab3","5d344f534037a88a2d0ae65d","e1c77df9c8b21389e3d252f5","30a9305d1b3b325d52977197","78ba4d9be35e0241eb5f86a4"]},
+    {"repository":{"owner":"TencentCloud","name":"TencentDB-Agent-Memory"},"stars":23084,"topicMatch":7,"evidenceIds":["1879da8cdc20aaea25ede65c","6de50efd7dd6779d955d942a","a53eaf05e9e36a79f063b7ea","21caa43672cc9f52c6c746a1","b7389632d90d5c3be6a231f3","78fca1c46d4af06c8365d667"]}
+  ],
+  "cards":[
+    {"title":"volcengine/MineContext","summary":"本地优先、主动捕获的个人 context-aware AI partner，包含本地服务/API、上下文捕获与处理、数据库/文件存储和隐私保护入口。它更像个人工作上下文产品，不是跨设备团队协作控制面。","claimIds":["mine-personal","mine-local","mine-gap"]},
+    {"title":"openTrinity/mycontext","summary":"个人工作 context layer，提供多来源摄取、增量 ingestion、本地 SQLite vault、知识图谱和持久 FastAPI retrieval；显式 approval 与个人数据控制较强，但定位仍是每个人的私有上下文。","claimIds":["my-personal","my-retrieval","my-gap"]},
+    {"title":"TencentCloud/TencentDB-Agent-Memory","summary":"MemoryCore 统一保存多层 memory、知识元数据和 asset metadata，并显式建模 users、teams、Agents、tasks、Skills、memberships 与 ownership，通过 HTTP Gateway、TypeScript/Python SDK 接入应用。最接近跨设备多 Agent 的共享 memory/metadata layer。","claimIds":["tdai-ownership","tdai-api","tdai-gap"]}
+  ],
+  "claims":[
+    {"id":"mine-personal","text":"MineContext 将自己定位为主动的、上下文感知的个人 AI partner，并提供 context-source/捕获/处理结构。","critical":false,"evidenceIds":["c1670d9d33d1395b02484b66","f5afc3d0b3536e1f3f9ad043"]},
+    {"id":"mine-local","text":"MineContext 的 README 明确包含 Local-First 与 Privacy Protection 入口。","critical":true,"evidenceIds":["46a23e06545555264946319f"]},
+    {"id":"mine-gap","text":"在本次固定 commit 的采集范围内，没有足够 canonical evidence 证明 MineContext 提供团队级 Agent/task ownership、跨设备 conflict protocol 或协作预算控制。","critical":true,"evidenceIds":["80fab05c83d9214a24f7b9a8","4f94f3db9db3b45787bf3254"]},
+    {"id":"my-personal","text":"MyContext 将自己定位为每个人的持久个人工作 context layer，并强调个人数据控制和 consequential action approval。","critical":true,"evidenceIds":["6953f661bac7a6ee6f695ab3","e1c77df9c8b21389e3d252f5"]},
+    {"id":"my-retrieval","text":"MyContext 提供多来源增量 ingestion、本地 SQLite vault、知识图谱和持久 FastAPI retrieval 服务。","critical":true,"evidenceIds":["b694a2b9b94a8ba7e6b47ef4","78ba4d9be35e0241eb5f86a4","5d344f534037a88a2d0ae65d"]},
+    {"id":"my-gap","text":"MyContext 的个人定位和本地数据迁移约束意味着它不能直接被视为团队共享控制面；跨设备协作仍需外部 owner、版本和任务系统。","critical":true,"evidenceIds":["6953f661bac7a6ee6f695ab3","5d344f534037a88a2d0ae65d"]},
+    {"id":"tdai-ownership","text":"TencentDB-Agent-Memory 的 MemoryCore 显式管理 users、teams、Agents、tasks、Skills、knowledge assets、memberships、ownership 和 access relationships。","critical":true,"evidenceIds":["a53eaf05e9e36a79f063b7ea"]},
+    {"id":"tdai-api","text":"MemoryCore 作为独立 core 通过 HTTP Gateway、TypeScript/Python SDK 为 memory、knowledge metadata 和 asset metadata 提供统一访问。","critical":true,"evidenceIds":["b7389632d90d5c3be6a231f3"]},
+    {"id":"tdai-gap","text":"TencentDB-Agent-Memory 的版本迁移、Docker/Kubernetes runtime 和 memory/metadata API 仍不等于 Git merge、roadmap decision、Work Packet claim 或实验预算协调。","critical":true,"evidenceIds":["21caa43672cc9f52c6c746a1","1879da8cdc20aaea25ede65c","6de50efd7dd6779d955d942a"]}
+  ],
+  "comparisons":[
+    {"id":"comparison-context","text":"个人上下文能力：MineContext 偏主动捕获和本地优先；MyContext 偏多源工作知识图谱和个人检索；TencentDB-Agent-Memory 偏多层 memory 与资产元数据服务。","claimIds":["mine-personal","mine-local","my-personal","my-retrieval","tdai-ownership","tdai-api"]},
+    {"id":"comparison-governance","text":"针对 Human-led federation，TencentDB-Agent-Memory 的 teams/Agents/tasks/memberships/ownership 元数据最接近共享协作事实；但三者都需要外部 control plane 管理代码、决策、claim、预算和发布。","claimIds":["mine-gap","my-gap","tdai-ownership","tdai-gap"]},
+    {"id":"comparison-deployment","text":"MyContext 与 MineContext 的本地/个人取向更适合单人隐私边界；TencentDB-Agent-Memory 的独立 Gateway、容器和 API 更适合集中式共享服务，但会增加部署、权限和迁移治理。","claimIds":["mine-local","my-personal","tdai-api","tdai-gap"]}
+  ],
+  "recommendations":[
+    {"id":"recommendation-primary","text":"选择 TencentDB-Agent-Memory 作为共享 memory/metadata layer，并通过明确 adapter 接入 ZHarness/ZAgentic control plane；不要让它替代 Git、canonical roadmap、Work Packet、planned-cell claim、预算协调或发布门。","comparisonIds":["comparison-context","comparison-governance","comparison-deployment"]},
+    {"id":"recommendation-secondary","text":"如果第一阶段优先解决个人设备上的私有上下文捕获和检索，选择 MyContext；MineContext 作为本地优先个人 context companion 评估，不作为多人协作底座。","comparisonIds":["comparison-context","comparison-deployment"]}
+  ],
+  "metrics":[
+    {"key":"context_recall_latency","definition":"从共享 memory layer 返回满足权限过滤的 context 结果的 p95 延迟","unit":"ms","method":"按 device、agent、query type 和 cold/warm cache 记录端到端请求时间","condition":"pilot 与 baseline 分开统计；不含模型生成时间","expected":"p95 ≤ 800 ms（需用目标部署实测校准）"},
+    {"key":"context_provenance_rate","definition":"被 Agent 采用且可回溯到 source、revision 或 memory record 的 context 条目占比","unit":"%","method":"抽样审计 Agent 输入中的 context references 与 memory metadata","condition":"按 case、device 和 agent 统计","expected":"≥ 98%"},
+    {"key":"cross_device_freshness_lag","definition":"事实在 canonical source 更新后可被另一设备检索到的时间差 p95","unit":"s","method":"写入带 revision/timestamp 的 probe，测量异设备可见时间","condition":"网络正常与断网恢复分 cohort","expected":"正常网络 p95 ≤ 60 s；恢复后无静默丢失"},
+    {"key":"ownership_resolution_rate","definition":"每个 shared context、task 或 memory 是否能解析到 user/team/agent/owner/access policy 的比例","unit":"%","method":"对 metadata graph 做完整性查询并将缺失关系计为失败","condition":"每次发布前和 nightly audit","expected":"100%"},
+    {"key":"control_plane_bypass_rate","definition":"绕过 Work Packet、roadmap gate、claim 或 budget gate 直接产生协作事实的运行占比","unit":"%","method":"对 control-plane audit log 与 memory API 写入做关联审计","condition":"所有生产 Agent run","expected":"0%"},
+    {"key":"memory_write_conflict_rate","definition":"并发写入同一 logical memory/task 导致冲突、覆盖或人工裁决的比例","unit":"%","method":"以 logical key、revision 和 writer identity 统计冲突事件","condition":"多设备并发 pilot 与 baseline","expected":"< 1%；所有冲突可恢复且可审计"}
+  ]
+}

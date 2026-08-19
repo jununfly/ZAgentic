@@ -1,0 +1,4 @@
+interface:
+  display_name: "Initiative Registry"
+  short_description: "Manage a shared GitHub Initiative registry"
+  default_prompt: "Use $zj-initiative-registry to register and validate my cross-repository Initiative map."

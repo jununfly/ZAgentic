@@ -78,6 +78,28 @@ _Avoid_: latest compiler, PATH fallback, vendored source
 The immutable rubric set, per-case human annotation set, and blind-Judge calibration set resolved by one versioned keyless corpus. Every quality case resolves to human truth, and only a calibrated Judge configuration contributes results to a quality baseline.
 _Avoid_: mutable benchmark, Judge-only truth, unique recommendation answer
 
+### Global initiative navigation
+
+**Initiative**:
+An independently owned, continuously evolving direction registered in the configured **Initiative Registry**. Its repository URL resolves to the Initiative's fact source; it may be a Product, shared capability, experiment, or external dependency.
+_Avoid_: product line, project line, workspace entry
+
+**Initiative Registry**:
+The GitHub-hosted, cross-device navigation fact source that compiles versioned manifests into an `Initiative → Spec → Plan` projection. ZInitiatives owns the Registry protocol and data; `zj-initiative-registry` provides the management workflow.
+_Avoid_: global roadmap, local project list, Plan status aggregator
+
+**Initiative Node**:
+The first navigation level under the global initiative roadmap. It identifies one **Initiative**, its stable id, label, relative path, and child **Spec Nodes**.
+_Avoid_: roadmap root, product node
+
+**Spec Node**:
+The second navigation level under an **Initiative Node**. It identifies one existing PRD/spec under that Initiative's `docs/prds/` directory and holds its child **Plan Nodes**.
+_Avoid_: feature node, epic, roadmap node
+
+**Plan Node**:
+The third navigation level under a **Spec Node**. It points to one existing `zj-roadmap-driven` JSON roadmap-plan-file under that Initiative's `docs/plans/` directory; execution status and decisions live in that target, not in the global index.
+_Avoid_: task node, work item, embedded plan
+
 ### Roadmap
 
 **Roadmap**:

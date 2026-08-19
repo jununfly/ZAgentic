@@ -1,0 +1,29 @@
+{
+  "markdownPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/research/multi-device-agent-context/2026-08-19-agent-context-draft.md",
+  "htmlPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/research/multi-device-agent-context/2026-08-19-agent-context-draft.html",
+  "reportHash": "c1e7ff36e5a2444cb2cc8577b789b4feeddee42ecb3bd58ca6ccfe46250ec4d6",
+  "publishCount": 1,
+  "evaluation": {
+    "reportHash": "c1e7ff36e5a2444cb2cc8577b789b4feeddee42ecb3bd58ca6ccfe46250ec4d6",
+    "reportFamily": "technical-c4/v1",
+    "compilerVersion": "research/v1",
+    "healthy": true,
+    "correctness": {
+      "revisionPinned": true,
+      "provenanceComplete": true,
+      "criticalClaimsEvidence": true,
+      "scoringAxesSeparated": true,
+      "publishExactlyOnce": true,
+      "receiptConsistent": true
+    },
+    "evidenceCount": 18,
+    "unknownCount": 0,
+    "navigationFailureCount": 0,
+    "collection": {
+      "filesRead": 60,
+      "sourceBytesRead": 905869,
+      "durationMs": 42931,
+      "cacheHit": false
+    }
+  }
+}
