@@ -100,6 +100,10 @@ _Avoid_: feature node, epic, roadmap node
 The third navigation level under a **Spec Node**. It points to one existing `zj-roadmap-driven` JSON roadmap-plan-file under that Initiative's `docs/plans/` directory; execution status and decisions live in that target, not in the global index.
 _Avoid_: task node, work item, embedded plan
 
+**Closeout reminder**:
+An advisory result emitted by `zj-initiative-registry` when a registered roadmap Plan is completed or blocked. A completed result asks the Human to consolidate durable documents and refresh Registry navigation; a blocked result asks for a Human decision. It never deletes entries or changes source repositories.
+_Avoid_: automatic archive, compaction, Plan status aggregator
+
 ### Roadmap
 
 **Roadmap**:

@@ -40,7 +40,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--registry-repo", required=True)
     parser.add_argument("--registry-path", type=Path, required=True)
-    parser.add_argument("operation", choices=["show", "compile", "validate", "register", "remove", "semantic-diff", "check-drift", "sync", "create-branch", "publish-plan"])
+    parser.add_argument("operation", choices=["show", "compile", "validate", "register", "remove", "semantic-diff", "check-drift", "closeout-check", "sync", "create-branch", "publish-plan"])
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     registry_path = args.registry_path.expanduser().resolve()
@@ -53,6 +53,7 @@ def main() -> int:
         "remove": ("registry_admin.py", ["remove"]),
         "semantic-diff": ("registry_admin.py", ["semantic-diff"]),
         "check-drift": ("registry_admin.py", ["check-drift"]),
+        "closeout-check": ("registry_admin.py", ["closeout-check"]),
         "sync": ("git_workflow.py", ["sync"]),
         "create-branch": ("git_workflow.py", ["create-branch"]),
         "publish-plan": ("git_workflow.py", ["publish-plan"]),

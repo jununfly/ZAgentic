@@ -9,6 +9,7 @@ python scripts/initiative_registry.py --registry-repo URL --registry-path PATH s
 python scripts/initiative_registry.py --registry-repo URL --registry-path PATH compile
 python scripts/initiative_registry.py --registry-repo URL --registry-path PATH validate
 python scripts/initiative_registry.py --registry-repo URL --registry-path PATH check-drift --workspace-root /path/to/workspaces
+python scripts/initiative_registry.py --registry-repo URL --registry-path PATH closeout-check --workspace-root /path/to/workspaces
 python scripts/initiative_registry.py --registry-repo URL --registry-path PATH semantic-diff --against FILE
 ```
 
@@ -33,3 +34,5 @@ python scripts/initiative_registry.py --registry-repo URL --registry-path PATH r
 ## Git handoff
 
 `sync`, `create-branch`, and `publish-plan` delegate to `git_workflow.py`. They default to dry-run output; pass `--execute` only after reviewing the target and ensuring the worktree is clean. Publication never force-pushes.
+
+`closeout-check` reads registered Plan JSON files from Initiative checkouts. A completed Plan prints a Human closeout reminder; a blocked Plan prints a Human decision reminder. The command is read-only and does not delete manifests, compact history, or modify source repositories. Use `--format json` for Agent-readable output.
