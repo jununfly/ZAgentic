@@ -32,6 +32,7 @@ register initiative|spec|plan
 remove initiative|spec|plan
 validate --registry-repo <github-url>
 check-drift --registry-repo <github-url>
+closeout-check --registry-repo <github-url>
 sync --registry-repo <github-url>
 show <initiative-or-spec-or-plan-id>
 ```
@@ -80,6 +81,10 @@ Skill 执行本地 schema 校验、三层关系校验、ID 唯一性校验、路
 
 Skill 对已登记的 Initiative 仓库执行只读检查，报告被删除的引用、未登记的 PRD/Plan、仓库迁移、默认分支变化和 Spec/Plan 归属失效。漂移报告不自动修改 Registry。
 
+### Closeout check
+
+Skill 对已登记的 roadmap Plan 执行只读 closeout 检查。Plan 的全部节点完成时，Skill 提醒 Human 将临时材料沉淀为 durable 文档、更新必要的 Registry 导航并重新生成校验；Plan 被阻塞时，Skill 提醒 Human 先完成决策。checkout 或源文件不可用时报告 warning，不推断完成。该检查不删除 Registry 条目、不压缩历史，也不修改 Initiative 仓库。
+
 ### Sync and publish
 
 默认流程为 fetch 最新默认分支、创建 scoped branch、修改 manifest、编译、验证、提交、push 和创建 pull request。push 前必须再次确认 remote 没有移动；检测到非 fast-forward 或远端变化时停止并要求重新同步。Human 明确授权时才允许直接提交默认分支；禁止 force-push。
@@ -110,6 +115,7 @@ GitHub Registry 是共享导航事实源；各 Initiative 仓库拥有自己的 
 6. 删除或移动已登记文件会被 `validate` 或 `check-drift` 报告。
 7. 每个 Plan 的执行状态仍能通过 `zj-roadmap-driven` 独立验证。
 8. 测试和日志不会泄露 GitHub 凭证或设备绝对路径。
+9. 已完成或被阻塞的 Plan 会触发明确的 Human closeout 或 decision reminder，且检查保持只读。
 
 ## 10. 分阶段交付
 
