@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 PROTOCOL = "zj-research-cli/v1"
-LOCK_SCHEMA = "zj-research-compiler-lock/v1"
+LOCK_SCHEMA = "zj-research-compiler-lock/v2"
 REQUIRED_OPERATIONS = {"collect", "compile-report", "render-html", "evaluate"}
 DEFAULT_TIMEOUT_SECONDS = 300.0
 ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts"
@@ -36,13 +36,26 @@ def compiler_cache() -> Path:
     return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "zj-research" / "compiler"
 
 
-def bundled_command() -> list[str]:
+def artifact_command(kind: str, protocol: str) -> list[str]:
     lock_path = ARTIFACTS / "compiler-lock.json"
     if not lock_path.is_file():
         raise RuntimeError(f"bundled compiler lock is unavailable: {lock_path}")
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    if lock.get("schema") != LOCK_SCHEMA or lock.get("protocol") != PROTOCOL:
+    protocols = lock.get("protocols")
+    executables = lock.get("executables")
+    if (
+        lock.get("schema") != LOCK_SCHEMA
+        or not isinstance(protocols, dict)
+        or protocols.get(kind) != protocol
+        or not isinstance(executables, dict)
+    ):
         raise RuntimeError("bundled compiler lock is incompatible")
+    executable_path = executables.get(kind)
+    if not isinstance(executable_path, str) or Path(executable_path).as_posix() != executable_path:
+        raise RuntimeError("bundled compiler lock has an invalid executable")
+    executable_relative = Path(executable_path)
+    if executable_relative.is_absolute() or ".." in executable_relative.parts:
+        raise RuntimeError("bundled compiler lock has an invalid executable")
     artifact_name = lock.get("artifact")
     expected_hash = lock.get("sha256")
     if not isinstance(artifact_name, str) or Path(artifact_name).name != artifact_name:
@@ -76,7 +89,7 @@ def bundled_command() -> list[str]:
     if actual_hash != expected_hash:
         raise RuntimeError(f"bundled compiler artifact SHA-256 mismatch: expected {expected_hash}, got {actual_hash}")
     target = compiler_cache() / expected_hash
-    executable = target / "lib" / "bin.js"
+    executable = target / executable_relative
     if not executable.is_file():
         target.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix=f"{expected_hash}.tmp-", dir=target.parent) as directory:
@@ -91,8 +104,10 @@ def bundled_command() -> list[str]:
                     archive.extractall(temporary, filter="data")
                 else:
                     archive.extractall(temporary)
-            if not (temporary / "lib" / "bin.js").is_file():
-                raise RuntimeError("bundled compiler artifact has no executable")
+            for required in executables.values():
+                required_path = Path(required) if isinstance(required, str) else Path("..")
+                if required_path.is_absolute() or ".." in required_path.parts or not (temporary / required_path).is_file():
+                    raise RuntimeError("bundled compiler artifact has no required executable")
             try:
                 os.replace(temporary, target)
             except OSError:
@@ -105,7 +120,7 @@ def command() -> list[str]:
     configured = os.environ.get("ZJ_RESEARCH_CLI")
     if configured:
         return shlex.split(configured)
-    return bundled_command()
+    return artifact_command("research", PROTOCOL)
 
 
 def main() -> int:
@@ -159,8 +174,9 @@ def invoke(executable: list[str], request: dict[str, object]) -> dict[str, objec
     if completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or f"dsh-research exited {completed.returncode}")
     response = json.loads(completed.stdout)
-    if response.get("protocol") != PROTOCOL:
-        raise RuntimeError(f"compiler response protocol must be {PROTOCOL}")
+    expected_protocol = request.get("protocol")
+    if response.get("protocol") != expected_protocol:
+        raise RuntimeError(f"compiler response protocol must be {expected_protocol}")
     if response.get("operation") != request.get("operation"):
         raise RuntimeError("compiler response operation does not match the request")
     return response

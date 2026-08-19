@@ -12,12 +12,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ADAPTER = ROOT / "scripts" / "research_cli.py"
+EVALUATION_ADAPTER = ROOT / "scripts" / "research_eval_cli.py"
 PUBLISHER = ROOT.parent / "zj-research-report" / "scripts" / "publish_report.py"
 FIXTURE = Path(__file__).with_name("golden-contract.json")
+EVALUATION_ASSETS = ROOT.parents[2] / "research" / "evaluation" / "controlled-quality-v1"
 
 
 def main() -> int:
     run([sys.executable, str(ADAPTER), "--check"])
+    run([sys.executable, str(EVALUATION_ADAPTER), "--check"])
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory(prefix="zj-research-contract-") as directory:
         root = Path(directory)
@@ -77,7 +80,8 @@ def main() -> int:
         if bounded.returncode == 0 or "must be a positive number" not in bounded.stderr:
             raise AssertionError("adapter accepted a non-positive timeout")
         verify_artifact_failures(root)
-    print("zj-research golden contract: 7 cases passed")
+        verify_evaluation_assets(root)
+    print("zj-research golden contract: 7 compiler cases and 10 evaluation cases passed")
     return 0
 
 
@@ -92,10 +96,14 @@ def verify_artifact_failures(root: Path) -> None:
     shutil.copytree(source, copied)
     adapter.ARTIFACTS = copied
     lock = json.loads((copied / "compiler-lock.json").read_text(encoding="utf-8"))
+    lock["schema"] = adapter.LOCK_SCHEMA
+    lock["protocols"] = {"research": adapter.PROTOCOL, "evaluation": "zj-research-eval-cli/v1"}
+    lock["executables"] = {"research": "lib/bin.js", "evaluation": "lib/eval.js"}
+    (copied / "compiler-lock.json").write_text(json.dumps(lock), encoding="utf-8")
     artifact = copied / lock["artifact"]
     artifact.write_bytes(artifact.read_bytes() + b"tampered")
     try:
-        adapter.command()
+        adapter.artifact_command("research", adapter.PROTOCOL)
     except RuntimeError as error:
         if "SHA-256 mismatch" not in str(error):
             raise
@@ -103,12 +111,53 @@ def verify_artifact_failures(root: Path) -> None:
         raise AssertionError("adapter accepted a tampered compiler artifact")
     artifact.unlink()
     try:
-        adapter.command()
+        adapter.artifact_command("research", adapter.PROTOCOL)
     except RuntimeError as error:
         if "artifact is unavailable" not in str(error):
             raise
     else:
         raise AssertionError("adapter accepted a missing compiler artifact")
+
+
+def verify_evaluation_assets(root: Path) -> None:
+    validation = root / "asset-validation.json"
+    run([
+        sys.executable,
+        str(EVALUATION_ADAPTER),
+        "validate-assets",
+        str(EVALUATION_ASSETS / "manifest.json"),
+        str(EVALUATION_ASSETS / "rubrics.json"),
+        str(EVALUATION_ASSETS / "annotations.json"),
+        str(EVALUATION_ASSETS / "calibration.json"),
+        "--output",
+        str(validation),
+    ])
+    result = json.loads(validation.read_text(encoding="utf-8"))["result"]
+    expected = {
+        "qualityCaseCount": 10,
+        "calibration": {
+            "sampleCount": 10,
+            "scoreMeanAbsoluteError": 2.4,
+            "withinToleranceRate": 1,
+            "recommendationAgreement": 1,
+            "riskCountMeanAbsoluteError": 0.1,
+            "passed": True,
+        },
+    }
+    if result["qualityCaseCount"] != expected["qualityCaseCount"] or result["calibration"] != expected["calibration"]:
+        raise AssertionError(f"evaluation assets diverged:\n{json.dumps(result, ensure_ascii=False, indent=2)}")
+    calibration = root / "judge-calibration.json"
+    run([
+        sys.executable,
+        str(EVALUATION_ADAPTER),
+        "calibrate-judge",
+        str(EVALUATION_ASSETS / "rubrics.json"),
+        str(EVALUATION_ASSETS / "calibration.json"),
+        "--output",
+        str(calibration),
+    ])
+    if json.loads(calibration.read_text(encoding="utf-8"))["result"] != expected["calibration"]:
+        raise AssertionError("standalone Judge calibration diverged from asset validation")
 
 
 def run(command: list[str]) -> None:

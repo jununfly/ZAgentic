@@ -1,0 +1,65 @@
+{
+  "schema": "zj-research-rubric-set/v1",
+  "version": "controlled-quality-rubrics/v1",
+  "corpusVersion": "controlled-quality/v1",
+  "calibration": {
+    "minimumSamples": 10,
+    "scoreTolerance": 10,
+    "maxMeanAbsoluteError": 5,
+    "minWithinToleranceRate": 0.8,
+    "minRecommendationAgreement": 0.9,
+    "maxRiskCountMeanAbsoluteError": 0.25
+  },
+  "rubrics": [
+    {
+      "id": "selection/v1",
+      "scenario": "multi-repository-selection",
+      "criteria": [
+        { "id": "tradeoff-coverage", "description": "Compares the decision-critical tradeoffs on shared definitions.", "weight": 30 },
+        { "id": "team-constraint-fit", "description": "Applies the stated team, governance, and operating constraints.", "weight": 30 },
+        { "id": "risk-disclosure", "description": "Names material adoption and operation risks with evidence limits.", "weight": 20 },
+        { "id": "actionability", "description": "Turns the recommendation into bounded validation or adoption steps.", "weight": 20 }
+      ]
+    },
+    {
+      "id": "deep-read/v1",
+      "scenario": "single-repository-deep-read",
+      "criteria": [
+        { "id": "architecture-fidelity", "description": "Explains owned components and relationships from pinned source evidence.", "weight": 35 },
+        { "id": "interaction-clarity", "description": "Connects runtime interactions without replacing missing facts with inference.", "weight": 25 },
+        { "id": "change-risk", "description": "Identifies extension, lifecycle, and migration risks relevant to maintainers.", "weight": 20 },
+        { "id": "actionability", "description": "Identifies concrete files or experiments for the next engineering decision.", "weight": 20 }
+      ]
+    },
+    {
+      "id": "unknown/v1",
+      "scenario": "insufficient-evidence",
+      "criteria": [
+        { "id": "uncertainty-calibration", "description": "Keeps uncovered criteria unknown instead of inferring absence.", "weight": 40 },
+        { "id": "gap-localization", "description": "Names the exact missing evidence and affected decision.", "weight": 25 },
+        { "id": "safe-recommendation", "description": "Abstains or narrows the recommendation to what evidence supports.", "weight": 20 },
+        { "id": "next-step-utility", "description": "Requests the smallest evidence needed to resolve the gap.", "weight": 15 }
+      ]
+    },
+    {
+      "id": "conflict/v1",
+      "scenario": "conflicting-evidence",
+      "criteria": [
+        { "id": "conflict-recognition", "description": "Presents incompatible evidence without silently selecting one claim.", "weight": 30 },
+        { "id": "provenance-weighting", "description": "Weights sources by authority, revision, and directness.", "weight": 25 },
+        { "id": "consequence-analysis", "description": "Explains how each interpretation changes the decision.", "weight": 25 },
+        { "id": "conditional-recommendation", "description": "Makes recommendation conditions and verification needs explicit.", "weight": 20 }
+      ]
+    },
+    {
+      "id": "degraded/v1",
+      "scenario": "navigation-degraded",
+      "criteria": [
+        { "id": "degradation-disclosure", "description": "Names failed or stale navigation and its effect on coverage.", "weight": 30 },
+        { "id": "evidence-separation", "description": "Keeps derived navigation separate from canonical evidence.", "weight": 30 },
+        { "id": "confidence-calibration", "description": "Narrows conclusions to the source paths actually read.", "weight": 20 },
+        { "id": "recovery-steps", "description": "Identifies a bounded route to restore missing coverage.", "weight": 20 }
+      ]
+    }
+  ]
+}

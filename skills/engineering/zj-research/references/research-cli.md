@@ -1,11 +1,13 @@
 # Shared research compiler
 
-Use the commit-pinned ZHarness compiler artifact for technical GitHub evidence and Report IR compilation. The adapter accepts only `zj-research-cli/v1` and fails loudly when the artifact is missing, modified, or incompatible. This skill remains an independent workflow entry alongside the hosted Research Agent; both consume the same compiler and evaluation facts.
+Use the commit-pinned ZHarness artifact for technical GitHub evidence, Report IR compilation, and research evaluation. The research adapter accepts only `zj-research-cli/v1`; the evaluation adapter accepts only `zj-research-eval-cli/v1`. Both fail loudly when the artifact is missing, modified, or incompatible. This skill remains an independent workflow entry alongside the hosted Research Agent; both consume the same compiler and evaluation facts.
 
 Resolve the executable in this order:
 
 1. `ZJ_RESEARCH_CLI`, for a local ZHarness build during development.
 2. `artifacts/compiler-lock.json`, whose SHA-256 pins the bundled compiler to one ZHarness commit.
+
+The lock records separate `research` and `evaluation` executables inside one artifact. Set `ZJ_RESEARCH_EVAL_CLI` only when testing a local ZHarness evaluation build.
 
 The adapter verifies the artifact hash before use and extracts it to the user cache under a hash-named directory. `ZJ_RESEARCH_COMPILER_CACHE` changes that cache root. Build ZHarness normally, then update the pinned artifact mechanically from a clean `packages/` tree:
 
@@ -17,6 +19,13 @@ python scripts/update-research-compiler-artifact.py /path/to/ZHarness
 Each adapter invocation is bounded to 300 seconds. Set `ZJ_RESEARCH_CLI_TIMEOUT_SECONDS` to a positive number when a collection brief deliberately has a longer deadline.
 
 Run `python scripts/research_cli.py --check` before creating reports. Its failure message identifies the invalid lock, missing artifact, hash mismatch, or protocol incompatibility; the skill has no Markdown-only compatibility path.
+
+Run `python scripts/research_eval_cli.py --check` before validating the corpus. The immutable assets under `research/evaluation/controlled-quality-v1/` must pass both operations before a Judge configuration contributes to a quality baseline:
+
+```sh
+python scripts/research_eval_cli.py validate-assets manifest.json rubrics.json annotations.json calibration.json
+python scripts/research_eval_cli.py calibrate-judge rubrics.json calibration.json
+```
 
 ## Operations
 

@@ -13,7 +13,9 @@ import tempfile
 from pathlib import Path
 
 PROTOCOL = "zj-research-cli/v1"
-LOCK_SCHEMA = "zj-research-compiler-lock/v1"
+EVALUATION_PROTOCOL = "zj-research-eval-cli/v1"
+LOCK_SCHEMA = "zj-research-compiler-lock/v2"
+EXECUTABLES = {"research": "lib/bin.js", "evaluation": "lib/eval.js"}
 JSDOM_VERSION = "26.1.0"
 MERMAID_VERSION = "11.16.0"
 
@@ -23,6 +25,7 @@ def run(
     cwd: Path,
     *,
     input_text: str | None = None,
+    env: dict[str, str] | None = None,
 ) -> str:
     completed = subprocess.run(
         command,
@@ -31,6 +34,7 @@ def run(
         text=True,
         capture_output=True,
         check=False,
+        env=env,
     )
     if completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
@@ -49,7 +53,7 @@ def add_deterministic_tree(source: Path, destination: Path) -> None:
                     info.uname = ""
                     info.gname = ""
                     info.mtime = 0
-                    info.mode = 0o755 if info.isdir() or relative == "lib/bin.js" else 0o644
+                    info.mode = 0o755 if info.isdir() or relative in EXECUTABLES.values() else 0o644
                     if info.isfile():
                         with path.open("rb") as content:
                             archive.addfile(info, content)
@@ -73,8 +77,10 @@ def main() -> int:
     skill = Path(__file__).resolve().parents[1] / "skills" / "engineering" / "zj-research"
     artifacts = skill / "artifacts"
 
-    commit = run(["git", "rev-parse", "HEAD"], zharness)
-    changed_packages = run(["git", "status", "--porcelain", "--", "packages"], zharness)
+    git_env = dict(os.environ)
+    git_env.pop("NODE_OPTIONS", None)
+    commit = run(["git", "rev-parse", "HEAD"], zharness, env=git_env)
+    changed_packages = run(["git", "status", "--porcelain", "--", "packages"], zharness, env=git_env)
     if changed_packages:
         raise RuntimeError("ZHarness packages/ must be clean before pinning a compiler artifact")
     esbuild = zharness / "node_modules" / ".bin" / ("esbuild.cmd" if os.name == "nt" else "esbuild")
@@ -108,6 +114,18 @@ def main() -> int:
                 "--target=node22",
                 "--external:jsdom",
                 f"--outfile={stage / 'lib' / 'bin.js'}",
+            ],
+            zharness,
+        )
+        run(
+            [
+                str(esbuild),
+                "packages/research/research-eval/src/bin.ts",
+                "--bundle",
+                "--platform=node",
+                "--format=esm",
+                "--target=node22",
+                f"--outfile={stage / 'lib' / 'eval.js'}",
             ],
             zharness,
         )
@@ -146,13 +164,21 @@ def main() -> int:
         )
         if json.loads(response).get("protocol") != PROTOCOL:
             raise RuntimeError("generated compiler failed its protocol handshake")
+        evaluation_response = run(
+            ["node", str(stage / "lib" / "eval.js")],
+            stage,
+            input_text=json.dumps({"protocol": EVALUATION_PROTOCOL, "operation": "describe"}),
+        )
+        if json.loads(evaluation_response).get("protocol") != EVALUATION_PROTOCOL:
+            raise RuntimeError("generated evaluation runtime failed its protocol handshake")
         add_deterministic_tree(stage, artifact)
 
     lock = {
         "schema": LOCK_SCHEMA,
         "repository": "https://github.com/jununfly/ZHarness",
         "commit": commit,
-        "protocol": PROTOCOL,
+        "protocols": {"research": PROTOCOL, "evaluation": EVALUATION_PROTOCOL},
+        "executables": EXECUTABLES,
         "artifact": artifact_name,
         "sha256": sha256(artifact),
         "minimumNodeMajor": 22,
@@ -161,6 +187,9 @@ def main() -> int:
         json.dumps(lock, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    for previous in artifacts.glob("dsh-research-cli-*.tgz"):
+        if previous != artifact:
+            previous.unlink()
     print(json.dumps(lock, ensure_ascii=False))
     return 0
 

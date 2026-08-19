@@ -71,8 +71,12 @@ The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and 
 _Avoid_: shell wrapper, internal API, compatibility mode
 
 **Compiler artifact lock**:
-The `zj-research-compiler-lock/v1` record that fixes the bundled Evidence Compiler to one ZHarness commit and SHA-256. ZAgentic verifies it before extracting the compiler into a hash-named user cache; `ZJ_RESEARCH_CLI` is the explicit local-development override.
+The `zj-research-compiler-lock/v2` record that fixes the bundled research and evaluation executables to one ZHarness commit and artifact SHA-256. ZAgentic verifies it before extracting both executables into a hash-named user cache; `ZJ_RESEARCH_CLI` and `ZJ_RESEARCH_EVAL_CLI` are explicit local-development overrides.
 _Avoid_: latest compiler, PATH fallback, vendored source
+
+**Research evaluation assets**:
+The immutable rubric set, per-case human annotation set, and blind-Judge calibration set resolved by one versioned keyless corpus. Every quality case resolves to human truth, and only a calibrated Judge configuration contributes results to a quality baseline.
+_Avoid_: mutable benchmark, Judge-only truth, unique recommendation answer
 
 ### Roadmap
 

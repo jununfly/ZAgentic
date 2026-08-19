@@ -1,9 +1,16 @@
 {
-  "schema": "zj-research-compiler-lock/v1",
+  "schema": "zj-research-compiler-lock/v2",
   "repository": "https://github.com/jununfly/ZHarness",
-  "commit": "c75d466055f993328a903436c67830de1667a0ca",
-  "protocol": "zj-research-cli/v1",
-  "artifact": "dsh-research-cli-c75d466.tgz",
-  "sha256": "23d2be622c2baeb7ce4d028cd7252cb3fe7b154bcca28357051025a873c83ecc",
+  "commit": "9172aa0674bf7a7cabcd47383407e0d5068de8f2",
+  "protocols": {
+    "research": "zj-research-cli/v1",
+    "evaluation": "zj-research-eval-cli/v1"
+  },
+  "executables": {
+    "research": "lib/bin.js",
+    "evaluation": "lib/eval.js"
+  },
+  "artifact": "dsh-research-cli-9172aa0.tgz",
+  "sha256": "e5297042ca080e3489969999b5f7094c1867da646f1c91a0a971a35ce9ecd21d",
   "minimumNodeMajor": 22
 }
