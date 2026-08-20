@@ -1,7 +1,7 @@
 ---
 name: zj-roadmap-driven
 title: "zj-roadmap-driven"
-description: "路线图驱动开发——以地图导航形式，帮助 Agent 正确理解全貌，始终与 Human 保持地图颗粒度对齐"
+description: "路线图驱动开发——以地图导航形式，帮助 Agent 正确理解全貌，始终与 Human 保持地图颗粒度对齐。双模式载体（本地 JSON 自包含 / 消费 tracker 规划路线），设计为 zj-wayfinder 的组合技能对（plan→track），zj-to-tickets 为缝上转换器"
 triggers:
   - 路线图驱动
   - roadmap driven
@@ -266,11 +266,24 @@ Agent 在 Skill 加载后，用 `$SKILL_DIR` 或绝对路径定位脚本。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建。
 - 无 `import` 命令。md 不能反导回 JSON。
 
-## 与 zj-wayfinder 组合（推荐）
+## 双模式载体（与 wayfinder 配对的一半）
 
-`zj-roadmap-driven` 与 `zj-wayfinder` 是一套流水线的两半：**先规划、后跟踪**。wayfinder 把模糊的、大到单次会话装不下的任务，先拆成清晰的决策地图与决策票；roadmap-driven 再沿着既定路线导航、跟踪执行，始终与 Human 保持地图颗粒度对齐。Human + Agent 团队结合实际场景把两者组合用，收益更大：
+`zj-roadmap-driven` 是这套组合技能中**天然的"本地/自包含"载体**：以本地 JSON 为唯一真相源 + 轻量 md 视图，context 完整、离线可用、单写者友好——对应 wayfinder 的 **local mode**。同时它也是 wayfinder **tracker mode 规划后的"跟踪一半"**：本 skill 不在 tracker 上自行规划，只**消费** wayfinder 用真实 issue-tracker 规划完的决策地图——经 `zj-to-tickets`（缝上的转换器）把决策票导出成带阻塞边的 tracer-bullet 工单（本地 `.scratch/.../issues/<NN>.md` 文件或 tracker issue），再由 Agent 用 `roadmap_cli.py` 落成 roadmap JSON 进行跟踪。
 
-- **wayfinder 规划，roadmap-driven 跟踪。** 当一个松散 idea 大到一次会话装不下，先跑 `/zj-wayfinder` 规划出地图、逐个解决决策票，直到通往目的地的路径清晰；再把这条路线落到 roadmap JSON 作为本 skill 的输入，沿它导航执行——记录决策、更新状态、渲染轻量视图给 Human。
-- **交接点是缝。** wayfinder 的输出（清晰的路线 / 一组决策）成为 roadmap-driven 的输入（树节点 + 决策）。两者放同一仓库，让共享上下文（领域词汇表、ADRs、约定）跨过这道缝自然延续。
-- **按阶段选择，而非按偏好。** 如果任务已经是清晰、有尺寸的路线，跳过 wayfinder 直接用本 skill；如果是迷雾——路径不可见、爆炸半径大——先用 wayfinder，不要硬塞进一个过早成形的 roadmap。
+两种用法共享**同一套心智模型**（地图/路线 + 决策记录），只是物理载体不同——这正是参考设计里"双模式载体抽象"的落地：
+
+- **本地/自包含用法（本 skill 的天然载体）**：个人全盘掌握、离线、context 完整时，直接用本 skill 建 JSON 路线、`render` md 轻量视图，Human 一次会话纵览全貌。
+- **tracker 规划 → 本 skill 跟踪**：团队协作先用 wayfinder 的 tracker mode 规划，再用 `zj-to-tickets` 把决策票导出，本 skill 消费这条路线继续跟踪。
+
+**切换指引**：团队协作/多 Agent 并发 → 规划走 tracker（wayfinder）+ 导出（zj-to-tickets）；个人探索/离线/全盘掌握 → 规划与跟踪都用本地载体（wayfinder local mode + 本 skill）。两种模式下心智模型不变，跨模式迁移不重做决策。
+
+## 与 zj-wayfinder 组合（推荐，设计为组合技能对）
+
+`zj-roadmap-driven` 与 `zj-wayfinder` 是**一套设计好的组合技能（skill pair）**：**先规划、后跟踪**。两个 skill 以"双模式载体"心智模型对接——wayfinder 在任一载体（tracker / 本地）产出规划，本 skill 是天然的**本地/自包含载体**（JSON 真相源 + md 视图），并在 tracker 一侧**消费** wayfinder 的规划路线（本 skill 不在 tracker 上自行规划）；心智模型（地图/路线 + 决策）跨模式一致。缝上由 `zj-to-tickets` 做转换器，把 wayfinder 的决策地图导出成带阻塞边的工单（本地 `.scratch/.../issues/<NN>.md` 文件或 tracker issue），再由 Agent 用 `roadmap_cli.py` 落成路线 JSON。组合要点：
+
+- **wayfinder 规划，roadmap-driven 跟踪。** 松散 idea 大到一次会话装不下，先跑 `/zj-wayfinder`（tracker 或 local 任一载体）规划出地图、逐个解决决策票，直到路径清晰；再经 `zj-to-tickets` 把决策票导出，落到 roadmap JSON 作为本 skill 的输入，沿它导航执行——记录决策、更新状态、渲染轻量视图给 Human。
+- **交接点是缝，转换器是 zj-to-tickets。** wayfinder 的输出（清晰的路线 / 一组决策）经 `zj-to-tickets` 转成带阻塞边的工单，成为 roadmap-driven 的输入（树节点 + 决策）。两者放同一仓库，共享上下文（领域词汇表、ADRs、约定）跨过这道缝自然延续。
+- **按阶段选择，而非按偏好；按场景选载体。** 任务已是清晰、有尺寸的路线 → 跳过 wayfinder 直接用本 skill；是迷雾（路径不可见、爆炸半径大）→ 先用 wayfinder。团队协作/多 Agent → 规划走 tracker 载体；个人探索/离线/全盘掌握 → 走本地载体。两层都不越界、都可切换。
 - **合作的两端。** Human 掌握目的地与决策，Agent 负责规划、解析、跟踪。两个 skill 并用时，Human 在规划期看到地图（wayfinder）、在执行期看到实时进度（roadmap-driven），整个工程的对齐贯穿始终。
+
+> 双模式载体抽象的设计详见 `ZAgentic/docs/designs/zj-wayfinder-roadmap-dual-mode.md`（本 skill 与 wayfinder 的改造即落地该设计；设计文档由早期预研整合而来）。

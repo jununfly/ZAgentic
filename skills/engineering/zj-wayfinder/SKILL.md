@@ -1,6 +1,6 @@
 ---
 name: zj-wayfinder
-description: Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear.
+description: Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets, and resolve them one at a time until the way to the destination is clear. Dual-mode: a tracker-dependent carrier (teamwork, multi-agent) or a self-contained local-markdown carrier (context-complete, offline). Designed as a skill pair with zj-roadmap-driven (plan → track); zj-to-tickets is the seam converter.
 disable-model-invocation: true
 ---
 
@@ -12,17 +12,28 @@ The destination varies per effort, and naming it is the first act of charting �
 
 Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear — nothing left to decide before someone goes and does the thing. The pull to just do the work is usually the signal you've reached the edge of the map and it's time to hand off. An effort can override this in its **Notes** — carrying execution into the map itself — but absent that, produce decisions, not deliverables.
 
+## Carrier modes
+
+Wayfinder is **one skill with two switchable carriers** — the planning logic is identical; only the physical home of the map, tickets, blocking, and frontier changes. Pick by scenario, not preference:
+
+- **Tracker mode (teamwork).** The map and its child tickets live on the repo's issue tracker (GitHub/GitLab/…). Wins: multi-agent concurrency via `claim` + native blocking edges, and the human sees the frontier rendered in the tracker's own UI. Needs: a configured tracker — run `/zj-agents-init` if none is provided.
+- **Local mode (self-contained).** The entire map — Destination, Notes, Decisions-so-far, Not-yet-specified, Out-of-scope, and the decision tickets — lives in a **single local markdown file** (the "local-markdown tracker"). Wins: context-complete (the human sees the whole map in one session), offline, zero external dependency, single-writer-simple. This is the **default** when no tracker is configured.
+
+**Same mental model either way.** Both modes expose the same primitives — `destination`, `notes`, `decisions`, `fog`, `scope`, and `tickets` with `blocking edges` + a `frontier`. So migrating from local exploration to teamwork (or back) changes the carrier, not the cognition: the map you charted locally drops onto a tracker without re-deciding anything.
+
+> This dual-mode design is the planning half of a deliberate pairing with `zj-roadmap-driven` (see [Combining with zj-roadmap-driven](#combining-with-zj-roadmap-driven)): wayfinder owns *planning* in either carrier; roadmap-driven owns *tracking*, with the same two-mode shape.
+
 ## Refer by name
 
-Every map and ticket is an issue, so it has a **name** — its title. In everything the human reads — narration, the map's Decisions-so-far — refer to it by that name, never by a bare id, number, or slug. A wall of `#42, #43, #44` is illegible; names read at a glance. The id and URL don't vanish — a name wraps its link — but they ride _inside_ the name, never stand in for it.
+Every map and ticket has a **name** — its title (tracker mode) or its numbered heading in the local markdown file (local mode). In everything the human reads — narration, the map's Decisions-so-far — refer to it by that name, never by a bare id, number, or slug. A wall of `#42, #43, #44` is illegible; names read at a glance. In tracker mode a name wraps its issue link; in local mode a name wraps its file-section anchor. The id/URL (tracker) or section number (local) don't vanish — they ride _inside_ the name, never stand in for it.
 
 ## The Map
 
-The map is a single issue on this repo's issue tracker, labelled `wayfinder:map` — the canonical artifact. Its tickets are child issues of the map.
+In **tracker mode** the map is a single issue on the repo's issue tracker, labelled `wayfinder:map`; its tickets are child issues of the map. In **local mode** the map is a single local markdown file (e.g. `docs/plans/big-map.md`) — the canonical artifact; its tickets are top-level numbered sections of that file.
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
-**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** The issue tracker should have been provided to you — run `/zj-agents-init` if not. Consult the tracker doc's "Wayfinding operations" section for how _this_ repo expresses them. If no tracker has been provided, default to the local-markdown tracker.
+**Where the map, its child tickets, blocking, and frontier queries physically live is carrier-specific** — see [Carrier modes](#carrier-modes). In **tracker mode** the issue tracker should have been provided to you (run `/zj-agents-init` if not; consult its "Wayfinding operations" section for how _this_ repo expresses them). In **local mode** — the default when no tracker is configured — everything lives in one local markdown file you create.
 
 ### The map body
 
@@ -54,7 +65,7 @@ The whole map at low resolution, loaded once per session. Open tickets are **not
 
 ### Tickets
 
-Each ticket is a **child issue** of the map; the tracker's issue id is its identity. Its body is the question, sized to one 100K token agent session:
+In **tracker mode** each ticket is a **child issue** of the map; the tracker's issue id is its identity. In **local mode** each ticket is a numbered top-level section of the map file (e.g. `## A1 — …`), and that number is its identity. Either way, the ticket body is the question, sized to one 100K token agent session:
 
 ```markdown
 ## Question
@@ -62,11 +73,11 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
 <the decision or investigation this ticket resolves>
 ```
 
-Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
+In **tracker mode** each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)). In **local mode** the type is written into the ticket heading (e.g. `## A1 … [R]`), using `R`/`G`/`P`/`T` from [Ticket Types](#ticket-types).
 
-A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work, so concurrent sessions skip it. That assignee _is_ the claim: an open, unassigned ticket is unclaimed.
+A session **claims** a ticket before any work. In **tracker mode** that means assigning the issue to the dev driving the map (an open, unassigned issue is unclaimed). In **local mode** that means writing a `🔒` (claimed) marker and the claimer's name on the ticket heading; an open ticket with no `🔒` is unclaimed.
 
-Blocking uses the tracker's **native** dependency relationship — essential because it renders the frontier _visually_ in the tracker's own UI, so the human sees what's takeable without opening the map. Only a tracker that lacks native blocking falls back to a body convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
+In **tracker mode**, blocking uses the tracker's **native** dependency relationship — essential because it renders the frontier _visually_ in the tracker's own UI. In **local mode**, blocking is a body convention: a ticket lists `⛔ blocked by: <ticket numbers>`; the dependency renders as you read the file. Either way a ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed tickets — the edge of the known.
 
 The answer isn't part of the body — it's recorded on resolution (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
 
@@ -110,8 +121,8 @@ User invokes with a loose idea.
 
 1. **Name the destination.** Run a `/zj-grilling` and `/zj-domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
 2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
-3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
-4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
+3. **Create the map.** In **tracker mode** create an issue labelled `wayfinder:map`; in **local mode** create the single local markdown file. Either way: Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
+4. **Create the tickets you can specify now.** In **tracker mode** create them as child issues; in **local mode** create them as numbered top-level sections. Wire blocking edges in a **second pass** — in tracker mode the issues need ids before they can reference each other; in local mode write `⛔ blocked by:` lines. Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
 5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/zj-research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
 6. Stop — charting is one session's work; it hand-resolves nothing.
 
@@ -120,18 +131,20 @@ User invokes with a loose idea.
 User invokes with a map (URL or number). A ticket is **optional** — without one, you pick the next decision, not the user.
 
 1. Load the **map** — the low-res view, not every ticket body.
-2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
+2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it** before any work — in tracker mode assign the issue to yourself; in local mode add the `🔒` marker + your name to the heading (see [Tickets](#tickets)).
 3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/zj-grilling` and `/zj-domain-modeling`.
-4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
+4. Record the resolution. In **tracker mode** post the answer as a **resolution comment** and **close** the issue. In **local mode** write the answer under the ticket section and mark it `✅`. Either way **append a context pointer** to the map's Decisions-so-far.
 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 
-The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
+In **tracker mode** the user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently. In **local mode** the map is single-writer — resolve one ticket per session and commit the file before the next, since two agents editing one markdown map collide.
 
 ## Combining with zj-roadmap-driven
 
-`zj-wayfinder` and `zj-roadmap-driven` are two halves of one pipeline: **plan, then track**. Wayfinder turns a foggy, too-big idea into a clear map of decision tickets; roadmap-driven then navigates and tracks the work along a defined route while keeping the human aligned at every step. They compose naturally, and a Human + Agent team gets the most from using them together:
+`zj-wayfinder` and `zj-roadmap-driven` are **one designed pair**, not two adjacent tools: **plan, then track**. Wayfinder turns a foggy, too-big idea into a clear map of decision tickets; roadmap-driven then navigates and tracks the work along a defined route while keeping the human aligned at every step. The pairing is built on two commitments:
 
-- **Plan with wayfinder, track with roadmap-driven.** When a loose idea is too big to hold in one session, run `/zj-wayfinder` first to chart the map and resolve its decision tickets until the way to the destination is clear. Then hand the resulting route to `/zj-roadmap-driven` as the roadmap JSON, and navigate execution against it — recording decisions, updating statuses, and rendering the lightweight view for the human.
-- **The handoff is the seam.** Wayfinder's output (a resolved route / set of decisions) becomes roadmap-driven's input (tree nodes + decisions). Keep the two in the same repo so the shared context — domain glossary, ADRs, conventions — carries across the seam.
-- **Choose by phase, not by preference.** If the work is already a clear, sized route, skip wayfinder and go straight to roadmap-driven. If it's fog — no visible path, big blast radius — start with wayfinder, don't force it into a premature roadmap.
-- **Both sides of the partnership.** The human owns the destination and the decisions; the agent owns charting, resolving, and tracking. With both skills, the human sees the map at planning time (wayfinder) *and* the live progress at execution time (roadmap-driven), so alignment holds across the whole effort.
+- **Dual-mode on both sides, but the two skills play different roles.** Wayfinder *produces* a plan in either carrier (tracker / local). Roadmap-driven is the canonical *local / self-contained* carrier (JSON source-of-truth + markdown lightweight view) and, on the tracker side, *consumes* a tracker-planned route — it does not itself plan on a tracker. The mental model — map/route + decisions — is identical across modes, so a plan made in either carrier lands in roadmap-driven's JSON without re-deciding.
+- **The seam is a converter, not a rewrite.** `zj-to-tickets` is the bridge: it takes wayfinder's resolved decision map (or any plan/spec) and emits tracer-bullet tickets *with their blocking edges* — as local `.scratch/.../issues/<NN>.md` files or tracker issues, never a roadmap JSON directly. The agent then runs `roadmap_cli.py init/add/decide` to carry those tickets into the roadmap JSON. Hand that JSON to `/zj-roadmap-driven`; don't re-chart it by hand.
+- **Choose by phase, not by preference.** Fog (no visible path, big blast radius) → start with wayfinder. A clear, sized route → skip to roadmap-driven. Both respect the same carrier choice, so the switch is seamless.
+- **Shared context crosses the seam.** Keep both in the same repo so the domain glossary, ADRs, and conventions carry from planning into tracking.
+
+Human + Agent get both views: the map at planning time (wayfinder) *and* live progress at execution time (roadmap-driven) — alignment holds across the whole effort.
