@@ -1,5 +1,0 @@
-interface:
-  display_name: "ZJ Zoom Out"
-  short_description: "Zoom out and give broader context on unfamiliar code"
-policy:
-  allow_implicit_invocation: false

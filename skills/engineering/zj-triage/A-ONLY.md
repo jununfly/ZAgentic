@@ -43,7 +43,7 @@ Then the script or doc must either:
 
 ## Rule 3 — new terms must update `ZJ-CONTEXT.md` before merge
 
-**Source:** ZAgentic's `ZJ-CONTEXT.md` is the project glossary that all downstream skills (`/zj-grilling`, `/zj-domain-modeling`, `/zj-teach`, `/zj-grill-me`, `/zj-grill-with-docs`) read to align vocabulary. Drift here breaks every cross-session reference.
+**Source:** ZAgentic's `ZJ-CONTEXT.md` is the project glossary that all downstream skills (`/zj-grilling`, `/zj-domain-modeling`, `/zj-teach`, `/zj-grill-with-docs`) read to align vocabulary. Drift here breaks every cross-session reference.
 
 **Check:** if the PR introduces any of:
 - a new domain concept (noun not yet in ZJ-CONTEXT.md)

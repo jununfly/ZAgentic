@@ -139,7 +139,7 @@ For solo work, you can often skip triage and move directly from a well-scoped is
 ### Variations
 
 - Need product framing before issue slicing? Use `/zj-to-spec`.
-- Need broader codebase context first? Use `/zj-zoom-out`.
+- Need broader codebase context first? Ask for a module/caller map; use [`/zj-codebase-design`](./skills/engineering/zj-codebase-design/SKILL.md) when the question is about module boundaries.
 - Need architecture improvement? Use `/zj-improve-codebase-architecture`.
 - Need a throwaway design or logic spike before committing? Use `/zj-prototype`.
 - Need a compact operating mode for long sessions? Use `/zj-caveman`.
@@ -237,7 +237,7 @@ For debugging, it also includes a **[`/zj-diagnosing-bugs`](./skills/engineering
 This is built in to every layer of these skills:
 
 - [`/zj-to-spec`](./skills/engineering/zj-to-spec/SKILL.md) quizzes you about which modules you're touching before creating a spec
-- [`/zj-zoom-out`](./skills/engineering/zj-zoom-out/SKILL.md) tells the agent to explain code in the context of the whole system
+- [`/zj-codebase-design`](./skills/engineering/zj-codebase-design/SKILL.md) keeps module and interface discussions grounded in the broader codebase context
 
 And crucially, [`/zj-improve-codebase-architecture`](./skills/engineering/zj-improve-codebase-architecture/SKILL.md) helps you rescue a codebase that has become a ball of mud. I recommend running it on your codebase once every few days.
 
@@ -265,7 +265,7 @@ Skills I use daily for code work.
 - **[zj-initiative-registry](./skills/engineering/zj-initiative-registry/SKILL.md)** — Manage a GitHub-hosted Initiative → Spec → Plan registry across devices and Agents, with deterministic validation and safe Git handoff.
 - **[zj-research](./skills/engineering/zj-research/SKILL.md)** — Investigate primary sources or compile commit-pinned evidence for a multi-repository technical comparison.
 - **[zj-research-report](./skills/engineering/zj-research-report/SKILL.md)** — Turn cited findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated decision draft.
-- **[zj-agents-init](./skills/engineering/zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out`.
+- **[zj-agents-init](./skills/engineering/zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, or `zj-improve-codebase-architecture`.
 - **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-wayfinder](./skills/engineering/zj-wayfinder/SKILL.md)** — Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on the issue tracker, resolving them one at a time until the way to the destination is clear.
 - **[zj-guide](./skills/engineering/zj-guide/SKILL.md)** — User-only router: when you don't know which skill fits, ask. Maps the main flow (idea→ship), on-ramps (bugs/big-effort/codebase-health), vocabulary underneath (domain-modeling/codebase-design), and standalone. See PHASE-BOUNDARIES.md for context-window decisions.
@@ -276,7 +276,6 @@ Skills I use daily for code work.
 - **[zj-tech-design-review](./skills/engineering/zj-tech-design-review/SKILL.md)** — Guide an evidence-backed technical design review from problem framing through architecture, metrics, risk, rollout, testing, and follow-up.
 - **[zj-to-tickets](./skills/engineering/zj-to-tickets/SKILL.md)** — Break any plan, spec, or the current conversation into tracer-bullet tickets (vertical slices), each declaring its blocking edges, published to the configured tracker — one file per ticket locally or native blocking links on a real tracker.
 - **[zj-to-spec](./skills/engineering/zj-to-spec/SKILL.md)** — Turn the current conversation context into a spec and submit it as an issue. No interview — just synthesizes what you've already discussed.
-- **[zj-zoom-out](./skills/engineering/zj-zoom-out/SKILL.md)** — Tell the agent to zoom out and give broader context or a higher-level perspective on an unfamiliar section of code.
 - **[zj-prototype](./skills/engineering/zj-prototype/SKILL.md)** — Build a throwaway prototype to answer a design question — a single shareable HTML file for logic/state-model questions, or several radically different UI variations on one route.
 
 ### Productivity
@@ -285,7 +284,6 @@ General workflow tools, not code-specific.
 
 - **[zj-caveman](./skills/productivity/zj-caveman/SKILL.md)** — Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler while keeping full technical accuracy.
 - **[zj-grilling](./skills/productivity/zj-grilling/SKILL.md)** — Grill the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved (frontier/rounds method).
-- **[zj-grill-me](./skills/productivity/zj-grill-me/SKILL.md)** — User-only entry point: run a `/zj-grilling` session. Oral short-form trigger.
 - **[zj-handoff](./skills/productivity/zj-handoff/SKILL.md)** — Compact the current conversation into a handoff document so another agent can continue the work.
 - **[zj-write-a-skill](./skills/productivity/zj-write-a-skill/SKILL.md)** — Create new skills with proper structure, progressive disclosure, and bundled resources.
 - **[zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md)** — Reference for writing any document an agent consumes (skills, AGENTS.md/CLAUDE.md, pointer-reached docs): context pointers, progressive disclosure, leading words, pruning.

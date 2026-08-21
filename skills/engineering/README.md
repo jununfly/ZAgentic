@@ -20,7 +20,7 @@ Skills I use daily for code work.
 - **[zj-initiative-registry](./zj-initiative-registry/SKILL.md)** — Manage a GitHub-hosted Initiative → Spec → Plan registry across devices and Agents, with deterministic validation and safe Git handoff.
 - **[zj-research](./zj-research/SKILL.md)** — Investigate primary sources or compile commit-pinned evidence for a multi-repository technical comparison.
 - **[zj-research-report](./zj-research-report/SKILL.md)** — Turn cited findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated decision draft.
-- **[zj-hv-analysis](./zj-hv-analysis/SKILL.md)** — 横纵分析法深度研究：纵轴追踪对象从诞生到当下的生命历程，横轴在当下截面与竞品系统对比，交叉产出洞察，最终输出 PDF 研究报告（源自 khazix-skills）。
+- **[zj-systematic-research](./zj-systematic-research/SKILL.md)** — 系统性研究产品、公司、概念、技术或人物：重建演进脉络，分析当前竞品/同类格局，综合形成判断（源自 khazix-skills）。
 - **[zj-leader](./zj-leader/SKILL.md)** — 把一句话想法拆成 agent 能独立跑完的 /goal 任务书：先实测调研、一轮 ≤5 问、产出含验收与断点续跑的任务书，跑完由管理者角色验收（源自 khazix-skills）。
 - **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — 知识/治理收尾：把项目文档、规则文件、Agent 记忆和工作区残留与代码实际运行态对齐，让下一次会话从唯一现役答案开始（源自 khazix-skills，含 evals/）。
 - **[zj-agents-init](./zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume.
@@ -31,5 +31,4 @@ Skills I use daily for code work.
 - **[zj-tech-design-review](./zj-tech-design-review/SKILL.md)** — Guide an evidence-backed technical design review from problem framing through architecture, metrics, risk, rollout, testing, and follow-up.
 - **[zj-to-tickets](./zj-to-tickets/SKILL.md)** — Break any plan, spec, or the current conversation into tracer-bullet tickets (vertical slices), each declaring its blocking edges, published to the configured tracker — one file per ticket locally or native blocking links on a real tracker.
 - **[zj-to-spec](./zj-to-spec/SKILL.md)** — Turn the current conversation context into a spec and submit it as an issue.
-- **[zj-zoom-out](./zj-zoom-out/SKILL.md)** — Tell the agent to zoom out and give broader context or a higher-level perspective on an unfamiliar section of code.
 - **[zj-prototype](./zj-prototype/SKILL.md)** — Build a throwaway prototype to answer a design question — a single shareable HTML file for logic/state-model questions, or several radically different UI variations on one route.

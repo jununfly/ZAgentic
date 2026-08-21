@@ -1,0 +1,292 @@
+{
+  "title": "ZAgentic Skills 规范、退休与使用导航治理",
+  "description": "基于 49 个现有 skill 的审计基线，修复规范与注册漂移，审计退休候选，并按真实使用场景重构 zj-guide。",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "label": "ZAgentic Skills 规范、退休与使用导航治理",
+      "status": "in_progress",
+      "mode": "explore",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3"
+      ],
+      "decisions": [
+        {
+          "q": "这次工作使用哪种路线图载体？",
+          "answer": "新建 docs/plans/zagentic-skills-governance-roadmap.json，并由 roadmap_cli 渲染同名 Markdown 视图；暂不修改 global-initiative-roadmap.json。",
+          "note": "全局索引要求 Initiative→Spec→Plan 三层，当前没有对应新 Spec；执行路线先独立落盘，后续若需要再登记。"
+        },
+        {
+          "q": "本轮是否直接退休或删除 skill？",
+          "answer": "否。先审计证据并形成候选清单，只有 Human 明确批准后才执行删除、合并或迁移。",
+          "note": "避免把‘检查哪些可以退休’误解成已授权的破坏性变更。"
+        }
+      ],
+      "notes": "范围：规范整改、退休候选审计、使用导航重构。当前仅建立执行路线；不直接删除 skill，不直接修改 global-initiative-roadmap.json。"
+    },
+    "1-1": {
+      "id": "1-1",
+      "label": "修复 skill 规范与注册一致性",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-1-1",
+        "1-1-2",
+        "1-1-3",
+        "1-1-4",
+        "1-1-5",
+        "1-1-6"
+      ],
+      "decisions": [],
+      "notes": "完成基线：49 个 SKILL.md；2 个 YAML frontmatter 解析失败；19 个 SKILL.md 超过 100 行；顶层 README 缺 7 个公开 skill；engineering bucket README 缺 1 个；plugin 根路径覆盖 personal。"
+    },
+    "1-2": {
+      "id": "1-2",
+      "label": "审计并决策 skill 退休候选",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-2-1",
+        "1-2-2",
+        "1-2-3",
+        "1-2-4",
+        "1-2-5"
+      ],
+      "decisions": [
+        {
+          "q": "退休候选的判定标准是什么？",
+          "answer": "独有价值、实际入口、交叉引用、替代成本和维护负担共同决定；重复 wrapper 优先考虑合并，个人 skill 默认不纳入公开推广。",
+          "note": "结论必须可追溯到文件和引用证据。"
+        }
+      ],
+      "notes": "退休不是删除默认动作。先建立证据：README/入口、skill 间调用、资源依赖、安装/卸载清单、重复能力、个人/公开边界与实际使用场景；最终按保留、合并、退休候选输出迁移影响。"
+    },
+    "1-3": {
+      "id": "1-3",
+      "label": "基于实际使用更新 zj-guide 路由",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-3-1",
+        "1-3-2",
+        "1-3-3",
+        "1-3-4"
+      ],
+      "decisions": [
+        {
+          "q": "zj-guide 的职责边界是什么？",
+          "answer": "只维护当前使用路径、阶段选择和 skill 边界；详细操作继续由各 skill 自己负责。",
+          "note": "避免 guide 变成第二份 README 或流程手册。"
+        }
+      ],
+      "notes": "以 ZAgentic 当前 49 个 skill、顶层 README、bucket README、AGENTS/CLAUDE 约束和 skill 交叉引用为事实来源；区分 user-only router、model-invoked reference、主流程、on-ramp 与 standalone。"
+    },
+    "1-1-1": {
+      "id": "1-1-1",
+      "label": "固化 49 个 skill 审计基线",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "已完成基线审计：49 个 SKILL.md；2 个 YAML frontmatter 解析失败；19 个 SKILL.md 超过 100 行；顶层 README 缺 7 个公开 skill；engineering bucket README 缺 1 个；plugin 根路径覆盖 personal。"
+    },
+    "1-1-2": {
+      "id": "1-1-2",
+      "label": "修正不可解析的 frontmatter",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "disable-model-invocation 是否全部移除？",
+          "answer": "否。仓库自己的 zj-writing-for-agents/SKILL-MECHANICS.md 将其定义为 user-invoked 机制；只处理真正不受目标运行时支持的字段。",
+          "note": "需要在 schema/validator 节点确认 Codex、Claude、WorkBuddy 的兼容边界。"
+        }
+      ],
+      "notes": "将 zj-merge-skills-wave 与 zj-wayfinder 的 description 改为合法 YAML，保留完整触发语义；完成后运行 quick_validate 与 roadmap 相关检查。"
+    },
+    "1-1-3": {
+      "id": "1-1-3",
+      "label": "统一 frontmatter schema 与校验器策略",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "保留 writing-for-agents 明确支持的 disable-model-invocation；对 compatibility、title、triggers、argument-hint 先验证目标平台 schema，再决定标准化字段或扩展 validator，禁止静默丢弃 user-only 语义。"
+    },
+    "1-1-4": {
+      "id": "1-1-4",
+      "label": "拆分 19 个超长 SKILL.md",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "19 个超长 skill：zj-agents-init、zj-codebase-design、zj-diagnosing-bugs、zj-git-bypass-safe-delete、zj-hv-analysis、zj-merge-skill-pair、zj-merge-skills-wave、zj-neat-freak、zj-research-report、zj-roadmap-driven、zj-to-tickets、zj-triage、zj-wayfinder、zj-aihot、zj-migrate-to-shoehorn、zj-scaffold-exercises、zj-storage-analyzer、zj-teach、zj-write-a-skill。按分支/模式把 reference 下沉，保持 SKILL.md 主流程可扫描。"
+    },
+    "1-1-5": {
+      "id": "1-1-5",
+      "label": "同步 README、bucket 索引与 plugin 注册边界",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "补齐顶层 README 的 7 个公开 skill；补齐 engineering README 的 zj-git-bypass-safe-delete；plugin 只暴露 engineering/productivity/misc，personal 保持不推广；同步检查 link-skills 与卸载清单的边界。"
+    },
+    "1-1-6": {
+      "id": "1-1-6",
+      "label": "校验 descriptions、references 与脚本资源",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "已知实际链接与脚本语法通过；整改后重新检查 description 触发条件、引用一层深度、脚本可定位性、无时间敏感沉积与具体示例。"
+    },
+    "1-2-1": {
+      "id": "1-2-1",
+      "label": "盘点 skill 入口、交叉引用与实际使用证据",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "当前仓库能证明哪些 skill 正在被使用？",
+          "answer": "能证明的是入口与维护关系，而非运行时调用频次：26 个公开 skill 已被 zj-guide 显式路由；grilling、to-tickets、domain-modeling、roadmap-driven、triage、agents-init、to-spec 的交叉引用密度最高；近期 Git 历史显示 2026-08-15 至 2026-08-21 仍在持续新增和维护 skill。",
+          "note": "没有调用遥测；对 2026-08-15 后新增 skill 的低引用必须按新鲜度解释，不能按沉寂解释。"
+        }
+      ],
+      "notes": "盘点完成：仓库共有 49 个 skill（engineering 32、productivity 9、misc 6、personal 2）。可观察入口为 SKILL.md 交叉引用、README/bucket README、plugin.json、agents/openai.yaml、安装/卸载清单与近期 Git 维护历史；当前没有运行时调用遥测。zj-guide 只显式覆盖 26/47 个公开 skill，遗漏 zj-debrief、zj-dry-run、zj-steelman、zj-roadmap-driven、zj-initiative-registry、zj-merge-skill-pair、zj-merge-skills-wave、zj-hv-analysis、zj-leader、zj-neat-freak、zj-tech-design-review、zj-write-a-skill、zj-zoom-out 及多个 niche utility。高密度交叉引用集中在 zj-grilling、zj-to-tickets、zj-domain-modeling、zj-roadmap-driven、zj-triage、zj-agents-init、zj-to-spec；AIHOT、storage、HV、leader、neat-freak 等低引用项多为近期新增或独立工具，低引用不能直接证明未使用。"
+    },
+    "1-2-2": {
+      "id": "1-2-2",
+      "label": "分析 skill 重叠、替代关系与保留价值",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "哪些 skill 具备重叠或可吸收关系？",
+          "answer": "zj-zoom-out 最接近可吸收的薄层提示；zj-grill-me 与 zj-grill-with-docs 是入口统一候选但保留 stateless/stateful 边界；zj-hv-analysis 与 research/report 是能力重叠候选但保留 PDF 横纵分析差异；zj-implement、wayfinder/roadmap-driven/to-tickets、跨阶段三件套不视为重复。",
+          "note": "候选关系不等于删除授权；每项仍需 Human 决定。"
+        }
+      ],
+      "notes": "重叠分析完成：核心主流程与词汇层（grilling、domain-modeling、codebase-design、to-spec、to-tickets、implement、tdd、code-review）应保留；wayfinder→to-tickets→roadmap-driven 是明确的规划/转换/跟踪组合，应保留；debrief、steelman、dry-run 受 AGENTS 明确要求，应保留。需要进一步讨论的薄层入口是 zj-zoom-out（7 行、无资源、可被 guide 的高层解释路径吸收）和 zj-grill-me/zj-grill-with-docs（都是 grilling 入口，但分别承担无工作区 stateless 与有工作区 stateful 语义，不能直接删除）。zj-hv-analysis 与 zj-research/zj-research-report 有研究重叠，但 PDF 横纵分析是独有输出；zj-implement 是带 TDD/review/commit 约束的总指挥，不等同于 zj-tdd。近期新增的 neat-freak、leader、AIHOT、storage、tech-design-review 及安全/迁移类 skill 暂无充分证据退休。"
+    },
+    "1-2-3": {
+      "id": "1-2-3",
+      "label": "形成退休、合并、保留三类候选清单",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "当前是否存在可以直接退休的 skill？",
+          "answer": "没有无条件直接退休项。优先把 zj-zoom-out 作为条件退休/吸收候选，把 grill 入口和 HV 研究作为合并评估候选，其余 skill 暂保留并在 guide 中补入口或标明 standalone。",
+          "note": "退休前必须完成替代路径、交叉引用、注册清单和安装行为的迁移验证。"
+        }
+      ],
+      "notes": "候选清单：A 级条件退休/吸收候选：zj-zoom-out；B 级入口统一候选：zj-grill-me、zj-grill-with-docs（先保留 stateful/stateless 区分）；C 级重叠评估候选：zj-hv-analysis 与 zj-research/zj-research-report（先验证 PDF 研究需求）。明确暂不退休：核心主流程、路线图组合、跨阶段三件套、治理/安全 skill、近期新增独立能力、zj-writing-for-agents/zj-write-a-skill、个人桶 skill。当前没有无条件删除项，进入 1-2-4 前只需 Human 对 A/B/C 候选作取舍。"
+    },
+    "1-2-4": {
+      "id": "1-2-4",
+      "label": "获取 Human 对退休候选的明确决策",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "zj-zoom-out 的处置方式是什么？",
+          "answer": "退休：直接从仓库 active skills 集合删除，不再提供独立触发入口；如需恢复，通过 Git 找回已删除文件。",
+          "note": "清理 README、agents-init 的硬编码列表、安装清单与其他 active 文档引用；不删除治理路线图中的历史审计记录。"
+        },
+        {
+          "q": "zj-grill-me 与 zj-grill-with-docs 的入口策略是什么？",
+          "answer": "删除 zj-grill-me，保留 zj-grill-with-docs；无工作目录的独立场景直接使用底层 zj-grilling。",
+          "note": "两个 wrapper 的状态边界保留在有文档入口与底层原语之间；同步 guide、README、bucket 索引、安装清单和交叉引用。"
+        },
+        {
+          "q": "zj-hv-analysis 应如何命名及触发？",
+          "answer": "改名为 zj-longform-research；仅在用户明确要求对产品、公司、概念、技术或人物做‘历史演进 + 当前竞品/同类格局 + PDF 报告’的长篇研究时触发。",
+          "note": "移除内部 hv 缩写作为用户入口；普通资料检索、API/文档调研、技术选型比较和简单解释继续路由到 zj-research / zj-research-report 或其他 skill。"
+        },
+        {
+          "q": "zj-longform-research 的命名与 description 是否应以产出物为中心？",
+          "answer": "修正为目标/能力导向：改名为 zj-systematic-research；description 强调对产品、公司、概念、技术或人物进行系统性研究，重建演进脉络、分析竞争位置并综合形成判断。",
+          "note": "PDF 是交付约束，不是主要区分度；继续保留在正文工作流中，但不作为 frontmatter 的核心触发条件。"
+        }
+      ],
+      "notes": "Human 已明确选择直接退休 zj-zoom-out；active 文件已删除，恢复路径为 Git。"
+    },
+    "1-2-5": {
+      "id": "1-2-5",
+      "label": "执行批准的退休或合并并同步注册文档",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [],
+      "notes": "已执行直接退休：删除 skills/engineering/zj-zoom-out/SKILL.md 与 agents/openai.yaml；清理顶层 README、engineering README、zj-agents-init description、setup-pointer ADR；重新生成 scripts/zagentic-skills-list。Git 可恢复，未修改其他用户未提交文件。"
+    },
+    "1-3-1": {
+      "id": "1-3-1",
+      "label": "提取当前 README、入口与 skill 交叉引用的使用路径",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "目标主流：对齐意图→切 tickets→实现/TDD→诊断→review/交接；on-ramp：wayfinder/roadmap、prototype、architecture、research；词汇层：domain-modeling/codebase-design；standalone：冲突、wizard、storage、AIHOT、文章/Obsidian 等。"
+    },
+    "1-3-2": {
+      "id": "1-3-2",
+      "label": "设计按阶段与场景组织的 zj-guide 路由",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "guide 应只做选择与边界提示，不复制各 skill 的详细流程；根据阶段、任务规模、是否需要 tracker、是否 user-only 及是否属于个人 skill 路由。"
+    },
+    "1-3-3": {
+      "id": "1-3-3",
+      "label": "更新 zj-guide 与 PHASE-BOUNDARIES",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "更新 zj-guide/SKILL.md，并按需同步 PHASE-BOUNDARIES.md、顶层 README 路由文字；退休候选一旦批准，必须同时移除过期入口并补替代路径。"
+    },
+    "1-3-4": {
+      "id": "1-3-4",
+      "label": "验证 guide 覆盖率、链接与退休后路由",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "验收：每个公开 skill 至少有一个可达入口或明确 standalone 说明；不存在指向退休 skill 的活跃路由；所有 guide/phase 链接有效；user-only 与 model-invoked 边界可解释。"
+    }
+  },
+  "metadata": {
+    "created": "2026-08-22 00:30:59",
+    "updated": "2026-08-22 01:13:06",
+    "md_file": "docs/plans/zagentic-skills-governance-roadmap.md"
+  }
+}

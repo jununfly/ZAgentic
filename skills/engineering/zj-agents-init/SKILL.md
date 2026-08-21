@@ -1,6 +1,6 @@
 ---
 name: zj-agents-init
-description: Initializes the per-repo agent context that the engineering skills assume — writes the `## Agent skills` block to AGENTS.md/CLAUDE.md and seeds `docs/zj-agents/` (issue tracker, triage label vocabulary, domain doc layout). Run before first use of `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-wayfinder`, `zj-diagnosing-bugs`, `zj-tdd`, `zj-improve-codebase-architecture`, or `zj-zoom-out` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
+description: Initializes the per-repo agent context that the engineering skills assume — writes the `## Agent skills` block to AGENTS.md/CLAUDE.md and seeds `docs/zj-agents/` (issue tracker, triage label vocabulary, domain doc layout). Run before first use of `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-wayfinder`, `zj-diagnosing-bugs`, `zj-tdd`, or `zj-improve-codebase-architecture` — or if those skills appear to be missing context about the issue tracker, triage labels, or domain docs.
 disable-model-invocation: true
 ---
 
