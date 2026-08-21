@@ -78,6 +78,18 @@ _Avoid_: latest compiler, PATH fallback, vendored source
 The immutable rubric set, per-case human annotation set, and blind-Judge calibration set resolved by one versioned keyless corpus. Every quality case resolves to human truth, and only a calibrated Judge configuration contributes results to a quality baseline.
 _Avoid_: mutable benchmark, Judge-only truth, unique recommendation answer
 
+**Technical design review**:
+A decision-focused design document that traces a user problem and target outcome through constraints, alternatives, architecture, ownership, risks, validation gates, rollout, and follow-up. It is a review artifact; it does not authorize implementation by itself.
+_Avoid_: implementation plan, feature checklist, architecture essay
+
+**Review gate**:
+An explicit observable threshold or decision condition that determines whether a design can proceed, pause, roll back, or be revised. A gate names evidence, owner, and exit action.
+_Avoid_: vague confidence, sign-off, success hope
+
+**Short-read acceptance**:
+A human review gate where a reviewer reads a design briefly, without validator output, and recovers the decision, blocking finding and owner, and next validation action with threshold and owner. It tests whether the document makes its critical path legible, not whether the prose is stylistically polished.
+_Avoid_: skimming, automated approval, prose review
+
 ### Global initiative navigation
 
 **Initiative**:
@@ -236,6 +248,7 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - 改名前先 grep 定量引用清单，执行后 grep 清零验证，不凭记忆列文件  — docs/zj-retros/2026-08-14-retro.md#2100
 - skill 改名后本地同步用仓源 cp 覆盖，只 mv 目录会让 frontmatter name 失配  — docs/zj-retros/2026-08-14-retro.md#2100
+- short-read 验收必须用三类 fixture 盲读，并把“动作 + 阈值 + owner”作为下一验证的最小答案  — docs/zj-retros/2026-08-21-retro.md#2335
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 
