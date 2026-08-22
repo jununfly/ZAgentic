@@ -122,5 +122,5 @@ flowchart LR
 - 全局导航：[global initiative roadmap](plans/global-initiative-roadmap.json)
 - ZHarness 执行路线图：`ZHarness/docs/zj/learning_roadmap.md`
 - Federated Context 方案：[集成技术方案](../../ZHarness/docs/prds/federated-context.md)
-- 多设备上下文调研：[评估报告](../research/multi-device-agent-context/2026-08-19-agent-context-draft.md)
+- 多设备上下文调研：[评估报告](../skills-outputs/zj-research-report/multi-device-agent-context/2026-08-19-agent-context-draft.md)
 - Research Agent 双路线对比：[Agent 与 skill 对比](../research/agent-harness-comparison/2026-08-18-agent-vs-skill-comparison.md)
