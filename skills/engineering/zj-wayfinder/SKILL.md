@@ -1,6 +1,7 @@
 ---
 name: zj-wayfinder
-description: Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets, and resolve them one at a time until the way to the destination is clear. Dual-mode: a tracker-dependent carrier (teamwork, multi-agent) or a self-contained local-markdown carrier (context-complete, offline). Designed as a skill pair with zj-roadmap-driven (plan → track); zj-to-tickets is the seam converter.
+description: >-
+  Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets, and resolve them one at a time until the way to the destination is clear. Dual-mode: a tracker-dependent carrier (teamwork, multi-agent) or a self-contained local-markdown carrier (context-complete, offline). Designed as a skill pair with zj-roadmap-driven (plan → track); zj-to-tickets is the seam converter.
 disable-model-invocation: true
 ---
 

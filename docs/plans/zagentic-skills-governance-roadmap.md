@@ -1,14 +1,14 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `zagentic-skills-governance-roadmap.json` | 最后更新: 2026-08-22 01:13:06
+> 数据文件: `zagentic-skills-governance-roadmap.json` | 最后更新: 2026-08-22 09:12:30
 
 [~][X+] 1. ZAgentic Skills 规范、退休与使用导航治理
 ├── [~][Y+] 1-1. 修复 skill 规范与注册一致性
 │   ├── [x][Y+] 1-1-1. 固化 49 个 skill 审计基线
-│   ├── [ ][Y+] 1-1-2. 修正不可解析的 frontmatter
-│   ├── [ ][X+] 1-1-3. 统一 frontmatter schema 与校验器策略
-│   ├── [ ][Y+] 1-1-4. 拆分 19 个超长 SKILL.md
+│   ├── [x][Y+] 1-1-2. 修正不可解析的 frontmatter
+│   ├── [x][X+] 1-1-3. 统一 frontmatter schema 与校验器策略
+│   ├── [x][Y+] 1-1-4. 拆分 19 个超长 SKILL.md
 │   ├── [ ][Y+] 1-1-5. 同步 README、bucket 索引与 plugin 注册边界
 │   └── [ ][Y+] 1-1-6. 校验 descriptions、references 与脚本资源
 ├── [x][X+] 1-2. 审计并决策 skill 退休候选

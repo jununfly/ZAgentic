@@ -8,6 +8,9 @@ from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parent
 CLI = SKILL_DIR / "roadmap_cli.py"
+sys.path.insert(0, str(SKILL_DIR))
+
+from roadmap import Roadmap
 
 
 class RoadmapCliTest(unittest.TestCase):
@@ -91,7 +94,7 @@ class RoadmapCliTest(unittest.TestCase):
         self.run_cli("add", self.roadmap, "1", "Resumed child")
         self.run_cli("validate", self.roadmap)
 
-    def test_light_render_shows_bounded_focus_subtree(self):
+    def test_light_render_ignores_cascaded_non_leaf_focus(self):
         md_file = self.workdir / "roadmap.md"
         self.run_cli("init", self.roadmap, "--title", "Focus roadmap", "--md-file", md_file)
         self.run_cli("add", self.roadmap, "1", "Implementation focus", "--status", "in_progress")
@@ -104,12 +107,40 @@ class RoadmapCliTest(unittest.TestCase):
         self.run_cli("render", self.roadmap)
         rendered = md_file.read_text(encoding="utf-8")
 
+        self.assertNotIn("### 当前施工：1-1. Implementation focus", rendered)
+        self.assertNotIn("Build the next slice.", rendered)
+        self.assertNotIn("Q: How deep?", rendered)
+        self.assertIn("[ ][X+] 1-1-1. Visible child", rendered)
+        self.assertNotIn("[ ][X+] 1-1-1-1. Hidden grandchild", rendered)
+
+    def test_light_render_shows_leaf_focus_details(self):
+        md_file = self.workdir / "roadmap.md"
+        self.run_cli("init", self.roadmap, "--title", "Focus roadmap", "--md-file", md_file)
+        self.run_cli("add", self.roadmap, "1", "Implementation focus", "--status", "in_progress")
+        self.run_cli("update", self.roadmap, "1-1", "--notes", "Build the next slice.")
+        self.run_cli("decide", self.roadmap, "1-1", "How deep?", "One level in light render")
+
+        self.run_cli("render", self.roadmap)
+        rendered = md_file.read_text(encoding="utf-8")
+
         self.assertIn("### 当前施工：1-1. Implementation focus", rendered)
         self.assertIn("Build the next slice.", rendered)
         self.assertIn("Q: How deep?", rendered)
-        self.assertIn("[ ][X+] 1-1-1. Visible child", rendered)
-        self.assertNotIn("[ ][X+] 1-1-1-1. Hidden grandchild", rendered)
-        self.assertIn("... 2 more child nodes; run tree 1-1-1 --depth 2 for full view", rendered)
+
+    def test_focus_subtree_is_bounded(self):
+        self.run_cli("init", self.roadmap, "--title", "Focus roadmap")
+        self.run_cli("add", self.roadmap, "1", "Implementation parent")
+        self.run_cli("add", self.roadmap, "1-1", "Visible child")
+        self.run_cli("add", self.roadmap, "1-1-1", "Hidden grandchild")
+        self.run_cli("add", self.roadmap, "1-1-1", "Second hidden grandchild")
+
+        roadmap = Roadmap(str(self.roadmap))
+        roadmap.load()
+        subtree = roadmap.get_focus_subtree("1-1", max_depth=1)
+
+        self.assertIn("[ ][X+] 1-1-1. Visible child", subtree)
+        self.assertNotIn("[ ][X+] 1-1-1-1. Hidden grandchild", subtree)
+        self.assertIn("... 2 more child nodes; run tree 1-1-1 --depth 2 for full view", subtree)
 
     def test_render_recovers_from_truncated_end_marker_without_duplicating(self):
         md_file = self.workdir / "roadmap.md"

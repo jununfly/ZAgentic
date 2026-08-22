@@ -101,7 +101,7 @@
     "1-1-2": {
       "id": "1-1-2",
       "label": "修正不可解析的 frontmatter",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
@@ -112,27 +112,59 @@
           "note": "需要在 schema/validator 节点确认 Codex、Claude、WorkBuddy 的兼容边界。"
         }
       ],
-      "notes": "将 zj-merge-skills-wave 与 zj-wayfinder 的 description 改为合法 YAML，保留完整触发语义；完成后运行 quick_validate 与 roadmap 相关检查。"
+      "notes": "已将 zj-merge-skills-wave 与 zj-wayfinder 的 description 改为合法 YAML block scalar，保留完整触发语义与 disable-model-invocation；PyYAML frontmatter 解析通过。quick_validate 仅报告既有 disable-model-invocation schema 警告，转由 1-1-3 处理。"
     },
     "1-1-3": {
       "id": "1-1-3",
       "label": "统一 frontmatter schema 与校验器策略",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "保留 writing-for-agents 明确支持的 disable-model-invocation；对 compatibility、title、triggers、argument-hint 先验证目标平台 schema，再决定标准化字段或扩展 validator，禁止静默丢弃 user-only 语义。"
+      "decisions": [
+        {
+          "q": "开源 merge skill 的原文保护边界是什么？",
+          "answer": "开源 merge skill 的正文默认保留原文；语法、索引、路径和名称耦合等机械修复可直接执行。若认为原文逻辑或语义需要改写，必须先与 Human grill 对齐具体改法，再实施。schema/validator 只识别和校验字段，不借机改写正文。",
+          "note": "原因：保留后续 merge 更新能力，也尊重已被验证有效的原文；本规则适用于当前及后续 merge 进来的 skill。"
+        },
+        {
+          "q": "title/triggers 是否立即迁入 metadata？",
+          "answer": "暂不迁移；将 title/triggers 登记为 zj-roadmap-driven 的受控仓库扩展，并在 validator 中显式校验。确认所有运行时消费者后，再决定是否迁移。",
+          "note": "git 历史显示 triggers 曾被专门修复，移位可能改变触发行为；本轮优先保持已验证行为和原文可更新性。"
+        },
+        {
+          "q": "description 中的角括号占位符如何处理？",
+          "answer": "将 frontmatter description 中的 branch 占位符与 source 占位符机械替换为 branch-name 与 source-name，以满足 validator 的 description 约束；不改 skill 正文逻辑。",
+          "note": "这是规范修复而非语义改写；不需要额外 grill。"
+        }
+      ],
+      "notes": "已落地双层 frontmatter schema：新增 docs/designs/zj-skill-frontmatter-schema.md 与 scripts/validate-skill-frontmatter.py。validator 严格校验核心/标准可选/调用扩展字段、zj-roadmap-driven 的受控 title/triggers 扩展、目录-name 耦合、description 限制与可选 Codex sidecar；47/47 skill 通过。未迁移 title/triggers，等待消费者证据以避免改变已验证触发行为。已在 zj-merge-skills-wave 与 zj-merge-skill-pair 加入开源原文保护门禁：语义改写先 grill，机械修复可直接做。外部 quick_validate 剩余 23 个 disable-model-invocation/扩展字段提示属于其 schema 不兼容，不再有 YAML 或 description 错误。"
     },
     "1-1-4": {
       "id": "1-1-4",
       "label": "拆分 19 个超长 SKILL.md",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
-      "children": [],
-      "decisions": [],
-      "notes": "19 个超长 skill：zj-agents-init、zj-codebase-design、zj-diagnosing-bugs、zj-git-bypass-safe-delete、zj-hv-analysis、zj-merge-skill-pair、zj-merge-skills-wave、zj-neat-freak、zj-research-report、zj-roadmap-driven、zj-to-tickets、zj-triage、zj-wayfinder、zj-aihot、zj-migrate-to-shoehorn、zj-scaffold-exercises、zj-storage-analyzer、zj-teach、zj-write-a-skill。按分支/模式把 reference 下沉，保持 SKILL.md 主流程可扫描。"
+      "children": [
+        "1-1-4-1",
+        "1-1-4-2",
+        "1-1-4-3",
+        "1-1-4-4"
+      ],
+      "decisions": [
+        {
+          "q": "超长 skill 的拆分范围是什么？",
+          "answer": "保守拆分：开源 merge/adopt skill 保持原文结构；只对本地治理 skill 或 Human 明确允许的 skill 做结构拆分，并逐个确认边界。",
+          "note": "保留后续 merge 更新能力，避免为满足 100 行规则而改变已验证的上下文结构。"
+        },
+        {
+          "q": "允许拆分哪些本地治理 skill？",
+          "answer": "仅拆分 zj-roadmap-driven、zj-merge-skill-pair、zj-merge-skills-wave；保持 zj-git-bypass-safe-delete、zj-agents-init、所有开源 merge/adopt skill 和当前有用户修改的 zj-research-report 不变。",
+          "note": "保守拆分：只把明显的参考资料/分支内容移到同目录 references/，保留主流程与语义。"
+        }
+      ],
+      "notes": "只读盘点完成：19 个 SKILL.md 超过 100 行，范围为 102–320 行。含明显开源 merge/adopt/严格对齐来源或历史来源的 skill：zj-systematic-research、zj-codebase-design、zj-diagnosing-bugs、zj-neat-freak、zj-research-report、zj-to-tickets、zj-wayfinder、zj-aihot、zj-storage-analyzer、zj-teach、zj-write-a-skill 等；本地治理/编排候选包括 zj-roadmap-driven、zj-git-bypass-safe-delete、zj-merge-skill-pair、zj-merge-skills-wave、zj-agents-init。拆分会改变文件结构与上下文加载，不能默认对开源原文执行；需要 Human grill 明确哪些 skill 可以拆、拆到什么边界。"
     },
     "1-1-5": {
       "id": "1-1-5",
@@ -282,11 +314,57 @@
       "children": [],
       "decisions": [],
       "notes": "验收：每个公开 skill 至少有一个可达入口或明确 standalone 说明；不存在指向退休 skill 的活跃路由；所有 guide/phase 链接有效；user-only 与 model-invoked 边界可解释。"
+    },
+    "1-1-4-1": {
+      "id": "1-1-4-1",
+      "label": "拆分 zj-roadmap-driven 的参考内容",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "主文件保留目标、核心工作流、门禁与路由；新增 references/roadmap-data-model.md、roadmap-cli.md、dual-mode.md，拆分仅改变信息层级。"
+    },
+    "1-1-4-2": {
+      "id": "1-1-4-2",
+      "label": "拆分 zj-merge-skill-pair 的参考内容",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "主流程和 source-preservation gate 保持原位；新增 references/side-effects.md，承载 12 类副作用和 per-merge 触碰清单。"
+    },
+    "1-1-4-3": {
+      "id": "1-1-4-3",
+      "label": "拆分 zj-merge-skills-wave 的参考内容",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "主流程、source-preservation gate、发现/比较/交接步骤保持原位；新增 references/pair-planning.md，承载 pair forms 和 strategy enum。"
+    },
+    "1-1-4-4": {
+      "id": "1-1-4-4",
+      "label": "修正 zj-roadmap-driven focus 回归测试契约",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "focus 回归测试应覆盖什么契约？",
+          "answer": "保持 focus 只返回 in_progress 叶节点；分别测试叶节点 focus 详情、级联非叶节点不成为 focus，以及 get_focus_subtree 的深度边界。",
+          "note": "实现契约来自 f22e3f7 的 focus 修复；原测试仍期待非叶节点作为 focus，属于陈旧断言。"
+        }
+      ],
+      "notes": "修正 test_roadmap.py：叶节点 focus 详情、级联非叶节点不聚焦、get_focus_subtree 深度边界分别覆盖；6/6 内置测试通过。"
     }
   },
   "metadata": {
     "created": "2026-08-22 00:30:59",
-    "updated": "2026-08-22 01:13:06",
+    "updated": "2026-08-22 09:12:30",
     "md_file": "docs/plans/zagentic-skills-governance-roadmap.md"
   }
 }

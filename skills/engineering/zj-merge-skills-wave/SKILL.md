@@ -1,6 +1,7 @@
 ---
 name: zj-merge-skills-wave
-description: Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from mattpocock/skills, another skills collection, or any directory of SKILL.md files. Triggers on "merge skills from", "absorb from <source>", "import skills from". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.
+description: >-
+  Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from mattpocock/skills, another skills collection, or any directory of SKILL.md files. Triggers on "merge skills from", "absorb from source-name", "import skills from". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.
 disable-model-invocation: true
 ---
 
@@ -19,6 +20,20 @@ Plan and orchestrate a **whole wave** of skill merges into this repo's `skills/`
 - Merging a single known skill → use `zj-merge-skill-pair` directly
 - Comparing two skills to decide strategy → use `zj-grilling`
 - Tracking merged skills' state → use `zj-roadmap-driven`
+
+## Pair-planning reference
+
+Before comparing candidates or proposing a merge strategy, read the [skill-pair forms and strategy reference](references/pair-planning.md).
+
+## Source preservation gate
+
+When a candidate comes from an open-source skills collection, preserve its
+source instructions by default. During comparison, distinguish mechanical
+conformance work (valid YAML, `zj-` naming, indexes, registrations) from a
+change to the source skill's logic or semantics. If an improvement would
+rewrite logic or meaning and the source has no concrete error or omission,
+stop and route that proposed change through `/zj-grilling` before putting it
+in a merge strategy. Record the agreed change in the roadmap decision.
 
 ## Process
 
@@ -57,20 +72,7 @@ Ask the human to choose:
 
 For each candidate source skill, compare against `base-skills-list` using name + description similarity. Produce skill-pairs in one of these forms:
 
-| form | example | meaning |
-|---|---|---|
-| `pair(base, source)` | `pair(zj-triage, triage)` | same intent, different name → absorb/采纳/micro/严格对齐 |
-| `pair(null, source)` | `pair(null, code-review)` | new to base → adopt-as-is or adopt-with-modifications |
-| `pair(base, null)` | `pair(zj-grill-with-docs, null)` | base-only → flag for deprecation if redundant |
-| `unrelated(source)` | `unrelated(wait-what)` | source has no matching base concept → evaluate as B-unique |
-
-For each pair, propose a **strategy** as a roadmap decision. The strategy enum mirrors what 1-3 actually used:
-
-- `strict-align` — copy B source files verbatim, only zj- prefix the `name` field
-- `absorb` — keep A as base, cherry-pick specific B features (Redact, scope-before-scan, seam...)
-- `adopt` — rename A to B's name, body is B verbatim
-- `replace` — delete A, install B (body is B verbatim)
-- `reject` — no merge (decision: keep A unchanged)
+Use the forms and strategy enum in the [pair-planning reference](references/pair-planning.md), then record one strategy as a roadmap decision for each pair.
 
 ### 6. Lay out as roadmap tree
 

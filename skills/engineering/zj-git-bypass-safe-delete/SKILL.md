@@ -1,6 +1,6 @@
 ---
 name: zj-git-bypass-safe-delete
-description: Diagnose and recover from WorkBuddy's safe-delete shim corrupting git repositories on Windows Git Bash. Use when `git status` shows all files as A, `git diff` fails with missing tree, `refs/heads/<branch>` is gone, or `git fetch`/`git stash`/`git commit` left .git in a broken state. Also use proactively before any `rm -rf` in WorkBuddy shell — the shim can actually delete under Git Bash.
+description: Diagnose and recover from WorkBuddy's safe-delete shim corrupting git repositories on Windows Git Bash. Use when `git status` shows all files as A, `git diff` fails with missing tree, `refs/heads/branch-name` is gone, or `git fetch`/`git stash`/`git commit` left .git in a broken state. Also use proactively before any `rm -rf` in WorkBuddy shell — the shim can actually delete under Git Bash.
 ---
 
 # Bypass WorkBuddy Safe-Delete for Git
