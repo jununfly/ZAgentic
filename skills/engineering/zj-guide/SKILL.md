@@ -4,11 +4,27 @@ description: Ask which skill or flow fits your situation. A router over the skil
 disable-model-invocation: true
 ---
 
-# Ask Matt
+# Choose a route
 
-You don't remember every skill, so ask.
+You do not need to remember every skill. Start from the situation, choose one
+route, and let that skill own its detailed procedure.
 
-A **flow** is a path through the skills. Most paths run along one **main flow**, and two **on-ramps** merge onto it. Everything else is standalone, or a vocabulary layer that runs underneath.
+A **flow** is a path through the skills. Most paths run along one **main flow**, and one of several **on-ramps** merges onto it. Everything else is standalone, or a vocabulary layer that runs underneath.
+
+## Invocation boundary
+
+`zj-guide` is user-only, so it chooses a route for the Human; it does not
+silently invoke another user-only skill. The other user-only routes are
+`zj-agents-init`, `zj-caveman`, `zj-debrief`, `zj-dry-run`,
+`zj-grill-with-docs`, `zj-implement`, `zj-improve-codebase-architecture`,
+`zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-steelman`, `zj-teach`,
+`zj-to-questionnaire`, `zj-to-spec`, `zj-to-tickets`, `zj-triage`,
+`zj-wayfinder`, and `zj-wait-what`.
+
+All other public skills remain model-invoked or reference-capable: the agent
+may reach them when their descriptions match, while the Human may still name
+them directly. Root-level personal skills are intentionally outside this
+public router.
 
 ## The main flow: idea → ship
 
@@ -31,6 +47,18 @@ Keep steps 1–3 in **one unbroken context window** — don't compact or clear u
 
 The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**: the window (~150k tokens on state-of-the-art models) within which the model still reasons sharply. If a session approaches it before `/zj-to-tickets`, don't push on degraded — `/compact` at the nearest phase boundary and carry on (see Phase boundaries).
 
+## Cross-stage checkpoints
+
+These are user-only guardrails around the main flow, not replacement flows:
+
+- **Before grilling** — **`/zj-steelman`** tests whether an existing proposal has a strong case. It routes to `/zj-grilling` only when an assumption is weak.
+- **After tickets, before implementation** — **`/zj-dry-run`** rehearses the ticket order, dependencies, and friction. Re-cut with `/zj-to-spec` or `/zj-grilling` if the plan cannot run as written.
+- **After the task** — **`/zj-debrief`** checks drift against the plan, extracts durable vocabulary, and records the next actions.
+
+Use these at their named phase; they complement `/zj-grill-with-docs`,
+`/zj-to-tickets`, `/zj-implement`, and `/zj-code-review` rather than adding a
+second implementation path.
+
 ## On-ramps
 
 A starting situation that generates work, then merges onto the main flow.
@@ -45,11 +73,32 @@ A starting situation that generates work, then merges onto the main flow.
 
   When the map clears, **it hands off, it doesn't build**: merge onto the main flow at **`/zj-to-spec`**, which collapses the map's linked decisions into a buildable plan, then `/zj-to-tickets` and `/zj-implement` as usual. Looping the map straight into `/zj-implement` skips that collapse and throws the linked detail away — go straight to `/zj-implement` only when the effort turned out genuinely small.
 
+## Planning, tracking, and delegation
+
+- **`/zj-leader`** — turn one sentence into a self-contained `/goal` brief when the desired next step is to delegate work to an agent. It is a task-brief route, not a substitute for the idea→ship flow.
+- **`/zj-wayfinder`** — plan a foggy, multi-session effort and resolve decision tickets. When the map is clear, continue through `/zj-to-spec` → `/zj-to-tickets`.
+- **`/zj-roadmap-driven`** — track an agreed route in a local JSON roadmap, record decisions, and keep the Human-facing Markdown view current. It tracks; it does not replace wayfinder planning or ticket slicing.
+- **`/zj-initiative-registry`** — maintain cross-repository Initiative → Spec → Plan navigation, validation, drift checks, and closeout reminders. It is the control plane; the registered Plan still executes through its own roadmap.
+
+If the work is already well-scoped, skip `/zj-leader` and `/zj-wayfinder` and
+start at the main flow.
+
 ## Codebase health
 
 Not feature work — upkeep.
 
 - **`/zj-improve-codebase-architecture`** — run whenever you have a spare moment to keep the codebase good for agents to operate in. It surfaces **deepening opportunities**; picking one _generates an idea_ you can take into the main flow at `/zj-grill-with-docs`. It's the survey that finds the candidates; **`/zj-codebase-design`** (below) is the bench you design the chosen one on.
+
+## Research and design
+
+- **`/zj-systematic-research`** — research a product, company, concept, technology, or person systematically: reconstruct its evolution, compare its current competitive position, and form a judgment. Do not use it for a single fact, API/document reading, a local technical question, or a solution-selection report.
+- **`/zj-research`** — collect high-trust primary-source findings, or compile commit-pinned evidence for a technical comparison.
+- **`/zj-research-report`** — turn cited findings into a decision draft. Use it after `/zj-research`; technical comparisons use the sealed ledger and Report IR.
+- **`/zj-tech-design-review`** — review a proposed technical design from problem framing through architecture, metrics, risk, rollout, testing, and follow-up.
+
+Keep the distinction sharp: systematic research explains an object; research
+collects evidence; research-report synthesizes evidence; design-review tests a
+proposed solution.
 
 ## Vocabulary underneath
 
@@ -57,6 +106,15 @@ Two model-invoked references that run *beneath* the other skills — each the si
 
 - **`/zj-domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline `/zj-grill-with-docs` drives to keep `ZJ-CONTEXT.md` a clean glossary.
 - **`/zj-codebase-design`** — the deep-module vocabulary (module, interface, depth, seam, adapter, leverage, locality) for designing a module's *shape*: a lot of behaviour behind a small interface at a clean seam. `/zj-tdd` and `/zj-improve-codebase-architecture` both speak it.
+
+## Skill maintenance and repository closeout
+
+- **`/zj-write-a-skill`** — create a new skill or add its bundled resources. Pair it with **`/zj-writing-for-agents`**, the reference for editing skills, `AGENTS.md`, `CLAUDE.md`, or pointer-reached documents.
+- **`/zj-merge-skills-wave`** — plan a multi-skill adoption from another collection; **`/zj-merge-skill-pair`** executes one approved pair as the atomic merge unit.
+- **`/zj-neat-freak`** — close out knowledge drift by reconciling docs, rules, authorized memory, and workspace residue with actual code and runtime state.
+
+These routes maintain the skill system itself; ordinary feature work stays on
+the main flow.
 
 ## Phase boundaries
 
@@ -84,6 +142,14 @@ Off the main flow entirely.
 - **`/zj-wait-what`** — the corrective for a message that didn't land. Use it mid-conversation, inside any other skill, and the agent re-pitches what it just said with the context you were missing, in plain English, using the `ZJ-CONTEXT.md` vocabulary. It works after the fact; `/zj-grill-with-docs` is the upfront cure, because a shared language agreed early is what stops the jargon arriving at all.
 - **`/zj-teach`** — learn a concept over multiple sessions, using the current directory as a stateful workspace.
 - **`/zj-writing-for-agents`** — reference for writing documents agents consume: skills, AGENTS.md, pointed-at docs.
+- **`/zj-caveman`** — switch to ultra-compressed communication when token-efficient replies are the goal.
+- **`/zj-aihot`** — retrieve current Chinese AI news and highlights from AIHOT; use it instead of memory for time-sensitive AI news.
+- **`/zj-storage-analyzer`** — inspect macOS/Windows storage usage and produce cleanup guidance; it is for storage, not RAM/process diagnosis.
+- **`/zj-git-bypass-safe-delete`** — recover a Git repository corrupted by the WorkBuddy safe-delete shim; use it when the documented corruption symptoms appear.
+- **`/zj-git-guardrails-claude-code`** — install Claude Code hooks that block dangerous Git operations.
+- **`/zj-migrate-to-shoehorn`** — migrate test assertions to `@total-typescript/shoehorn`.
+- **`/zj-scaffold-exercises`** — scaffold lintable exercise sections, problems, solutions, and explainers.
+- **`/zj-setup-pre-commit`** — set up Husky, lint-staged, type checking, and tests at commit time.
 
 ## Precondition
 

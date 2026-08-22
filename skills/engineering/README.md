@@ -2,7 +2,7 @@
 
 Skills I use daily for code work.
 
-- **[zj-guide](./zj-guide/SKILL.md)** — User-only router over all skills: "you don't remember every skill, so ask" — picks the right flow (main flow idea→ship, on-ramps for bugs/big-effort/codebase-health, vocabulary underneath, standalone). PHASE-BOUNDARIES.md for context-window decisions.
+- **[zj-guide](./zj-guide/SKILL.md)** — User-only router over all public skills: picks the main flow, cross-stage checkpoints, on-ramps, planning/tracking, research/design, skill maintenance, vocabulary, and standalone utilities. PHASE-BOUNDARIES.md covers context-window decisions.
 - **[zj-diagnosing-bugs](./zj-diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[zj-triage](./zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[zj-codebase-design](./zj-codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.

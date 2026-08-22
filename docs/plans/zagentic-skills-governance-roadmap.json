@@ -6,7 +6,7 @@
     "1": {
       "id": "1",
       "label": "ZAgentic Skills 规范、退休与使用导航治理",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": null,
       "children": [
@@ -70,7 +70,7 @@
     "1-3": {
       "id": "1-3",
       "label": "基于实际使用更新 zj-guide 路由",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -315,42 +315,48 @@
     "1-3-1": {
       "id": "1-3-1",
       "label": "提取当前 README、入口与 skill 交叉引用的使用路径",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-3",
       "children": [],
       "decisions": [],
-      "notes": "目标主流：对齐意图→切 tickets→实现/TDD→诊断→review/交接；on-ramp：wayfinder/roadmap、prototype、architecture、research；词汇层：domain-modeling/codebase-design；standalone：冲突、wizard、storage、AIHOT、文章/Obsidian 等。"
+      "notes": "完成入口与交叉引用审计：公开 skill 45 个，当前 guide 直接覆盖 25 个、遗漏 20 个。README 与三个 bucket README 是完整公开目录；AGENTS 明确要求 zj-steelman/zj-dry-run/zj-debrief，核心高密度交叉引用集中在 grilling、to-tickets、domain-modeling、roadmap-driven、triage、to-spec、merge wave/pair、research。当前实际路径可归纳为主流程、跨阶段检查点、bugs/requests/large-effort/codebase-health on-ramp、research/design/goal/registry 路由、词汇层和独立工具。personal/ 不进入 guide 公开路由。"
     },
     "1-3-2": {
       "id": "1-3-2",
       "label": "设计按阶段与场景组织的 zj-guide 路由",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-3",
       "children": [],
-      "decisions": [],
-      "notes": "guide 应只做选择与边界提示，不复制各 skill 的详细流程；根据阶段、任务规模、是否需要 tracker、是否 user-only 及是否属于个人 skill 路由。"
+      "decisions": [
+        {
+          "q": "zj-guide 应如何覆盖当前 45 个公开 skill？",
+          "answer": "保留主流程、跨阶段检查点、on-ramp、词汇层和独立工具五类边界；让每个公开 skill 至少通过一个可达路径或明确 standalone 说明出现。将 zj-roadmap-driven 与 zj-wayfinder/zj-to-tickets 作为规划跟踪组合，区分 zj-systematic-research、zj-research、zj-research-report、zj-tech-design-review 的目标，单列 registry、goal、skill maintenance、merge workflow 与 misc utility。guide 只做选择和边界提示，不复制各 skill 的操作细节；root personal 不进入公开路由。",
+          "note": "覆盖率是可审计的入口覆盖，不是把 README 搬进 guide；user-only 技能保留显式调用边界，model-invoked 技能作为可被其他流程拉起的 reference 或 standalone。"
+        }
+      ],
+      "notes": "按阶段与场景完成路由设计：保留 idea→ship 主流程；新增 steelman/dry-run/debrief 跨阶段检查点；补齐 leader、wayfinder、roadmap-driven、initiative-registry 的规划/跟踪/委派边界；区分 systematic-research、research、research-report、tech-design-review；补齐 skill maintenance、repository closeout 与 misc utility。guide 只提供选择和边界，不复制各 skill 的详细步骤。"
     },
     "1-3-3": {
       "id": "1-3-3",
       "label": "更新 zj-guide 与 PHASE-BOUNDARIES",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-3",
       "children": [],
       "decisions": [],
-      "notes": "更新 zj-guide/SKILL.md，并按需同步 PHASE-BOUNDARIES.md、顶层 README 路由文字；退休候选一旦批准，必须同时移除过期入口并补替代路径。"
+      "notes": "已更新 skills/engineering/zj-guide/SKILL.md：新增 invocation boundary、cross-stage checkpoints、planning/tracking/delegation、research/design、skill maintenance/closeout 与完整 standalone utility 路由；移除过时 Ask Matt 标题。同步 PHASE-BOUNDARIES.md 的 /handoff → /zj-handoff，以及 README 和 engineering README 的 guide 摘要。"
     },
     "1-3-4": {
       "id": "1-3-4",
       "label": "验证 guide 覆盖率、链接与退休后路由",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-3",
       "children": [],
       "decisions": [],
-      "notes": "验收：每个公开 skill 至少有一个可达入口或明确 standalone 说明；不存在指向退休 skill 的活跃路由；所有 guide/phase 链接有效；user-only 与 model-invoked 边界可解释。"
+      "notes": "验收通过：guide 直接覆盖 45/45 个公开 skill；18 个 frontmatter user-only skill 均在 guide 中有显式边界或路由；README、三个 bucket README、guide 与 PHASE-BOUNDARIES 的相对链接均有效；zj-zoom-out 与 zj-grill-me 不在活跃 guide 路由；root-level personal skill 不进入公开 guide。frontmatter、private naming、official-first recursive validator、roadmap 6/6、Bash/Python 语法、plugin JSON 与 diff check 均通过。"
     },
     "1-1-4-1": {
       "id": "1-1-4-1",
@@ -401,7 +407,7 @@
   },
   "metadata": {
     "created": "2026-08-22 00:30:59",
-    "updated": "2026-08-22 10:50:54",
+    "updated": "2026-08-22 11:07:38",
     "md_file": "docs/plans/zagentic-skills-governance-roadmap.md"
   }
 }
