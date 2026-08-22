@@ -1,9 +1,10 @@
-Skills are organized into bucket folders under `skills/`:
+Public skills are organized into bucket folders under `skills/`; private skills
+live in the separate root-level `personal/` tree:
 
 - `engineering/` — daily code work
 - `productivity/` — daily non-code workflow tools
 - `misc/` — kept around but rarely used
-- `personal/` — tied to my own setup, not promoted
+- `personal/` — tied to my own setup, installable but not promoted or plugin-registered
 
 Before adding, moving, or removing an Initiative, spec, or roadmap plan in `docs/plans/global-initiative-roadmap.json`, read [its maintenance rules](docs/plans/global-initiative-roadmap.agent.md); the global index uses a fixed three-level model that differs from `zj-roadmap-driven` execution roadmaps.
 
@@ -11,11 +12,11 @@ Material placement is purpose-based: put shared input material in
 `skills-inputs/<topic>/`; put artifacts produced by a skill in
 `skills-outputs/<skill>/<topic>/`.
 
-Every skill in `engineering/`, `productivity/`, or `misc/` must have a reference in the top-level `README.md` and an entry in `.codex-plugin/plugin.json`. Skills in `personal/` must not appear in either.
+Every skill in `engineering/`, `productivity/`, or `misc/` must have a reference in the top-level `README.md` and an entry in `.codex-plugin/plugin.json`. Skills in the root-level `personal/` tree must not appear in either.
 
 Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.
 
-Each bucket folder has a `README.md` that lists every skill in the bucket with a one-line description, with the skill name linked to its `SKILL.md`.
+Each public bucket folder has a `README.md` that lists every skill in the bucket with a one-line description, with the skill name linked to its `SKILL.md`. The root-level `personal/` tree has the same local index but is excluded from public indexes.
 
 ## PR checklist (1-3-3-1 A-only 3 rule)
 

@@ -133,7 +133,7 @@ while IFS= read -r -d '' skill_md; do
     fi
   done
   total=$((total+1))
-done < <(find "$REPO/skills" -name SKILL.md -not -path '*/node_modules/*' -print0)
+done < <(find "$REPO/skills" "$REPO/personal" -name SKILL.md -not -path '*/node_modules/*' -print0)
 
 echo
 echo "done. installed ${total} skills across ${#ACT_DIRS[@]} platform(s)."

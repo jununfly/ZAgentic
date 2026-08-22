@@ -9,13 +9,20 @@ Project domain glossary for `jununfly/ZAgentic`. Owned by `zj-grill-with-docs` /
 ### Skills meta
 
 **Skill bucket**:
-One of the four top-level dirs under `skills/` — `engineering/`, `productivity/`,
-`misc/`, `personal/`. Each bucket has its own `README.md` listing its skills
-with a one-line description. See `AGENTS.md` for the bucket policy.
+One of the three public dirs under `skills/` — `engineering/`, `productivity/`,
+or `misc/`. Each bucket has its own `README.md` listing its skills with a
+one-line description. See `AGENTS.md` for the bucket policy.
 _Avoid_: category, folder, group
 
+**Personal skill tree**:
+The root-level `personal/` directory for skills tied to the user's own setup.
+It remains installable through the local scripts but is outside plugin discovery
+and public README indexes.
+_Avoid_: personal bucket, public skill
+
 **Skill**:
-A single unit of agent capability under `skills/<bucket>/zj-<name>/SKILL.md`.
+A single unit of agent capability under
+`skills/<bucket>/zj-<name>/SKILL.md` or `personal/zj-<name>/SKILL.md`.
 A skill is the smallest thing this repo ships, but a single **merge wave** can
 touch many of them at once.
 _Avoid_: command, plugin, tool
@@ -35,7 +42,7 @@ _Avoid_: batch, run, sweep
 
 **zj- naming**:
 The `zj-` prefix applied to every skill name in this repo. Prevents collision
-with source skills collections (e.g. `mattpocock/skills`) that share names.
+with upstream skills collections (e.g. `upstream/skills`) that share names.
 _Avoid_: underscore, hyphen-separated, namespace
 
 **Name-field coupling**:

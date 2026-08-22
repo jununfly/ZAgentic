@@ -7,7 +7,8 @@ import re
 import sys
 
 ROOT = Path('.')
-ACTIVE_BUCKETS = ['engineering', 'productivity', 'misc', 'personal']
+PUBLIC_BUCKETS = ['engineering', 'productivity', 'misc']
+SKILL_ROOTS = [ROOT / 'skills' / bucket for bucket in PUBLIC_BUCKETS] + [ROOT / 'personal']
 SKIP_PARTS = {'.git', '.workbuddy', '.codegraph'}
 TEXT_SUFFIXES = {'.md', '.json', '.sh'}
 
@@ -38,8 +39,7 @@ for path in active_text_files():
             failures.append(f'{path}: forbidden public branding {forbidden!r}')
 
 # 2. Active skill directories and frontmatter names must use zj-.
-for bucket in ACTIVE_BUCKETS:
-    bucket_dir = ROOT / 'skills' / bucket
+for bucket_dir in SKILL_ROOTS:
     if not bucket_dir.exists():
         continue
     for skill_dir in sorted(p for p in bucket_dir.iterdir() if p.is_dir()):
@@ -72,7 +72,9 @@ for path in active_text_files():
 old_path_patterns = [
     (re.compile(r'(?<!ZJ-)CONTEXT\.md'), 'use ZJ-CONTEXT.md'),
     (re.compile(r'(?<!ZJ-)CONTEXT-MAP\.md'), 'use ZJ-CONTEXT-MAP.md'),
-    (re.compile('docs/' + 'agents/'), 'use docs/zj-agents/ZJ-*.md'),
+    # Require a path boundary so `dsh-translate-docs/agents/` is not treated
+    # as the stale target path `docs/agents/`.
+    (re.compile(r'(?<![A-Za-z0-9_-])docs/agents/'), 'use docs/zj-agents/ZJ-*.md'),
     (re.compile(r'(?<!\.zj-)\.out-of-scope/'), 'use .zj-out-of-scope/'),
     (re.compile('docs/' + 'adr/'), 'use docs/zj-adr/ZJ-*.md'),
 ]

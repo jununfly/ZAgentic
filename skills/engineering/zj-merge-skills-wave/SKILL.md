@@ -1,7 +1,7 @@
 ---
 name: zj-merge-skills-wave
 description: >-
-  Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from mattpocock/skills, another skills collection, or any directory of SKILL.md files. Triggers on "merge skills from", "absorb from source-name", "import skills from". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.
+  Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from an upstream skills collection, another skills collection, or any directory of SKILL.md files. Triggers on "merge skills from", "absorb from source-name", "import skills from". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.
 disable-model-invocation: true
 ---
 
@@ -11,7 +11,7 @@ Plan and orchestrate a **whole wave** of skill merges into this repo's `skills/`
 
 ## When to use
 
-- You want to absorb skills from another skills collection (e.g. `mattpocock/skills` upstream) into this repo
+- You want to absorb skills from another skills collection (for example, an upstream collection) into this repo
 - You have a local directory of `SKILL.md` files you want to merge in
 - You're starting a new A↔B skill-pair absorption wave (e.g. "do 1-4-x next")
 
@@ -41,7 +41,7 @@ in a merge strategy. Record the agreed change in the roadmap decision.
 
 Human provides one of:
 - **Local path** (absolute, e.g. `~/.workbuddy/skills/some-collection/`)
-- **GitHub URL** (e.g. `https://github.com/mattpocock/skills`)
+- **GitHub URL** (e.g. `https://github.com/your-org/skills`)
 
 If GitHub URL: clone to a scratch dir (e.g. `C:/tmp/skill-source-<random>/`) using `git clone --depth 1 <url> <scratch>`. Clean the scratch dir after the merge is done.
 

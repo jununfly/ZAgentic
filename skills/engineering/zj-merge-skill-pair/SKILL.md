@@ -86,7 +86,8 @@ Push only on explicit human request. Default: leave committed locally.
 ### 7. Update roadmap
 
 ```
-scripts/zj-merge-skill-pair completed <roadmap-node-id>
+python3 <zj-roadmap-driven-skill-dir>/roadmap_cli.py update <roadmap-json> <roadmap-node-id> --status completed
+python3 <zj-roadmap-driven-skill-dir>/roadmap_cli.py render <roadmap-json>
 ```
 
 This is the human's call. The agent must NOT auto-update — the merge is done but the human owns the roadmap.

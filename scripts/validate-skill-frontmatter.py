@@ -13,7 +13,10 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS_ROOT = ROOT / "skills"
+SKILL_ROOTS = (
+    (ROOT / "skills", "*/*/SKILL.md"),
+    (ROOT / "personal", "*/SKILL.md"),
+)
 MAX_DESCRIPTION_LENGTH = 1024
 CORE_FIELDS = {"name", "description"}
 STANDARD_OPTIONAL_FIELDS = {
@@ -139,7 +142,11 @@ def skill_paths(arguments: list[str]) -> list[Path]:
                 else [candidate]
             )
         return paths
-    return sorted(SKILLS_ROOT.glob("*/*/SKILL.md"))
+    return sorted(
+        path
+        for skill_root, pattern in SKILL_ROOTS
+        for path in skill_root.glob(pattern)
+    )
 
 
 def main() -> int:

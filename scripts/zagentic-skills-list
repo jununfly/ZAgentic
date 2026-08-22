@@ -8,7 +8,6 @@ zj-dry-run
 zj-git-bypass-safe-delete
 zj-grill-with-docs
 zj-guide
-zj-systematic-research
 zj-implement
 zj-improve-codebase-architecture
 zj-initiative-registry
@@ -22,6 +21,7 @@ zj-research-report
 zj-resolving-merge-conflicts
 zj-roadmap-driven
 zj-steelman
+zj-systematic-research
 zj-tdd
 zj-tech-design-review
 zj-to-spec

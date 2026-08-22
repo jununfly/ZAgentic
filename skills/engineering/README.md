@@ -6,6 +6,7 @@ Skills I use daily for code work.
 - **[zj-diagnosing-bugs](./zj-diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[zj-triage](./zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[zj-codebase-design](./zj-codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.
+- **[zj-git-bypass-safe-delete](./zj-git-bypass-safe-delete/SKILL.md)** — Diagnose and recover from WorkBuddy's safe-delete shim corrupting Git repositories on Windows Git Bash.
 - **[zj-debrief](./zj-debrief/SKILL.md)** — User-only close-out for a finished task: drift walkthrough vs the prior `/zj-grilling` plan, new-term extraction into `ZJ-CONTEXT.md`, and 1-3 actions written to `docs/zj-retros/YYYY-MM-DD.md` with a 7-slot pointer index in ZJ-CONTEXT.md.
 - **[zj-steelman](./zj-steelman/SKILL.md)** — User-only one-shot reality check on a plan: extract 2-5 core assumptions, write the strongest case for each, judge Strong/Adequate/Weak, route to `/zj-grilling` only if a case is Weak. No file written.
 - **[zj-dry-run](./zj-dry-run/SKILL.md)** — User-only pre-flight rehearsal of a ticketed plan: walk each ticket, flag friction (blocker/ambiguity/dependency), output a per-ticket table + decision bottlenecks, route to `/zj-to-spec` or `/zj-grilling` if recut-worthy. No file written.

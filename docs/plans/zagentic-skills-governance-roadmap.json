@@ -31,7 +31,7 @@
     "1-1": {
       "id": "1-1",
       "label": "修复 skill 规范与注册一致性",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -169,22 +169,59 @@
     "1-1-5": {
       "id": "1-1-5",
       "label": "同步 README、bucket 索引与 plugin 注册边界",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "补齐顶层 README 的 7 个公开 skill；补齐 engineering README 的 zj-git-bypass-safe-delete；plugin 只暴露 engineering/productivity/misc，personal 保持不推广；同步检查 link-skills 与卸载清单的边界。"
+      "decisions": [
+        {
+          "q": "安装脚本是否继续安装 personal skills？",
+          "answer": "继续安装 engineering、productivity、misc、personal 四个 bucket；personal 仅保持可安装，不进入公开 README 推广边界。",
+          "note": "保留个人环境 skill 的现有可用性，避免把安装快照边界误改成公开推广边界。"
+        },
+        {
+          "q": "插件注册边界如何落地？",
+          "answer": "保留合法的 skills: ./skills/ 目录入口；README 和 bucket README 作为公开推广边界，personal 不出现在其中；本轮不做目录重构。",
+          "note": "插件规范只接受单个 skills 路径，改成显式聚合目录会引入跨平台和维护风险；接受底层目录发现可能包含 personal 的现状。"
+        },
+        {
+          "q": "personal skill 应放在哪里？",
+          "answer": "将 personal/ 从 skills/ 移到仓库根目录 personal/；它继续由安装脚本和卸载清单管理，但不进入 plugin.json 或公开 README。",
+          "note": "与 engineering/productivity/misc 三个公开 plugin bucket 分离，保留个人环境的可安装性。"
+        },
+        {
+          "q": "移出 personal/ 后 plugin 边界是否已闭环？",
+          "answer": "personal/ 已移至仓库根目录，./skills/ 现在只包含 engineering/productivity/misc；但 plugin validator 仍报告 bucketed layout 缺少直接 SKILL.md，扁平入口问题留待下一步。",
+          "note": "本步骤只解决 personal 泄露；不把 bucket 结构兼容问题误标为已完成。"
+        },
+        {
+          "q": "官方 validator 失败时如何处理 bucket 化布局？",
+          "answer": "验证入口先运行官方 plugin validator；若官方返回非零，再运行仓库自己的递归 validator，递归校验 skills/ 下公开 bucket 与根目录 personal/。对外只报告两阶段结果，不把官方失败解释为仓库不兼容结论。",
+          "note": "保留官方 validator 作为优先路径，避免绕过标准检查；递归 fallback 覆盖 ZAgentic 的实际目录模型，并通过显式参数或环境变量发现官方脚本。"
+        }
+      ],
+      "notes": "已完成 plugin 注册边界与验证闭环：personal/ 位于仓库根目录，继续由安装、卸载清单、frontmatter 和私有命名检查覆盖，但不进入 plugin.json 或公开 README。新增 scripts/validate-plugin.sh：先运行可配置的官方 validator；官方返回非零时，再运行 scripts/validate-zagentic-plugin.py，递归校验 skills/ 下 engineering/productivity/misc 三个公开 bucket 与根目录 personal/，并复用仓库 frontmatter validator。官方失败→fallback 成功、官方通过短路、47 skill 递归校验、路线图 6/6、安装 dry-run、清单同步、JSON、Bash/Python 语法和 diff check 均通过。未公开描述官方 validator 与仓库布局的兼容性结论。"
     },
     "1-1-6": {
       "id": "1-1-6",
       "label": "校验 descriptions、references 与脚本资源",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "已知实际链接与脚本语法通过；整改后重新检查 description 触发条件、引用一层深度、脚本可定位性、无时间敏感沉积与具体示例。"
+      "decisions": [
+        {
+          "q": "缺失脚本引用如何处理？",
+          "answer": "仅修复本地治理 skill 中可证实不存在的命令引用；保留示例代码、API 响应占位符和开源 skill 原文，不把占位符误判为资源路径。",
+          "note": "zj-merge-skill-pair 的 roadmap 完成操作改为仓库现有 roadmap_cli.py update/render 流程。"
+        },
+        {
+          "q": "check-private-naming 的失败来源是什么？",
+          "answer": "两处旧 upstream 品牌是实际残留，research ledger 的命中则是检查器正则跨词边界误报；将品牌泛化并收紧路径边界，不修改 ledger 数据。",
+          "note": "验证脚本通过，保留外部仓库证据路径原样。"
+        }
+      ],
+      "notes": "完成 descriptions、references 与脚本资源验收：47/47 descriptions 通过 schema，长度 51–802；实际 Markdown 相对链接 0 个缺失；20 个 reference 文件和 15 个显式脚本资源均可定位；无嵌套 reference 目录；list-skills、Python/Bash 语法、6/6 roadmap 测试和 diff check 通过。示例代码/API 占位符与跨 skill sibling 脚本按规则排除误报。"
     },
     "1-2-1": {
       "id": "1-2-1",
@@ -364,7 +401,7 @@
   },
   "metadata": {
     "created": "2026-08-22 00:30:59",
-    "updated": "2026-08-22 09:12:30",
+    "updated": "2026-08-22 10:50:54",
     "md_file": "docs/plans/zagentic-skills-governance-roadmap.md"
   }
 }
