@@ -66,6 +66,7 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed research runtime hardening](#a30--research-collection-runtime-hardening-t) — `zj-research` now performs GitHub quota/auth preflight, emits structured diagnostics, and records fresh, explicit-reuse, and blocked collection states.
 - [Completed authenticated live collection acceptance](#a31--authenticated-live-collection-acceptance-t) — A real authenticated fresh collection completed against the fixed three-repository brief; the live path also exposed and fixed the standard-library timeout invocation bug.
 - [Completed fresh-ledger technical report republish](#a32--fresh-ledger-technical-report-republish-t) — The A31 sealed ledger was rebuilt into a new technical-c4 report and published healthy without the A29 ledger or fingerprint.
+- [Completed roadmap-driven handoff](#a33--roadmap-driven-handoff-for-langgraph-checkpoint-probe-t) — The settled LangGraph checkpoint/resume validation route now has a separate execution roadmap in ZAgenticLoop, with a native-baseline focus and no migration of Wayfinder history.
 
 ## Not yet specified
 
@@ -1091,3 +1092,42 @@ LangGraph observability and AutoGen security/sandbox as unresolved follow-ups.
 Verification passed: technical Report IR quality gate, technical research-report
 contract, publication consistency (fresh fingerprint, receipt hash, no old
 ledger), and `git diff --check`.
+
+## A33 — Roadmap-driven handoff for LangGraph checkpoint probe [T] ✅
+
+### Question
+
+How should the settled A32 recommendation move from Wayfinder planning into
+roadmap-driven execution without migrating the historical decision map or
+turning the LangGraph adapter into a new product authority?
+
+### Resolution
+
+Created a separate small single-file execution roadmap in the target product
+repository:
+
+`ZAgenticLoop/docs/plans/opn-langgraph-checkpoint-adapter-probe-roadmap.json`
+
+with generated view:
+
+`ZAgenticLoop/docs/plans/opn-langgraph-checkpoint-adapter-probe-roadmap.md`
+
+The roadmap is valid and contains 16 nodes, four persisted decisions, 14
+pending nodes, and two in-progress nodes. Its route is bounded to:
+
+- native baseline and `Conformance fixture`;
+- provider-neutral checkpoint adapter contract;
+- isolated LangGraph checkpoint/resume probe;
+- authority, Evidence, failure-gate, and Human acceptance conformance;
+- adapter removal and continue/defer/stop closeout.
+
+The root decision explicitly keeps the native Graph/OPN core, Evidence,
+Human acceptance, security, and lifecycle authority in ZAgenticLoop. AutoGen
+and CrewAI are deferred. The current roadmap focus is
+`1-1-1 Define native checkpoint fixture and resume oracle`; `roadmap_cli
+validate`, `stats`, `tree`, `focus`, and bounded `section` all passed.
+
+Wayfinder remains the historical decision map; the new roadmap is the sole
+execution tracker for the probe. Existing unrelated `ZAgenticLoop` changes in
+`tools/zj-loop-mcp-server/package-lock.json`, `.tmp/`, and
+`tools/zj-loop-core/.tmp/` were preserved.

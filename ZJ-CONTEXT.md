@@ -218,6 +218,20 @@ annotations used to calibrate and evaluate a research-quality rubric. It tests
 quality dimensions and invariants, not identical generated prose.
 _Avoid_: demo repository, golden Markdown
 
+**Conformance fixture**:
+A shared, bounded scenario set with expected native facts used to compare a
+native execution path and an adapter path. It checks semantic identity,
+recovery, Evidence binding, authority boundaries, and removal behavior rather
+than rewarding framework-specific output.
+_Avoid_: framework demo, feature checklist, adapter-only test
+
+**Resume oracle**:
+The native identity and invariant set that defines what a resumed execution
+must preserve — work item, attempt, state digest, Evidence linkage, and Human
+acceptance boundary — so an external checkpoint implementation cannot redefine
+product semantics.
+_Avoid_: framework checkpoint, latest state copy, restart heuristic
+
 **Snapshot artifact bundle**:
 An immutable, versioned set of generated research facts split into a small manifest and independently readable shards, with derived human views and disposable indexes kept separate from the canonical facts.
 _Avoid_: monolithic JSON, mutable report file
