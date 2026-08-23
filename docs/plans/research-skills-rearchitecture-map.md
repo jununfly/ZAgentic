@@ -59,12 +59,13 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed code-research quality implementation](#a23--code-research-quality-fixtures-and-evaluation-t) — `zj-code-research` now owns separate `landscape/v1` / `deep-read/v1` hard gates, controlled fixture cases, dimensional semantic scoring, and calibrated Judge checks.
 - [Completed roadmap bundle implementation](#a24--roadmap-bundle-storage-and-performance-implementation-t) — `zj-roadmap-driven` now supports explicit sharded bundle storage, bounded cross-mode CLI views, append-only decision retractions, safe legacy migration, and reproducible small/medium/large benchmarks.
 - [Completed migration and verification closeout](#a25--research-migration-and-roadmap-verification-closeout-t) — The real planning corpus, research contracts, roadmap bundle, public discovery, and documentation surfaces have been verified together; no active legacy skill alias remains.
+- [Completed storage adoption advisory](#a26--read-only-roadmap-storage-advisory-t) — `recommend-storage` reports explainable single-file versus bundle signals without repairing, migrating, or rewriting the roadmap.
 
 ## Not yet specified
 
-- None for this implementation wave. Production adoption thresholds for when a
-  user should choose single-file mode versus explicit bundle migration remain an
-  operational choice, not an automatic migration rule.
+- None for this implementation wave. The A26 thresholds are initial advisory
+  starting points and may be tuned by real usage; they are not automatic
+  migration rules.
 
 ## Out of scope
 
@@ -810,7 +811,7 @@ Implemented the optional large-roadmap carrier in
   dual-mode design so Markdown is a generated view and the fact source is
   single-file JSON or bundle canonical shards according to the selected mode.
 
-Verification passed: roadmap single-file and bundle contract tests (13 tests),
+Verification passed: roadmap single-file and bundle contract tests (14 tests),
 Python compilation, small/medium/large benchmark generation, and `git diff
 --check`.
 
@@ -856,3 +857,40 @@ Completed the implementation-wave closeout without modifying the external
 Verification status: knowledge and workspace closeout complete for the local
 implementation wave; deployment/live verification is not applicable because
 these are installable local skills and no deployment was performed.
+
+## A26 — Read-only roadmap storage advisory [T] ✅
+
+### Question
+
+How should users choose between ordinary single-file JSON and an explicit
+sharded roadmap bundle without introducing automatic format switching or
+read-time repair side effects?
+
+### Resolution
+
+Implemented a read-only storage advisor in
+`skills/engineering/zj-roadmap-driven/storage_advisor.py` and exposed it as:
+
+```bash
+python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
+```
+
+- The versioned `zj-roadmap-storage-recommendation/v1` output reports node and
+  decision counts, maximum depth, canonical bytes, view bytes, bundle shard
+  counts, history bytes, and total artifact bytes.
+- The default policy returns `keep-single`, `consider-bundle`, or
+  `recommend-bundle`; an already selected bundle returns `keep-bundle`.
+  Starting signals are 1,000 nodes, 500 decisions, or 256 KiB of canonical
+  data; severe signals are 5,000 nodes, 2,000 decisions, or 1 MiB. `--measure`
+  adds bounded-tree and full-section timings, with 100/300 ms advisory lines.
+- The command never calls bundle index rebuild, never migrates, never writes
+  Markdown, and never changes the selected carrier. A missing derived bundle
+  index remains missing after the recommendation, preserving the strict
+  read-only contract.
+- Added five contract tests covering small single-file keep, medium
+  single-file consideration, large single-file recommendation, bundle
+  measurement/read-only behavior, and missing-index non-repair. Existing
+  explicit `migrate --to bundle` remains the only storage conversion path.
+
+Verification passed: storage-advisor contract tests, existing roadmap
+single-file/bundle tests, Python compilation, and `git diff --check`.

@@ -36,9 +36,17 @@ python roadmap_cli.py siblings <json_path> <node_id>
 python roadmap_cli.py focus <json_path>
 python roadmap_cli.py validate <json_path>
 python roadmap_cli.py stats <json_path>
+python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
 ```
 
 `render` writes the lightweight Markdown view (tree depth=2, current focus, and one level of the focus subtree). `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
+
+`recommend-storage` is a read-only advisory. It reports node/decision counts,
+canonical and view bytes, and bundle shard/history sizes. It returns
+`keep-single`, `consider-bundle`, `recommend-bundle`, or `keep-bundle` without
+writing indexes, migrating the roadmap, or editing Markdown. `--measure` adds
+local bounded-tree and full-section timings; timing thresholds are advisory and
+machine-dependent.
 
 The CLI selects storage from the path: an existing directory with `manifest.json`
 is a roadmap bundle; a file is legacy single-file JSON. Bundle mode keeps node,

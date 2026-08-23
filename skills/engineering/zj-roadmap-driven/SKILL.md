@@ -32,6 +32,7 @@ Agent 完成一个子任务 → 调用 `update` 打勾 → 调用 `render` 更�
     ↓
 Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
+Agent 需要选择载体 → 调 `recommend-storage`（只读建议，不自动迁移）
 ```
 
 **关键规则：**
@@ -62,3 +63,6 @@ Agent 需要全貌 → 调 `section --all`（显式导出）
 - md section 由 `render` 命令完全重写，手动修改会被覆盖。
 - CLI 写类命令按顺序执行；其余数据模型、命令和锁细节见对应 reference。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建；无 `import` 命令，md 不能反导回 JSON。
+- `recommend-storage` 只读取事实源和派生文件，输出 `keep-single`、
+  `consider-bundle`、`recommend-bundle` 或 `keep-bundle`；它不会写入索引、
+  迁移载体或改写 Markdown。需要转换时，仍必须显式调用 `migrate --to bundle`。

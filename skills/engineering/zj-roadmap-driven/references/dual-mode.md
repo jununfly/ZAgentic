@@ -20,6 +20,23 @@ Both uses share one mental model — map/route plus decision records — while t
 
 Switching guide: collaboration or multiple agents → tracker (wayfinder) + export (`zj-to-tickets`); personal exploration, offline work, or full control → local carrier (wayfinder local mode + this skill). The mental model stays the same, so switching carriers does not redo decisions.
 
+## Storage recommendation
+
+Use `roadmap_cli.py recommend-storage <roadmap>` before choosing a carrier for
+a local roadmap. The command is read-only and returns a versioned JSON advisory:
+
+- `keep-single` when no starting signal is reached;
+- `consider-bundle` when one signal is reached;
+- `recommend-bundle` when a severe signal or two starting signals are reached;
+- `keep-bundle` when the roadmap is already an explicit bundle.
+
+The starting signals are 1,000 nodes, 500 decisions, or 256 KiB of canonical
+single-file data. Severe signals are 5,000 nodes, 2,000 decisions, or 1 MiB.
+With `--measure`, a full-section timing above 100 ms is a starting signal and
+above 300 ms is severe. These are tunable advisory thresholds, not automatic
+migration gates. Markdown size is reported as a view metric and never becomes
+the fact source; use `migrate --to bundle` explicitly after deciding to move.
+
 ## Combining with `zj-wayfinder`
 
 `zj-roadmap-driven` and `zj-wayfinder` are a designed **skill pair**: plan first, track second. wayfinder plans on either carrier; this skill tracks through local JSON and consumes tracker-planned routes. `zj-to-tickets` is the seam that converts wayfinder's decision map into blocking-edge tickets and then into roadmap JSON.

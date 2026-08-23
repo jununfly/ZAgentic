@@ -41,6 +41,9 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   stats   <json_path>                        # 统计信息
 
+  recommend-storage <roadmap_path> [--measure]
+                                            # 只读建议单 JSON 或 bundle
+
   validate <json_path>                       # 验证数据完整性
 
   migrate <json_path> --to bundle [--output <bundle_path>]
@@ -63,6 +66,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from roadmap import Roadmap, RoadmapLockTimeout, roadmap_file_lock, unlock_roadmap
 from roadmap_bundle import BundleError, RoadmapBundle
+from storage_advisor import recommend_storage
 
 
 def _parse_args(argv: list[str]) -> dict:
@@ -229,6 +233,10 @@ def cmd_stats(args: dict):
     _print_json(r.stats())
 
 
+def cmd_recommend_storage(args: dict):
+    _print_json(recommend_storage(args["positional"][0], measure=args.get("measure") == "true"))
+
+
 def cmd_validate(args: dict):
     r = _load_roadmap(args["positional"][0])
     errors = r.validate()
@@ -307,6 +315,7 @@ COMMANDS = {
     "link": cmd_link,
     "unlock": cmd_unlock,
     "stats": cmd_stats,
+    "recommend-storage": cmd_recommend_storage,
     "validate": cmd_validate,
     "path": cmd_path,
     "siblings": cmd_siblings,
