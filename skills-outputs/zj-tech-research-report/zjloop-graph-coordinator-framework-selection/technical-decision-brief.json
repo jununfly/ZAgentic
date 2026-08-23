@@ -1,0 +1,91 @@
+{
+  "schema": "technical-decision-brief/v1",
+  "user": {
+    "actor": "ZAgenticLoop maintainer",
+    "job": "Decide whether the future Graph Coordinator should adopt an external multi-agent workflow framework as a core dependency, or keep the provider-neutral native core and reuse external capabilities only behind adapters."
+  },
+  "baseline": {
+    "workflow": "ZAgenticLoop currently owns provider-neutral OPN roles, directed graph planning, orchestration preflight, transport delivery, SQLite-backed StateStore/ArtifactStore seams, independent verification, and Human acceptance in its own TypeScript core.",
+    "failureModes": [
+      "A framework may become an accidental authority over Human acceptance, resource isolation, or lifecycle facts.",
+      "A framework may duplicate graph, state, retry, or provider-adapter semantics already owned by ZAgenticLoop.",
+      "A framework may reduce implementation cost for one capability while increasing upgrade, security, and version-skew ownership.",
+      "A source-level capability may be mistaken for product fit without a bounded adapter or conformance test."
+    ]
+  },
+  "targetOutcome": "A reviewable architecture decision that identifies whether to adopt LangGraph, AutoGen, or CrewAI as a core dependency, reuse one or more unit capabilities behind adapters, or keep the native core; the decision must include a bounded next validation slice.",
+  "goals": [
+    "Preserve Human or Human+Agent responsibility as the final authority.",
+    "Preserve provider-neutral OPN contracts and independent verification.",
+    "Compare serious candidates using the same evidence criteria and pinned source revisions.",
+    "Separate whole-framework adoption from unit-capability reuse.",
+    "Make ownership, security, lifecycle, upgrade, and exit costs explicit.",
+    "Produce a reproducible prototype or conformance gate for the chosen path."
+  ],
+  "nonGoals": [
+    "Implementing a framework adapter during this research run.",
+    "Replacing ZAgenticLoop's Human acceptance or resource-isolation contracts.",
+    "Choosing a general-purpose Agent reasoning engine.",
+    "Treating popularity, stars, README size, or feature count as product-fit evidence.",
+    "Making LangGraph, AutoGen, or CrewAI mandatory before a bounded validation slice passes."
+  ],
+  "constraints": [
+    {
+      "id": "responsibility",
+      "statement": "Human or Human+Agent remains the center responsibility unit; an external framework cannot create final Human acceptance."
+    },
+    {
+      "id": "provider-neutral-core",
+      "statement": "The core must remain provider-neutral and must not couple OPN lifecycle semantics to one framework's object model."
+    },
+    {
+      "id": "evidence-and-verification",
+      "statement": "Execution, evidence, independent verification, review handoff, and Human acceptance remain distinct durable facts."
+    },
+    {
+      "id": "runtime",
+      "statement": "The baseline runtime is the existing TypeScript/Node.js ZAgenticLoop core and its GitHub/GitLab/workspace adapter surfaces."
+    },
+    {
+      "id": "lifecycle",
+      "statement": "The current decision is an architecture/problem-discovery decision; production-scale rollout, HA, and enterprise governance are out of scope until a vertical slice proves usefulness."
+    },
+    {
+      "id": "security",
+      "statement": "Any candidate must expose or permit explicit authority, credential, approval, sandbox, provenance, and recovery boundaries."
+    },
+    {
+      "id": "exit",
+      "statement": "The chosen path must have a reversible adapter boundary and a conformance test that can run without adopting the framework as the core authority."
+    }
+  ],
+  "assumptions": [
+    "The current ZAgenticLoop source at the pinned commit is representative of the active Graph/OPN responsibility model.",
+    "LangGraph, AutoGen, and CrewAI are serious alternatives for graph or multi-agent workflow capability, but none is presumed to fit the entire product.",
+    "A keep-native or adapter-only recommendation is a valid outcome if it better preserves ownership and lifecycle boundaries."
+  ],
+  "stage": "problem-discovery",
+  "decisionScope": "Future Graph Coordinator capability composition in ZAgenticLoop: core dependency versus adapter-only reuse, including the first bounded validation slice.",
+  "options": [
+    {
+      "id": "native-core",
+      "name": "Keep ZAgenticLoop native core and add no framework dependency"
+    },
+    {
+      "id": "langgraph-adapter",
+      "name": "Adopt LangGraph capability behind a provider-neutral adapter"
+    },
+    {
+      "id": "autogen-adapter",
+      "name": "Adopt AutoGen capability behind a provider-neutral adapter"
+    },
+    {
+      "id": "crewai-adapter",
+      "name": "Adopt CrewAI capability behind a provider-neutral adapter"
+    },
+    {
+      "id": "framework-core",
+      "name": "Adopt one external framework as the Graph Coordinator core"
+    }
+  ]
+}

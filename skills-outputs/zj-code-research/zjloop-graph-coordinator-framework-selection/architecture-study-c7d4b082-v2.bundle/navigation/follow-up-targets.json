@@ -1,0 +1,438 @@
+{
+  "schema": "zj-architecture-study-followups/v1",
+  "snapshotId": "study-bec314dee3c9f2e9f604c52b",
+  "targets": [
+    {
+      "id": "followup-fd471e28b886d623a96b",
+      "kind": "decision",
+      "label": "zagenticloop",
+      "path": "package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-8616cda88ff763144d24",
+      "kind": "decision",
+      "label": "@jununfly/zj-goal-audit",
+      "path": "tools/zj-goal-audit/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-a1ef44344eb5ac483658",
+      "kind": "decision",
+      "label": "fixture",
+      "path": "tools/zj-goal-audit/test/fixtures/good-goal-project/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-f4d9230c28a4ab11ed47",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-audit",
+      "path": "tools/zj-loop-audit/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-f7b5f0f0613cf89272c9",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-core/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-2494de34b4d86ef14105",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-cost",
+      "path": "tools/zj-loop-cost/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-2ee2bc3cedac2e34d438",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-github-infra",
+      "path": "tools/zj-loop-github-infra/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-47970e9f10a25b54afd8",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-gitlab-infra",
+      "path": "tools/zj-loop-gitlab-infra/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-79a5cecc5f74355b35f2",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-init",
+      "path": "tools/zj-loop-init/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-82697b3a6674da54b214",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-mcp-server",
+      "path": "tools/zj-loop-mcp-server/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-ed711df73b36217ec969",
+      "kind": "decision",
+      "label": "@jununfly/zj-loop-sync",
+      "path": "tools/zj-loop-sync/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-5134919cdb449aa3160e",
+      "kind": "decision",
+      "label": "zj-loop-dependency-fixture",
+      "path": "zj-loop/dogfood/dependency-fixture/package.json",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "package"
+    },
+    {
+      "id": "followup-c8b60c39314381128670",
+      "kind": "decision",
+      "label": "Repository root",
+      "path": ".",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "root"
+    },
+    {
+      "id": "followup-286f2de5319bf726e343",
+      "kind": "decision",
+      "label": ".codex",
+      "path": ".codex",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-4a2351b5416b6c4239f7",
+      "kind": "decision",
+      "label": ".github",
+      "path": ".github",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-271d2c09ed52bc341ff3",
+      "kind": "decision",
+      "label": ".npm-cache-release-validation",
+      "path": ".npm-cache-release-validation",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-2139c353ec69667b2379",
+      "kind": "decision",
+      "label": ".zcodegraph",
+      "path": ".zcodegraph",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-d348ae495697a92c27f0",
+      "kind": "decision",
+      "label": "docs",
+      "path": "docs",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-56af4b067cb148c8a601",
+      "kind": "decision",
+      "label": "examples",
+      "path": "examples",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-0cbf5de35d4abb176e57",
+      "kind": "decision",
+      "label": "patterns",
+      "path": "patterns",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-80bb34230b9bb555c69f",
+      "kind": "decision",
+      "label": "resources",
+      "path": "resources",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-8b6f2a3d89796669aa50",
+      "kind": "decision",
+      "label": "scripts",
+      "path": "scripts",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-5c18d803d390d8c4e0a2",
+      "kind": "decision",
+      "label": "skills",
+      "path": "skills",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-fc7e48edf3d753fe3460",
+      "kind": "decision",
+      "label": "src",
+      "path": "src",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-e640a8a691e76f85ac1d",
+      "kind": "decision",
+      "label": "starters",
+      "path": "starters",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-5d79ff6f780359a7c305",
+      "kind": "decision",
+      "label": "stories",
+      "path": "stories",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-87863620f5d5e5c1ebe8",
+      "kind": "decision",
+      "label": "templates",
+      "path": "templates",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-19b122f17d38af4150be",
+      "kind": "decision",
+      "label": "tools",
+      "path": "tools",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-093293c4a9557ab70cb9",
+      "kind": "decision",
+      "label": "zj-loop",
+      "path": "zj-loop",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "top-level"
+    },
+    {
+      "id": "followup-5eef7e95df81c0270b18",
+      "kind": "decision",
+      "label": ".github/workflows/audit.yml",
+      "path": ".github/workflows/audit.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-3c41e8bfdb4077c62a7b",
+      "kind": "decision",
+      "label": ".github/workflows/changelog-drafter.yml",
+      "path": ".github/workflows/changelog-drafter.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-d21350d72e0b201cdaa8",
+      "kind": "decision",
+      "label": ".github/workflows/ci-sweeper.yml",
+      "path": ".github/workflows/ci-sweeper.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-fedef76953841a6c8786",
+      "kind": "decision",
+      "label": ".github/workflows/daily-triage.yml",
+      "path": ".github/workflows/daily-triage.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-871b75146394a077c280",
+      "kind": "decision",
+      "label": ".github/workflows/github-infra-dogfood.yml",
+      "path": ".github/workflows/github-infra-dogfood.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-756ab97dc842c97ae996",
+      "kind": "decision",
+      "label": ".github/workflows/post-merge-roadmap-closeout.yml",
+      "path": ".github/workflows/post-merge-roadmap-closeout.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-e1c64dced57093010b08",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-goal-audit.yml",
+      "path": ".github/workflows/release-zj-goal-audit.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-aa4a3e51d5849a0e85d6",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-audit.yml",
+      "path": ".github/workflows/release-zj-loop-audit.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-642d4139992e866aa237",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-core.yml",
+      "path": ".github/workflows/release-zj-loop-core.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-900e2ad2009b04e92d21",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-cost.yml",
+      "path": ".github/workflows/release-zj-loop-cost.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-3c627a66020cd136cf2b",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-github-infra.yml",
+      "path": ".github/workflows/release-zj-loop-github-infra.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-cdd5057242a5726ad6be",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-gitlab-infra.yml",
+      "path": ".github/workflows/release-zj-loop-gitlab-infra.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-4d7e57efecc88293f645",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-init.yml",
+      "path": ".github/workflows/release-zj-loop-init.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-8d3281d7538d6b7a500e",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-mcp-server.yml",
+      "path": ".github/workflows/release-zj-loop-mcp-server.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-43e3729bd77259076b1d",
+      "kind": "decision",
+      "label": ".github/workflows/release-zj-loop-sync.yml",
+      "path": ".github/workflows/release-zj-loop-sync.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-67a9bd423a3ffc18b4a4",
+      "kind": "decision",
+      "label": ".github/workflows/validate-patterns.yml",
+      "path": ".github/workflows/validate-patterns.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-e71998b639702b1189e8",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-changelog-drafter.yml",
+      "path": ".github/workflows/zj-loop-changelog-drafter.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-ec81b6176106f0e75678",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-ci-sweeper.yml",
+      "path": ".github/workflows/zj-loop-ci-sweeper.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-9efcebcd5fbbaa3082af",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-daily-triage.yml",
+      "path": ".github/workflows/zj-loop-daily-triage.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-d0d78ba204c7888b6813",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-dependency-sweeper.yml",
+      "path": ".github/workflows/zj-loop-dependency-sweeper.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-7915bdc110a08d4c5607",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-issue-triage.yml",
+      "path": ".github/workflows/zj-loop-issue-triage.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-0b80020ba0f1fa52fa84",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-post-merge-cleanup.yml",
+      "path": ".github/workflows/zj-loop-post-merge-cleanup.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-20cb6d0d10208264ef49",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-pr-steward.yml",
+      "path": ".github/workflows/zj-loop-pr-steward.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-5bf360b3d9fd4aeae07a",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-roadmap-activation.yml",
+      "path": ".github/workflows/zj-loop-roadmap-activation.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    },
+    {
+      "id": "followup-f492dd19d2919fc771c3",
+      "kind": "decision",
+      "label": ".github/workflows/zj-loop-smoke.yml",
+      "path": ".github/workflows/zj-loop-smoke.yml",
+      "reason": "map target not selected for this bounded study",
+      "targetKind": "workflow"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "inventory": {
+    "bytes": 71092053,
+    "directories": 530,
+    "extensions": {
+      ".css": 4,
+      ".db": 1,
+      ".example": 25,
+      ".html": 5,
+      ".js": 369,
+      ".json": 84,
+      ".log": 13,
+      ".map": 6,
+      ".md": 315,
+      ".mjs": 409,
+      ".py": 1,
+      ".pyc": 1,
+      ".sh": 3,
+      ".swift": 3,
+      ".template": 8,
+      ".tgz": 3,
+      ".toml": 15,
+      ".ts": 732,
+      ".txt": 2,
+      ".yaml": 4,
+      ".yml": 82,
+      ".zj-issue-triage": 2,
+      ".zj-loop-activate": 2,
+      ".zj-loop-budget": 2,
+      ".zj-loop-constraints": 2,
+      ".zj-loop-triage": 2,
+      ".zj-loop-verifier": 2,
+      ".zj-minimal-fix": 2
+    },
+    "files": 2246,
+    "languages": {
+      "css": 4,
+      "javascript": 369,
+      "markdown": 315,
+      "python": 1,
+      "shell": 3,
+      "swift": 3,
+      "toml": 15,
+      "typescript": 732,
+      "yaml": 86
+    },
+    "symlinks": 0
+  },
+  "schema": "zj-repository-map-summary/v1",
+  "scope": {
+    "exclusions": [
+      ".git",
+      ".tmp",
+      "dist",
+      "docs/plans/loop-graph-engineering-integration-roadmap.bundle",
+      "node_modules",
+      "tools/zj-goal-audit/node_modules",
+      "tools/zj-loop-audit/node_modules",
+      "tools/zj-loop-core/.tmp",
+      "tools/zj-loop-core/node_modules",
+      "tools/zj-loop-cost/node_modules",
+      "tools/zj-loop-github-infra/node_modules",
+      "tools/zj-loop-gitlab-infra/node_modules",
+      "tools/zj-loop-init/node_modules",
+      "tools/zj-loop-mcp-server/node_modules",
+      "tools/zj-loop-sync/node_modules",
+      "zj-loop/dogfood/dependency-fixture/node_modules"
+    ],
+    "root": "."
+  },
+  "snapshotId": "map-c8ade72a1d1d9640c164106c",
+  "source": {
+    "commit": "c7d4b082b0dde7df260848e2b3209c7c38889dd3",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 23,
+    "workingTreeFingerprint": "6f92319a558d0703fb6ca99ae5124a771feb17777e06fd2d0ac0a1eba3b64d8c"
+  },
+  "unknowns": []
+}

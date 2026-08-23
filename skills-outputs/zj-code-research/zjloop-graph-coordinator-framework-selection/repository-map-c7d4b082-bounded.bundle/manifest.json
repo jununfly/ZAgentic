@@ -1,0 +1,83 @@
+{
+  "immutable": true,
+  "kind": "repository-map",
+  "schema": "zj-repository-map-manifest/v1",
+  "scope": {
+    "exclusions": [
+      ".git",
+      ".tmp",
+      "dist",
+      "docs/plans/loop-graph-engineering-integration-roadmap.bundle",
+      "node_modules",
+      "tools/zj-goal-audit/node_modules",
+      "tools/zj-loop-audit/node_modules",
+      "tools/zj-loop-core/.tmp",
+      "tools/zj-loop-core/node_modules",
+      "tools/zj-loop-cost/node_modules",
+      "tools/zj-loop-github-infra/node_modules",
+      "tools/zj-loop-gitlab-infra/node_modules",
+      "tools/zj-loop-init/node_modules",
+      "tools/zj-loop-mcp-server/node_modules",
+      "tools/zj-loop-sync/node_modules",
+      "zj-loop/dogfood/dependency-fixture/node_modules"
+    ],
+    "root": "."
+  },
+  "shards": [
+    {
+      "bytes": 0,
+      "path": "facts/integrations.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2337,
+      "path": "facts/packages.jsonl",
+      "sha256": "fe3d20e8820634e995b114863e8d43eab48aefafca52395b12a6661772854737"
+    },
+    {
+      "bytes": 2093,
+      "path": "facts/summary.json",
+      "sha256": "3051602032b486f7c502042a0bb6dcfe12012d3862947a56e3fb5e34f5f25903"
+    },
+    {
+      "bytes": 577401,
+      "path": "facts/tree.jsonl",
+      "sha256": "b2b0a3f7abaa8d22188f25ae9701025971822d6a34fcfef511894449e3b7888c"
+    },
+    {
+      "bytes": 3929,
+      "path": "facts/workflows.jsonl",
+      "sha256": "2c5e1c372027a5f4d8e04a9b5cf57a1df96092fe946467badc8be982e808fc84"
+    },
+    {
+      "bytes": 11897,
+      "path": "navigation/targets.json",
+      "sha256": "3bf7997467093df0fe51a0c84ae7cf036fe1a52c45e0aabf1fc9ec8aa2667b01"
+    }
+  ],
+  "snapshotId": "map-c8ade72a1d1d9640c164106c",
+  "source": {
+    "commit": "c7d4b082b0dde7df260848e2b3209c7c38889dd3",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 23,
+    "workingTreeFingerprint": "6f92319a558d0703fb6ca99ae5124a771feb17777e06fd2d0ac0a1eba3b64d8c"
+  },
+  "views": {
+    "artifacts": [
+      {
+        "bytes": 4746,
+        "path": "views/map.html",
+        "sha256": "34c15edcb5756784f40771c823eac27ce04d16eac40783a7c42a055c28ed5d11"
+      },
+      {
+        "bytes": 4299,
+        "path": "views/map.md",
+        "sha256": "c707404e465014c9ad364fbf9f1830d72b6fab581237f170fa5a2b6ec83f65cc"
+      }
+    ],
+    "defaultTargetLimit": 40
+  }
+}

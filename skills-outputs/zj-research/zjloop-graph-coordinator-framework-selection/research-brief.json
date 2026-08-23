@@ -1,0 +1,69 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "Graph Coordinator framework selection for ZAgenticLoop",
+    "criteria": [
+      {
+        "id": "workflow-model",
+        "question": "What graph, workflow, or multi-agent coordination model does the project provide, and what are its declared execution boundaries?",
+        "critical": true,
+        "keywords": ["graph", "workflow", "multi-agent", "agent"]
+      },
+      {
+        "id": "durable-state",
+        "question": "What first-party evidence describes persistence, checkpoints, durable state, resume, replay, or retry behavior?",
+        "critical": true,
+        "keywords": ["persistence", "checkpoint", "state", "resume", "replay", "retry"]
+      },
+      {
+        "id": "human-control",
+        "question": "What first-party evidence describes human-in-the-loop, interrupt, approval, pause, review, or explicit control boundaries?",
+        "critical": true,
+        "keywords": ["human", "interrupt", "approval", "review", "pause"]
+      },
+      {
+        "id": "provider-and-tool-seams",
+        "question": "What provider, model, tool, or integration seams are documented, and can they be consumed without making the framework the product authority?",
+        "critical": true,
+        "keywords": ["provider", "model", "tool", "integration", "adapter"]
+      },
+      {
+        "id": "observability-and-evidence",
+        "question": "What first-party evidence describes tracing, events, artifacts, run inspection, or other observability relevant to auditable execution?",
+        "critical": false,
+        "keywords": ["tracing", "events", "observability", "telemetry", "artifact"]
+      },
+      {
+        "id": "security-and-sandbox",
+        "question": "What first-party evidence describes security, credentials, permissions, sandboxing, isolation, or dangerous-operation controls?",
+        "critical": true,
+        "keywords": ["security", "permission", "credential", "sandbox", "isolation"]
+      },
+      {
+        "id": "integration-lifecycle",
+        "question": "What runtime, language, license, release, upgrade, and compatibility facts affect embedding the project in a TypeScript/Node.js product?",
+        "critical": true,
+        "keywords": ["typescript", "node", "python", "license", "release", "upgrade", "compatibility"]
+      },
+      {
+        "id": "ownership-and-exit",
+        "question": "What evidence reveals the ownership, extension, replacement, or exit boundary when a host product embeds only a unit capability rather than the whole framework?",
+        "critical": true,
+        "keywords": ["extension", "plugin", "custom", "architecture", "migration"]
+      }
+    ],
+    "repositories": [
+      {"owner": "langchain-ai", "name": "langgraph"},
+      {"owner": "microsoft", "name": "autogen"},
+      {"owner": "crewAIInc", "name": "crewAI"}
+    ],
+    "policyVersion": "v1",
+    "budget": {
+      "maxFiles": 36,
+      "maxBytes": 1600000,
+      "deadlineMs": 180000
+    }
+  }
+}

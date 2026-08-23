@@ -300,7 +300,11 @@ def build_secondary_records(identity: str, source: dict[str, Any], targets: list
     risks.append({"kind": "unknown", "id": stable_id(identity, "risk", "ownership"), "risk": "ownership", "trigger": "the selected scope crosses a module or integration seam", "impact": "maintenance and incident responsibility are not established by this pass", "owner": "unknown", "evidenceIds": []})
     flows: list[dict[str, Any]] = []
     for path, evidence_id in entrypoints:
-        flows.append({"kind": "inferred", "id": stable_id(identity, "flow", path), "flow": "entrypoint-to-selected-module", "fromPath": path, "toPath": next((target["path"] for target in targets if target["path"] == "." or path == target["path"] or target["path"] in Path(path).parents), path), "evidenceIds": [evidence_id]})
+        # A source file may expose more than one entrypoint.  Include the
+        # line-scoped evidence identity in the flow identity so each observed
+        # entrypoint remains addressable instead of collapsing into duplicate
+        # IDs that fail the downstream quality gate.
+        flows.append({"kind": "inferred", "id": stable_id(identity, "flow", f"{path}:{evidence_id}"), "flow": "entrypoint-to-selected-module", "fromPath": path, "toPath": next((target["path"] for target in targets if target["path"] == "." or path == target["path"] or target["path"] in Path(path).parents), path), "evidenceIds": [evidence_id]})
     if not flows:
         flows.append({"kind": "unknown", "id": stable_id(identity, "flow", "unknown"), "flow": "runtime-flow", "fromPath": ".", "toPath": ".", "reason": "no selected entrypoint evidence"})
     diagrams = [{

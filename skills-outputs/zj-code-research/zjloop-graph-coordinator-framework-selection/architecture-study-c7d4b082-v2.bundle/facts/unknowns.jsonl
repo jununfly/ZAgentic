@@ -1,0 +1,1 @@
+{"category": "scope", "id": "unknown-scope-file-limit", "kind": "unknown", "path": ".", "reason": "217 selected files were outside max-files=120"}

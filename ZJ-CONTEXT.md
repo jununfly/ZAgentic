@@ -95,6 +95,32 @@ including evidence links, candidate score copying, critical claims, diagrams,
 comparisons, metrics, and explicit unknown follow-ups.
 _Avoid_: design review, human sign-off, semantic quality score
 
+### Research architecture
+
+**Graph Coordinator**:
+The responsibility unit that coordinates graph execution and delegates work;
+it does not automatically own product authority, evidence truth, Human
+acceptance, or lifecycle closeout.
+_Avoid_: framework core, agent platform
+
+**Unit capability**:
+A narrow, independently testable capability that can be composed behind a
+seam without importing the source project's whole product semantics or
+ownership model.
+_Avoid_: feature copy, platform adoption
+
+**Native semantic owner**:
+The system that remains authoritative for the product's durable facts,
+responsibility boundaries, and lifecycle decisions after an external
+capability is composed.
+_Avoid_: host framework, integration wrapper
+
+**Adapter-only reuse**:
+An adoption mode in which an external project is used behind a reversible
+adapter and conformance fixture while the native semantic owner remains the
+source of truth.
+_Avoid_: framework-core adoption, embedded platform
+
 **Research CLI protocol**:
 The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and the versioned standalone ZHarness compiler. Missing or incompatible executables fail loudly; there is no prompt-only fallback for technical comparisons.
 _Avoid_: shell wrapper, internal API, compatibility mode
@@ -410,13 +436,13 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- bundle quality gate 同时检查 artifact hash 与跨 shard record ID 唯一性  — docs/zj-retros/2026-08-23-retro.md#0826
-- 新增 storage adapter 先用读取计数测试证明 bounded 语义，再扩展 CLI 契约  — docs/zj-retros/2026-08-23-retro.md#1011
 - 回归命令在任务开始记录解释器路径与版本，避免环境差异伪装成实现回归  — docs/zj-retros/2026-08-23-retro.md#1011
 - 建议类 CLI 先固定输出级别、阈值与无副作用契约，再与迁移命令分离  — docs/zj-retros/2026-08-23-retro.md#1735
 - 真实路线图校准前先区分执行路线图与 Registry 索引，再解释结构信号与性能测量  — docs/zj-retros/2026-08-23-retro.md#1813
 - 发布前刷新远端并确认 ahead/behind，再执行 main 推送  — docs/zj-retros/2026-08-23-retro.md#2215
 - skill 重构发布后立即同步实际安装态，并跑一个真实消费者验收  — docs/zj-retros/2026-08-23-retro.md#2215
+- 多仓库研究先做认证与 API quota preflight；限流时保留当前 brief 与旧 sealed ledger 的边界说明  — docs/zj-retros/2026-08-23-retro.md#2239
+- 生成式 study record 的 ID 必须包含 source locator 或 evidence identity，并在下游前跑唯一性 hard gate  — docs/zj-retros/2026-08-23-retro.md#2239
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 

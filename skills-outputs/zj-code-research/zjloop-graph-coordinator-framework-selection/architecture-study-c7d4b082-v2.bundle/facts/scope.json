@@ -1,0 +1,63 @@
+{
+  "decisions": [
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-5a10d52e5b904f929eb2",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src"
+    },
+    {
+      "decision": "bounded-file-selection",
+      "id": "decision-scope-file-limit",
+      "kind": "decision",
+      "reason": "read the first 120 files in deterministic path order"
+    }
+  ],
+  "exclusions": [
+    ".git",
+    ".tmp",
+    "dist",
+    "docs/plans/loop-graph-engineering-integration-roadmap.bundle",
+    "node_modules",
+    "tools/zj-goal-audit/node_modules",
+    "tools/zj-loop-audit/node_modules",
+    "tools/zj-loop-core/.tmp",
+    "tools/zj-loop-core/node_modules",
+    "tools/zj-loop-cost/node_modules",
+    "tools/zj-loop-github-infra/node_modules",
+    "tools/zj-loop-gitlab-infra/node_modules",
+    "tools/zj-loop-init/node_modules",
+    "tools/zj-loop-mcp-server/node_modules",
+    "tools/zj-loop-sync/node_modules",
+    "zj-loop/dogfood/dependency-fixture/node_modules"
+  ],
+  "mapBinding": {
+    "manifestSha256": "b30a54092a574b27cf12d523bc1e48ffa333f23da6ece0e840ac25040e2f906b",
+    "snapshotId": "map-c8ade72a1d1d9640c164106c",
+    "targetIds": [
+      "target-4bf3c45840fc8783a642"
+    ],
+    "used": true
+  },
+  "schema": "zj-architecture-study-scope/v1",
+  "snapshotId": "study-bec314dee3c9f2e9f604c52b",
+  "source": {
+    "commit": "c7d4b082b0dde7df260848e2b3209c7c38889dd3",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 23,
+    "workingTreeFingerprint": "6f92319a558d0703fb6ca99ae5124a771feb17777e06fd2d0ac0a1eba3b64d8c"
+  },
+  "targets": [
+    {
+      "id": "target-4bf3c45840fc8783a642",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src",
+      "path": "tools/zj-loop-core/src",
+      "reason": "human-supplied scope converted to a study target"
+    }
+  ]
+}
