@@ -449,13 +449,13 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- 回归命令在任务开始记录解释器路径与版本，避免环境差异伪装成实现回归  — docs/zj-retros/2026-08-23-retro.md#1011
 - 建议类 CLI 先固定输出级别、阈值与无副作用契约，再与迁移命令分离  — docs/zj-retros/2026-08-23-retro.md#1735
-- 真实路线图校准前先区分执行路线图与 Registry 索引，再解释结构信号与性能测量  — docs/zj-retros/2026-08-23-retro.md#1813
 - 发布前刷新远端并确认 ahead/behind，再执行 main 推送  — docs/zj-retros/2026-08-23-retro.md#2215
 - skill 重构发布后立即同步实际安装态，并跑一个真实消费者验收  — docs/zj-retros/2026-08-23-retro.md#2215
 - 多仓库研究先做认证与 API quota preflight；限流时保留当前 brief 与旧 sealed ledger 的边界说明  — docs/zj-retros/2026-08-23-retro.md#2239
 - 生成式 study record 的 ID 必须包含 source locator 或 evidence identity，并在下游前跑唯一性 hard gate  — docs/zj-retros/2026-08-23-retro.md#2239
+- 外部网络适配器先覆盖真实标准库调用签名，再做受控 live smoke test  — docs/zj-retros/2026-08-23-retro.md#2334
+- live fresh collection 同时保留 status sidecar 与 sealed ledger，并以三态 status 验收  — docs/zj-retros/2026-08-23-retro.md#2334
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 

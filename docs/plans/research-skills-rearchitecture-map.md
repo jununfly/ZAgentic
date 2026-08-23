@@ -64,6 +64,7 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed implementation release](#a28--researchroadmap-implementation-release-t) — The research/roadmap implementation wave was published from `main`, with release closeout kept separate from implementation changes and no deployment claim added.
 - [Completed research-chain dogfood](#a29--real-research-chain-dogfood-t) — A real `zj-code-research → zj-research → zj-tech-research-report` chain passed its quality gates; failed fresh collection remained explicitly distinct from reuse of an older sealed ledger.
 - [Completed research runtime hardening](#a30--research-collection-runtime-hardening-t) — `zj-research` now performs GitHub quota/auth preflight, emits structured diagnostics, and records fresh, explicit-reuse, and blocked collection states.
+- [Completed authenticated live collection acceptance](#a31--authenticated-live-collection-acceptance-t) — A real authenticated fresh collection completed against the fixed three-repository brief; the live path also exposed and fixed the standard-library timeout invocation bug.
 
 ## Not yet specified
 
@@ -1010,3 +1011,43 @@ Hardened the shared research runtime without changing the
 The implementation was published as commit `fb71652` on `main`; live fresh
 collection with an authenticated GitHub token remains the next operational
 acceptance step, not an unverified claim of A30.
+
+## A31 — Authenticated live collection acceptance [T] ✅
+
+### Question
+
+Can the hardened `zj-research` runtime complete a real authenticated fresh
+collection against the fixed three-repository technical brief, preserving
+status, provenance, commit-pinned evidence, and explicit unknowns rather than
+silently reusing the older sealed ledger?
+
+### Resolution
+
+Completed a live fresh collection with the authenticated GitHub CLI credential
+injected only into the child process. The run used the existing
+`research-brief.json` for the Graph Coordinator framework selection and wrote
+new A31 artifacts beside it:
+
+- `skills-outputs/zj-research/zjloop-graph-coordinator-framework-selection/a31-live-collection-status.json`
+  records `state: fresh-collection`, authenticated preflight, a core quota of
+  `5000` with `4996` remaining, `canCollect: true`, and no automatic fallback.
+- `skills-outputs/zj-research/zjloop-graph-coordinator-framework-selection/a31-live-ledger-response.json`
+  records a `zj-verified-evidence-ledger/v1` with the matching brief
+  fingerprint, 22 Evidence IDs, 36 files read, 175,177 source bytes, a
+  non-cache collection, and three commit-pinned repositories:
+  LangGraph `f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f`, AutoGen
+  `027ecf0a379bcc1d09956d46d12d44a3ad9cee14`, and CrewAI
+  `f4731f5025f861c78e3af0487cc80bf5e7c64782`.
+- The sealed ledger retains explicit candidate stars/topic matches and two
+  `unknownCriteria` entries; neither was converted into a negative claim.
+
+The first live attempt exposed a real runtime bug in A30's preflight: passing
+`timeout` as the second positional argument to Python 3.13's `urlopen` treated
+the float as an HTTP body. Changed the call to `timeout=timeout` and added a
+regression assertion in `verify_runtime_contract.py`. The runtime contract,
+golden contract (7 compiler cases and 10 evaluation cases), Python compilation,
+and diff check all passed before the successful rerun.
+
+Verification status: A31 live fresh collection accepted. The generated status
+sidecar proves the authenticated fresh state; the generated ledger is the only
+source for the collected GitHub facts. No old ledger was used.

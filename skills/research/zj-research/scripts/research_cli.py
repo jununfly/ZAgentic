@@ -257,7 +257,7 @@ def github_preflight(
     )
     open_request = urlopen if opener is None else opener
     try:
-        with open_request(request, timeout) as response:
+        with open_request(request, timeout=timeout) as response:
             status = int(getattr(response, "status", getattr(response, "code", 200)))
             headers = getattr(response, "headers", None)
             body = response.read().decode("utf-8")

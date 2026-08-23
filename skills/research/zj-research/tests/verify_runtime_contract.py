@@ -123,14 +123,16 @@ def test_github_preflight_reports_auth_and_quota(adapter):
 
 
 def test_github_preflight_classifies_quota_and_network_failures(adapter):
-    def exhausted(_request, _timeout):
+    def exhausted(_request, timeout):
+        assert timeout == adapter.DEFAULT_GITHUB_PREFLIGHT_TIMEOUT_SECONDS
         return FakeResponse({"resources": {"core": {"limit": 60, "remaining": 0, "reset": 1_900_000_000}}})
 
     exhausted_result = adapter.github_preflight(opener=exhausted, token=None)
     assert exhausted_result["authentication"]["mode"] == "anonymous"
     assert exhausted_result["canCollect"] is False
 
-    def offline(_request, _timeout):
+    def offline(_request, timeout):
+        assert timeout == adapter.DEFAULT_GITHUB_PREFLIGHT_TIMEOUT_SECONDS
         raise URLError("offline")
 
     try:
@@ -143,7 +145,8 @@ def test_github_preflight_classifies_quota_and_network_failures(adapter):
     body = io.BytesIO(b'{"message":"API rate limit exceeded"}')
     headers = {"x-ratelimit-remaining": "0", "x-ratelimit-reset": "1900000000"}
 
-    def rate_limited(_request, _timeout):
+    def rate_limited(_request, timeout):
+        assert timeout == adapter.DEFAULT_GITHUB_PREFLIGHT_TIMEOUT_SECONDS
         raise HTTPError("https://api.github.test/rate_limit", 403, "forbidden", headers, body)
 
     try:
@@ -153,7 +156,8 @@ def test_github_preflight_classifies_quota_and_network_failures(adapter):
     else:
         raise AssertionError("HTTP rate-limit preflight failure was not structured")
 
-    def unauthorized(_request, _timeout):
+    def unauthorized(_request, timeout):
+        assert timeout == adapter.DEFAULT_GITHUB_PREFLIGHT_TIMEOUT_SECONDS
         raise HTTPError("https://api.github.test/rate_limit", 401, "unauthorized", {}, io.BytesIO(b'{"message":"Bad credentials"}'))
 
     try:
