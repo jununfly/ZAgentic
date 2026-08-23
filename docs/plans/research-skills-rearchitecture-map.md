@@ -974,9 +974,9 @@ Ran the real `zj-code-research → zj-research → zj-tech-research-report` chai
   identity, preventing duplicate IDs for one source file.
 - The requested three-repository fresh collection was blocked by exhausted
   unauthenticated GitHub API quota. No fresh ledger was fabricated; the report
-  explicitly reused the previously successful `ledger-response.json` together
-  with `sealed-ledger-source-brief.request.json`, and kept its broader evidence
-  boundary visible.
+  explicitly reused a previously successful sealed ledger and kept its broader
+  evidence boundary visible. A31 later replaced that historical reuse with an
+  authenticated fresh collection, and A32 republished the report from it.
 - The technical `Report IR`, Markdown, HTML, receipt, and technical quality
   gate passed. The evidence supported adapter-only capability probes, while the
   native core remained the recommended semantic owner.
