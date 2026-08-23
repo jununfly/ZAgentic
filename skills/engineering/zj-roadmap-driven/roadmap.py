@@ -2,7 +2,8 @@
 zj-roadmap-driven — 路线图核心数据模型
 
 确定性操作：所有方法都是纯函数，输入确定则输出确定。
-JSON 是唯一真相源，Markdown 只是渲染视图。
+普通模式以单 JSON 为事实源；大型模式由 roadmap bundle 的 canonical shards
+组成事实源，Markdown 只是渲染视图。
 """
 
 import json
@@ -491,8 +492,13 @@ class Roadmap:
 
     # ── Markdown 渲染 ──────────────────────────────────
 
-    def render_full_section(self) -> str:
-        """全量渲染（调试用）：全展开树 + 全部决策表 + 焦点详情。"""
+    def render_full_section(
+        self,
+        all_nodes: bool = False,
+        max_depth: int = 2,
+        max_bytes: Optional[int] = None,
+    ) -> str:
+        """Render a bounded section unless the caller explicitly requests export."""
         now = self.data["metadata"].get("updated", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         focus_id = self.get_current_focus()
@@ -501,11 +507,11 @@ class Roadmap:
             focus_node = self.data["nodes"][focus_id]
             focus_line = f"> 当前施工: {focus_id}. {focus_node['label']}"
 
-        tree_text = self.get_tree(max_depth=50)
+        tree_text = self.get_tree(max_depth=50 if all_nodes else max_depth)
 
-        all_decisions = self.get_decisions()
+        all_decisions = self.get_decisions() if all_nodes else []
         decision_lines = ""
-        if all_decisions:
+        if all_nodes and all_decisions:
             decision_lines = "| 节点 | 问题 | 答案 | 备注 |\n"
             decision_lines += "|------|------|------|------|\n"
             for d in all_decisions:
@@ -534,6 +540,12 @@ class Roadmap:
         if current_detail:
             section += current_detail
 
+        if max_bytes is not None and max_bytes < 0:
+            raise ValueError("max_bytes must be non-negative")
+        if max_bytes is not None and len(section.encode("utf-8")) > max_bytes:
+            encoded = section.encode("utf-8")[:max_bytes]
+            section = encoded.decode("utf-8", errors="ignore")
+            section += "\n> View truncated at --max-bytes. Use section --all with a larger limit for export.\n"
         return section
 
     def render_light_section(self) -> str:

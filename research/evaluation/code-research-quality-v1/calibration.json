@@ -1,0 +1,10 @@
+{
+  "schema": "zj-code-research-judge-calibration-set/v1",
+  "corpusVersion": "code-research-quality/v1",
+  "samples": [
+    {"caseId": "landscape-balanced", "human": {"scores": {"coverage": 92, "navigability": 90, "fidelity": 94}, "recommendation": "pass", "riskCount": 1}, "judge": {"scores": {"coverage": 90, "navigability": 88, "fidelity": 92}, "recommendation": "pass", "riskCount": 1}},
+    {"caseId": "landscape-sparse", "human": {"scores": {"coverage": 84, "navigability": 86, "fidelity": 88}, "recommendation": "pass", "riskCount": 0}, "judge": {"scores": {"coverage": 82, "navigability": 84, "fidelity": 86}, "recommendation": "pass", "riskCount": 0}},
+    {"caseId": "deep-read-runtime", "human": {"scores": {"coverage": 95, "navigability": 91, "fidelity": 93}, "recommendation": "pass", "riskCount": 2}, "judge": {"scores": {"coverage": 92, "navigability": 89, "fidelity": 91}, "recommendation": "pass", "riskCount": 2}},
+    {"caseId": "deep-read-unknowns", "human": {"scores": {"coverage": 86, "navigability": 88, "fidelity": 90}, "recommendation": "pass", "riskCount": 1}, "judge": {"scores": {"coverage": 84, "navigability": 86, "fidelity": 88}, "recommendation": "pass", "riskCount": 1}}
+  ]
+}

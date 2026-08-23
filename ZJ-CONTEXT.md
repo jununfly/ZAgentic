@@ -145,6 +145,21 @@ Architecture Study fidelity and evidence-linked interpretation. The two results
 remain dimensional rather than collapsing into one quality score.
 _Avoid_: code-research score, report-quality rubric
 
+**Code-research quality fixture corpus**:
+The separate `code-research-quality/v1` controlled cases for `zj-code-research`:
+balanced and sparse Repository Maps plus runtime and insufficient-evidence
+Architecture Studies. Each case supplies a fixture source tree and human-coded
+required properties; it is not a golden prose answer and is independent from
+technical-report evaluation assets.
+_Avoid_: technical-report fixture, demo repository, golden Markdown
+
+**Code-research semantic baseline**:
+The calibrated Judge agreement result for the code-research fixture corpus. It
+records score mean absolute error, within-tolerance rate, recommendation
+agreement, and risk-count error before semantic quality results are trusted.
+It is a calibration gate, not an aggregate quality score.
+_Avoid_: code-research score, Judge-only truth, pass rate
+
 **Mechanical hard gate**:
 An automated validity condition that must pass before semantic quality results
 are considered: source pinning, scope accounting, artifact references, target
@@ -175,6 +190,12 @@ _Avoid_: split JSON, database migration
 A bounded current-state representation derived from append-only roadmap history;
 it lets reads start from a known state instead of replaying the entire history.
 _Avoid_: mutable history, full-log read
+
+**Snapshot interval**:
+The configured number of roadmap history events between materialized snapshots;
+it controls snapshot-file growth while the current pointer continues to track
+the latest history sequence.
+_Avoid_: snapshot frequency guess, full-log checkpoint
 
 **Bounded view**:
 A roadmap view with explicit depth, node scope, or byte limit that avoids
@@ -360,11 +381,13 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- 改名前先 grep 定量引用清单，执行后 grep 清零验证，不凭记忆列文件  — docs/zj-retros/2026-08-14-retro.md#2100
-- skill 改名后本地同步用仓源 cp 覆盖，只 mv 目录会让 frontmatter name 失配  — docs/zj-retros/2026-08-14-retro.md#2100
 - short-read 验收必须用三类 fixture 盲读，并把“动作 + 阈值 + owner”作为下一验证的最小答案  — docs/zj-retros/2026-08-21-retro.md#2335
 - 技术报告 publication 字段先区分 brief、Report IR、质量结果三类 schema，再补 receipt 契约测试  — docs/zj-retros/2026-08-23-retro.md#0120
 - 保留低层 compiler 兼容路径时，在 public skill 文档中明确它不是新任务的能力边界  — docs/zj-retros/2026-08-23-retro.md#0120
+- 新增 research family 先核对共享 evaluator schema 边界，不把 code-research 伪装成技术报告 family  — docs/zj-retros/2026-08-23-retro.md#0826
+- bundle quality gate 同时检查 artifact hash 与跨 shard record ID 唯一性  — docs/zj-retros/2026-08-23-retro.md#0826
+- 新增 storage adapter 先用读取计数测试证明 bounded 语义，再扩展 CLI 契约  — docs/zj-retros/2026-08-23-retro.md#1011
+- 回归命令在任务开始记录解释器路径与版本，避免环境差异伪装成实现回归  — docs/zj-retros/2026-08-23-retro.md#1011
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 

@@ -86,9 +86,22 @@ source path, and line range.
 
 ## Quality and handoff
 
-Run mechanical hard gates before semantic evaluation. `landscape/v1` evaluates
-Repository Map coverage and navigability; `deep-read/v1` evaluates Architecture
-Study fidelity and evidence-linked interpretation. Keep the dimensions separate.
+Read [the code-research quality contract](references/code-research-quality.md)
+when the output will be used to compare research quality or tune the method.
+Run the local mechanical hard gates before semantic evaluation:
+
+```sh
+python scripts/code_research_quality.py validate-assets \
+  research/evaluation/code-research-quality-v1
+python scripts/code_research_quality.py validate-map <map-bundle>
+python scripts/code_research_quality.py validate-study <study-bundle> --map <map-bundle>
+```
+
+Then evaluate against a controlled case with `evaluate`. `landscape/v1`
+evaluates Repository Map coverage and navigability; `deep-read/v1` evaluates
+Architecture Study fidelity and evidence-linked interpretation. Keep the
+dimensions separate. A failed hard gate or calibration is a failed quality
+result, not a low semantic score.
 
 When the study exposes a technical decision, hand its cited findings, ledger,
 and decision brief to `zj-tech-research-report`. Do not make the Architecture

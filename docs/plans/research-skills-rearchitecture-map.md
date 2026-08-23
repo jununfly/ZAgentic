@@ -56,13 +56,11 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed Repository Map implementation](#a20--repository-map-implementation-t) — `zj-code-research` now emits immutable commit/worktree-pinned bundles with fact shards, deterministic targets, generated views, bounded reads, and mechanical validation.
 - [Completed Architecture Study implementation](#a21--architecture-study-implementation-t) — `zj-code-research` now emits map-bound or explicitly direct-scoped evidence-linked study bundles with four record kinds, line-addressable claims, flows, risks, unknowns, diagrams, and follow-up targets.
 - [Completed technical research-report implementation](#a22--technical-research-report-implementation-t) — `zj-tech-research-report` now validates a `technical-decision-brief/v1` plus sealed ledger and `technical-c4/v1` Report IR before compiler publication, producing Markdown, HTML, and a receipt with a versioned technical quality-gate result.
+- [Completed code-research quality implementation](#a23--code-research-quality-fixtures-and-evaluation-t) — `zj-code-research` now owns separate `landscape/v1` / `deep-read/v1` hard gates, controlled fixture cases, dimensional semantic scoring, and calibrated Judge checks.
+- [Completed roadmap bundle implementation](#a24--roadmap-bundle-storage-and-performance-implementation-t) — `zj-roadmap-driven` now supports explicit sharded bundle storage, bounded cross-mode CLI views, append-only decision retractions, safe legacy migration, and reproducible small/medium/large benchmarks.
 
 ## Not yet specified
 
-- The fixture boundaries and calibrated semantic evaluation for Repository Map
-  and Architecture Study quality.
-- The exact storage-adapter internals and migration recovery protocol for the
-  large roadmap bundle.
 - The final implementation-wave commit and rollback choreography; the tickets
   below make the work bounded and verifiable one session at a time.
 
@@ -731,7 +729,7 @@ contract, Repository Map contract, Architecture Study contract, recursive
 plugin validation (48 skills), private naming validation, Python compilation,
 and `git diff --check`.
 
-## A23 — Code-research quality fixtures and evaluation [T]
+## A23 — Code-research quality fixtures and evaluation [T] ✅
 
 ### Question
 
@@ -739,13 +737,80 @@ How should the `landscape/v1` and `deep-read/v1` rubrics, mechanical hard gates,
 controlled-quality fixtures, and calibrated semantic evaluation be implemented
 for Repository Map and Architecture Study?
 
-## A24 — Roadmap bundle storage and performance implementation [T]
+### Resolution
+
+Implemented the code-research quality seam in
+`skills/research/zj-code-research/`:
+
+- Added `scripts/code_research_quality.py` with separate asset validation,
+  Repository Map and Architecture Study mechanical hard gates, dimensional
+  `landscape/v1` / `deep-read/v1` scoring, and calibrated Judge agreement
+  reporting. The gate checks source pinning, scope/exclusions, shard hashes,
+  inventory/tree consistency, target binding, line-addressable evidence,
+  record kinds, unique IDs, critical-claim evidence, risks, diagrams, flows,
+  and follow-up navigation.
+- Added the independent controlled corpus under
+  `research/evaluation/code-research-quality-v1/`: balanced and sparse
+  landscape fixtures plus runtime and insufficient-evidence deep-read
+  fixtures, human-coded required properties, rubric definitions, and four
+  calibration samples. It does not reuse technical-report `reportFamily`
+  assets, because the existing ZHarness evaluation protocol intentionally
+  accepts only `technical-c4/v1` / `zj-draft/v1`; the protocol remains unchanged.
+- Added a contract test that materializes each fixture into a temporary Git
+  repository, runs map→study→quality evaluation, checks calibration
+  (`scoreMeanAbsoluteError=2.0833`, tolerance/agreement `1.0`), and proves a
+  tampered immutable shard is rejected.
+- Fixed Architecture Study claim assembly so secondary ownership claims are
+  not appended twice; duplicate record IDs are now a quality hard failure.
+
+Verification passed: code-research quality contract, Repository Map contract,
+Architecture Study contract, research golden contract, recursive plugin
+validation, private naming validation, Python compilation, and `git diff --check`.
+
+## A24 — Roadmap bundle storage and performance implementation [T] ✅
 
 ### Question
 
 How should `zj-roadmap-driven` implement the optional sharded bundle, append-only
 history, materialized snapshots, explicit migration, bounded views, and
 small/medium/large benchmark fixtures while preserving the current mode?
+
+### Resolution
+
+Implemented the optional large-roadmap carrier in
+`skills/engineering/zj-roadmap-driven/`:
+
+- Added `roadmap_bundle.py` with a small manifest/current pointer, independently
+  readable node and decision shards, append-only `history/events.jsonl`,
+  interval-based materialized snapshot metadata, disposable status/focus/stats
+  indexes, atomic writes, and validation/rebuild support. Single-file JSON mode
+  remains unchanged for ordinary roadmaps.
+- Unified `roadmap_cli.py` around a storage adapter: existing files use the
+  legacy adapter, existing bundle directories use the bundle adapter, and
+  `init --storage bundle` creates a bundle directly. `migrate <json> --to bundle`
+  validates the source, writes/validates a temporary bundle, locks source and
+  destination, then atomically renames the result; failures leave the source
+  unchanged and do not implement Markdown import.
+- Preserved the useful command compatibility surface across both modes. Bundle
+  reads for `tree`, `get`, `focus`, node-scoped `decisions`, and light `render`
+  stay shard-local; `section` is bounded by default and `section --all` is the
+  explicit full export. Bundle `remove-decision` records a traceable retraction
+  instead of deleting the original decision record.
+- Added 13 bundle/single-file contract tests covering migration/source
+  preservation, parent-status cascade, snapshot intervals, bounded reads,
+  corruption/stale-index rejection, invalid migration recovery, concurrent
+  writes, lock-compatible history sequencing, and existing CLI behavior. Added
+  a standard-library benchmark generator for 100/1,000/5,000-node fixtures;
+  observed large-fixture bounded operations stayed near constant-time while
+  full export remained explicitly expensive (`full_section_ms=406.686` on the
+  local 5,000-node run).
+- Updated the skill, CLI reference, data-model wording, and wayfinder/roadmap
+  dual-mode design so Markdown is a generated view and the fact source is
+  single-file JSON or bundle canonical shards according to the selected mode.
+
+Verification passed: roadmap single-file and bundle contract tests (13 tests),
+Python compilation, small/medium/large benchmark generation, and `git diff
+--check`.
 
 ## A25 — Research migration and roadmap verification closeout [T]
 
@@ -754,5 +819,3 @@ small/medium/large benchmark fixtures while preserving the current mode?
 How should the completed implementation wave be verified across public-bucket
 governance, skill discovery, compiler contracts, artifact paths, code-research
 quality, roadmap migration, and user-facing documentation before closeout?
-
-⛔ blocked by: A23, A24

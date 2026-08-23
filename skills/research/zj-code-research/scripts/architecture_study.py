@@ -395,7 +395,12 @@ def build_study(repository: Path, bundle: Path, map_bundle: Path | None, request
     identity = source["commit"] or source["workingTreeFingerprint"]
     evidence, claims, relationships, entrypoints = collect_records(repository, source, files, identity)
     flows, secondary_claims, unknowns, risks, diagrams, _ = build_secondary_records(identity, source, targets, files, evidence, claims, relationships, entrypoints, scan_unknowns + selection_unknowns)
-    claims.extend(secondary_claims)
+    # `build_secondary_records` mutates the claim list when it adds ownership
+    # unknowns and returns that same list for historical compatibility. Do not
+    # extend it with itself; duplicate IDs make downstream quality checks and
+    # line-addressable claim navigation ambiguous.
+    if secondary_claims is not claims:
+        claims.extend(secondary_claims)
     decisions = target_decisions + selection_decisions
     if map_bundle is None:
         decisions.append({"kind": "decision", "id": "decision-no-map", "decision": "direct-study-without-map", "reason": "no Repository Map was supplied; explicit scope was converted to equivalent targets"})

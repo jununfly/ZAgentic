@@ -9,7 +9,7 @@
 `zj-wayfinder` 与 `zj-roadmap-driven` 是 ZAgentic 中两个互补的工程 skill（前者规划、后者跟踪）。在 2026-08-20 之前，两者的"底层事实"不对称：
 
 - **`zj-wayfinder` 依赖 issue-tracker**。它把地图、决策票、阻塞边、frontier 查询放在 issue-tracker 上（GitHub/GitLab/本地 md），通过 `/zj-agents-init` 配置的 `Wayfinding operations` 段工作。优势是**便于 teamwork**（多 Agent 并发靠 claim + 原生 blocking 避让、人类在 tracker UI 可视化看到前沿），劣势是**依赖外部载体**、单点上下文分散在 tracker 上。
-- **`zj-roadmap-driven` 无三方依赖**。它以本地 JSON 为唯一真相源 + 纯 Python stdlib CLI，完全独立。优势是 **context 完整、Human 能通盘把握**（md 轻量视图 + JSON 全量可查），劣势是单写者、不擅长多 Agent 并发。
+- **`zj-roadmap-driven` 无三方依赖**。它以本地单 JSON（普通路线图）或显式 sharded bundle（大型路线图）为事实源 + 纯 Python stdlib CLI，完全独立。优势是 **context 完整、Human 能通盘把握**（md 轻量视图 + 按需 bounded 查询），劣势是单写者、不擅长多 Agent 并发。
 
 这一不对称，使得同一类"规划/跟踪"工作，在两种工作方式（团队协作 vs 个人全盘掌握）下不得不各用各的 skill，而无法在同一个 skill 内无缝切换。
 
@@ -18,7 +18,7 @@
 为了保持整个项目的一致性、完整性，**`zj-wayfinder` 和 `zj-roadmap-driven` 都应该同时支持两种情形**：
 
 1. **依赖 issue-tracker（方便 teamwork）** —— 地图/路线/决策票落在 tracker 上，多人、多 Agent 共享、可视化、并发避让。
-2. **不依赖 issue-tracker（方便 context 完整 + Human 通盘把握）** —— 以本地文件/JSON 为真相源，Human 能在一次会话内纵览全貌、离线可用、完全自包含。
+2. **不依赖 issue-tracker（方便 context 完整 + Human 通盘把握）** —— 以本地文件为事实源，普通模式用 JSON，大型模式用 bundle；Human 能离线按需纵览全貌、完全自包含。
 
 两种模式应是**同一 skill 的两个可切换载体**，而非两个割裂的 skill。同时，wayfinder（规划）与 roadmap-driven（跟踪）应被显式设计为**一对组合技能（skill pair）**，由 `zj-to-tickets` 在缝上做转换器。
 

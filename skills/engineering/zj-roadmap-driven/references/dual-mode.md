@@ -4,11 +4,18 @@ Read this reference when choosing the roadmap carrier or handing work from `zj-w
 
 ## Dual-mode carrier
 
-`zj-roadmap-driven` is the natural **local/self-contained carrier** in the pair: local JSON is the source of truth and the lightweight Markdown view gives a complete, offline, single-writer context. It also consumes the route planned by wayfinder's **tracker mode**. `zj-roadmap-driven` does not plan on the tracker; it consumes wayfinder's decision map through `zj-to-tickets`, which exports decision tickets with blocking edges (local `.scratch/.../issues/<NN>.md` files or tracker issues), then materializes the route in roadmap JSON.
+`zj-roadmap-driven` is the natural **local/self-contained carrier** in the pair:
+ordinary roadmaps use one local JSON source of truth, while large roadmaps use
+an explicit sharded bundle with a small manifest and bounded views. It also
+consumes the route planned by wayfinder's **tracker mode**. `zj-roadmap-driven`
+does not plan on the tracker; it consumes wayfinder's decision map through
+`zj-to-tickets`, which exports decision tickets with blocking edges (local
+`.scratch/.../issues/<NN>.md` files or tracker issues), then materializes the
+route in the selected local storage mode.
 
 Both uses share one mental model — map/route plus decision records — while the physical carrier differs:
 
-- **Local/self-contained:** when one person has full control, works offline, or needs complete context, build the JSON route and render the lightweight Markdown view.
+- **Local/self-contained:** when one person has full control or works offline, use single-file JSON for ordinary routes; explicitly choose a bundle when node/decision/history artifacts are large, then render the bounded Markdown view.
 - **Tracker planning → roadmap tracking:** when collaborating or running multiple agents, plan in wayfinder's tracker mode, export decision tickets with `zj-to-tickets`, then consume that route here.
 
 Switching guide: collaboration or multiple agents → tracker (wayfinder) + export (`zj-to-tickets`); personal exploration, offline work, or full control → local carrier (wayfinder local mode + this skill). The mental model stays the same, so switching carriers does not redo decisions.
