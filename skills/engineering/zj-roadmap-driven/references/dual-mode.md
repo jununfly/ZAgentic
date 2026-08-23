@@ -27,13 +27,16 @@ a local roadmap. The command is read-only and returns a versioned JSON advisory:
 
 - `keep-single` when no starting signal is reached;
 - `consider-bundle` when one signal is reached;
-- `recommend-bundle` when a severe signal or two starting signals are reached;
+- `recommend-bundle` when a severe structural signal or a measured severe
+  full-section timing is reached;
 - `keep-bundle` when the roadmap is already an explicit bundle.
 
 The starting signals are 1,000 nodes, 500 decisions, or 256 KiB of canonical
 single-file data. Severe signals are 5,000 nodes, 2,000 decisions, or 1 MiB.
-With `--measure`, a full-section timing above 100 ms is a starting signal and
-above 300 ms is severe. These are tunable advisory thresholds, not automatic
+Multiple starting signals increase the explanation and keep the result at
+`consider-bundle`; they do not become a performance claim by themselves. With
+`--measure`, a full-section timing above 100 ms is a starting signal and above
+300 ms is severe. These are tunable advisory thresholds, not automatic
 migration gates. Markdown size is reported as a view metric and never becomes
 the fact source; use `migrate --to bundle` explicitly after deciding to move.
 

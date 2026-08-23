@@ -61,6 +61,9 @@ def _linked_view_size(path: Path) -> int:
 
 
 def _single_metrics(path: Path, roadmap: Roadmap) -> dict[str, Any]:
+    validation_errors = roadmap.validate()
+    if validation_errors:
+        raise BundleError("not a valid execution roadmap: " + "; ".join(validation_errors))
     stats = roadmap.stats()
     metadata = roadmap.data.get("metadata", {})
     linked_view = Path(str(metadata.get("md_file", ""))).expanduser() if metadata.get("md_file") else None
@@ -84,6 +87,8 @@ def _bundle_metrics(path: Path) -> dict[str, Any]:
     node_paths = sorted(nodes_dir.glob("*.json"))
     decision_paths = sorted(decisions_dir.glob("*.json"))
     nodes = [_read_json(node_path) for node_path in node_paths]
+    if not any(isinstance(node, dict) and node.get("id") == "1" for node in nodes):
+        raise BundleError("not a valid execution roadmap bundle: missing root node '1'")
 
     total_decisions = 0
     for decision_path in decision_paths:
@@ -160,7 +165,11 @@ def _signals(metrics: dict[str, Any], measurements: dict[str, float]) -> tuple[l
     return consider, recommend
 
 
-def _recommendation(storage: str, consider: list[dict[str, Any]], recommend: list[dict[str, Any]]) -> dict[str, Any]:
+def _recommendation(
+    storage: str,
+    consider: list[dict[str, Any]],
+    recommend: list[dict[str, Any]],
+) -> dict[str, Any]:
     if storage == "bundle":
         return {
             "action": "keep-bundle",
@@ -169,10 +178,8 @@ def _recommendation(storage: str, consider: list[dict[str, Any]], recommend: lis
             "reasons": ["roadmap bundle is already explicitly selected; no migration is needed."],
         }
 
-    if recommend or len(consider) >= 2:
+    if recommend:
         reasons = [f"{item['metric']} reached {item['value']} (recommend threshold {item['threshold']})" for item in recommend]
-        if len(consider) >= 2 and not reasons:
-            reasons = [f"{item['metric']} reached {item['value']} (consider threshold {item['threshold']})" for item in consider]
         return {
             "action": "recommend-bundle",
             "level": "recommend",

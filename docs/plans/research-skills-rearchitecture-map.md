@@ -60,6 +60,7 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed roadmap bundle implementation](#a24--roadmap-bundle-storage-and-performance-implementation-t) — `zj-roadmap-driven` now supports explicit sharded bundle storage, bounded cross-mode CLI views, append-only decision retractions, safe legacy migration, and reproducible small/medium/large benchmarks.
 - [Completed migration and verification closeout](#a25--research-migration-and-roadmap-verification-closeout-t) — The real planning corpus, research contracts, roadmap bundle, public discovery, and documentation surfaces have been verified together; no active legacy skill alias remains.
 - [Completed storage adoption advisory](#a26--read-only-roadmap-storage-advisory-t) — `recommend-storage` reports explainable single-file versus bundle signals without repairing, migrating, or rewriting the roadmap.
+- [Completed storage-advisor threshold calibration](#a27--storage-advisor-threshold-calibration-t) — Real roadmap corpora now distinguish structural pressure from measured performance and reject non-execution Registry JSON.
 
 ## Not yet specified
 
@@ -894,3 +895,40 @@ python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
 
 Verification passed: storage-advisor contract tests, existing roadmap
 single-file/bundle tests, Python compilation, and `git diff --check`.
+
+## A27 — Storage-advisor threshold calibration [T] ✅
+
+### Question
+
+How should `recommend-storage` interpret real roadmap corpora when structural
+size signals are present but local measurements do not show a current
+performance bottleneck, and how should it distinguish execution roadmaps from
+the global Initiative Registry index?
+
+### Resolution
+
+Calibrated the A26 policy against real read-only JSON corpora and tightened the
+input boundary:
+
+- A single starting signal still returns `consider-bundle`. Multiple starting
+  signals now remain `consider-bundle`; they explain structural pressure but do
+  not assert a performance failure. `recommend-bundle` requires a severe
+  structural signal or an explicit `--measure` result at the severe
+  `full_section_ms` line.
+- `recommend-storage` now validates single-file execution roadmaps and rejects
+  inputs without the execution root node `1`. Bundle reports likewise reject a
+  bundle without root shard `nodes/1.json`, preventing the fixed three-level
+  global Initiative Registry schema from being treated as an execution route.
+- Read-only dogfood covered: `ZBrain/docs/plans/big-map-roadmap.json` (18
+  nodes, 4.9 KB, `keep-single`),
+  `ZAgenticLoop/docs/plans/opn-real-agent-dogfood-next-milestone-roadmap.json`
+  (20 nodes, 465 decisions, 245.9 KB, `keep-single`), and
+  `ZAgenticLoop/docs/plans/loop-graph-engineering-integration-roadmap.json`
+  (23 nodes, 694 decisions, 411.4 KB, `consider-bundle`; measured bounded tree
+  0.767 ms and full section 0.956 ms). Source hashes were unchanged.
+- Added two contract tests for the calibrated two-signal result and rejection
+  of a non-execution Registry JSON; the full storage-advisor contract now has
+  seven tests.
+
+Verification passed: seven storage-advisor tests, the complete roadmap test
+suite, Python compilation, recursive plugin validation, and `git diff --check`.

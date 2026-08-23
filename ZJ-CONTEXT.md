@@ -201,6 +201,13 @@ artifact sizes. It selects `keep-single`, `consider-bundle`,
 roadmap.
 _Avoid_: automatic migration, performance gate, storage switch
 
+**Storage signal**:
+One observed roadmap metric crossing an advisory starting or severe line;
+structural signals describe artifact pressure, while timing signals describe a
+measured local performance condition. Multiple starting signals alone do not
+claim a current performance bottleneck.
+_Avoid_: hard limit, benchmark truth, automatic switch
+
 **Materialized snapshot**:
 A bounded current-state representation derived from append-only roadmap history;
 it lets reads start from a known state instead of replaying the entire history.
@@ -396,13 +403,13 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- 技术报告 publication 字段先区分 brief、Report IR、质量结果三类 schema，再补 receipt 契约测试  — docs/zj-retros/2026-08-23-retro.md#0120
 - 保留低层 compiler 兼容路径时，在 public skill 文档中明确它不是新任务的能力边界  — docs/zj-retros/2026-08-23-retro.md#0120
 - 新增 research family 先核对共享 evaluator schema 边界，不把 code-research 伪装成技术报告 family  — docs/zj-retros/2026-08-23-retro.md#0826
 - bundle quality gate 同时检查 artifact hash 与跨 shard record ID 唯一性  — docs/zj-retros/2026-08-23-retro.md#0826
 - 新增 storage adapter 先用读取计数测试证明 bounded 语义，再扩展 CLI 契约  — docs/zj-retros/2026-08-23-retro.md#1011
 - 回归命令在任务开始记录解释器路径与版本，避免环境差异伪装成实现回归  — docs/zj-retros/2026-08-23-retro.md#1011
 - 建议类 CLI 先固定输出级别、阈值与无副作用契约，再与迁移命令分离  — docs/zj-retros/2026-08-23-retro.md#1735
+- 真实路线图校准前先区分执行路线图与 Registry 索引，再解释结构信号与性能测量  — docs/zj-retros/2026-08-23-retro.md#1813
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 
