@@ -61,6 +61,9 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed migration and verification closeout](#a25--research-migration-and-roadmap-verification-closeout-t) — The real planning corpus, research contracts, roadmap bundle, public discovery, and documentation surfaces have been verified together; no active legacy skill alias remains.
 - [Completed storage adoption advisory](#a26--read-only-roadmap-storage-advisory-t) — `recommend-storage` reports explainable single-file versus bundle signals without repairing, migrating, or rewriting the roadmap.
 - [Completed storage-advisor threshold calibration](#a27--storage-advisor-threshold-calibration-t) — Real roadmap corpora now distinguish structural pressure from measured performance and reject non-execution Registry JSON.
+- [Completed implementation release](#a28--researchroadmap-implementation-release-t) — The research/roadmap implementation wave was published from `main`, with release closeout kept separate from implementation changes and no deployment claim added.
+- [Completed research-chain dogfood](#a29--real-research-chain-dogfood-t) — A real `zj-code-research → zj-research → zj-tech-research-report` chain passed its quality gates; failed fresh collection remained explicitly distinct from reuse of an older sealed ledger.
+- [Completed research runtime hardening](#a30--research-collection-runtime-hardening-t) — `zj-research` now performs GitHub quota/auth preflight, emits structured diagnostics, and records fresh, explicit-reuse, and blocked collection states.
 
 ## Not yet specified
 
@@ -932,3 +935,78 @@ input boundary:
 
 Verification passed: seven storage-advisor tests, the complete roadmap test
 suite, Python compilation, recursive plugin validation, and `git diff --check`.
+
+## A28 — Research/roadmap implementation release [T] ✅
+
+### Question
+
+How should the completed research and roadmap implementation wave be published
+without mixing release closeout documents into the implementation commits or
+claiming deployment that did not happen?
+
+### Resolution
+
+Published the completed implementation wave from `main` after refreshing the
+remote and confirming the fast-forward path. The release closeout remained a
+separate knowledge-governance step, and the repository records the result as a
+published GitHub repository state rather than a deployed or live-verified
+runtime. The closeout also retained the known bucket-root validator warnings
+and the bundled compiler artifact used by contract tests.
+
+## A29 — Real research-chain dogfood [T] ✅
+
+### Question
+
+Does the composed research route work on a real technical decision from
+commit-pinned code research through evidence collection, technical report
+publication, and quality evaluation, including failure boundaries?
+
+### Resolution
+
+Ran the real `zj-code-research → zj-research → zj-tech-research-report` chain:
+
+- Repository Map snapshot `map-c8ade72a1d1d9640c164106c` and Architecture Study
+  snapshot `study-bec314dee3c9f2e9f604c52b` passed their hard gates after the
+  study generator made each entrypoint flow ID include its line-scoped evidence
+  identity, preventing duplicate IDs for one source file.
+- The requested three-repository fresh collection was blocked by exhausted
+  unauthenticated GitHub API quota. No fresh ledger was fabricated; the report
+  explicitly reused the previously successful `ledger-response.json` together
+  with `sealed-ledger-source-brief.request.json`, and kept its broader evidence
+  boundary visible.
+- The technical `Report IR`, Markdown, HTML, receipt, and technical quality
+  gate passed. The evidence supported adapter-only capability probes, while the
+  native core remained the recommended semantic owner.
+
+## A30 — Research collection runtime hardening [T] ✅
+
+### Question
+
+How should `zj-research` prevent an avoidable GitHub auth/quota failure from
+consuming a multi-repository run, and how should it distinguish a new
+collection from an explicitly reused sealed ledger or a blocked attempt?
+
+### Resolution
+
+Hardened the shared research runtime without changing the
+`zj-research-cli/v1` protocol:
+
+- A GitHub `/rate_limit` preflight records authentication mode and core quota
+  before fresh collection. Anonymous collection remains possible when quota is
+  available; invalid credentials, exhausted quota, forbidden responses, and
+  network failures fail with structured diagnostics.
+- Compiler stderr and malformed responses are classified into stable, actionable
+  error codes. Uncontextualized failures such as `undefined.map` retain the
+  original compiler detail but are no longer exposed as the only explanation.
+- `--status-output` records the current brief and one of
+  `fresh-collection`, `reused-sealed-ledger`, or `collection-blocked`.
+  `--reuse-ledger` is explicit and requires a matching brief fingerprint; a
+  blocked fresh run never silently falls back to an older ledger.
+- Runtime contract tests cover auth/quota/network failures, compiler error
+  classification, brief matching, status serialization, explicit reuse, and
+  fresh/blocked state transitions. The existing golden compiler/evaluation
+  contract remains green.
+
+The implementation was published as commit `fb71652` on `main`; live fresh
+collection with an authenticated GitHub token remains the next operational
+acceptance step, not an unverified claim of A30.
