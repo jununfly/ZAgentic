@@ -193,6 +193,13 @@ and independently readable node, decision, and history shards, with generated
 views and disposable indexes kept outside the canonical state.
 _Avoid_: split JSON, database migration
 
+**Roadmap carrier**:
+The selected canonical storage form for an execution roadmap: ordinary routes
+use one JSON file, while large routes may use an explicit Roadmap bundle. The
+carrier is the fact source; generated Markdown is only a human-readable view.
+Do not maintain both forms as active sources for one roadmap.
+_Avoid_: roadmap format, Markdown source, dual truth
+
 **Storage recommendation**:
 A read-only, versioned advisory from `recommend-storage` that compares roadmap
 node/decision counts, canonical bytes, optional local timings, and bundle
@@ -403,13 +410,13 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- 保留低层 compiler 兼容路径时，在 public skill 文档中明确它不是新任务的能力边界  — docs/zj-retros/2026-08-23-retro.md#0120
-- 新增 research family 先核对共享 evaluator schema 边界，不把 code-research 伪装成技术报告 family  — docs/zj-retros/2026-08-23-retro.md#0826
 - bundle quality gate 同时检查 artifact hash 与跨 shard record ID 唯一性  — docs/zj-retros/2026-08-23-retro.md#0826
 - 新增 storage adapter 先用读取计数测试证明 bounded 语义，再扩展 CLI 契约  — docs/zj-retros/2026-08-23-retro.md#1011
 - 回归命令在任务开始记录解释器路径与版本，避免环境差异伪装成实现回归  — docs/zj-retros/2026-08-23-retro.md#1011
 - 建议类 CLI 先固定输出级别、阈值与无副作用契约，再与迁移命令分离  — docs/zj-retros/2026-08-23-retro.md#1735
 - 真实路线图校准前先区分执行路线图与 Registry 索引，再解释结构信号与性能测量  — docs/zj-retros/2026-08-23-retro.md#1813
+- 发布前刷新远端并确认 ahead/behind，再执行 main 推送  — docs/zj-retros/2026-08-23-retro.md#2215
+- skill 重构发布后立即同步实际安装态，并跑一个真实消费者验收  — docs/zj-retros/2026-08-23-retro.md#2215
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 
