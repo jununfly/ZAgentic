@@ -463,7 +463,7 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- skill 重构发布后立即同步实际安装态，并跑一个真实消费者验收  — docs/zj-retros/2026-08-23-retro.md#2215
+- 清场前先按“当前消费者 / 历史复核 / 可再生生成物”审计；稳定结论先回收到 canonical 文档，再清理过程产物  — docs/zj-retros/2026-08-24-retro.md#0102
 - 多仓库研究先做认证与 API quota preflight；限流时保留当前 brief 与旧 sealed ledger 的边界说明  — docs/zj-retros/2026-08-23-retro.md#2239
 - 生成式 study record 的 ID 必须包含 source locator 或 evidence identity，并在下游前跑唯一性 hard gate  — docs/zj-retros/2026-08-23-retro.md#2239
 - 外部网络适配器先覆盖真实标准库调用签名，再做受控 live smoke test  — docs/zj-retros/2026-08-23-retro.md#2334
