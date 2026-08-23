@@ -35,6 +35,40 @@ Each adapter invocation is bounded to 300 seconds. Set `ZJ_RESEARCH_CLI_TIMEOUT_
 
 Run `python scripts/research_cli.py --check` before creating reports. Its failure message identifies the invalid lock, missing artifact, hash mismatch, or protocol incompatibility; the skill has no Markdown-only compatibility path.
 
+For every fresh `collect`, pass `--status-output collection-status.json` and keep
+that sidecar beside the request and ledger:
+
+```sh
+python scripts/research_cli.py request.json \
+  --output ledger-response.json \
+  --status-output collection-status.json
+```
+
+The adapter performs a GitHub `/rate_limit` preflight before starting the
+compiler. The status records whether the run was `fresh-collection`,
+`reused-sealed-ledger`, or `collection-blocked`, plus the current brief and
+authentication/quota observation. An anonymous request is allowed when quota
+is available; set `GITHUB_TOKEN` for the authenticated quota. A blocked run
+does not create a partial or synthetic sealed ledger and never silently falls
+back to an older one.
+
+To reuse an existing sealed ledger, make that choice explicit and use the
+matching brief:
+
+```sh
+python scripts/research_cli.py request.json \
+  --reuse-ledger previous-ledger-response.json \
+  --output ledger-response.json \
+  --status-output collection-status.json
+```
+
+The adapter verifies the sealed-ledger schema and brief fingerprint before
+returning it. Runtime failures are emitted as `zj-research-cli-error/v1`
+diagnostics with stable codes such as `GITHUB_AUTHENTICATION_FAILED`,
+`GITHUB_FORBIDDEN`, `GITHUB_RATE_LIMITED`, `GITHUB_NETWORK_FAILED`, and
+`COMPILER_OUTPUT_INVALID`; the original compiler message remains in diagnostic
+details without being mistaken for a fresh ledger.
+
 Run `python scripts/research_eval_cli.py --check` before validating the corpus. The immutable assets under `research/evaluation/controlled-quality-v1/` must pass both operations before a Judge configuration contributes to a quality baseline:
 
 ```sh

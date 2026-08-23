@@ -125,6 +125,19 @@ _Avoid_: framework-core adoption, embedded platform
 The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and the versioned standalone ZHarness compiler. Missing or incompatible executables fail loudly; there is no prompt-only fallback for technical comparisons.
 _Avoid_: shell wrapper, internal API, compatibility mode
 
+**GitHub quota preflight**:
+A read-only check of GitHub authentication mode and API core quota before a
+fresh multi-repository collection. It may permit anonymous collection when
+quota is available, but it blocks a run when the observed quota or credential
+state cannot support collection.
+_Avoid_: best-effort probe, implicit retry
+
+**Collection run status**:
+The durable boundary record for one research collection attempt. It names a
+fresh collection, an explicitly reused matching sealed ledger, or a blocked
+collection, and keeps the current brief separate from any older ledger.
+_Avoid_: ledger, compiler result, fallback result
+
 **Compiler artifact lock**:
 The `zj-research-compiler-lock/v2` record that fixes the bundled research and evaluation executables to one ZHarness commit and artifact SHA-256. ZAgentic verifies it before extracting both executables into a hash-named user cache; `ZJ_RESEARCH_CLI` and `ZJ_RESEARCH_EVAL_CLI` are explicit local-development overrides.
 _Avoid_: latest compiler, PATH fallback, vendored source

@@ -22,9 +22,14 @@ Completion criterion: every non-trivial finding names a re-verifiable primary so
 Read [references/research-cli.md](references/research-cli.md), then:
 
 1. Write one complete `zj-research-brief/v1` request with the same criteria for every repository. Include explicit repositories, deterministic GitHub discovery, or both. Separate popularity from topic relevance.
-2. Run `python <this-skill>/scripts/research_cli.py request.json --output ledger-response.json`.
+2. Run `python <this-skill>/scripts/research_cli.py request.json --output ledger-response.json --status-output collection-status.json`. The adapter performs a GitHub auth/quota preflight first; retain the status sidecar beside the request and ledger.
 3. Save the response's sealed ledger beside the findings. Use only its canonical evidence for GitHub claims.
 4. Write the cited findings from the ledger. Each `unknownCriteria` entry remains unknown; it is not a negative capability claim.
+
+If a fresh collection is blocked, preserve the current brief and blocked
+status; do not present an older ledger as a fresh result. Reuse an older sealed
+ledger only through the explicit `--reuse-ledger <path>` option, which requires
+the ledger's brief fingerprint to match the current request.
 
 Completion criterion: every selected repository is pinned to a commit, stars and topic match come from the sealed ledger, each claim traces to an Evidence ID, and every uncovered repository/criterion pair is explicit.
 

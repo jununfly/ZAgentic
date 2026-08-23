@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ADAPTER = ROOT / "scripts" / "research_cli.py"
+RUNTIME_CONTRACT = ROOT / "tests" / "verify_runtime_contract.py"
 EVALUATION_ADAPTER = ROOT / "scripts" / "research_eval_cli.py"
 PUBLISHER = ROOT.parent / "zj-tech-research-report" / "scripts" / "publish_report.py"
 FIXTURE = Path(__file__).with_name("golden-contract.json")
@@ -19,6 +20,7 @@ EVALUATION_ASSETS = ROOT.parents[2] / "research" / "evaluation" / "controlled-qu
 
 
 def main() -> int:
+    run([sys.executable, str(RUNTIME_CONTRACT)])
     run([sys.executable, str(ADAPTER), "--check"])
     run([sys.executable, str(EVALUATION_ADAPTER), "--check"])
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -82,7 +84,7 @@ def main() -> int:
             raise AssertionError("adapter accepted a non-positive timeout")
         verify_artifact_failures(root)
         verify_evaluation_assets(root)
-    print("zj-research golden contract: 7 compiler cases and 10 evaluation cases passed")
+    print("zj-research golden contract: runtime contract, 7 compiler cases, and 10 evaluation cases passed")
     return 0
 
 
