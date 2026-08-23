@@ -58,11 +58,13 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed technical research-report implementation](#a22--technical-research-report-implementation-t) — `zj-tech-research-report` now validates a `technical-decision-brief/v1` plus sealed ledger and `technical-c4/v1` Report IR before compiler publication, producing Markdown, HTML, and a receipt with a versioned technical quality-gate result.
 - [Completed code-research quality implementation](#a23--code-research-quality-fixtures-and-evaluation-t) — `zj-code-research` now owns separate `landscape/v1` / `deep-read/v1` hard gates, controlled fixture cases, dimensional semantic scoring, and calibrated Judge checks.
 - [Completed roadmap bundle implementation](#a24--roadmap-bundle-storage-and-performance-implementation-t) — `zj-roadmap-driven` now supports explicit sharded bundle storage, bounded cross-mode CLI views, append-only decision retractions, safe legacy migration, and reproducible small/medium/large benchmarks.
+- [Completed migration and verification closeout](#a25--research-migration-and-roadmap-verification-closeout-t) — The real planning corpus, research contracts, roadmap bundle, public discovery, and documentation surfaces have been verified together; no active legacy skill alias remains.
 
 ## Not yet specified
 
-- The final implementation-wave commit and rollback choreography; the tickets
-  below make the work bounded and verifiable one session at a time.
+- None for this implementation wave. Production adoption thresholds for when a
+  user should choose single-file mode versus explicit bundle migration remain an
+  operational choice, not an automatic migration rule.
 
 ## Out of scope
 
@@ -796,7 +798,7 @@ Implemented the optional large-roadmap carrier in
   stay shard-local; `section` is bounded by default and `section --all` is the
   explicit full export. Bundle `remove-decision` records a traceable retraction
   instead of deleting the original decision record.
-- Added 13 bundle/single-file contract tests covering migration/source
+- Added 14 bundle/single-file contract tests covering migration/source
   preservation, parent-status cascade, snapshot intervals, bounded reads,
   corruption/stale-index rejection, invalid migration recovery, concurrent
   writes, lock-compatible history sequencing, and existing CLI behavior. Added
@@ -812,10 +814,45 @@ Verification passed: roadmap single-file and bundle contract tests (13 tests),
 Python compilation, small/medium/large benchmark generation, and `git diff
 --check`.
 
-## A25 — Research migration and roadmap verification closeout [T]
+## A25 — Research migration and roadmap verification closeout [T] ✅
 
 ### Question
 
 How should the completed implementation wave be verified across public-bucket
 governance, skill discovery, compiler contracts, artifact paths, code-research
 quality, roadmap migration, and user-facing documentation before closeout?
+
+### Resolution
+
+Completed the implementation-wave closeout without modifying the external
+`ZBrainForStudy` repository:
+
+- Added `skills/engineering/zj-roadmap-driven/tests/verify_real_plan_corpus.py`.
+  It reads the real `ZBrainForStudy/docs/plans/` corpus as a read-only input,
+  builds an equivalent legacy JSON fixture only in a temporary directory, and
+  exercises the public `migrate --to bundle`, `validate`, `tree`, `get`,
+  bounded `section`, `section --all`, `link`, `render`, and rejected `import`
+  paths. The corpus contains 12 Markdown files and 66,305 bytes; migration
+  produced 14 temporary nodes and 12 decision shards, preserved source bytes,
+  and proved a depth-1 tree reads only `1` and `1-1` shards.
+- Re-ran the research golden contract, Repository Map contract, Architecture
+  Study contract, code-research quality contract, technical research-report
+  contract, 14 roadmap single/bundle tests, Python compilation, frontmatter,
+  private naming, plugin validation, and skill discovery/link dry-run. The
+  generated 48-skill list is unchanged and includes all four research skills.
+- The official plugin validator still reports the known four bucket-root
+  `SKILL.md` warnings (`engineering`, `misc`, `productivity`, `research`);
+  repository recursive validation passes all 48 skills. This is retained as a
+  transparent warning rather than adding fake bucket frontmatter files.
+- The old `zj-research-report` name appears only in historical wayfinder
+  decisions and migration narrative; stable protocol/schema identifiers such
+  as `zj-research-report-ir/v1` are retained intentionally. No active old-name
+  alias, old output path, or old discovery entry remains.
+- The implementation wave is represented by commit `817e218`; the A25
+  verification script and this closeout documentation are the remaining
+  closeout delta to commit. No external repository, branch, worktree, or user
+  planning file was cleaned or deleted.
+
+Verification status: knowledge and workspace closeout complete for the local
+implementation wave; deployment/live verification is not applicable because
+these are installable local skills and no deployment was performed.

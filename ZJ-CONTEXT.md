@@ -153,6 +153,13 @@ required properties; it is not a golden prose answer and is independent from
 technical-report evaluation assets.
 _Avoid_: technical-report fixture, demo repository, golden Markdown
 
+**Real plan corpus**:
+A read-only collection of existing Markdown planning documents used to verify a
+roadmap storage workflow without treating Markdown as a fact source. Validation
+may derive a temporary legacy JSON fixture from the corpus, but migration never
+writes back to the source documents.
+_Avoid_: Markdown-import source, roadmap JSON alias
+
 **Code-research semantic baseline**:
 The calibrated Judge agreement result for the code-research fixture corpus. It
 records score mean absolute error, within-tolerance rate, recommendation

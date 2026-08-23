@@ -111,3 +111,4 @@ Deleting a node recursively deletes its children; confirm the target first.
 - `demos/roadmap_demo.json` — an AI-Native personal compounding-tool-system roadmap.
 - `demos/ZJ_ROADMAP_section_demo.md` — standard output rendered from JSON.
 - `benchmarks/roadmap_bundle_benchmark.py` — reproducible small/medium/large bundle benchmark generator.
+- `tests/verify_real_plan_corpus.py` — read-only real Markdown-plan corpus migration contract.
