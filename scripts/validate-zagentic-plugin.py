@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-PUBLIC_BUCKETS = ("engineering", "productivity", "misc")
+PUBLIC_BUCKETS = ("engineering", "productivity", "misc", "research")
 
 
 def parse_args() -> argparse.Namespace:

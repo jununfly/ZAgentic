@@ -74,7 +74,7 @@ def main() -> int:
     parser.add_argument("zharness", type=Path, help="clean ZHarness checkout at the commit to pin")
     args = parser.parse_args()
     zharness = args.zharness.resolve()
-    skill = Path(__file__).resolve().parents[1] / "skills" / "engineering" / "zj-research"
+    skill = Path(__file__).resolve().parents[1] / "skills" / "research" / "zj-research"
     artifacts = skill / "artifacts"
 
     git_env = dict(os.environ)

@@ -7,7 +7,7 @@ import re
 import sys
 
 ROOT = Path('.')
-PUBLIC_BUCKETS = ['engineering', 'productivity', 'misc']
+PUBLIC_BUCKETS = ['engineering', 'productivity', 'misc', 'research']
 SKILL_ROOTS = [ROOT / 'skills' / bucket for bucket in PUBLIC_BUCKETS] + [ROOT / 'personal']
 SKIP_PARTS = {'.git', '.workbuddy', '.codegraph'}
 TEXT_SUFFIXES = {'.md', '.json', '.sh'}

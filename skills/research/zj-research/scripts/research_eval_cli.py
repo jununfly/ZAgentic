@@ -51,7 +51,7 @@ def main() -> int:
     else:
         keys = ("rubrics", "calibration")
     request: dict[str, object] = {"protocol": PROTOCOL, "operation": args.operation}
-    request.update({key: read_json(path) for key, path in zip(keys, args.inputs, strict=True)})
+    request.update({key: read_json(path) for key, path in zip(keys, args.inputs)})
     response = invoke(executable, request)
     rendered = json.dumps(response, ensure_ascii=False, indent=2) + "\n"
     if args.output is None:

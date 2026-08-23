@@ -10,7 +10,7 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 | 4 | `git mv` old → new path for renames | `adopt` where A is renamed to B's name |
 | 5 | Cross-skill reference updates (other skills' SKILL.md referring to old name) | any name change |
 | 6 | Top-level `README.md` skill list update | any add/remove/rename |
-| 7 | `skills/engineering/README.md` or `skills/productivity/README.md` update | any add/remove/rename in that bucket |
+| 7 | the affected public bucket `README.md` update | any add/remove/rename in that bucket |
 | 8 | `zj-agents-init/issue-tracker-*.md` and `domain.md` template update | when hard-dependency list changes |
 | 9 | `ZJ-CONTEXT.md` term table update | when new domain terms are introduced or renamed |
 | 10 | `docs/zj-adr/*.md` cross-reference update | when ADR text mentions old skill name |
@@ -21,7 +21,7 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 
 - `skills/<bucket>/zj-<name>/...` (the skill body)
 - `README.md` (top-level)
-- `skills/engineering/README.md` or `skills/productivity/README.md`
+- `skills/<bucket>/README.md`
 - `skills/engineering/zj-agents-init/issue-tracker-*.md` (if hard-deps changed)
 - `skills/engineering/zj-agents-init/domain.md` (if domain terms changed)
 - `ZJ-CONTEXT.md` (if domain terms changed)

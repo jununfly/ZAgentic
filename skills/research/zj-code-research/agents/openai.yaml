@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZJ Code Research"
+  short_description: "Map repositories and deep-read selected architecture"
+  default_prompt: "Use $zj-code-research to build a repository map and study the selected architecture path."

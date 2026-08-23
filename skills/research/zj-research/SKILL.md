@@ -3,6 +3,12 @@ name: zj-research
 description: Investigate a question against high-trust primary sources and capture cited findings in the repo. Use for documentation or API reading legwork and for multi-repository technical comparisons that need commit-pinned GitHub evidence.
 ---
 
+`zj-research` is the domain-neutral evidence seam. It produces re-verifiable
+findings, provenance, sealed ledgers, and explicit unknowns for a downstream
+domain method. It does not clean domain material, write a finished report,
+rank options, or make the technical recommendation; those decisions belong to
+the consuming research skill.
+
 Choose one branch.
 
 ## Primary-source reading
@@ -21,3 +27,15 @@ Read [references/research-cli.md](references/research-cli.md), then:
 4. Write the cited findings from the ledger. Each `unknownCriteria` entry remains unknown; it is not a negative capability claim.
 
 Completion criterion: every selected repository is pinned to a commit, stars and topic match come from the sealed ledger, each claim traces to an Evidence ID, and every uncovered repository/criterion pair is explicit.
+
+## Shared compiler runtime
+
+The compiler and evaluation adapters under `scripts/` are the canonical shared
+runtime for the research bucket. Keep their protocol and artifact-lock logic
+here so independently installed consumers can point at this skill rather than
+copying an adapter. Read [the runtime reference](references/research-cli.md)
+when a downstream skill needs collection, compilation, rendering, or evaluation.
+
+Completion criterion: the saved evidence names its source or sealed ledger,
+its unknowns remain explicit, and any compiler-backed operation was run through
+this canonical runtime.

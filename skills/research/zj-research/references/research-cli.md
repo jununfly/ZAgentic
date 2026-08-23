@@ -2,10 +2,25 @@
 
 Use the commit-pinned ZHarness artifact for technical GitHub evidence, Report IR compilation, and research evaluation. The research adapter accepts only `zj-research-cli/v1`; the evaluation adapter accepts only `zj-research-eval-cli/v1`. Both fail loudly when the artifact is missing, modified, or incompatible. This skill remains an independent workflow entry alongside the hosted Research Agent; both consume the same compiler and evaluation facts.
 
+`zj-research` owns the adapters and the artifact lock. `zj-tech-research-report`
+does not copy them: its publisher first looks for a sibling `zj-research`
+skill, then accepts an explicit skill-root pointer in
+`ZJ_RESEARCH_RUNTIME`. The pointed directory must contain
+`scripts/research_cli.py` and, for evaluation workflows,
+`scripts/research_eval_cli.py`. If neither location is available, publication
+stops with the setup pointer instead of falling back to uncited Markdown.
+
 Resolve the executable in this order:
 
 1. `ZJ_RESEARCH_CLI`, for a local ZHarness build during development.
 2. `artifacts/compiler-lock.json`, whose SHA-256 pins the bundled compiler to one ZHarness commit.
+
+When a consumer is installed independently, set the pointer to the
+`zj-research` skill directory, for example:
+
+```sh
+export ZJ_RESEARCH_RUNTIME=/path/to/skills/zj-research
+```
 
 The lock records separate `research` and `evaluation` executables inside one artifact. Set `ZJ_RESEARCH_EVAL_CLI` only when testing a local ZHarness evaluation build.
 

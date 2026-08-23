@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZJ Technical Research Report"
+  short_description: "Compile technical findings into a cited solution report"
+  default_prompt: "Use $zj-tech-research-report to turn these technical findings into a cited solution report."

@@ -9,8 +9,8 @@ Project domain glossary for `jununfly/ZAgentic`. Owned by `zj-grill-with-docs` /
 ### Skills meta
 
 **Skill bucket**:
-One of the three public dirs under `skills/` — `engineering/`, `productivity/`,
-or `misc/`. Each bucket has its own `README.md` listing its skills with a
+One of the four public dirs under `skills/` — `engineering/`, `productivity/`,
+`misc/`, or `research/`. Each bucket has its own `README.md` listing its skills with a
 one-line description. See `AGENTS.md` for the bucket policy.
 _Avoid_: category, folder, group
 
@@ -57,6 +57,13 @@ _Avoid_: rename-in-place, dir-only rename
 The versioned research component that accepts one shared comparison brief, fixes every repository to a commit, performs bounded source reads, and returns a **Sealed ledger**. `zj-research` reaches it through the **Research CLI protocol** rather than reproducing collection logic in a prompt.
 _Avoid_: research agent, GitHub scraper, report generator
 
+**Shared research runtime seam**:
+The canonical `zj-research/scripts/` adapters and compiler artifact lock used
+by research consumers. A sibling `zj-research` skill is the default runtime;
+an independently installed consumer resolves the same implementation through
+`ZJ_RESEARCH_RUNTIME` rather than copying adapters.
+_Avoid_: duplicated adapter, report-local compiler, prompt-only fallback
+
 **Sealed ledger**:
 An immutable `zj-verified-evidence-ledger/v1` result containing **Canonical evidence**, uncovered repository/criterion pairs, navigation diagnostics, and the normalized brief fingerprint. Reports may cite it but cannot add evidence to it.
 _Avoid_: notes, findings file, source dump
@@ -73,6 +80,21 @@ _Avoid_: evidence, citation, source
 The versioned `zj-research-report-ir/v1` graph linking Evidence IDs to claims, comparisons, metrics, diagrams, and recommendations. The compiler validates references before producing the Markdown fact source.
 _Avoid_: Markdown template, report outline, prose draft
 
+**Technical Decision Brief**:
+The `technical-decision-brief/v1` alignment input that fixes the user/job,
+baseline, target outcome, goals, non-goals, constraints, assumptions, lifecycle
+stage, decision scope, and serious options before a technical Report IR ranks
+solutions.
+_Avoid_: report summary, implementation plan, candidate ranking
+
+**Technical Research Quality Gate**:
+The `technical-research-quality-gate/v1` mechanical check owned by
+`zj-tech-research-report`. It validates a Technical Decision Brief against a
+sealed ledger and `technical-c4/v1` Report IR before compiler publication,
+including evidence links, candidate score copying, critical claims, diagrams,
+comparisons, metrics, and explicit unknown follow-ups.
+_Avoid_: design review, human sign-off, semantic quality score
+
 **Research CLI protocol**:
 The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and the versioned standalone ZHarness compiler. Missing or incompatible executables fail loudly; there is no prompt-only fallback for technical comparisons.
 _Avoid_: shell wrapper, internal API, compatibility mode
@@ -84,6 +106,91 @@ _Avoid_: latest compiler, PATH fallback, vendored source
 **Research evaluation assets**:
 The immutable rubric set, per-case human annotation set, and blind-Judge calibration set resolved by one versioned keyless corpus. Every quality case resolves to human truth, and only a calibrated Judge configuration contributes results to a quality baseline.
 _Avoid_: mutable benchmark, Judge-only truth, unique recommendation answer
+
+**Code-repository research**:
+A technical research method that first builds a commit-scoped repository landscape, then performs a targeted architecture deep-read before optionally feeding a technical decision report.
+_Avoid_: code tour, repository summary
+
+**Repository Map**:
+The breadth-first, commit-scoped orientation artifact for a code repository: structure, packages, integration layers, workflows, measured inventory, and navigable research targets. It is a map, not an analytical conclusion.
+_Avoid_: directory dump, architecture report
+
+**Repository Map target**:
+A deterministic, bounded navigation record naming one repository path or
+surface worth reading next, with a stable ID, target kind, and reason. It
+guides Architecture Study scope but is not evidence of a capability or design.
+_Avoid_: architecture claim, capability score, search hint
+
+**Architecture Study**:
+The depth-first, evidence-linked study of selected repository layers or flows, explaining module relationships, interfaces, runtime interactions, ownership, design choices, risks, and unknowns.
+_Avoid_: code walkthrough, architecture essay
+
+**Architecture Study bundle**:
+An immutable `architecture-study` snapshot artifact whose manifest points to
+independently readable scope, evidence, relationship, flow, claim, unknown,
+and risk shards; Markdown/HTML are generated views rather than the fact source.
+_Avoid_: architecture Markdown, monolithic architecture JSON
+
+**Study record kind**:
+The required certainty classification for an Architecture Study record:
+`observed` (directly read source fact), `inferred` (evidence-backed deduction),
+`unknown` (not established by the current evidence), or `decision` (a research
+scope/follow-up choice, not a source fact).
+_Avoid_: confidence-only label, unqualified architecture claim
+
+**Code-research quality rubric**:
+The versioned evaluation contract for code-repository research. `landscape/v1`
+evaluates Repository Map coverage and navigation; `deep-read/v1` evaluates
+Architecture Study fidelity and evidence-linked interpretation. The two results
+remain dimensional rather than collapsing into one quality score.
+_Avoid_: code-research score, report-quality rubric
+
+**Mechanical hard gate**:
+An automated validity condition that must pass before semantic quality results
+are considered: source pinning, scope accounting, artifact references, target
+binding, evidence links, explicit unknowns, and reproducible output.
+_Avoid_: quality impression, Judge-only approval
+
+**Controlled-quality fixture**:
+An immutable repository snapshot plus expected structural and semantic
+annotations used to calibrate and evaluate a research-quality rubric. It tests
+quality dimensions and invariants, not identical generated prose.
+_Avoid_: demo repository, golden Markdown
+
+**Snapshot artifact bundle**:
+An immutable, versioned set of generated research facts split into a small manifest and independently readable shards, with derived human views and disposable indexes kept separate from the canonical facts.
+_Avoid_: monolithic JSON, mutable report file
+
+**Current pointer**:
+A small reference that identifies which immutable snapshot is the active one for a research or roadmap artifact; it can change without rewriting historical snapshots.
+_Avoid_: latest copy, in-place history
+
+**Roadmap bundle**:
+The optional large-artifact carrier for `zj-roadmap-driven`: a small manifest
+and independently readable node, decision, and history shards, with generated
+views and disposable indexes kept outside the canonical state.
+_Avoid_: split JSON, database migration
+
+**Materialized snapshot**:
+A bounded current-state representation derived from append-only roadmap history;
+it lets reads start from a known state instead of replaying the entire history.
+_Avoid_: mutable history, full-log read
+
+**Bounded view**:
+A roadmap view with explicit depth, node scope, or byte limit that avoids
+loading or rendering the entire artifact by default.
+_Avoid_: truncated full view, arbitrary preview
+
+**Decision retraction**:
+An append-only roadmap record that marks an earlier decision as withdrawn or
+superseded while preserving the original history and reason.
+_Avoid_: physical decision deletion, hidden correction
+
+**Command compatibility surface**:
+The stable user-facing CLI capability set whose semantics work across roadmap
+storage modes; a legacy command name may remain as a deprecated alias without
+preserving an unsafe or contradictory old behavior.
+_Avoid_: frozen implementation, legacy-only command list
 
 **Technical design review**:
 A decision-focused design document that traces a user problem and target outcome through constraints, alternatives, architecture, ownership, risks, validation gates, rollout, and follow-up. It is a review artifact; it does not authorize implementation by itself.
@@ -256,6 +363,8 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 - 改名前先 grep 定量引用清单，执行后 grep 清零验证，不凭记忆列文件  — docs/zj-retros/2026-08-14-retro.md#2100
 - skill 改名后本地同步用仓源 cp 覆盖，只 mv 目录会让 frontmatter name 失配  — docs/zj-retros/2026-08-14-retro.md#2100
 - short-read 验收必须用三类 fixture 盲读，并把“动作 + 阈值 + owner”作为下一验证的最小答案  — docs/zj-retros/2026-08-21-retro.md#2335
+- 技术报告 publication 字段先区分 brief、Report IR、质量结果三类 schema，再补 receipt 契约测试  — docs/zj-retros/2026-08-23-retro.md#0120
+- 保留低层 compiler 兼容路径时，在 public skill 文档中明确它不是新任务的能力边界  — docs/zj-retros/2026-08-23-retro.md#0120
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 

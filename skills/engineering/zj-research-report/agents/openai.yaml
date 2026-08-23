@@ -1,4 +1,0 @@
-interface:
-  display_name: "ZJ Research Report"
-  short_description: "Compile findings into a cited decision draft"
-  default_prompt: "Use $zj-research-report to turn these findings into a cited decision draft."

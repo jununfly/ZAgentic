@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ADAPTER = ROOT / "scripts" / "research_cli.py"
 EVALUATION_ADAPTER = ROOT / "scripts" / "research_eval_cli.py"
-PUBLISHER = ROOT.parent / "zj-research-report" / "scripts" / "publish_report.py"
+PUBLISHER = ROOT.parent / "zj-tech-research-report" / "scripts" / "publish_report.py"
 FIXTURE = Path(__file__).with_name("golden-contract.json")
 EVALUATION_ASSETS = ROOT.parents[2] / "research" / "evaluation" / "controlled-quality-v1"
 
@@ -68,6 +68,7 @@ def main() -> int:
             raise AssertionError("publisher accepted an unhealthy evaluation")
         if rejected_markdown.exists() or rejected_markdown.with_suffix(".html").exists() or rejected_receipt.exists():
             raise AssertionError("unhealthy publication created an artifact")
+        verify_independent_report_runtime(root, report_ir, ledger)
         invalid_timeout = dict(os.environ)
         invalid_timeout["ZJ_RESEARCH_CLI_TIMEOUT_SECONDS"] = "0"
         bounded = subprocess.run(
@@ -119,6 +120,52 @@ def verify_artifact_failures(root: Path) -> None:
         raise AssertionError("adapter accepted a missing compiler artifact")
 
 
+def verify_independent_report_runtime(root: Path, report_ir: Path, ledger: Path) -> None:
+    """The renamed report skill must work without a bundled sibling runtime."""
+
+    independent_publisher = root / "independent-report-skill" / "scripts" / "publish_report.py"
+    independent_publisher.parent.mkdir(parents=True)
+    shutil.copy2(PUBLISHER, independent_publisher)
+    missing_env = dict(os.environ)
+    missing_env.pop("ZJ_RESEARCH_RUNTIME", None)
+    missing = subprocess.run(
+        [
+            sys.executable,
+            str(independent_publisher),
+            str(report_ir),
+            str(ledger),
+            str(root / "missing-runtime.md"),
+            "--receipt",
+            str(root / "missing-runtime-receipt.json"),
+        ],
+        env=missing_env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if missing.returncode == 0 or "ZJ_RESEARCH_RUNTIME=<path-to-zj-research>" not in missing.stderr:
+        raise AssertionError("independent report publisher did not provide its runtime setup pointer")
+    configured_env = dict(missing_env)
+    configured_env["ZJ_RESEARCH_RUNTIME"] = str(ROOT)
+    markdown = root / "independent-runtime.md"
+    receipt = root / "independent-runtime-receipt.json"
+    run(
+        [
+            sys.executable,
+            str(independent_publisher),
+            str(report_ir),
+            str(ledger),
+            str(markdown),
+            "--receipt",
+            str(receipt),
+        ],
+        env=configured_env,
+    )
+    publication = json.loads(receipt.read_text(encoding="utf-8"))
+    if publication["evaluation"]["healthy"] is not True or not markdown.with_suffix(".html").exists():
+        raise AssertionError("explicit research runtime did not enable independent report publication")
+
+
 def verify_evaluation_assets(root: Path) -> None:
     validation = root / "asset-validation.json"
     run([
@@ -160,8 +207,8 @@ def verify_evaluation_assets(root: Path) -> None:
         raise AssertionError("standalone Judge calibration diverged from asset validation")
 
 
-def run(command: list[str]) -> None:
-    completed = subprocess.run(command, text=True, capture_output=True, check=False)
+def run(command: list[str], env: dict[str, str] | None = None) -> None:
+    completed = subprocess.run(command, env=env, text=True, capture_output=True, check=False)
     if completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
 

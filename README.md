@@ -283,9 +283,10 @@ Skills I use daily for code work.
 - **[zj-initiative-registry](./skills/engineering/zj-initiative-registry/SKILL.md)** — Manage a GitHub-hosted Initiative → Spec → Plan registry across devices and Agents, with deterministic validation and safe Git handoff.
 - **[zj-leader](./skills/engineering/zj-leader/SKILL.md)** — Turn a one-line idea into an agent-runnable `/goal` brief with measured scope, acceptance checks, and resumable handoff.
 - **[zj-neat-freak](./skills/engineering/zj-neat-freak/SKILL.md)** — Reconcile project docs, rules, memory, and workspace residue with what the code and runtime actually do.
-- **[zj-research](./skills/engineering/zj-research/SKILL.md)** — Investigate primary sources or compile commit-pinned evidence for a multi-repository technical comparison.
-- **[zj-research-report](./skills/engineering/zj-research-report/SKILL.md)** — Turn cited findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated decision draft.
-- **[zj-systematic-research](./skills/engineering/zj-systematic-research/SKILL.md)** — 系统性研究产品、公司、概念、技术或人物：重建演进脉络，分析当前竞品/同类格局，综合形成判断。
+- **[zj-research](./skills/research/zj-research/SKILL.md)** — Produce cited primary-source findings or a sealed evidence ledger with provenance and explicit unknowns.
+- **[zj-code-research](./skills/research/zj-code-research/SKILL.md)** — Build a commit-scoped Repository Map, then deep-read selected code architecture with evidence-linked claims.
+- **[zj-tech-research-report](./skills/research/zj-tech-research-report/SKILL.md)** — Turn technical findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated solution research report.
+- **[zj-systematic-research](./skills/research/zj-systematic-research/SKILL.md)** — 系统性研究产品、公司、概念、技术或人物：重建演进脉络，分析当前竞品/同类格局，综合形成判断。
 - **[zj-agents-init](./skills/engineering/zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, or `zj-improve-codebase-architecture`.
 - **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[zj-wayfinder](./skills/engineering/zj-wayfinder/SKILL.md)** — Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on the issue tracker, resolving them one at a time until the way to the destination is clear.

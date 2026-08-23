@@ -11,12 +11,12 @@ Read this file **before** triaging any PR. If the PR touches `skills/` or `docs/
 
 ## Rule 1 — `skills/` diff must be paired with `.codex-plugin/plugin.json`
 
-**Source:** `AGENTS.md` — "Every skill in `engineering/`, `productivity/`, or `misc/` must have a reference in the top-level `README.md` and an entry in `.codex-plugin/plugin.json`."
+**Source:** `AGENTS.md` — every skill in `engineering/`, `productivity/`, `misc/`, or `research/` must have a top-level README reference and participate in recursive `./skills/` plugin discovery.
 
 **Check:** if the PR diff contains any of:
-- new directory under `skills/<bucket>/<name>/` with `SKILL.md` → must add an entry in `.codex-plugin/plugin.json` `skills` array
-- deleted directory under `skills/<bucket>/<name>/` → must remove its entry
-- renamed directory (git rename detection) → must update the entry's `path`
+- new directory under `skills/<bucket>/<name>/` with `SKILL.md` → must add a linked entry to the affected bucket README and top-level README
+- deleted directory under `skills/<bucket>/<name>/` → must remove its bucket and top-level entries
+- renamed directory (git rename detection) → must update both linked entries and the frontmatter name
 - changed bucket (`engineering/` ↔ `productivity/`) → must update the entry
 
 **Outcome if missing:** wontfix (`enhancement` if reasoning is documented) + comment listing missing entries + ask author to run `/zj-agents-init` to fix.

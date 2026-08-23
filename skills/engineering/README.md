@@ -19,9 +19,6 @@ Skills I use daily for code work.
 - **[zj-resolving-merge-conflicts](./zj-resolving-merge-conflicts/SKILL.md)** — Resolve in-progress git merge/rebase conflicts hunk by hunk, by intent traced to each side's primary source. Never `--abort`.
 - **[zj-roadmap-driven](./zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
 - **[zj-initiative-registry](./zj-initiative-registry/SKILL.md)** — Manage a GitHub-hosted Initiative → Spec → Plan registry across devices and Agents, with deterministic validation and safe Git handoff.
-- **[zj-research](./zj-research/SKILL.md)** — Investigate primary sources or compile commit-pinned evidence for a multi-repository technical comparison.
-- **[zj-research-report](./zj-research-report/SKILL.md)** — Turn cited findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated decision draft.
-- **[zj-systematic-research](./zj-systematic-research/SKILL.md)** — 系统性研究产品、公司、概念、技术或人物：重建演进脉络，分析当前竞品/同类格局，综合形成判断（源自 khazix-skills）。
 - **[zj-leader](./zj-leader/SKILL.md)** — 把一句话想法拆成 agent 能独立跑完的 /goal 任务书：先实测调研、一轮 ≤5 问、产出含验收与断点续跑的任务书，跑完由管理者角色验收（源自 khazix-skills）。
 - **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — 知识/治理收尾：把项目文档、规则文件、Agent 记忆和工作区残留与代码实际运行态对齐，让下一次会话从唯一现役答案开始（源自 khazix-skills，含 evals/）。
 - **[zj-agents-init](./zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume.

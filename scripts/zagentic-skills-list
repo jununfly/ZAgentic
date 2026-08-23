@@ -16,12 +16,9 @@ zj-merge-skill-pair
 zj-merge-skills-wave
 zj-neat-freak
 zj-prototype
-zj-research
-zj-research-report
 zj-resolving-merge-conflicts
 zj-roadmap-driven
 zj-steelman
-zj-systematic-research
 zj-tdd
 zj-tech-design-review
 zj-to-spec
@@ -43,5 +40,9 @@ zj-migrate-to-shoehorn
 zj-scaffold-exercises
 zj-setup-pre-commit
 zj-storage-analyzer
+zj-code-research
+zj-research
+zj-systematic-research
+zj-tech-research-report
 zj-edit-article
 zj-obsidian-vault
