@@ -1,0 +1,63 @@
+{
+  "markdownPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/zj-tech-research-report/zjloop-graph-coordinator-framework-selection/2026-08-23-a32-draft.md",
+  "htmlPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/zj-tech-research-report/zjloop-graph-coordinator-framework-selection/2026-08-23-a32-draft.html",
+  "reportHash": "bfb31a765e8e2df6896083ee0c0244451e530aed846394d0dcfe9a08ac937334",
+  "publishCount": 1,
+  "evaluation": {
+    "reportHash": "bfb31a765e8e2df6896083ee0c0244451e530aed846394d0dcfe9a08ac937334",
+    "reportFamily": "technical-c4/v1",
+    "compilerVersion": "research/v1",
+    "healthy": true,
+    "correctness": {
+      "revisionPinned": true,
+      "provenanceComplete": true,
+      "criticalClaimsEvidence": true,
+      "scoringAxesSeparated": true,
+      "publishExactlyOnce": true,
+      "receiptConsistent": true
+    },
+    "evidenceCount": 22,
+    "unknownCount": 2,
+    "navigationFailureCount": 0,
+    "collection": {
+      "filesRead": 36,
+      "sourceBytesRead": 175177,
+      "durationMs": 37943,
+      "cacheHit": false
+    }
+  },
+  "qualityGate": {
+    "healthy": true,
+    "schema": "technical-research-quality-gate/v1",
+    "briefSchema": "technical-decision-brief/v1",
+    "reportFamily": "technical-c4/v1",
+    "checks": {
+      "decisionFrame": true,
+      "diagramCoverage": true,
+      "candidateScoresFromLedger": true,
+      "criticalClaimsEvidence": true,
+      "comparisonTraceability": true,
+      "recommendationTraceability": true,
+      "metricCoverage": true,
+      "unknownsSurfaced": true
+    },
+    "counts": {
+      "concepts": 7,
+      "candidates": 3,
+      "cards": 3,
+      "claims": 8,
+      "comparisons": 5,
+      "recommendations": 7,
+      "metrics": 7,
+      "ledgerEvidence": 22,
+      "ledgerUnknownCriteria": 2
+    },
+    "brief": {
+      "schema": "technical-decision-brief/v1",
+      "stage": "problem-discovery",
+      "constraintCount": 7,
+      "optionCount": 5,
+      "goalCount": 6
+    }
+  }
+}

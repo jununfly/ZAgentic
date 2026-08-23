@@ -65,6 +65,7 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed research-chain dogfood](#a29--real-research-chain-dogfood-t) — A real `zj-code-research → zj-research → zj-tech-research-report` chain passed its quality gates; failed fresh collection remained explicitly distinct from reuse of an older sealed ledger.
 - [Completed research runtime hardening](#a30--research-collection-runtime-hardening-t) — `zj-research` now performs GitHub quota/auth preflight, emits structured diagnostics, and records fresh, explicit-reuse, and blocked collection states.
 - [Completed authenticated live collection acceptance](#a31--authenticated-live-collection-acceptance-t) — A real authenticated fresh collection completed against the fixed three-repository brief; the live path also exposed and fixed the standard-library timeout invocation bug.
+- [Completed fresh-ledger technical report republish](#a32--fresh-ledger-technical-report-republish-t) — The A31 sealed ledger was rebuilt into a new technical-c4 report and published healthy without the A29 ledger or fingerprint.
 
 ## Not yet specified
 
@@ -1051,3 +1052,42 @@ and diff check all passed before the successful rerun.
 Verification status: A31 live fresh collection accepted. The generated status
 sidecar proves the authenticated fresh state; the generated ledger is the only
 source for the collected GitHub facts. No old ledger was used.
+
+## A32 — Fresh-ledger technical report republish [T] ✅
+
+### Question
+
+Can the A31 fresh sealed ledger feed a new technical-solution research report
+without reusing A29's older brief, evidence boundary, fingerprint, or empty
+unknown set?
+
+### Resolution
+
+Rebuilt the technical report inputs from the A31 ledger instead of swapping a
+fingerprint into the older Report IR:
+
+- Wrote fresh cited findings at
+  `skills-outputs/zj-tech-research-report/zjloop-graph-coordinator-framework-selection/a32-fresh-findings.md`.
+- Wrote a new `technical-c4/v1` Report IR at
+  `skills-outputs/zj-tech-research-report/zjloop-graph-coordinator-framework-selection/a32-report-ir.json`
+  with three candidates, eight claims, five comparisons, seven
+  recommendations, seven metrics, 22 ledger Evidence IDs, and two explicit
+  unknown follow-ups.
+- Reused the existing technical decision brief only as the unchanged decision
+  frame. The Report IR uses A31 fingerprint
+  `5fbef253ed7642b64eeb69af673a2e458fa2ed04b9aaabfde8fb09c6f2128a36`; the old
+  A29 fingerprint is absent from all A32 artifacts.
+- Published new Markdown, HTML, and receipt artifacts with report hash
+  `bfb31a765e8e2df6896083ee0c0244451e530aed846394d0dcfe9a08ac937334`.
+  Compiler evaluation and the technical research quality gate both report
+  `healthy: true`, with `publishExactlyOnce`, revision pinning, provenance,
+  critical-claim evidence, and unknown surfacing all passing.
+
+The fresh evidence supports the same bounded direction — keep the native core,
+then test LangGraph checkpoint, AutoGen event/delegation, and CrewAI
+role/task/persistence as removable adapter capabilities — while keeping
+LangGraph observability and AutoGen security/sandbox as unresolved follow-ups.
+
+Verification passed: technical Report IR quality gate, technical research-report
+contract, publication consistency (fresh fingerprint, receipt hash, no old
+ledger), and `git diff --check`.

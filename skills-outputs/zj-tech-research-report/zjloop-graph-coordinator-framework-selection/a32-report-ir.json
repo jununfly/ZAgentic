@@ -1,0 +1,73 @@
+{
+  "schema": "zj-research-report-ir/v1",
+  "family": "technical-c4/v1",
+  "title": "ZAgenticLoop Graph Coordinator：fresh ledger 下的原生核心与外部能力边界",
+  "summary": "A31 的 fresh sealed ledger 支持对 LangGraph、AutoGen、CrewAI 做证据有界的能力比较，但不支持让任何外部框架接管 ZAgenticLoop 的 Graph/OPN authority、Human acceptance、security policy 或 lifecycle facts。LangGraph 最适合先做 checkpoint contract 探针，AutoGen 可做 event/delegation 探针，CrewAI 可做 role/task 与 persistence 探针；推荐保持 native core，并把所有外部能力限制在可移除 adapter 与统一 conformance fixture 后。LangGraph 的 observability 与 AutoGen 的 security/sandbox 仍是显式 unknown，不是 absent。",
+  "ledgerFingerprint": "5fbef253ed7642b64eeb69af673a2e458fa2ed04b9aaabfde8fb09c6f2128a36",
+  "concepts": [
+    {"key": "native-semantic-owner", "value": "Graph execution、OPN evidence、Human acceptance、security policy 与 lifecycle facts 继续由 ZAgenticLoop 原生核心拥有。"},
+    {"key": "unit-capability", "value": "外部项目只以可移除、可 conformance 的窄能力进入，例如 checkpoint、event delegation、role/task orchestration 或 persistence。"},
+    {"key": "provider-neutral-seam", "value": "Provider、framework 与 process runtime 通过 adapter 接入，不改变 OPN、verification 和 Human authority 的产品语义。"},
+    {"key": "authority-boundary", "value": "外部框架不能成为 Human acceptance、artifact provenance、sandbox policy 或最终 lifecycle status 的事实源。"},
+    {"key": "evidence-strength", "value": "Stars 与 topicMatch 只描述候选背景；固定 commit 的 canonical source、运行行为和 conformance 才决定可采用性。"},
+    {"key": "lifecycle-stage", "value": "当前仍是 problem-discovery；只承诺可丢弃的 capability probe，不提前承担生产级平台迁移。"},
+    {"key": "exitability", "value": "适配器必须可删除，且删除后不需要重写 native OPN、evidence、Human acceptance 或 lifecycle facts。"}
+  ],
+  "diagrams": [
+    {
+      "title": "Fresh-ledger Graph Coordinator 决策景观",
+      "kind": "landscape",
+      "mermaid": "flowchart LR\n  H[Human / maintainer] --> Z[ZAgenticLoop native core]\n  Z --> G[Native Graph Coordinator]\n  Z --> O[OPN + verification + Human acceptance]\n  Z --> S[StateStore / ArtifactStore]\n  G -. checkpoint adapter .-> L[LangGraph]\n  G -. event adapter .-> A[AutoGen]\n  G -. role/task adapter .-> C[CrewAI]\n  L -. must not own .-> O\n  A -. must not own .-> O\n  C -. must not own .-> O"
+    },
+    {
+      "title": "Adapter 能力组合与退出边界",
+      "kind": "container",
+      "mermaid": "flowchart TB\n  F[Shared conformance fixture]\n  F --> N[Native execution path]\n  F --> X[External capability adapter]\n  X --> T[State / event translation]\n  T --> V[Native verification and evidence]\n  V --> R[Review handoff]\n  R --> HA[Signed Human acceptance]\n  HA --> M[Native lifecycle closeout]\n  X -. failure or drift .-> E[Defer / remove adapter]\n  E --> N"
+    }
+  ],
+  "candidates": [
+    {"repository": {"owner": "langchain-ai", "name": "langgraph"}, "stars": 40278, "topicMatch": 7, "evidenceIds": ["f1bc2d9c9130f8447fb238e9", "8e073a335f0750bc2dbd531b", "21832892a3528adc38c5308a"]},
+    {"repository": {"owner": "microsoft", "name": "autogen"}, "stars": 60586, "topicMatch": 5, "evidenceIds": ["bb338b2ff54633163d90270f", "9ddbf455a5b5504746148383", "d4f1c1cc3d0b2eef33f3ccce"]},
+    {"repository": {"owner": "crewAIInc", "name": "crewAI"}, "stars": 57501, "topicMatch": 5, "evidenceIds": ["0d7f5966db7f79bf2e643875", "129e20600265c5f6f592e157", "b75a38f9696b9a83ee568ec3"]}
+  ],
+  "cards": [
+    {"title": "langchain-ai/langgraph / checkpoint contract", "summary": "Fresh evidence supports a stateful multi-actor framework and checkpointer/conformance surface; use it first as a durable-state probe, not as the product authority.", "claimIds": ["langgraph-fit", "langgraph-boundary"]},
+    {"title": "microsoft/autogen / event delegation", "summary": "Fresh evidence supports publish-subscribe agents and CloudEvents-shaped integration seams; delegation and security ownership still require a bounded probe.", "claimIds": ["autogen-fit", "autogen-boundary"]},
+    {"title": "crewAIInc/crewAI / role-task persistence", "summary": "Fresh evidence supports a Python agent framework with Flow persistence, agent-to-agent utilities, traces, and deployment surfaces; runtime and exit costs must be measured before adoption.", "claimIds": ["crewai-fit", "crewai-boundary"]}
+  ],
+  "claims": [
+    {"id": "langgraph-fit", "text": "LangGraph 的 fresh evidence 将其定位为 stateful multi-actor agent framework，并提供 checkpoint interfaces、Postgres/SQLite checkpointer 和 checkpoint conformance contract；它适合 durable-state/checkpoint 单能力探针。", "critical": true, "evidenceIds": ["f1bc2d9c9130f8447fb238e9", "8e073a335f0750bc2dbd531b", "21832892a3528adc38c5308a"]},
+    {"id": "langgraph-boundary", "text": "LangGraph 的 checkpoint conformance evidence 证明 storage contract 可测试，不证明它可以拥有 ZAgenticLoop 的 Human acceptance、security policy 或 lifecycle authority。", "critical": true, "evidenceIds": ["21832892a3528adc38c5308a"]},
+    {"id": "autogen-fit", "text": "AutoGen 的 fresh evidence 支持 publish-subscribe agent programming model、memory/prompts/data sources/skills 资产和 CloudEvents 事件边界；它适合 event/delegation seam 探针。", "critical": true, "evidenceIds": ["bb338b2ff54633163d90270f", "9ddbf455a5b5504746148383", "d4f1c1cc3d0b2eef33f3ccce"]},
+    {"id": "autogen-boundary", "text": "AutoGen 本轮 evidence 没有闭合 security-and-sandbox criterion；credential、approval、isolation 和 dangerous-operation authority 必须保持为 unknown follow-up。", "critical": true, "evidenceIds": ["bb338b2ff54633163d90270f", "d4f1c1cc3d0b2eef33f3ccce"]},
+    {"id": "crewai-fit", "text": "CrewAI 的 fresh evidence 将其定位为 Python agentic-systems framework，并记录 SQLite-backed Flow persistence、agent-to-agent task utilities、local traces 和 HTTP API deployment surface；它适合 role/task 与 persistence 探针。", "critical": true, "evidenceIds": ["0d7f5966db7f79bf2e643875", "129e20600265c5f6f592e157", "b75a38f9696b9a83ee568ec3"]},
+    {"id": "crewai-boundary", "text": "CrewAI 的 capability evidence 不等于低成本 Node.js integration 或 native lifecycle fit；Python runtime、状态翻译、部署、升级和退出成本必须通过 conformance slice 验证。", "critical": true, "evidenceIds": ["0d7f5966db7f79bf2e643875", "035e52e8f7a93c7431b329ee", "5dd3fa2a1ade52faa375bf72"]},
+    {"id": "fresh-evidence-boundary", "text": "A31 fresh collection 固定了三仓库 commit、stars、topicMatch 和 22 条 Evidence；这些事实支持证据有界比较，但不自动升级为 product fit 或 framework-core recommendation。", "critical": true, "evidenceIds": ["f1bc2d9c9130f8447fb238e9", "bb338b2ff54633163d90270f", "0d7f5966db7f79bf2e643875"]},
+    {"id": "native-boundary", "text": "ZAgenticLoop 的 native core 继续拥有 Graph/OPN execution、verification、Human acceptance、security policy 和 lifecycle closeout；该结论来自既有 Architecture Study snapshot `study-bec314dee3c9f2e9f604c52b`，不是外部 GitHub ledger 的 capability claim。", "critical": false, "evidenceIds": []}
+  ],
+  "comparisons": [
+    {"id": "capability-families", "text": "约束是保持 native authority，同时寻找窄能力：LangGraph 偏 checkpoint/state contract，AutoGen 偏 event/delegation，CrewAI 偏 role/task、Flow persistence 和 runtime surface；它们不能被压成一个总 feature ranking。", "claimIds": ["langgraph-fit", "autogen-fit", "crewai-fit"]},
+    {"id": "native-vs-framework-core", "text": "如果外部框架接管 Graph/OPN、Human acceptance 或 lifecycle facts，就会引入第二 authority、状态翻译和退出责任；因此 native core 优先，外部能力只通过 adapter 进入。", "claimIds": ["langgraph-boundary", "autogen-boundary", "crewai-boundary", "native-boundary"]},
+    {"id": "unit-capability-composition", "text": "推荐按 bounded slice 顺序验证 LangGraph checkpoint、AutoGen event/delegation、CrewAI role/task/persistence，并对三者使用同一 conformance fixture 和 native verification path。", "claimIds": ["langgraph-fit", "autogen-fit", "crewai-fit", "native-boundary"]},
+    {"id": "runtime-and-exit", "text": "CrewAI 的 Python/runtime/deployment surface 以及所有候选的 state/event translation 都必须由 adapter owner 承担；任何复制 native lifecycle 或形成双事实源的方案应 defer。", "claimIds": ["crewai-boundary", "langgraph-boundary", "autogen-boundary"]},
+    {"id": "evidence-gaps", "text": "A31 ledger 明确保留 LangGraph observability 和 AutoGen security/sandbox 两个 unknownCriteria；未知不是 absent，报告必须把它们变成下一轮验证入口。", "claimIds": ["fresh-evidence-boundary", "autogen-boundary"]}
+  ],
+  "recommendations": [
+    {"id": "overall-choice", "text": "推荐保持 ZAgenticLoop native core，不把 LangGraph、AutoGen 或 CrewAI 作为 Graph Coordinator 核心依赖；外部项目只进入 adapter-only capability path。", "comparisonIds": ["native-vs-framework-core", "runtime-and-exit"]},
+    {"id": "langgraph-probe", "text": "第一阶段只做 LangGraph checkpoint/resume 探针：将外部 checkpoint 映射到 native work item，验证 namespace、metadata、duplicate、resume、evidence digest 和 Human acceptance；LangGraph observability 仍是 unknown follow-up。", "comparisonIds": ["unit-capability-composition", "evidence-gaps"]},
+    {"id": "autogen-probe", "text": "第二阶段再做 AutoGen event/delegation 探针，只有在 event identity、task digest、artifact refs、retry、review handoff 和 security/sandbox ownership 都能映射时继续；本轮 security criterion 未验证。", "comparisonIds": ["unit-capability-composition", "evidence-gaps"]},
+    {"id": "crewai-probe", "text": "第三阶段才评估 CrewAI role/task 与 Flow persistence，并量化 Python runtime、状态翻译、部署、升级和退出成本；任一项超过窄 adapter 责任即 defer。", "comparisonIds": ["unit-capability-composition", "runtime-and-exit"]},
+    {"id": "conformance-gate", "text": "三类 adapter 使用同一 fixture 验证 duplicate delivery、blocked approval、resume、evidence digest、独立 verification、review handoff、Human acceptance、uncertain outcome 和 rollback；任何 authority bypass 都是 hard stop。", "comparisonIds": ["native-vs-framework-core", "unit-capability-composition"]},
+    {"id": "fresh-ledger-boundary", "text": "本报告只使用 A31 fresh sealed ledger；不要把 A29 的旧 ledger、旧 fingerprint 或旧的 unknownCriteria 结果混入本结论。下一轮先补 LangGraph observability 与 AutoGen security/sandbox，再决定是否扩大候选范围。", "comparisonIds": ["evidence-gaps", "runtime-and-exit"]},
+    {"id": "ownership-and-exit", "text": "adapter owner 必须承担状态/事件翻译、security review、version skew、monitoring、rollback 和 removal test；任何需要复制 native lifecycle 的方案停止。", "comparisonIds": ["native-vs-framework-core", "runtime-and-exit"]}
+  ],
+  "metrics": [
+    {"key": "conformance-pass-rate", "definition": "native 与 adapter 对同一 graph fixture 的语义一致通过率", "unit": "scenario pass rate", "method": "运行 duplicate、retry、approval、resume、verification、handoff、acceptance、rollback 八类场景", "condition": "任一越权、错误完成或 digest 漂移为硬失败", "expected": "100% critical scenarios pass"},
+    {"key": "checkpoint-recovery", "definition": "checkpoint-backed execution 在重启或重复投递后恢复同一 native work item 的成功率", "unit": "percentage", "method": "注入 process crash、network timeout、duplicate delivery 后重放 LangGraph probe", "condition": "不得创建第二个有效 execution authority", "expected": "100%"},
+    {"key": "authority-preservation", "definition": "外部 adapter 无法绕过 native approval、artifact、verification、Human acceptance 与 lifecycle gate 的比例", "unit": "negative-case pass rate", "method": "运行 bypass attempts 并检查 native event/evidence records", "condition": "任何 bypass 为 hard stop", "expected": "100%"},
+    {"key": "unknown-closure", "definition": "本轮 unknownCriteria 被下一轮可复核证据或明确决策覆盖的比例", "unit": "criteria closure rate", "method": "针对 LangGraph observability 与 AutoGen security/sandbox 逐项运行 primary-source 或 runtime validation", "condition": "未知不得被默认改写为 absent", "expected": "100% before framework-core decision"},
+    {"key": "adapter-removability", "definition": "移除外部 adapter 后 native fixture 的可运行程度", "unit": "fixture pass rate", "method": "编译并运行不含外部框架的 native path，检查 OPN/evidence/lifecycle records", "condition": "不得重写 native semantic owner", "expected": "100% native path remains"},
+    {"key": "state-translation-cost", "definition": "外部状态与 native work item/OPN facts 之间新增的映射复杂度", "unit": "fields + translation modules", "method": "统计字段、转换函数、持久化投影和回滚分支", "condition": "复制核心 lifecycle 或引入双写事实源即 reject", "expected": "one narrow adapter and no second source of truth"},
+    {"key": "runtime-ownership-cost", "definition": "引入候选所增加的运行组件、升级面、版本错配和 incident owner 数量", "unit": "components + owner-hours per quarter", "method": "记录 runtime、package、deployment、upgrade、rollback 与 support obligations", "condition": "必须有明确 owner 和 exit test", "expected": "no unbounded platform obligation"}
+  ]
+}
