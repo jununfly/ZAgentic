@@ -9,14 +9,16 @@ focused technical-solution research-report skill. Also chart a parallel route
 for improving `zj-roadmap-driven` when its JSON/Markdown artifacts grow large
 enough to create performance bottlenecks. The route must preserve the
 evidence/compiler foundation, make the research-to-report seam explicit, and
-leave the remaining implementation tickets bounded and verifiable.
+leave the remaining implementation tickets bounded and verifiable. This
+implementation wave is now closed; this file remains the canonical decision
+record, not an active execution queue.
 
 ## Notes
 
 - Carrier: local markdown tracker; this file is the canonical map.
-- The Human has authorized the implementation wave. Resolve at most one
-  implementation ticket per session and keep each resolution bounded to that
-  ticket.
+- The Human authorized the implementation wave. It completed with A34 on
+  2026-08-24; no implementation ticket remains active. Any future work must
+  start from a new roadmap or an explicit Human re-open of this one.
 - The first confirmed migration set is `zj-research`, `zj-code-research`,
   `zj-tech-research-report` (renamed from `zj-research-report`), and
   `zj-systematic-research`.
