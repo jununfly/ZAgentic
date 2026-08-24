@@ -1,0 +1,94 @@
+{
+  "inventory": {
+    "bytes": 405085632,
+    "directories": 1969,
+    "extensions": {
+      ".apache2": 1,
+      ".bnf": 1,
+      ".bsd": 1,
+      ".c": 2,
+      ".cjs": 735,
+      ".cpp": 1,
+      ".css": 4,
+      ".cts": 731,
+      ".db": 1,
+      ".example": 25,
+      ".gyp": 2,
+      ".gypi": 2,
+      ".h": 2,
+      ".hpp": 1,
+      ".html": 5,
+      ".js": 3698,
+      ".json": 688,
+      ".jsonl": 1,
+      ".log": 13,
+      ".map": 595,
+      ".markdown": 2,
+      ".md": 593,
+      ".mit": 1,
+      ".mjs": 448,
+      ".mts": 8,
+      ".node": 1,
+      ".patch": 1,
+      ".png": 1,
+      ".py": 1,
+      ".pyc": 1,
+      ".sh": 4,
+      ".swift": 3,
+      ".tar": 1,
+      ".template": 8,
+      ".tgz": 3,
+      ".toml": 15,
+      ".ts": 7159,
+      ".txt": 25,
+      ".yaml": 4,
+      ".yml": 131,
+      ".zj-issue-triage": 2,
+      ".zj-loop-activate": 2,
+      ".zj-loop-budget": 2,
+      ".zj-loop-constraints": 2,
+      ".zj-loop-triage": 2,
+      ".zj-loop-verifier": 2,
+      ".zj-minimal-fix": 2
+    },
+    "files": 15343,
+    "languages": {
+      "c": 4,
+      "cpp": 2,
+      "css": 4,
+      "javascript": 3698,
+      "markdown": 593,
+      "python": 1,
+      "shell": 4,
+      "swift": 3,
+      "toml": 15,
+      "typescript": 7159,
+      "yaml": 135
+    },
+    "symlinks": 81
+  },
+  "schema": "zj-repository-map-summary/v1",
+  "scope": {
+    "exclusions": [
+      ".git"
+    ],
+    "root": "."
+  },
+  "snapshotId": "map-189e97a156af88a3ef55e24b",
+  "source": {
+    "commit": "88cdfb86218022d98119f05e940cfb6068b25959",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 33,
+    "workingTreeFingerprint": "16abb746d43b9832a39ef18af26e2796a0e08ff2351e82a5cc3bfcf58030acab"
+  },
+  "unknowns": [
+    {
+      "kind": "unreadable-path",
+      "path": "tools/zj-loop-core/.tmp/provider-runtim",
+      "reason": "[Errno 102] Operation not supported on socket: '/Users/bilibili/Documents/workspace/github/jununfly/ZAgenticLoop/tools/zj-loop-core/.tmp/provider-runtim'"
+    }
+  ]
+}

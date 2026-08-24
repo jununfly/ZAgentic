@@ -1,0 +1,12 @@
+{"ecosystem": "node", "id": "package-804011567af2ab6c0a13", "manifest": "package.json", "name": "zagenticloop", "parseStatus": "parsed", "path": "package.json"}
+{"ecosystem": "node", "id": "package-43e89e8645594b4c9eb4", "manifest": "package.json", "name": "@jununfly/zj-goal-audit", "parseStatus": "parsed", "path": "tools/zj-goal-audit/package.json"}
+{"ecosystem": "node", "id": "package-19917c8b7f67d2302a47", "manifest": "package.json", "name": "fixture", "parseStatus": "parsed", "path": "tools/zj-goal-audit/test/fixtures/good-goal-project/package.json"}
+{"ecosystem": "node", "id": "package-e70d4dc9d6c66400853e", "manifest": "package.json", "name": "@jununfly/zj-loop-audit", "parseStatus": "parsed", "path": "tools/zj-loop-audit/package.json"}
+{"ecosystem": "node", "id": "package-b1b27932e6ed02516173", "manifest": "package.json", "name": "@jununfly/zj-loop-core", "parseStatus": "parsed", "path": "tools/zj-loop-core/package.json"}
+{"ecosystem": "node", "id": "package-d20b6738bcfdd9b80b52", "manifest": "package.json", "name": "@jununfly/zj-loop-cost", "parseStatus": "parsed", "path": "tools/zj-loop-cost/package.json"}
+{"ecosystem": "node", "id": "package-4f5dbfa02a1945ef018b", "manifest": "package.json", "name": "@jununfly/zj-loop-github-infra", "parseStatus": "parsed", "path": "tools/zj-loop-github-infra/package.json"}
+{"ecosystem": "node", "id": "package-69299152773beab93891", "manifest": "package.json", "name": "@jununfly/zj-loop-gitlab-infra", "parseStatus": "parsed", "path": "tools/zj-loop-gitlab-infra/package.json"}
+{"ecosystem": "node", "id": "package-c867c9569de4f59dd17e", "manifest": "package.json", "name": "@jununfly/zj-loop-init", "parseStatus": "parsed", "path": "tools/zj-loop-init/package.json"}
+{"ecosystem": "node", "id": "package-26f530aef7131eba9158", "manifest": "package.json", "name": "@jununfly/zj-loop-mcp-server", "parseStatus": "parsed", "path": "tools/zj-loop-mcp-server/package.json"}
+{"ecosystem": "node", "id": "package-738b49ce48e351728d75", "manifest": "package.json", "name": "@jununfly/zj-loop-sync", "parseStatus": "parsed", "path": "tools/zj-loop-sync/package.json"}
+{"ecosystem": "node", "id": "package-aee7618f93530aafc96b", "manifest": "package.json", "name": "zj-loop-dependency-fixture", "parseStatus": "parsed", "path": "zj-loop/dogfood/dependency-fixture/package.json"}

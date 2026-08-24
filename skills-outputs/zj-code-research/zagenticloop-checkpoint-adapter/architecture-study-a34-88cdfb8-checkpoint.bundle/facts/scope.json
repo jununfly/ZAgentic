@@ -1,0 +1,169 @@
+{
+  "decisions": [
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-99d2e5339e5b4afbe19e",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src/native-checkpoint-fixture.ts"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-6e3100ca0bfbcb4333e3",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/test/native-checkpoint-fixture.test.mjs"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-d9b5db960781ba57b550",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src/index.ts"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-e01a1027e0f172e694bf",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src/sqlite-state-store.ts"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-4a2ac4f69a7e43385ee5",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src/real-agent-dogfood-graph-state.ts"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-4a74a70f1fd4965d4245",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src/real-agent-dogfood-graph-conformance-coordinator.ts"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-7afc88d7ee6975dd44f4",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "tools/zj-loop-core/src/real-agent-dogfood-graph-human-acceptance-state-store-adapter.ts"
+    },
+    {
+      "decision": "explicit-target-conversion",
+      "id": "decision-e14593db95b165cb8c52",
+      "kind": "decision",
+      "reason": "the supplied path was converted to an equivalent navigation target",
+      "targetPath": "docs/plans/opn-langgraph-checkpoint-adapter-probe-roadmap.json"
+    }
+  ],
+  "exclusions": [
+    ".codegraph",
+    ".git",
+    ".tmp",
+    "dist",
+    "node_modules",
+    "tools/zj-goal-audit/node_modules",
+    "tools/zj-loop-audit/node_modules",
+    "tools/zj-loop-core/node_modules",
+    "tools/zj-loop-cost/node_modules",
+    "tools/zj-loop-github-infra/node_modules",
+    "tools/zj-loop-gitlab-infra/node_modules",
+    "tools/zj-loop-init/node_modules",
+    "tools/zj-loop-mcp-server/node_modules",
+    "tools/zj-loop-sync/node_modules",
+    "zj-loop/dogfood/dependency-fixture/node_modules"
+  ],
+  "mapBinding": {
+    "manifestSha256": "7784b2657395d998acc6e9a223195f001e6b474b75e8e73d5a0dd149cfbb53b7",
+    "snapshotId": "map-107165ed1ab7a867791fc300",
+    "targetIds": [
+      "target-143b6000951140a34ec1",
+      "target-aad86af06d264269aba6",
+      "target-2182816cec0b0d9f4a5d",
+      "target-385971d8fad8f7631562",
+      "target-ba69b917bb552a3f1e3c",
+      "target-eda6c5cb7e35a1da3636",
+      "target-f6e6a9b14d38035a43d4",
+      "target-874613c83784f19dfa9c",
+      "target-d60e977dfedcff25745d"
+    ],
+    "used": true
+  },
+  "schema": "zj-architecture-study-scope/v1",
+  "snapshotId": "study-55b124aa9d5fcfa0e67cc114",
+  "source": {
+    "commit": "88cdfb86218022d98119f05e940cfb6068b25959",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 33,
+    "workingTreeFingerprint": "164e5f90a184805cf6b069482ee129e16079f2ea191c4782455b7d9535ec2ad7"
+  },
+  "targets": [
+    {
+      "id": "target-143b6000951140a34ec1",
+      "kind": "explicit-scope",
+      "label": "docs/plans/opn-langgraph-checkpoint-adapter-probe-roadmap.json",
+      "path": "docs/plans/opn-langgraph-checkpoint-adapter-probe-roadmap.json",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-aad86af06d264269aba6",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-2182816cec0b0d9f4a5d",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src/index.ts",
+      "path": "tools/zj-loop-core/src/index.ts",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-385971d8fad8f7631562",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src/native-checkpoint-fixture.ts",
+      "path": "tools/zj-loop-core/src/native-checkpoint-fixture.ts",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-ba69b917bb552a3f1e3c",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src/real-agent-dogfood-graph-conformance-coordinator.ts",
+      "path": "tools/zj-loop-core/src/real-agent-dogfood-graph-conformance-coordinator.ts",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-eda6c5cb7e35a1da3636",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src/real-agent-dogfood-graph-human-acceptance-state-store-adapter.ts",
+      "path": "tools/zj-loop-core/src/real-agent-dogfood-graph-human-acceptance-state-store-adapter.ts",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-f6e6a9b14d38035a43d4",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src/real-agent-dogfood-graph-state.ts",
+      "path": "tools/zj-loop-core/src/real-agent-dogfood-graph-state.ts",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-874613c83784f19dfa9c",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/src/sqlite-state-store.ts",
+      "path": "tools/zj-loop-core/src/sqlite-state-store.ts",
+      "reason": "human-supplied scope converted to a study target"
+    },
+    {
+      "id": "target-d60e977dfedcff25745d",
+      "kind": "explicit-scope",
+      "label": "tools/zj-loop-core/test/native-checkpoint-fixture.test.mjs",
+      "path": "tools/zj-loop-core/test/native-checkpoint-fixture.test.mjs",
+      "reason": "human-supplied scope converted to a study target"
+    }
+  ]
+}

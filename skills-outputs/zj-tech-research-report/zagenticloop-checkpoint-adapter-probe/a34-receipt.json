@@ -1,0 +1,63 @@
+{
+  "markdownPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/zj-tech-research-report/zagenticloop-checkpoint-adapter-probe/a34-draft.md",
+  "htmlPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/zj-tech-research-report/zagenticloop-checkpoint-adapter-probe/a34-draft.html",
+  "reportHash": "49ef31bb98927dc89313a010c9228b8a89fc17146fefae72ff2b41bcb9ebbea3",
+  "publishCount": 1,
+  "evaluation": {
+    "reportHash": "49ef31bb98927dc89313a010c9228b8a89fc17146fefae72ff2b41bcb9ebbea3",
+    "reportFamily": "technical-c4/v1",
+    "compilerVersion": "research/v1",
+    "healthy": true,
+    "correctness": {
+      "revisionPinned": true,
+      "provenanceComplete": true,
+      "criticalClaimsEvidence": true,
+      "scoringAxesSeparated": true,
+      "publishExactlyOnce": true,
+      "receiptConsistent": true
+    },
+    "evidenceCount": 5,
+    "unknownCount": 0,
+    "navigationFailureCount": 0,
+    "collection": {
+      "filesRead": 24,
+      "sourceBytesRead": 41617,
+      "durationMs": 14942,
+      "cacheHit": false
+    }
+  },
+  "qualityGate": {
+    "healthy": true,
+    "schema": "technical-research-quality-gate/v1",
+    "briefSchema": "technical-decision-brief/v1",
+    "reportFamily": "technical-c4/v1",
+    "checks": {
+      "decisionFrame": true,
+      "diagramCoverage": true,
+      "candidateScoresFromLedger": true,
+      "criticalClaimsEvidence": true,
+      "comparisonTraceability": true,
+      "recommendationTraceability": true,
+      "metricCoverage": true,
+      "unknownsSurfaced": true
+    },
+    "counts": {
+      "concepts": 5,
+      "candidates": 1,
+      "cards": 1,
+      "claims": 7,
+      "comparisons": 4,
+      "recommendations": 6,
+      "metrics": 7,
+      "ledgerEvidence": 5,
+      "ledgerUnknownCriteria": 0
+    },
+    "brief": {
+      "schema": "technical-decision-brief/v1",
+      "stage": "experience-version",
+      "constraintCount": 5,
+      "optionCount": 3,
+      "goalCount": 5
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "ZAgenticLoop LangGraph checkpoint/resume adapter probe",
+    "criteria": [
+      {
+        "id": "checkpoint-contract",
+        "question": "What first-party source defines LangGraph checkpoint, checkpointer, thread, namespace, metadata, version, or state persistence contracts relevant to durable resume?",
+        "critical": true,
+        "keywords": ["checkpoint", "checkpointer", "thread", "namespace", "metadata", "version", "state"]
+      },
+      {
+        "id": "resume-and-interrupt",
+        "question": "What first-party source demonstrates interrupt, resume, replay, pending writes, or durable execution behavior, and what identity must remain stable across resume?",
+        "critical": true,
+        "keywords": ["interrupt", "resume", "replay", "durable", "pending", "task", "thread"]
+      },
+      {
+        "id": "storage-and-conformance",
+        "question": "What first-party source describes checkpointer storage implementations, serialization, persistence guarantees, or conformance tests that can be isolated behind an adapter?",
+        "critical": true,
+        "keywords": ["SQLite", "Postgres", "serializer", "storage", "conformance", "test", "persistence"]
+      },
+      {
+        "id": "javascript-node-seam",
+        "question": "What first-party source establishes the JavaScript/TypeScript and Node.js integration surface, package boundaries, runtime requirements, or supported persistence adapters?",
+        "critical": true,
+        "keywords": ["JavaScript", "TypeScript", "Node", "npm", "package", "Node.js", "checkpointer"]
+      },
+      {
+        "id": "execution-and-security-boundary",
+        "question": "What first-party source establishes what LangGraph owns versus what a host product must retain for execution authority, approvals, credentials, sandboxing, evidence, or lifecycle?",
+        "critical": true,
+        "keywords": ["execution", "approval", "human", "credential", "security", "sandbox", "policy", "lifecycle"]
+      },
+      {
+        "id": "adapter-exit",
+        "question": "What first-party source reveals extension, replacement, version, or migration boundaries needed to remove a LangGraph checkpoint adapter without changing the native host semantics?",
+        "critical": true,
+        "keywords": ["extension", "custom", "interface", "migration", "version", "replace", "adapter"]
+      }
+    ],
+    "repositories": [
+      {
+        "owner": "langchain-ai",
+        "name": "langgraph"
+      }
+    ],
+    "policyVersion": "v1",
+    "budget": {
+      "maxFiles": 28,
+      "maxBytes": 1200000,
+      "deadlineMs": 180000
+    }
+  }
+}

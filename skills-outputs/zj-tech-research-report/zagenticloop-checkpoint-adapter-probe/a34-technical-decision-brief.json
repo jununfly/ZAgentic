@@ -1,0 +1,73 @@
+{
+  "schema": "technical-decision-brief/v1",
+  "user": {
+    "actor": "ZAgenticLoop maintainer",
+    "job": "Decide whether LangGraph checkpoint capability is worth a bounded adapter probe while ZAgenticLoop keeps native execution, Evidence, Human acceptance, security, and lifecycle authority."
+  },
+  "baseline": {
+    "workflow": "The current ZAgenticLoop working-tree snapshot defines a native checkpoint fixture and resume oracle around work-item identity, checkpoint metadata, state digest, duplicate delivery, Evidence, verification, Human acceptance, and native-core authority.",
+    "failureModes": [
+      "An external checkpoint layer may create a second execution authority or change native execution identity during resume.",
+      "A storage contract may be mistaken for complete interrupt/resume semantics or for a Node.js integration seam.",
+      "State, Evidence, verification, or Human acceptance may drift from the resumed native work item.",
+      "A Python-oriented dependency may expand runtime, version-skew, security, and removal obligations beyond a narrow adapter."
+    ]
+  },
+  "targetOutcome": "A reviewable decision and conformance plan for an isolated LangGraph checkpoint/resume capability probe, with explicit unknowns and a removal path back to the native fixture.",
+  "goals": [
+    "Verify whether LangGraph's checkpoint storage contract can map to the native checkpoint fixture.",
+    "Preserve native execution identity, duplicate semantics, Evidence binding, verification, Human acceptance, and lifecycle ownership.",
+    "Separate a durable-state adapter from whole-framework adoption.",
+    "Make the missing resume, Node.js, security, and version-boundary evidence explicit.",
+    "Define measurable continue, defer, or stop gates for the probe."
+  ],
+  "nonGoals": [
+    "Adopting LangGraph as the Graph/OPN core.",
+    "Implementing a production checkpoint service or Python runtime deployment in this research run.",
+    "Letting LangGraph own approvals, credentials, sandboxing, Evidence, verification, Human acceptance, or lifecycle closeout.",
+    "Treating the fresh ledger's stars or topicMatch as capability or product-fit scores."
+  ],
+  "constraints": [
+    {
+      "id": "native-authority",
+      "statement": "ZAgenticLoop native core remains the sole authority for execution identity, lifecycle, Evidence, verification, Human acceptance, security policy, and closeout."
+    },
+    {
+      "id": "conformance",
+      "statement": "The adapter must pass the native fixture's positive and hard-stop cases, including duplicate delivery, digest drift, identity change, and authority bypass."
+    },
+    {
+      "id": "runtime",
+      "statement": "The host product is TypeScript/Node.js; a Python-oriented checkpointer cannot be treated as a native dependency without an explicit runtime and ownership decision."
+    },
+    {
+      "id": "evidence",
+      "statement": "Every external capability claim must trace to the A34 v2 sealed ledger; unverified resume and Node/TS behavior remain unknown."
+    },
+    {
+      "id": "exit",
+      "statement": "Removing the adapter must leave the native checkpoint fixture and resume oracle passing without rewriting native facts."
+    }
+  ],
+  "assumptions": [
+    "The A34 code-research snapshot is representative of the active checkpoint probe boundary, even though its working tree is dirty and explicitly fingerprinted.",
+    "LangGraph's checkpoint conformance surface is a serious unit-capability candidate, not evidence that the whole framework fits ZAgenticLoop.",
+    "A narrow experience-version probe is the right lifecycle stage before any durable runtime commitment."
+  ],
+  "stage": "experience-version",
+  "decisionScope": "LangGraph checkpoint/resume as a removable unit capability in ZAgenticLoop, including the native adapter envelope, unknown closure, hard-stop conformance, and removal gate.",
+  "options": [
+    {
+      "id": "native-only",
+      "name": "Keep the native checkpoint fixture and defer external integration"
+    },
+    {
+      "id": "langgraph-adapter",
+      "name": "Probe LangGraph checkpoint storage behind a provider-neutral adapter"
+    },
+    {
+      "id": "langgraph-core",
+      "name": "Adopt LangGraph as the Graph/OPN checkpoint authority"
+    }
+  ]
+}

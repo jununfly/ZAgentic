@@ -344,6 +344,13 @@ shared tree with a human in the loop." In this repo, both senses are governed
 by `zj-roadmap-driven`.
 _Avoid_: plan, backlog, gantt
 
+**Roadmap Scope Gate**:
+The explicit classification before a roadmap node is mutated or project files
+are changed: Product execution authorizes bounded target-project work;
+Acceptance/evaluation treats the roadmap as a skill or tool test and keeps the
+target project read-only unless separately authorized.
+_Avoid_: implicit implementation authorization, node-label permission
+
 **Node**:
 A numbered item in the roadmap tree (`1`, `1-3`, `1-3-5`). Each node has a
 `label`, `status`, `mode`, optional `decisions`, and free-form `notes`. Nodes
@@ -463,13 +470,13 @@ Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retr
 
 - *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
 
-- 清场前先按“当前消费者 / 历史复核 / 可再生生成物”审计；稳定结论先回收到 canonical 文档，再清理过程产物  — docs/zj-retros/2026-08-24-retro.md#0102
-- 多仓库研究先做认证与 API quota preflight；限流时保留当前 brief 与旧 sealed ledger 的边界说明  — docs/zj-retros/2026-08-23-retro.md#2239
 - 生成式 study record 的 ID 必须包含 source locator 或 evidence identity，并在下游前跑唯一性 hard gate  — docs/zj-retros/2026-08-23-retro.md#2239
 - 外部网络适配器先覆盖真实标准库调用签名，再做受控 live smoke test  — docs/zj-retros/2026-08-23-retro.md#2334
 - live fresh collection 同时保留 status sidecar 与 sealed ledger，并以三态 status 验收  — docs/zj-retros/2026-08-23-retro.md#2334
 - 更换 sealed ledger 时重建 findings/Report IR，并对旧 fingerprint 做 negative check  — docs/zj-retros/2026-08-23-retro.md#2351
 - 技术报告先过 owning quality gate，再做 compiler publication 与 receipt 一致性检查  — docs/zj-retros/2026-08-23-retro.md#2351
+- fresh collection 完成后先检查 Evidence 是否集中在单一来源；机械 unknownCriteria 命中不能替代语义 unknown review  — docs/zj-retros/2026-08-24-retro.md#0120
+- 执行 roadmap 节点前先确认交付物和授权范围；legacy/技能验收路线保持目标项目只读。 — docs/zj-retros/2026-08-24-retro.md#16:15
 
 **Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
 

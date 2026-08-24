@@ -1,0 +1,2288 @@
+{
+  "schema": "zj-repository-map-targets/v1",
+  "snapshotId": "map-189e97a156af88a3ef55e24b",
+  "targets": [
+    {
+      "id": "target-fe90011578f09c7eccbc",
+      "kind": "integration",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/adapter",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/adapter",
+      "reason": "integration-named-directory"
+    },
+    {
+      "id": "target-154f734ebf2521baba2b",
+      "kind": "integration",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/adapter",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/adapter",
+      "reason": "integration-named-directory"
+    },
+    {
+      "id": "target-deec7f59937fe5e8f84b",
+      "kind": "integration",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/helper/adapter",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/helper/adapter",
+      "reason": "integration-named-directory"
+    },
+    {
+      "id": "target-8947c9f04619b808f6bb",
+      "kind": "integration",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/helper/adapter",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/helper/adapter",
+      "reason": "integration-named-directory"
+    },
+    {
+      "id": "target-fd8ec5c06a2e8044c274",
+      "kind": "integration",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/adapter",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/adapter",
+      "reason": "integration-named-directory"
+    },
+    {
+      "id": "target-8fd8451ecaaa2cc9e9d7",
+      "kind": "integration",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/helper/adapter",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/helper/adapter",
+      "reason": "integration-named-directory"
+    },
+    {
+      "id": "target-edcdae6633f7d0821fcb",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-6cbd27638aeb85256ccc",
+      "kind": "package",
+      "label": "ajv",
+      "path": "node_modules/ajv/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1f919557097cb5fb17ce",
+      "kind": "package",
+      "label": "cron-parser",
+      "path": "node_modules/cron-parser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cd8f01a2ecfecdd2df50",
+      "kind": "package",
+      "label": "fast-deep-equal",
+      "path": "node_modules/fast-deep-equal/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-55b1dc35c297826d3b33",
+      "kind": "package",
+      "label": "benchmark",
+      "path": "node_modules/fast-uri/benchmark/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-2af498f9ffc901b3c22e",
+      "kind": "package",
+      "label": "fast-uri",
+      "path": "node_modules/fast-uri/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5d90b7871c9f3176dc16",
+      "kind": "package",
+      "label": "json-schema-traverse",
+      "path": "node_modules/json-schema-traverse/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-006f538118faaca18ae7",
+      "kind": "package",
+      "label": "luxon",
+      "path": "node_modules/luxon/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-58aa09ac51abc5d38175",
+      "kind": "package",
+      "label": "node_modules/luxon/src/package.json",
+      "path": "node_modules/luxon/src/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-fd521647eaac75f20b5d",
+      "kind": "package",
+      "label": "require-from-string",
+      "path": "node_modules/require-from-string/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e7dfbf9a590e44444206",
+      "kind": "package",
+      "label": "typescript",
+      "path": "node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-6532f2e1651f1448ba4e",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-69207e94d500f7967c8b",
+      "kind": "package",
+      "label": "node_modules/yaml/browser/package.json",
+      "path": "node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ca75e929333bd2f534ac",
+      "kind": "package",
+      "label": "yaml",
+      "path": "node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cbf72b65828ecee277e4",
+      "kind": "package",
+      "label": "zod",
+      "path": "node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b200fcb6f368689072d8",
+      "kind": "package",
+      "label": "zagenticloop",
+      "path": "package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-509eae7933584f7d6bb4",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-goal-audit/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b43a032aae8547b3c81c",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-goal-audit/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-138faed023b1f7455aa5",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-goal-audit/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ad557f1740cb7c1e33d9",
+      "kind": "package",
+      "label": "@jununfly/zj-goal-audit",
+      "path": "tools/zj-goal-audit/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c9a2fe4f6939566f2d96",
+      "kind": "package",
+      "label": "fixture",
+      "path": "tools/zj-goal-audit/test/fixtures/good-goal-project/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b9b6830002a859378320",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-audit/node_modules/@jununfly/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a2b70be9932812538750",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-audit/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-8cff56aef18ff0e25214",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-audit/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7bb1d443aea2746cc7c1",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-audit/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-8605f2e46f421b06821c",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/yaml/browser/package.json",
+      "path": "tools/zj-loop-audit/node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-978354a2f0272085acd5",
+      "kind": "package",
+      "label": "yaml",
+      "path": "tools/zj-loop-audit/node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f3e8450fd9f328f107cf",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/locales/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-340b47bac0c36d2152a8",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/mini/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-6675ebff821434b2e77b",
+      "kind": "package",
+      "label": "zod",
+      "path": "tools/zj-loop-audit/node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e5f8a4ded49f1e8d8f54",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v3/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-263e6dc06d5fe47ec827",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v4-mini/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v4-mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7ad5854a7f16a1fb436f",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v4/classic/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v4/classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-07f949ec4c8197f171a4",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v4/core/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v4/core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-895c3ab3b9e3c2e83065",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v4/locales/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v4/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-185be03a11acac31cc6a",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v4/mini/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v4/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-559b134b29dbbad41987",
+      "kind": "package",
+      "label": "tools/zj-loop-audit/node_modules/zod/v4/package.json",
+      "path": "tools/zj-loop-audit/node_modules/zod/v4/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d328d1ef18f9975102ba",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-audit",
+      "path": "tools/zj-loop-audit/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ce477d6d47f939c3bcad",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-gitlab-infra",
+      "path": "tools/zj-loop-core/node_modules/@jununfly/zj-loop-gitlab-infra/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1db70c4add2eb2331676",
+      "kind": "package",
+      "label": "@types/better-sqlite3",
+      "path": "tools/zj-loop-core/node_modules/@types/better-sqlite3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d2e965f641c212c359f0",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-core/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d0b6dc430c1c2eff6271",
+      "kind": "package",
+      "label": "base64-js",
+      "path": "tools/zj-loop-core/node_modules/base64-js/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ad448993f06e6c790079",
+      "kind": "package",
+      "label": "better-sqlite3",
+      "path": "tools/zj-loop-core/node_modules/better-sqlite3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-57f2436ccd45b430b93e",
+      "kind": "package",
+      "label": "bindings",
+      "path": "tools/zj-loop-core/node_modules/bindings/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b9cb1b48818eb9d8d428",
+      "kind": "package",
+      "label": "bl",
+      "path": "tools/zj-loop-core/node_modules/bl/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-35363cd3507756c2022a",
+      "kind": "package",
+      "label": "buffer",
+      "path": "tools/zj-loop-core/node_modules/buffer/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-63c5e8ae43c71e826f5d",
+      "kind": "package",
+      "label": "canonicalize",
+      "path": "tools/zj-loop-core/node_modules/canonicalize/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a4263afee3e24d1e4e4b",
+      "kind": "package",
+      "label": "chownr",
+      "path": "tools/zj-loop-core/node_modules/chownr/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cb56cb9729c3f0e1269a",
+      "kind": "package",
+      "label": "cron-parser",
+      "path": "tools/zj-loop-core/node_modules/cron-parser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0eac3ee4361151ce7047",
+      "kind": "package",
+      "label": "decompress-response",
+      "path": "tools/zj-loop-core/node_modules/decompress-response/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ce138dc92a4222526c75",
+      "kind": "package",
+      "label": "deep-extend",
+      "path": "tools/zj-loop-core/node_modules/deep-extend/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-3dbd0d1d56d2aadd2802",
+      "kind": "package",
+      "label": "detect-libc",
+      "path": "tools/zj-loop-core/node_modules/detect-libc/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a24358556c5c12b5a14a",
+      "kind": "package",
+      "label": "end-of-stream",
+      "path": "tools/zj-loop-core/node_modules/end-of-stream/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-bdd76956af845998444d",
+      "kind": "package",
+      "label": "expand-template",
+      "path": "tools/zj-loop-core/node_modules/expand-template/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0d0cde0e890838fd52ba",
+      "kind": "package",
+      "label": "file-uri-to-path",
+      "path": "tools/zj-loop-core/node_modules/file-uri-to-path/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-8d113e085f536558e99e",
+      "kind": "package",
+      "label": "fs-constants",
+      "path": "tools/zj-loop-core/node_modules/fs-constants/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f4e448c87151d22c1ede",
+      "kind": "package",
+      "label": "beep-boop",
+      "path": "tools/zj-loop-core/node_modules/github-from-package/example/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-56e5720fc68029dc0a38",
+      "kind": "package",
+      "label": "github-from-package",
+      "path": "tools/zj-loop-core/node_modules/github-from-package/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-59cbd8f98c20ae8ce4b5",
+      "kind": "package",
+      "label": "ieee754",
+      "path": "tools/zj-loop-core/node_modules/ieee754/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1956d51ccade94d5fe86",
+      "kind": "package",
+      "label": "inherits",
+      "path": "tools/zj-loop-core/node_modules/inherits/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-215918206b7c25215ee6",
+      "kind": "package",
+      "label": "ini",
+      "path": "tools/zj-loop-core/node_modules/ini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-97196877cbb536e340c4",
+      "kind": "package",
+      "label": "jsonc-parser",
+      "path": "tools/zj-loop-core/node_modules/jsonc-parser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-35435a1c6e6a2cae90d3",
+      "kind": "package",
+      "label": "luxon",
+      "path": "tools/zj-loop-core/node_modules/luxon/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-8a526acbbda4a194abab",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/luxon/src/package.json",
+      "path": "tools/zj-loop-core/node_modules/luxon/src/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f36689bef1c4fec33869",
+      "kind": "package",
+      "label": "mimic-response",
+      "path": "tools/zj-loop-core/node_modules/mimic-response/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-007f2862a5161c3ee8a8",
+      "kind": "package",
+      "label": "minimist",
+      "path": "tools/zj-loop-core/node_modules/minimist/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f9c055ef52549c83d5d7",
+      "kind": "package",
+      "label": "mkdirp-classic",
+      "path": "tools/zj-loop-core/node_modules/mkdirp-classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e218196dee5de0d8f28b",
+      "kind": "package",
+      "label": "napi-build-utils",
+      "path": "tools/zj-loop-core/node_modules/napi-build-utils/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-69f32ad26019461c313a",
+      "kind": "package",
+      "label": "node-abi",
+      "path": "tools/zj-loop-core/node_modules/node-abi/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-280241f8f634a5900a2d",
+      "kind": "package",
+      "label": "once",
+      "path": "tools/zj-loop-core/node_modules/once/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-886113ca0815d23adaf7",
+      "kind": "package",
+      "label": "prebuild-install",
+      "path": "tools/zj-loop-core/node_modules/prebuild-install/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-10fa4a93da2ce128319e",
+      "kind": "package",
+      "label": "pump",
+      "path": "tools/zj-loop-core/node_modules/pump/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7fc63c06387c1b0d0411",
+      "kind": "package",
+      "label": "rc",
+      "path": "tools/zj-loop-core/node_modules/rc/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7fdd9df9cd1b18e15a89",
+      "kind": "package",
+      "label": "readable-stream",
+      "path": "tools/zj-loop-core/node_modules/readable-stream/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-57bd82429b82e7a011a0",
+      "kind": "package",
+      "label": "safe-buffer",
+      "path": "tools/zj-loop-core/node_modules/safe-buffer/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-da281bae70e8faeefef9",
+      "kind": "package",
+      "label": "semver",
+      "path": "tools/zj-loop-core/node_modules/semver/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-fc897d85664322b7758a",
+      "kind": "package",
+      "label": "simple-concat",
+      "path": "tools/zj-loop-core/node_modules/simple-concat/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c14261ff66fc8fa73859",
+      "kind": "package",
+      "label": "simple-get",
+      "path": "tools/zj-loop-core/node_modules/simple-get/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c968d61ca3ffb9da3e4f",
+      "kind": "package",
+      "label": "string_decoder",
+      "path": "tools/zj-loop-core/node_modules/string_decoder/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-df7443d97581346d4c97",
+      "kind": "package",
+      "label": "strip-json-comments",
+      "path": "tools/zj-loop-core/node_modules/strip-json-comments/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-9a2f68498ae0d810f23e",
+      "kind": "package",
+      "label": "tar-fs",
+      "path": "tools/zj-loop-core/node_modules/tar-fs/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c9adeab9560ec359d5a3",
+      "kind": "package",
+      "label": "tar-stream",
+      "path": "tools/zj-loop-core/node_modules/tar-stream/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0462c37d9566bb755db2",
+      "kind": "package",
+      "label": "tunnel-agent",
+      "path": "tools/zj-loop-core/node_modules/tunnel-agent/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-870f2451ef5d8be2d1b1",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-core/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-030260907b71cbc0b76e",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-core/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-552a16761b4230602f1a",
+      "kind": "package",
+      "label": "util-deprecate",
+      "path": "tools/zj-loop-core/node_modules/util-deprecate/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-85d69149c7e0094ac2a7",
+      "kind": "package",
+      "label": "wrappy",
+      "path": "tools/zj-loop-core/node_modules/wrappy/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-755dcca60a1fc83cf137",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/yaml/browser/package.json",
+      "path": "tools/zj-loop-core/node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-68f1c9bbe68c0acc395a",
+      "kind": "package",
+      "label": "yaml",
+      "path": "tools/zj-loop-core/node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0f9695fc23ca7effbbe9",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/locales/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b6c23942182594c2f9c7",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/mini/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-651295d2021e70ce0c12",
+      "kind": "package",
+      "label": "zod",
+      "path": "tools/zj-loop-core/node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e4d44d791aaffec8123a",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v3/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0506395eb4062a082458",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v4-mini/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v4-mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-696c5393e236636ad7a7",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v4/classic/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v4/classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-9851cda66ab4d165a9c4",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v4/core/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v4/core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7b8da9569d9cd490c79f",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v4/locales/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v4/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c7f3f7a80352c8430cdd",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v4/mini/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v4/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-6bfc4f50ffbd89555e9f",
+      "kind": "package",
+      "label": "tools/zj-loop-core/node_modules/zod/v4/package.json",
+      "path": "tools/zj-loop-core/node_modules/zod/v4/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-aad86af06d264269aba6",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-8fd7f3ea8200c079bace",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-cost/node_modules/@jununfly/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1b27cb1fce94ab2e79c9",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-cost/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e49406cd7695c432de29",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-cost/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-710808486e2db8c78b61",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-cost/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b8678fcc1b797d4b6c59",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/yaml/browser/package.json",
+      "path": "tools/zj-loop-cost/node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-239e8c14bc2e527f7b47",
+      "kind": "package",
+      "label": "yaml",
+      "path": "tools/zj-loop-cost/node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4f75b89ed6c0529c07cd",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/locales/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-bb5d453fde55b45ad7c8",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/mini/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-06e734ffe7d3a937f5ad",
+      "kind": "package",
+      "label": "zod",
+      "path": "tools/zj-loop-cost/node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-39d94a210175004a1b92",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v3/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b934d2654ac8e17b0b85",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v4-mini/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v4-mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-312a08a23d3dae97000d",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v4/classic/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v4/classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d0d0689dec6be1b7398b",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v4/core/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v4/core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-974f9716d856d59c0f52",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v4/locales/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v4/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-61ea29c425c09172d04d",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v4/mini/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v4/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a39e9a66e2f24f486a5f",
+      "kind": "package",
+      "label": "tools/zj-loop-cost/node_modules/zod/v4/package.json",
+      "path": "tools/zj-loop-cost/node_modules/zod/v4/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-2fec2b8e14592c066ba7",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-cost",
+      "path": "tools/zj-loop-cost/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-226710c850b244044dd8",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-github-infra/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7d69c9a3634196ddc225",
+      "kind": "package",
+      "label": "fflate",
+      "path": "tools/zj-loop-github-infra/node_modules/fflate/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d783de659218adeea408",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-github-infra/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-3040436d1ccd136e18f4",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-github-infra/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e9ca1db6046c0d96a81e",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-github-infra",
+      "path": "tools/zj-loop-github-infra/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e6b03d8831d8aae6d4c3",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-gitlab-infra/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ea497a1629628e9eeadd",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-gitlab-infra/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d269fd33e1874f3ff1f0",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-gitlab-infra/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5be8a7dc1e1d89874b04",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-gitlab-infra",
+      "path": "tools/zj-loop-gitlab-infra/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4c7e5e9443d8979c0c2e",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-init/node_modules/@jununfly/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-499e1a3aabe79d093a04",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-init/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-8bf502f5f73ca62fc5be",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-init/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ee4128ca8cf0e33960a3",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-init/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-659de72f45fdefbcd650",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/yaml/browser/package.json",
+      "path": "tools/zj-loop-init/node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c8ac0687a82a4ba2315d",
+      "kind": "package",
+      "label": "yaml",
+      "path": "tools/zj-loop-init/node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ee6ecaadd9aca5278646",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/locales/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0b42806f95cd2b049b67",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/mini/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d0b38e2a62e8a787cd88",
+      "kind": "package",
+      "label": "zod",
+      "path": "tools/zj-loop-init/node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-efe5be97d3e9fbddcea8",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v3/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e34d34b7b7ef5509e9f1",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v4-mini/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v4-mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0a85b940c9dca939b1be",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v4/classic/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v4/classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-02f92031cc126296ff24",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v4/core/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v4/core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f987a14c9979518d35d7",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v4/locales/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v4/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1b61981550e7184e98a4",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v4/mini/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v4/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a2df2d6b06895e46fbd8",
+      "kind": "package",
+      "label": "tools/zj-loop-init/node_modules/zod/v4/package.json",
+      "path": "tools/zj-loop-init/node_modules/zod/v4/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-dece2eae4729f9e1a1e7",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-init",
+      "path": "tools/zj-loop-init/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5cd8ccaa48b8b1a73966",
+      "kind": "package",
+      "label": "@hono/node-server",
+      "path": "tools/zj-loop-mcp-server/node_modules/@hono/node-server/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ca9218a5ed84555b2d30",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/@modelcontextprotocol/sdk/dist/cjs/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/@modelcontextprotocol/sdk/dist/cjs/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-91127af894e324001379",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/@modelcontextprotocol/sdk/dist/esm/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/@modelcontextprotocol/sdk/dist/esm/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b3a9cc33bae060f01b75",
+      "kind": "package",
+      "label": "@modelcontextprotocol/sdk",
+      "path": "tools/zj-loop-mcp-server/node_modules/@modelcontextprotocol/sdk/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-07b3765d2fa6d1559b82",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-mcp-server/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c89160e149a7a4c8abec",
+      "kind": "package",
+      "label": "accepts",
+      "path": "tools/zj-loop-mcp-server/node_modules/accepts/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-3670c8ea920ad773c876",
+      "kind": "package",
+      "label": "ajv-formats",
+      "path": "tools/zj-loop-mcp-server/node_modules/ajv-formats/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-79175616134af2817776",
+      "kind": "package",
+      "label": "ajv",
+      "path": "tools/zj-loop-mcp-server/node_modules/ajv/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b9419675f223619e02c5",
+      "kind": "package",
+      "label": "content-type",
+      "path": "tools/zj-loop-mcp-server/node_modules/body-parser/node_modules/content-type/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0af2079659820e49fdb4",
+      "kind": "package",
+      "label": "body-parser",
+      "path": "tools/zj-loop-mcp-server/node_modules/body-parser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5008b3c9a1d37b711525",
+      "kind": "package",
+      "label": "bytes",
+      "path": "tools/zj-loop-mcp-server/node_modules/bytes/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-02e2caf0754ed49ff0a4",
+      "kind": "package",
+      "label": "call-bind-apply-helpers",
+      "path": "tools/zj-loop-mcp-server/node_modules/call-bind-apply-helpers/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-13bbd854cf5bff31a27b",
+      "kind": "package",
+      "label": "call-bound",
+      "path": "tools/zj-loop-mcp-server/node_modules/call-bound/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ea498a28aff1b5fd6be5",
+      "kind": "package",
+      "label": "content-disposition",
+      "path": "tools/zj-loop-mcp-server/node_modules/content-disposition/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c6f76871d8ffcbc4ebf0",
+      "kind": "package",
+      "label": "content-type",
+      "path": "tools/zj-loop-mcp-server/node_modules/content-type/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-42b13eccdec3375ded7d",
+      "kind": "package",
+      "label": "cookie-signature",
+      "path": "tools/zj-loop-mcp-server/node_modules/cookie-signature/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-feab16064ce9ea37d079",
+      "kind": "package",
+      "label": "cookie",
+      "path": "tools/zj-loop-mcp-server/node_modules/cookie/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e9031222937490252676",
+      "kind": "package",
+      "label": "cors",
+      "path": "tools/zj-loop-mcp-server/node_modules/cors/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-bc20c2ab9d8c0a098e61",
+      "kind": "package",
+      "label": "cross-spawn",
+      "path": "tools/zj-loop-mcp-server/node_modules/cross-spawn/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-6fbbb21904101b4ab619",
+      "kind": "package",
+      "label": "debug",
+      "path": "tools/zj-loop-mcp-server/node_modules/debug/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d074cfb6caa12298c3f4",
+      "kind": "package",
+      "label": "depd",
+      "path": "tools/zj-loop-mcp-server/node_modules/depd/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4235757d403200677e0f",
+      "kind": "package",
+      "label": "dunder-proto",
+      "path": "tools/zj-loop-mcp-server/node_modules/dunder-proto/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a7637bebf8946a422eaa",
+      "kind": "package",
+      "label": "ee-first",
+      "path": "tools/zj-loop-mcp-server/node_modules/ee-first/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-80bd3c8d0f95f47f0fb0",
+      "kind": "package",
+      "label": "encodeurl",
+      "path": "tools/zj-loop-mcp-server/node_modules/encodeurl/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-54ce202992ffc3326b55",
+      "kind": "package",
+      "label": "es-define-property",
+      "path": "tools/zj-loop-mcp-server/node_modules/es-define-property/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-136a76c01e6eea843e22",
+      "kind": "package",
+      "label": "es-errors",
+      "path": "tools/zj-loop-mcp-server/node_modules/es-errors/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e32659c8726416957378",
+      "kind": "package",
+      "label": "es-object-atoms",
+      "path": "tools/zj-loop-mcp-server/node_modules/es-object-atoms/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7593186b3658e1eebcd8",
+      "kind": "package",
+      "label": "escape-html",
+      "path": "tools/zj-loop-mcp-server/node_modules/escape-html/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-988b63f38b3eb59c22e4",
+      "kind": "package",
+      "label": "etag",
+      "path": "tools/zj-loop-mcp-server/node_modules/etag/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1ab70d72a79c40475c14",
+      "kind": "package",
+      "label": "eventsource-parser",
+      "path": "tools/zj-loop-mcp-server/node_modules/eventsource-parser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-749fbeeb80ae235949e1",
+      "kind": "package",
+      "label": "eventsource",
+      "path": "tools/zj-loop-mcp-server/node_modules/eventsource/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d87695237001940eff70",
+      "kind": "package",
+      "label": "express-rate-limit",
+      "path": "tools/zj-loop-mcp-server/node_modules/express-rate-limit/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-75399504c6292267acb3",
+      "kind": "package",
+      "label": "express",
+      "path": "tools/zj-loop-mcp-server/node_modules/express/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b2249a19a5233b5e4bf5",
+      "kind": "package",
+      "label": "fast-deep-equal",
+      "path": "tools/zj-loop-mcp-server/node_modules/fast-deep-equal/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e6403d3de85a9f1e4969",
+      "kind": "package",
+      "label": "benchmark",
+      "path": "tools/zj-loop-mcp-server/node_modules/fast-uri/benchmark/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a9140c0a31b8ae7031c9",
+      "kind": "package",
+      "label": "fast-uri",
+      "path": "tools/zj-loop-mcp-server/node_modules/fast-uri/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-3f495fea5d57814074e4",
+      "kind": "package",
+      "label": "finalhandler",
+      "path": "tools/zj-loop-mcp-server/node_modules/finalhandler/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-28cf3cc11f4f93448561",
+      "kind": "package",
+      "label": "forwarded",
+      "path": "tools/zj-loop-mcp-server/node_modules/forwarded/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e22b08a6e9ac0406a3ad",
+      "kind": "package",
+      "label": "fresh",
+      "path": "tools/zj-loop-mcp-server/node_modules/fresh/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f5ca8c32ff2e05f4b653",
+      "kind": "package",
+      "label": "function-bind",
+      "path": "tools/zj-loop-mcp-server/node_modules/function-bind/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ee8120c3576516fc7684",
+      "kind": "package",
+      "label": "get-intrinsic",
+      "path": "tools/zj-loop-mcp-server/node_modules/get-intrinsic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-bbfebb201d1d612fd568",
+      "kind": "package",
+      "label": "get-proto",
+      "path": "tools/zj-loop-mcp-server/node_modules/get-proto/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ef7ba2f79e69ce150317",
+      "kind": "package",
+      "label": "gopd",
+      "path": "tools/zj-loop-mcp-server/node_modules/gopd/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ae13a4f57d97bae2922a",
+      "kind": "package",
+      "label": "has-symbols",
+      "path": "tools/zj-loop-mcp-server/node_modules/has-symbols/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4a18f483e0b702ef634e",
+      "kind": "package",
+      "label": "hasown",
+      "path": "tools/zj-loop-mcp-server/node_modules/hasown/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-025b0602d783391a9dad",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-3e45124194e90bf383c9",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e746d061962b57e38024",
+      "kind": "package",
+      "label": "hono",
+      "path": "tools/zj-loop-mcp-server/node_modules/hono/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-2d49304ded401d228e6c",
+      "kind": "package",
+      "label": "http-errors",
+      "path": "tools/zj-loop-mcp-server/node_modules/http-errors/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-73e701d1c6b2fbda0543",
+      "kind": "package",
+      "label": "iconv-lite",
+      "path": "tools/zj-loop-mcp-server/node_modules/iconv-lite/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cafee521c7e7a9b142e6",
+      "kind": "package",
+      "label": "inherits",
+      "path": "tools/zj-loop-mcp-server/node_modules/inherits/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b40f0f85605f49b70a7d",
+      "kind": "package",
+      "label": "ip-address",
+      "path": "tools/zj-loop-mcp-server/node_modules/ip-address/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-29b8b548012075ef012f",
+      "kind": "package",
+      "label": "ipaddr.js",
+      "path": "tools/zj-loop-mcp-server/node_modules/ipaddr.js/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d412dd33f3e19827c168",
+      "kind": "package",
+      "label": "is-promise",
+      "path": "tools/zj-loop-mcp-server/node_modules/is-promise/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4eb9ee97e76dba998778",
+      "kind": "package",
+      "label": "isexe",
+      "path": "tools/zj-loop-mcp-server/node_modules/isexe/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-86692b466d5aed2f1a43",
+      "kind": "package",
+      "label": "jose",
+      "path": "tools/zj-loop-mcp-server/node_modules/jose/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-117a81f30471369295d6",
+      "kind": "package",
+      "label": "json-schema-traverse",
+      "path": "tools/zj-loop-mcp-server/node_modules/json-schema-traverse/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-920f5561db83fdb2984b",
+      "kind": "package",
+      "label": "json-schema-typed",
+      "path": "tools/zj-loop-mcp-server/node_modules/json-schema-typed/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ae9a67bfadbfe2be4168",
+      "kind": "package",
+      "label": "math-intrinsics",
+      "path": "tools/zj-loop-mcp-server/node_modules/math-intrinsics/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-40394bde70047e10dd5f",
+      "kind": "package",
+      "label": "media-typer",
+      "path": "tools/zj-loop-mcp-server/node_modules/media-typer/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-54ff562566307efb4009",
+      "kind": "package",
+      "label": "merge-descriptors",
+      "path": "tools/zj-loop-mcp-server/node_modules/merge-descriptors/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-2b993decf0533f4d7cef",
+      "kind": "package",
+      "label": "mime-db",
+      "path": "tools/zj-loop-mcp-server/node_modules/mime-db/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d3ccb21088baee54dbb0",
+      "kind": "package",
+      "label": "mime-types",
+      "path": "tools/zj-loop-mcp-server/node_modules/mime-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-34d6a070b6d3d684143b",
+      "kind": "package",
+      "label": "ms",
+      "path": "tools/zj-loop-mcp-server/node_modules/ms/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-823b58be3373a27c68a0",
+      "kind": "package",
+      "label": "negotiator",
+      "path": "tools/zj-loop-mcp-server/node_modules/negotiator/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0507b2a998ddbb3d5c30",
+      "kind": "package",
+      "label": "object-assign",
+      "path": "tools/zj-loop-mcp-server/node_modules/object-assign/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-b460fb6421021022bbb6",
+      "kind": "package",
+      "label": "object-inspect",
+      "path": "tools/zj-loop-mcp-server/node_modules/object-inspect/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-25d8fc49a833c1de1b56",
+      "kind": "package",
+      "label": "on-finished",
+      "path": "tools/zj-loop-mcp-server/node_modules/on-finished/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1cefa024f5f9602ba84d",
+      "kind": "package",
+      "label": "once",
+      "path": "tools/zj-loop-mcp-server/node_modules/once/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-363b4496b69765d5eaa2",
+      "kind": "package",
+      "label": "parseurl",
+      "path": "tools/zj-loop-mcp-server/node_modules/parseurl/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-13fb43b027097b29a9d9",
+      "kind": "package",
+      "label": "path-key",
+      "path": "tools/zj-loop-mcp-server/node_modules/path-key/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7d1fe04431f92abcbdf0",
+      "kind": "package",
+      "label": "path-to-regexp",
+      "path": "tools/zj-loop-mcp-server/node_modules/path-to-regexp/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-491fd4edfdf5f279bc7c",
+      "kind": "package",
+      "label": "pkce-challenge",
+      "path": "tools/zj-loop-mcp-server/node_modules/pkce-challenge/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-9821399dc7a51bc7b1bf",
+      "kind": "package",
+      "label": "proxy-addr",
+      "path": "tools/zj-loop-mcp-server/node_modules/proxy-addr/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a32d80d284b82130d70e",
+      "kind": "package",
+      "label": "qs",
+      "path": "tools/zj-loop-mcp-server/node_modules/qs/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-6af5ceb77369a2bedce3",
+      "kind": "package",
+      "label": "range-parser",
+      "path": "tools/zj-loop-mcp-server/node_modules/range-parser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-eb379ddc6e91306fafc6",
+      "kind": "package",
+      "label": "raw-body",
+      "path": "tools/zj-loop-mcp-server/node_modules/raw-body/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-14b881b710de5eee0342",
+      "kind": "package",
+      "label": "require-from-string",
+      "path": "tools/zj-loop-mcp-server/node_modules/require-from-string/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7a3df0ac637afeb579f7",
+      "kind": "package",
+      "label": "router",
+      "path": "tools/zj-loop-mcp-server/node_modules/router/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-be5263cc0ab59c0b916a",
+      "kind": "package",
+      "label": "safer-buffer",
+      "path": "tools/zj-loop-mcp-server/node_modules/safer-buffer/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1a0b9f7e08e937d69759",
+      "kind": "package",
+      "label": "send",
+      "path": "tools/zj-loop-mcp-server/node_modules/send/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d6e3fc588980441cad07",
+      "kind": "package",
+      "label": "serve-static",
+      "path": "tools/zj-loop-mcp-server/node_modules/serve-static/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4db774ccbcaa520adea2",
+      "kind": "package",
+      "label": "setprototypeof",
+      "path": "tools/zj-loop-mcp-server/node_modules/setprototypeof/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a10f1e2a0491cd7fb46d",
+      "kind": "package",
+      "label": "shebang-command",
+      "path": "tools/zj-loop-mcp-server/node_modules/shebang-command/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-69955072f275c95162a3",
+      "kind": "package",
+      "label": "shebang-regex",
+      "path": "tools/zj-loop-mcp-server/node_modules/shebang-regex/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c79fa087ed7f92b9fe1f",
+      "kind": "package",
+      "label": "side-channel-list",
+      "path": "tools/zj-loop-mcp-server/node_modules/side-channel-list/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1e8f2e8c1e796557330b",
+      "kind": "package",
+      "label": "side-channel-map",
+      "path": "tools/zj-loop-mcp-server/node_modules/side-channel-map/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1f58928d644193d21d30",
+      "kind": "package",
+      "label": "side-channel-weakmap",
+      "path": "tools/zj-loop-mcp-server/node_modules/side-channel-weakmap/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ee7f7e9514d5e88b1f5d",
+      "kind": "package",
+      "label": "side-channel",
+      "path": "tools/zj-loop-mcp-server/node_modules/side-channel/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cfe1663fa9f43615263d",
+      "kind": "package",
+      "label": "statuses",
+      "path": "tools/zj-loop-mcp-server/node_modules/statuses/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-9f3d57327721e3d1ed03",
+      "kind": "package",
+      "label": "toidentifier",
+      "path": "tools/zj-loop-mcp-server/node_modules/toidentifier/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e95241c04a3a0b4ef938",
+      "kind": "package",
+      "label": "content-type",
+      "path": "tools/zj-loop-mcp-server/node_modules/type-is/node_modules/content-type/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c0c3f55e5d45f064d1f7",
+      "kind": "package",
+      "label": "type-is",
+      "path": "tools/zj-loop-mcp-server/node_modules/type-is/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a95c780c41e4b89dacf7",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-mcp-server/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e7aa4eac1dbb7d88fb03",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-mcp-server/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d61657c771976f27a4f3",
+      "kind": "package",
+      "label": "unpipe",
+      "path": "tools/zj-loop-mcp-server/node_modules/unpipe/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-240325c13b1d85cc16ad",
+      "kind": "package",
+      "label": "vary",
+      "path": "tools/zj-loop-mcp-server/node_modules/vary/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-94ad509376e057729e29",
+      "kind": "package",
+      "label": "which",
+      "path": "tools/zj-loop-mcp-server/node_modules/which/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1540782227620bdb66ec",
+      "kind": "package",
+      "label": "wrappy",
+      "path": "tools/zj-loop-mcp-server/node_modules/wrappy/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d2e3955ac1a6b6dd05ba",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod-to-json-schema/dist/cjs/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod-to-json-schema/dist/cjs/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e881393a6ea4cc227660",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod-to-json-schema/dist/esm/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod-to-json-schema/dist/esm/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4bab9b97b500ad5dfe6b",
+      "kind": "package",
+      "label": "zod-to-json-schema",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod-to-json-schema/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cea1cf94ad5f6b9936e9",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/locales/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-f73befb8f394121ca0d2",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/mini/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-58fc5d5d16f6e6064c24",
+      "kind": "package",
+      "label": "zod",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5dc88b3947f3f9ad7668",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v3/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-7cbf12d6105adf1ae6d9",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v4-mini/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v4-mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-a3602d049461ae6d271c",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v4/classic/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v4/classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cff9c1f50765237aa145",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v4/core/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v4/core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-418fcab006375adc573d",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v4/locales/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v4/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-544a8c1e034db87e37ee",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v4/mini/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v4/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1ac3669e1c82056c272b",
+      "kind": "package",
+      "label": "tools/zj-loop-mcp-server/node_modules/zod/v4/package.json",
+      "path": "tools/zj-loop-mcp-server/node_modules/zod/v4/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-13e3041755b15561d908",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-mcp-server",
+      "path": "tools/zj-loop-mcp-server/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-96257aa0d1efcb23e116",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-sync/node_modules/@jununfly/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-be7de6cea86041fff63f",
+      "kind": "package",
+      "label": "@types/node",
+      "path": "tools/zj-loop-sync/node_modules/@types/node/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-fddfbbc87317d409215b",
+      "kind": "package",
+      "label": "typescript",
+      "path": "tools/zj-loop-sync/node_modules/typescript/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0d7f172e7705b06118fd",
+      "kind": "package",
+      "label": "undici-types",
+      "path": "tools/zj-loop-sync/node_modules/undici-types/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5b0cca8583e2f8f3dcda",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/yaml/browser/package.json",
+      "path": "tools/zj-loop-sync/node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c8d940ef996b836aab77",
+      "kind": "package",
+      "label": "yaml",
+      "path": "tools/zj-loop-sync/node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-4b1a4b348b92f5802a52",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/locales/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-dae62758e3d7e3236c2b",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/mini/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cf6336f55406c6539cc6",
+      "kind": "package",
+      "label": "zod",
+      "path": "tools/zj-loop-sync/node_modules/zod/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-0c932d0c230f515d5913",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v3/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v3/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ed87e2136e7345ca80f6",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v4-mini/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v4-mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-07c1a48c34d9675830ec",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v4/classic/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v4/classic/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-37c110b1c7acefb0e8de",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v4/core/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v4/core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e9d3fbb22ecaff06514b",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v4/locales/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v4/locales/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-78d3a5ff39ee62db6b5e",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v4/mini/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v4/mini/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-391e77c11c7b2b68c2e4",
+      "kind": "package",
+      "label": "tools/zj-loop-sync/node_modules/zod/v4/package.json",
+      "path": "tools/zj-loop-sync/node_modules/zod/v4/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cfc5a046c9bf050a98e3",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-sync",
+      "path": "tools/zj-loop-sync/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-1aacaee2b691460e532e",
+      "kind": "package",
+      "label": "zj-loop/dogfood/dependency-fixture/node_modules/yaml/browser/package.json",
+      "path": "zj-loop/dogfood/dependency-fixture/node_modules/yaml/browser/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-9269ab029bc0b117a481",
+      "kind": "package",
+      "label": "yaml",
+      "path": "zj-loop/dogfood/dependency-fixture/node_modules/yaml/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-094bf975e4315babf41f",
+      "kind": "package",
+      "label": "zj-loop-dependency-fixture",
+      "path": "zj-loop/dogfood/dependency-fixture/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-812e14b5934e8fe234ef",
+      "kind": "root",
+      "label": "Repository root",
+      "path": ".",
+      "reason": "map orientation"
+    },
+    {
+      "id": "target-a8d2d8ca2d7d21e95524",
+      "kind": "top-level",
+      "label": ".codex",
+      "path": ".codex",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-e6bf1c55589d43ee5132",
+      "kind": "top-level",
+      "label": ".github",
+      "path": ".github",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-b82127a8e65902202657",
+      "kind": "top-level",
+      "label": ".npm-cache-release-validation",
+      "path": ".npm-cache-release-validation",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-b125738973bc76abba0d",
+      "kind": "top-level",
+      "label": ".tmp",
+      "path": ".tmp",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-fa5fcd36c64ec06c853d",
+      "kind": "top-level",
+      "label": ".zcodegraph",
+      "path": ".zcodegraph",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-5a2b4d08e19fff033ec4",
+      "kind": "top-level",
+      "label": "docs",
+      "path": "docs",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-9da04769a802643e3ab9",
+      "kind": "top-level",
+      "label": "examples",
+      "path": "examples",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-8a1df3f777707b1867b3",
+      "kind": "top-level",
+      "label": "node_modules",
+      "path": "node_modules",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-0df30d8b7e18542e204f",
+      "kind": "top-level",
+      "label": "patterns",
+      "path": "patterns",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-e45f0dbef6284e90aee7",
+      "kind": "top-level",
+      "label": "resources",
+      "path": "resources",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-41c457cff1a288c79af6",
+      "kind": "top-level",
+      "label": "scripts",
+      "path": "scripts",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-6b7c7a4769bd7cb8eb08",
+      "kind": "top-level",
+      "label": "skills",
+      "path": "skills",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-48de2c2bbdffe2d25abe",
+      "kind": "top-level",
+      "label": "src",
+      "path": "src",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-f40d9f76d016162acbd9",
+      "kind": "top-level",
+      "label": "starters",
+      "path": "starters",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-b30067b89398599a0364",
+      "kind": "top-level",
+      "label": "stories",
+      "path": "stories",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-2d8566133855decd7e58",
+      "kind": "top-level",
+      "label": "templates",
+      "path": "templates",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-537bfca2463948912ba9",
+      "kind": "top-level",
+      "label": "tools",
+      "path": "tools",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-2f1289888a2f30de4d64",
+      "kind": "top-level",
+      "label": "zj-loop",
+      "path": "zj-loop",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-902216cc5451afb6dc3f",
+      "kind": "workflow",
+      "label": ".github/workflows/audit.yml",
+      "path": ".github/workflows/audit.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-d39dd30c9271ec6b550e",
+      "kind": "workflow",
+      "label": ".github/workflows/changelog-drafter.yml",
+      "path": ".github/workflows/changelog-drafter.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-451aa0a32c69ef5dc62c",
+      "kind": "workflow",
+      "label": ".github/workflows/ci-sweeper.yml",
+      "path": ".github/workflows/ci-sweeper.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-c8e2cba4c5e6ab734bbd",
+      "kind": "workflow",
+      "label": ".github/workflows/daily-triage.yml",
+      "path": ".github/workflows/daily-triage.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-5e2d8313cec186ade3b4",
+      "kind": "workflow",
+      "label": ".github/workflows/github-infra-dogfood.yml",
+      "path": ".github/workflows/github-infra-dogfood.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-4223837d2c45d4e19f75",
+      "kind": "workflow",
+      "label": ".github/workflows/post-merge-roadmap-closeout.yml",
+      "path": ".github/workflows/post-merge-roadmap-closeout.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a5598578797d67f2aed7",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-goal-audit.yml",
+      "path": ".github/workflows/release-zj-goal-audit.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-8c09843453709c5c85eb",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-audit.yml",
+      "path": ".github/workflows/release-zj-loop-audit.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-5400373b9f0040914897",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-core.yml",
+      "path": ".github/workflows/release-zj-loop-core.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a599bd0074bd92fdcb53",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-cost.yml",
+      "path": ".github/workflows/release-zj-loop-cost.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a7db90bfcae64a202ca2",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-github-infra.yml",
+      "path": ".github/workflows/release-zj-loop-github-infra.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-81b30200accc5baeaf2e",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-gitlab-infra.yml",
+      "path": ".github/workflows/release-zj-loop-gitlab-infra.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-04813919806a733ba04f",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-init.yml",
+      "path": ".github/workflows/release-zj-loop-init.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-4e9377db3ee7d5910949",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-mcp-server.yml",
+      "path": ".github/workflows/release-zj-loop-mcp-server.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-6227583bdd064f0607b9",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-sync.yml",
+      "path": ".github/workflows/release-zj-loop-sync.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-8afcdc884631134be10e",
+      "kind": "workflow",
+      "label": ".github/workflows/validate-patterns.yml",
+      "path": ".github/workflows/validate-patterns.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-2e0f70e53e2f799549ee",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-changelog-drafter.yml",
+      "path": ".github/workflows/zj-loop-changelog-drafter.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-978c7a01f6d77ce45c78",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-ci-sweeper.yml",
+      "path": ".github/workflows/zj-loop-ci-sweeper.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-b104ce71f1f6ad38d88c",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-daily-triage.yml",
+      "path": ".github/workflows/zj-loop-daily-triage.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-26c405af06448a2aadcd",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-dependency-sweeper.yml",
+      "path": ".github/workflows/zj-loop-dependency-sweeper.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-5db5fb1119a8eb14745f",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-issue-triage.yml",
+      "path": ".github/workflows/zj-loop-issue-triage.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-e14f55b240fa35c5bb39",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-post-merge-cleanup.yml",
+      "path": ".github/workflows/zj-loop-post-merge-cleanup.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-7e226a0320a78798efb2",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-pr-steward.yml",
+      "path": ".github/workflows/zj-loop-pr-steward.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-26ed45276bf0fc5cae7e",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-roadmap-activation.yml",
+      "path": ".github/workflows/zj-loop-roadmap-activation.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a4aa70c277f2c141f403",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-smoke.yml",
+      "path": ".github/workflows/zj-loop-smoke.yml",
+      "reason": "recognized-workflow-surface"
+    }
+  ]
+}

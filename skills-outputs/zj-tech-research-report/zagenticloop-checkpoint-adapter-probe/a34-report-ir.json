@@ -1,0 +1,270 @@
+{
+  "schema": "zj-research-report-ir/v1",
+  "family": "technical-c4/v1",
+  "title": "LangGraph checkpoint/resume adapter probe for ZAgenticLoop",
+  "summary": "The second authenticated fresh research pass supports LangGraph's checkpointer storage contract as a narrow, testable capability, but does not establish complete interrupt/resume identity semantics, a native TypeScript/Node.js seam, or authority over ZAgenticLoop execution. Keep the native core and run one removable adapter probe against the native checkpoint fixture; any authority bypass, identity drift, digest drift, or failed removal is a hard stop.",
+  "ledgerFingerprint": "c012ac5ea04d673fb1e7c7f6f317c62dc822d34727f78ef39889c61f5d544250",
+  "concepts": [
+    {
+      "key": "native-checkpoint-oracle",
+      "value": "ZAgenticLoop 的 native checkpoint fixture 与 resume oracle 是 conformance 事实源，固定 execution identity、checkpoint metadata、state digest、duplicate、Evidence、verification、Human acceptance 与 authority。"
+    },
+    {
+      "key": "checkpointer-storage-contract",
+      "value": "LangGraph 的 BaseCheckpointSaver conformance surface 关注 blob round-trip、metadata preservation、namespace isolation、incremental updates 等存储语义。"
+    },
+    {
+      "key": "provider-neutral-adapter",
+      "value": "外部 checkpointer 只通过 envelope 进入 native core，不能创建第二 execution authority 或改写 native lifecycle facts。"
+    },
+    {
+      "key": "evidence-gap",
+      "value": "编译器 mechanical match 不等于语义闭合；thread/interrupt resume identity、Node/TS seam、security/approval ownership 仍需单独验证。"
+    },
+    {
+      "key": "experience-version",
+      "value": "当前只验证一个可丢弃的 durable-state/checkpoint vertical slice，不承担 whole-framework adoption 或 production runtime commitment。"
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A34 checkpoint adapter decision landscape",
+      "kind": "landscape",
+      "mermaid": "flowchart LR\n  H[Human / maintainer] --> Z[ZAgenticLoop native core]\n  Z --> O[Native checkpoint fixture + resume oracle]\n  Z --> E[Evidence + verification + Human acceptance]\n  Z -. provider-neutral adapter .-> L[LangGraph checkpointer]\n  L -. storage contract only .-> O\n  L -. must not own .-> E\n  U[Unknown: thread/interrupt + Node/TS seam] -. validation gate .-> L"
+    },
+    {
+      "title": "Probe flow and removal boundary",
+      "kind": "container",
+      "mermaid": "flowchart TB\n  F[Native fixture] --> A[Adapter envelope]\n  A --> C[Checkpoint storage / namespace / metadata]\n  C --> R[Resume observation]\n  R --> V[Native oracle + Evidence verification]\n  V --> HA[Human acceptance boundary]\n  HA --> N[Native lifecycle closeout]\n  A -. mismatch, bypass, or drift .-> S[Hard stop / defer]\n  S --> X[Remove adapter]\n  X --> F"
+    }
+  ],
+  "candidates": [
+    {
+      "repository": {
+        "owner": "langchain-ai",
+        "name": "langgraph"
+      },
+      "stars": 40282,
+      "topicMatch": 4,
+      "evidenceIds": [
+        "062b826405b696d0a9fa4f64",
+        "6ee57429e8b6891fcd4fd1c6",
+        "7146173f86f924c4895d1114",
+        "e0458f396bb78f8b06a9f3fd",
+        "28fbdbbeb69b0dd1ca4882e2"
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "title": "langchain-ai/langgraph / checkpointer storage capability",
+      "summary": "Fresh evidence supports a separately testable BaseCheckpointSaver storage contract and a Postgres persistence implementation for durable workflows. The evidence is sufficient for a bounded storage adapter probe, not for whole-framework or native Node.js adoption.",
+      "claimIds": [
+        "checkpoint-contract",
+        "durable-storage",
+        "runtime-gap",
+        "resume-gap"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "checkpoint-contract",
+      "text": "LangGraph's first-party checkpoint conformance suite validates a BaseCheckpointSaver storage contract covering blob round-trips, metadata preservation, namespace isolation, and incremental channel updates.",
+      "critical": true,
+      "evidenceIds": [
+        "062b826405b696d0a9fa4f64"
+      ]
+    },
+    {
+      "id": "durable-storage",
+      "text": "The first-party Postgres checkpointer is documented as persistence for durable, long-running workflows and agents, with Psycopg 3 as part of its installation boundary.",
+      "critical": true,
+      "evidenceIds": [
+        "7146173f86f924c4895d1114"
+      ]
+    },
+    {
+      "id": "conformance-isolation",
+      "text": "The conformance package is a separately versioned storage test surface, so it can be treated as a candidate adapter seam rather than evidence that the entire framework must become the host product authority.",
+      "critical": true,
+      "evidenceIds": [
+        "6ee57429e8b6891fcd4fd1c6",
+        "28fbdbbeb69b0dd1ca4882e2"
+      ]
+    },
+    {
+      "id": "runtime-gap",
+      "text": "The fresh evidence points to a PyPI/API and Psycopg/Python runtime boundary; it does not establish a native TypeScript/Node.js checkpointer seam for the ZAgenticLoop host.",
+      "critical": true,
+      "evidenceIds": [
+        "e0458f396bb78f8b06a9f3fd",
+        "7146173f86f924c4895d1114"
+      ]
+    },
+    {
+      "id": "resume-gap",
+      "text": "The current fresh excerpts establish durable storage but do not directly establish thread_id, interrupt, Command-resume identity, or duplicate-delivery behavior; these remain unverified before the adapter can continue.",
+      "critical": true,
+      "evidenceIds": [
+        "7146173f86f924c4895d1114",
+        "062b826405b696d0a9fa4f64"
+      ]
+    },
+    {
+      "id": "native-oracle",
+      "text": "The A34 Architecture Study of the pinned ZAgenticLoop working tree shows that the native checkpoint fixture binds execution identity, state digest, duplicate delivery, Evidence, verification, Human acceptance, and native-core authority; this is the host-side conformance oracle, not a LangGraph capability claim.",
+      "critical": false,
+      "evidenceIds": []
+    },
+    {
+      "id": "authority-boundary",
+      "text": "A checkpointer storage contract does not establish authority over ZAgenticLoop approvals, credentials, sandbox policy, Evidence provenance, Human acceptance, or lifecycle closeout; those responsibilities remain native and are tested as hard-stop boundaries.",
+      "critical": false,
+      "evidenceIds": [
+        "062b826405b696d0a9fa4f64"
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "native-vs-storage-adapter",
+      "text": "The native fixture defines the complete semantic oracle, while LangGraph evidence defines a narrower storage contract. The adapter is acceptable only when the external checkpoint maps back to the native execution identity, metadata, digest, and duplicate rules.",
+      "claimIds": [
+        "checkpoint-contract",
+        "native-oracle",
+        "conformance-isolation"
+      ]
+    },
+    {
+      "id": "durability-vs-resume-semantics",
+      "text": "Durable Postgres-backed storage is useful evidence for persistence, but durable storage is not the same as proven interrupt/resume identity, duplicate delivery, or recovery semantics. The latter must be tested in the probe.",
+      "claimIds": [
+        "durable-storage",
+        "resume-gap"
+      ]
+    },
+    {
+      "id": "host-runtime-fit",
+      "text": "The Python/PyPI/Psycopg boundary may require a process or service adapter in a TypeScript/Node.js host. Until the runtime seam and ownership are measured, this is an unverified integration cost rather than a reason to adopt the framework core.",
+      "claimIds": [
+        "runtime-gap",
+        "conformance-isolation"
+      ]
+    },
+    {
+      "id": "authority-and-exit",
+      "text": "Keeping execution, Evidence, verification, Human acceptance, security, and lifecycle native makes the external capability removable. Any adapter path that duplicates those facts creates a second authority and must stop.",
+      "claimIds": [
+        "native-oracle",
+        "authority-boundary",
+        "runtime-gap"
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "keep-native-core",
+      "text": "Keep ZAgenticLoop's native Graph/OPN core and do not adopt LangGraph as the execution or lifecycle authority. Use LangGraph only as a candidate checkpointer capability behind a provider-neutral adapter.",
+      "comparisonIds": [
+        "native-vs-storage-adapter",
+        "authority-and-exit"
+      ]
+    },
+    {
+      "id": "define-envelope",
+      "text": "Define the adapter envelope around source execution/task/attempt, source revision, checkpoint namespace and id, artifact reference, state digest, and native execution identity. Reject any checkpoint that cannot reconstruct or verify those bindings.",
+      "comparisonIds": [
+        "native-vs-storage-adapter"
+      ]
+    },
+    {
+      "id": "run-resume-probe",
+      "text": "Run one isolated experience-version probe covering checkpoint write/read, namespace, metadata, process restart, interrupt/resume, duplicate delivery, retry, and state digest. The current thread/interrupt behavior is unverified and must be closed with primary evidence or runtime tests before a continue decision.",
+      "comparisonIds": [
+        "durability-vs-resume-semantics"
+      ]
+    },
+    {
+      "id": "gate-runtime",
+      "text": "Treat Node/TypeScript integration, Python/Psycopg process ownership, version skew, credentials, sandbox, and rollback as explicit validation gates. Do not add a runtime dependency until the adapter owner and failure recovery are bounded.",
+      "comparisonIds": [
+        "host-runtime-fit"
+      ]
+    },
+    {
+      "id": "hard-stop-authority",
+      "text": "Hard-stop on authority bypass, changed execution identity, second execution authority, Evidence or verification digest drift, Human acceptance bypass, side effects before acceptance, or any native-oracle failure.",
+      "comparisonIds": [
+        "authority-and-exit",
+        "native-vs-storage-adapter"
+      ]
+    },
+    {
+      "id": "remove-and-close",
+      "text": "After the probe, remove the adapter and rerun the native fixture. Continue only if the native path remains unchanged and all critical scenarios pass; otherwise defer or stop. The unverified Node/TS seam and resume semantics must remain visible in the closeout.",
+      "comparisonIds": [
+        "authority-and-exit",
+        "durability-vs-resume-semantics"
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "key": "checkpoint-conformance-pass-rate",
+      "definition": "Native fixture scenarios that the external checkpoint adapter reproduces without semantic drift",
+      "unit": "critical scenario pass rate",
+      "method": "Run write/read, metadata, namespace, incremental update, resume, duplicate, retry, and digest cases against native and adapter paths",
+      "condition": "Any identity, authority, digest, or acceptance bypass is a hard failure",
+      "expected": "100% of critical scenarios"
+    },
+    {
+      "key": "resume-identity-preservation",
+      "definition": "Resumed work items that retain the native execution id, task id, attempt, agent id, checkpoint id, and state digest",
+      "unit": "percentage",
+      "method": "Inject restart, interrupt, retry, and duplicate delivery, then compare the resume observation with the native oracle",
+      "condition": "No second execution authority may be created",
+      "expected": "100%"
+    },
+    {
+      "key": "namespace-isolation",
+      "definition": "Checkpoint reads that cannot cross the native task/network/namespace boundary",
+      "unit": "negative-case pass rate",
+      "method": "Attempt cross-task, cross-network, stale-revision, and wrong-agent reads",
+      "condition": "Every unauthorized read is rejected and auditable",
+      "expected": "100% rejection of invalid scope"
+    },
+    {
+      "key": "evidence-digest-integrity",
+      "definition": "Resumed Evidence and verification bindings that retain the expected digest and execution identity",
+      "unit": "percentage",
+      "method": "Tamper with checkpoint state, artifact refs, Evidence digests, verification digests, and review handoff refs",
+      "condition": "Any drift blocks the oracle and prevents side effects",
+      "expected": "100% detection; 0 silent drift"
+    },
+    {
+      "key": "runtime-ownership-boundedness",
+      "definition": "New runtime, process, package, upgrade, credential, and incident responsibilities introduced by the adapter",
+      "unit": "owned obligations and components",
+      "method": "Inventory Python/Psycopg or Node bridge processes, version-skew cases, deploy/rollback steps, and owners",
+      "condition": "Unowned or unbounded obligations block continuation",
+      "expected": "One removable adapter with explicit owner and rollback"
+    },
+    {
+      "key": "unknown-closure",
+      "definition": "Unverified resume, interrupt, Node/TS, security, and approval criteria closed by primary evidence or reproducible probe results",
+      "unit": "criteria closure rate",
+      "method": "Track each criterion from the A34 evidence gap list to a pinned source or test artifact",
+      "condition": "Unknown is not rewritten as absent; no framework-core decision before closure",
+      "expected": "100% before any durable dependency decision"
+    },
+    {
+      "key": "native-removal-pass-rate",
+      "definition": "Native fixture and resume oracle scenarios that still pass after deleting the external adapter",
+      "unit": "scenario pass rate",
+      "method": "Remove adapter package/process/config and rerun the native build and conformance suite",
+      "condition": "Native semantic owner must not require the external framework",
+      "expected": "100% native path remains runnable"
+    }
+  ]
+}

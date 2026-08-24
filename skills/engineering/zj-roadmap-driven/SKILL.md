@@ -1,7 +1,7 @@
 ---
 name: zj-roadmap-driven
 title: "zj-roadmap-driven"
-description: "路线图驱动开发——以地图导航形式，帮助 Agent 正确理解全貌，始终与 Human 保持地图颗粒度对齐。双模式载体（本地 JSON 自包含 / 消费 tracker 规划路线），设计为 zj-wayfinder 的组合技能对（plan→track），zj-to-tickets 为缝上转换器"
+description: "路线图驱动开发与验收——以树形 roadmap 和决策记录帮助 Agent 与 Human 保持共享地图；在节点执行前区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。支持本地 JSON 与 roadmap bundle，并与 zj-wayfinder、zj-to-tickets 配合。"
 triggers:
   - 路线图驱动
   - roadmap driven
@@ -22,7 +22,7 @@ triggers:
 ## 工作流
 
 ```
-Human 提方向 → Agent 建 roadmap JSON → Agent 渲染轻量 section 到 md
+Human 提方向 → Scope gate → Agent 建/读 roadmap → Agent 渲染轻量 section 到 md
     ↓
 Agent 每做一个决策 → 调用 `decide` 写入节点 → 调用 `render` 更新 md
     ↓
@@ -34,6 +34,22 @@ Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
 Agent 需要选择载体 → 调 `recommend-storage`（只读建议，不自动迁移）
 ```
+
+## Scope gate — before any node write or project edit
+
+先判断当前 roadmap 的角色，再把节点置为 `in_progress` 或修改项目文件：
+
+- **Product execution**：Human 明确要求实现、交付或发布目标项目；节点执行可以在项目规则允许的范围内修改目标项目。
+- **Acceptance/evaluation**：Human 将 roadmap 说成 legacy、probe、test、技能验收，或明确项目不继续完成/发布；节点是验证技能的场景。可以按请求更新 roadmap 元数据，但目标项目代码、依赖和产品文档保持只读，除非另有明确授权。
+- **Unclear/mixed**：在任何写操作前只问一个范围问题，不靠节点 label 猜授权。
+
+`开始 1-3-1` 只表示操作该节点；只有完成 scope gate 后，才决定它是否包含目标项目实现。Agent 在 commentary 中声明分类，并把分类对应的 artifact 作为完成标准。
+
+Acceptance/evaluation 路线按以下顺序运行：
+
+1. 明确被验收的 artifact（skill、CLI、rendered view 或临时 fixture）。
+2. 尽量在隔离/临时 fixture 上执行命令，保留可复核输出。
+3. 将 roadmap 试验结果与目标项目完成度分开报告；probe 通过不等于项目已实现或可发布。
 
 **关键规则：**
 - **Agent 每次完成实质工作后，必须 `render` 更新 md 文件。** 这是 Human 看到进度的唯一窗口。

@@ -1,0 +1,384 @@
+{
+  "schema": "zj-repository-map-targets/v1",
+  "snapshotId": "map-107165ed1ab7a867791fc300",
+  "targets": [
+    {
+      "id": "target-b200fcb6f368689072d8",
+      "kind": "package",
+      "label": "zagenticloop",
+      "path": "package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-ad557f1740cb7c1e33d9",
+      "kind": "package",
+      "label": "@jununfly/zj-goal-audit",
+      "path": "tools/zj-goal-audit/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-c9a2fe4f6939566f2d96",
+      "kind": "package",
+      "label": "fixture",
+      "path": "tools/zj-goal-audit/test/fixtures/good-goal-project/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-d328d1ef18f9975102ba",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-audit",
+      "path": "tools/zj-loop-audit/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-aad86af06d264269aba6",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-core",
+      "path": "tools/zj-loop-core/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-2fec2b8e14592c066ba7",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-cost",
+      "path": "tools/zj-loop-cost/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-e9ca1db6046c0d96a81e",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-github-infra",
+      "path": "tools/zj-loop-github-infra/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-5be8a7dc1e1d89874b04",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-gitlab-infra",
+      "path": "tools/zj-loop-gitlab-infra/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-dece2eae4729f9e1a1e7",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-init",
+      "path": "tools/zj-loop-init/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-13e3041755b15561d908",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-mcp-server",
+      "path": "tools/zj-loop-mcp-server/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-cfc5a046c9bf050a98e3",
+      "kind": "package",
+      "label": "@jununfly/zj-loop-sync",
+      "path": "tools/zj-loop-sync/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-094bf975e4315babf41f",
+      "kind": "package",
+      "label": "zj-loop-dependency-fixture",
+      "path": "zj-loop/dogfood/dependency-fixture/package.json",
+      "reason": "node package manifest"
+    },
+    {
+      "id": "target-812e14b5934e8fe234ef",
+      "kind": "root",
+      "label": "Repository root",
+      "path": ".",
+      "reason": "map orientation"
+    },
+    {
+      "id": "target-a8d2d8ca2d7d21e95524",
+      "kind": "top-level",
+      "label": ".codex",
+      "path": ".codex",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-e6bf1c55589d43ee5132",
+      "kind": "top-level",
+      "label": ".github",
+      "path": ".github",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-b82127a8e65902202657",
+      "kind": "top-level",
+      "label": ".npm-cache-release-validation",
+      "path": ".npm-cache-release-validation",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-fa5fcd36c64ec06c853d",
+      "kind": "top-level",
+      "label": ".zcodegraph",
+      "path": ".zcodegraph",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-5a2b4d08e19fff033ec4",
+      "kind": "top-level",
+      "label": "docs",
+      "path": "docs",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-9da04769a802643e3ab9",
+      "kind": "top-level",
+      "label": "examples",
+      "path": "examples",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-0df30d8b7e18542e204f",
+      "kind": "top-level",
+      "label": "patterns",
+      "path": "patterns",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-e45f0dbef6284e90aee7",
+      "kind": "top-level",
+      "label": "resources",
+      "path": "resources",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-41c457cff1a288c79af6",
+      "kind": "top-level",
+      "label": "scripts",
+      "path": "scripts",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-6b7c7a4769bd7cb8eb08",
+      "kind": "top-level",
+      "label": "skills",
+      "path": "skills",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-48de2c2bbdffe2d25abe",
+      "kind": "top-level",
+      "label": "src",
+      "path": "src",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-f40d9f76d016162acbd9",
+      "kind": "top-level",
+      "label": "starters",
+      "path": "starters",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-b30067b89398599a0364",
+      "kind": "top-level",
+      "label": "stories",
+      "path": "stories",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-2d8566133855decd7e58",
+      "kind": "top-level",
+      "label": "templates",
+      "path": "templates",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-537bfca2463948912ba9",
+      "kind": "top-level",
+      "label": "tools",
+      "path": "tools",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-2f1289888a2f30de4d64",
+      "kind": "top-level",
+      "label": "zj-loop",
+      "path": "zj-loop",
+      "reason": "top-level structure"
+    },
+    {
+      "id": "target-902216cc5451afb6dc3f",
+      "kind": "workflow",
+      "label": ".github/workflows/audit.yml",
+      "path": ".github/workflows/audit.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-d39dd30c9271ec6b550e",
+      "kind": "workflow",
+      "label": ".github/workflows/changelog-drafter.yml",
+      "path": ".github/workflows/changelog-drafter.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-451aa0a32c69ef5dc62c",
+      "kind": "workflow",
+      "label": ".github/workflows/ci-sweeper.yml",
+      "path": ".github/workflows/ci-sweeper.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-c8e2cba4c5e6ab734bbd",
+      "kind": "workflow",
+      "label": ".github/workflows/daily-triage.yml",
+      "path": ".github/workflows/daily-triage.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-5e2d8313cec186ade3b4",
+      "kind": "workflow",
+      "label": ".github/workflows/github-infra-dogfood.yml",
+      "path": ".github/workflows/github-infra-dogfood.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-4223837d2c45d4e19f75",
+      "kind": "workflow",
+      "label": ".github/workflows/post-merge-roadmap-closeout.yml",
+      "path": ".github/workflows/post-merge-roadmap-closeout.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a5598578797d67f2aed7",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-goal-audit.yml",
+      "path": ".github/workflows/release-zj-goal-audit.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-8c09843453709c5c85eb",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-audit.yml",
+      "path": ".github/workflows/release-zj-loop-audit.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-5400373b9f0040914897",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-core.yml",
+      "path": ".github/workflows/release-zj-loop-core.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a599bd0074bd92fdcb53",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-cost.yml",
+      "path": ".github/workflows/release-zj-loop-cost.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a7db90bfcae64a202ca2",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-github-infra.yml",
+      "path": ".github/workflows/release-zj-loop-github-infra.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-81b30200accc5baeaf2e",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-gitlab-infra.yml",
+      "path": ".github/workflows/release-zj-loop-gitlab-infra.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-04813919806a733ba04f",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-init.yml",
+      "path": ".github/workflows/release-zj-loop-init.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-4e9377db3ee7d5910949",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-mcp-server.yml",
+      "path": ".github/workflows/release-zj-loop-mcp-server.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-6227583bdd064f0607b9",
+      "kind": "workflow",
+      "label": ".github/workflows/release-zj-loop-sync.yml",
+      "path": ".github/workflows/release-zj-loop-sync.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-8afcdc884631134be10e",
+      "kind": "workflow",
+      "label": ".github/workflows/validate-patterns.yml",
+      "path": ".github/workflows/validate-patterns.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-2e0f70e53e2f799549ee",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-changelog-drafter.yml",
+      "path": ".github/workflows/zj-loop-changelog-drafter.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-978c7a01f6d77ce45c78",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-ci-sweeper.yml",
+      "path": ".github/workflows/zj-loop-ci-sweeper.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-b104ce71f1f6ad38d88c",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-daily-triage.yml",
+      "path": ".github/workflows/zj-loop-daily-triage.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-26c405af06448a2aadcd",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-dependency-sweeper.yml",
+      "path": ".github/workflows/zj-loop-dependency-sweeper.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-5db5fb1119a8eb14745f",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-issue-triage.yml",
+      "path": ".github/workflows/zj-loop-issue-triage.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-e14f55b240fa35c5bb39",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-post-merge-cleanup.yml",
+      "path": ".github/workflows/zj-loop-post-merge-cleanup.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-7e226a0320a78798efb2",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-pr-steward.yml",
+      "path": ".github/workflows/zj-loop-pr-steward.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-26ed45276bf0fc5cae7e",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-roadmap-activation.yml",
+      "path": ".github/workflows/zj-loop-roadmap-activation.yml",
+      "reason": "recognized-workflow-surface"
+    },
+    {
+      "id": "target-a4aa70c277f2c141f403",
+      "kind": "workflow",
+      "label": ".github/workflows/zj-loop-smoke.yml",
+      "path": ".github/workflows/zj-loop-smoke.yml",
+      "reason": "recognized-workflow-surface"
+    }
+  ]
+}

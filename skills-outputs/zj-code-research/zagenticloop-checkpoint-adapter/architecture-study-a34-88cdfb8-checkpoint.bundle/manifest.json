@@ -1,0 +1,103 @@
+{
+  "immutable": true,
+  "kind": "architecture-study",
+  "mapBinding": {
+    "manifestSha256": "7784b2657395d998acc6e9a223195f001e6b474b75e8e73d5a0dd149cfbb53b7",
+    "snapshotId": "map-107165ed1ab7a867791fc300",
+    "targetIds": [
+      "target-143b6000951140a34ec1",
+      "target-aad86af06d264269aba6",
+      "target-2182816cec0b0d9f4a5d",
+      "target-385971d8fad8f7631562",
+      "target-ba69b917bb552a3f1e3c",
+      "target-eda6c5cb7e35a1da3636",
+      "target-f6e6a9b14d38035a43d4",
+      "target-874613c83784f19dfa9c",
+      "target-d60e977dfedcff25745d"
+    ],
+    "used": true
+  },
+  "recordKinds": [
+    "decision",
+    "inferred",
+    "observed",
+    "unknown"
+  ],
+  "schema": "zj-architecture-study-manifest/v1",
+  "scope": {
+    "path": "facts/scope.json",
+    "targetCount": 9
+  },
+  "shards": [
+    {
+      "bytes": 97076,
+      "path": "facts/claims.jsonl",
+      "sha256": "cd10ee72cd671a02430464ec04f419b103e7c1bc0840c63a25ad1a247be92afa"
+    },
+    {
+      "bytes": 8080,
+      "path": "facts/diagrams.jsonl",
+      "sha256": "389a5216775fcc095b5ac9af0ca78c81b620d558118d6484c667081d02f8b227"
+    },
+    {
+      "bytes": 219896,
+      "path": "facts/evidence.jsonl",
+      "sha256": "05a9e21d23b596118d4eb17be0e6a957c2ccf8d29773e6bdf003db07ad165062"
+    },
+    {
+      "bytes": 3585,
+      "path": "facts/flows.jsonl",
+      "sha256": "0659d21a2dd51489bd344715daa82402793bcf2c918b201156a63deef52dd15c"
+    },
+    {
+      "bytes": 77588,
+      "path": "facts/relationships.jsonl",
+      "sha256": "c4ab70dde90ed126fcfe124ca40bfbc6e419410a8c7b33278d6b013aa2eba5bf"
+    },
+    {
+      "bytes": 1189,
+      "path": "facts/risks.jsonl",
+      "sha256": "fa75e139f87a502aeae5085172091e7f6592c48ee6204b5305dcc1d2e2fbbe6d"
+    },
+    {
+      "bytes": 6648,
+      "path": "facts/scope.json",
+      "sha256": "409dc281de31dd740ea9060130aa5a2af7f4c320f1a272338402991c33607e92"
+    },
+    {
+      "bytes": 307,
+      "path": "facts/unknowns.jsonl",
+      "sha256": "630ab557c94c8f145ac391bd94c7a200e73ad284d6663b9f8086f85a1d44e59a"
+    },
+    {
+      "bytes": 14709,
+      "path": "navigation/follow-up-targets.json",
+      "sha256": "7856728408c0a76847de3a3ceda873d9485f84d749b6b40044b85bea513ca9f5"
+    }
+  ],
+  "snapshotId": "study-55b124aa9d5fcfa0e67cc114",
+  "source": {
+    "commit": "88cdfb86218022d98119f05e940cfb6068b25959",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 33,
+    "workingTreeFingerprint": "164e5f90a184805cf6b069482ee129e16079f2ea191c4782455b7d9535ec2ad7"
+  },
+  "views": {
+    "artifacts": [
+      {
+        "bytes": 30565,
+        "path": "views/study.html",
+        "sha256": "3c42e6e4549ca007cb1fe97cbabbc798b6d98cbc99799712a546773dacfcc847"
+      },
+      {
+        "bytes": 28411,
+        "path": "views/study.md",
+        "sha256": "90c5a23b14c91cffd1df96fe9c5b72243cce79b39bec7a925e1a39c9883c5936"
+      }
+    ],
+    "defaultLimit": 100
+  }
+}

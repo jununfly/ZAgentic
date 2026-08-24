@@ -1,0 +1,82 @@
+{
+  "immutable": true,
+  "kind": "repository-map",
+  "schema": "zj-repository-map-manifest/v1",
+  "scope": {
+    "exclusions": [
+      ".codegraph",
+      ".git",
+      ".tmp",
+      "dist",
+      "node_modules",
+      "tools/zj-goal-audit/node_modules",
+      "tools/zj-loop-audit/node_modules",
+      "tools/zj-loop-core/node_modules",
+      "tools/zj-loop-cost/node_modules",
+      "tools/zj-loop-github-infra/node_modules",
+      "tools/zj-loop-gitlab-infra/node_modules",
+      "tools/zj-loop-init/node_modules",
+      "tools/zj-loop-mcp-server/node_modules",
+      "tools/zj-loop-sync/node_modules",
+      "zj-loop/dogfood/dependency-fixture/node_modules"
+    ],
+    "root": "."
+  },
+  "shards": [
+    {
+      "bytes": 0,
+      "path": "facts/integrations.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2337,
+      "path": "facts/packages.jsonl",
+      "sha256": "4ab3466dfbe1fe60abb4ee4fbeccdaab8fcf763fcf1b551dd9b0239bd87adfab"
+    },
+    {
+      "bytes": 2307,
+      "path": "facts/summary.json",
+      "sha256": "071bee3d79061146bc28c18f8acb48c962a6c3c47f26e067594f9c56c520c5c2"
+    },
+    {
+      "bytes": 603089,
+      "path": "facts/tree.jsonl",
+      "sha256": "878774cf7f04e8ce729be9c3f02df323e8fdcaae9cc061dd05fa370f26534c12"
+    },
+    {
+      "bytes": 3929,
+      "path": "facts/workflows.jsonl",
+      "sha256": "54dc44e7494579bd8d038d94866c16930df11b57d7d577aa4ca473c28d427177"
+    },
+    {
+      "bytes": 11897,
+      "path": "navigation/targets.json",
+      "sha256": "1b797e266831e1bce37aa48fd0bb458f16ff0bbe85278bf7934e1075ef2627d5"
+    }
+  ],
+  "snapshotId": "map-107165ed1ab7a867791fc300",
+  "source": {
+    "commit": "88cdfb86218022d98119f05e940cfb6068b25959",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 33,
+    "workingTreeFingerprint": "164e5f90a184805cf6b069482ee129e16079f2ea191c4782455b7d9535ec2ad7"
+  },
+  "views": {
+    "artifacts": [
+      {
+        "bytes": 6986,
+        "path": "views/map.html",
+        "sha256": "14e46f59e0a0022739a39f98e3207b7d1964f2bd82fa03653de057d3db72f394"
+      },
+      {
+        "bytes": 6444,
+        "path": "views/map.md",
+        "sha256": "b3f2c04905136eebf792493ace8aae0a82d25e33e60c7c315eb5627e27e2b7d3"
+      }
+    ],
+    "defaultTargetLimit": 100
+  }
+}

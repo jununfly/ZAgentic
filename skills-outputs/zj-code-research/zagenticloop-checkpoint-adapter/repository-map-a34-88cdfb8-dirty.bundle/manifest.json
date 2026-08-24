@@ -1,0 +1,68 @@
+{
+  "immutable": true,
+  "kind": "repository-map",
+  "schema": "zj-repository-map-manifest/v1",
+  "scope": {
+    "exclusions": [
+      ".git"
+    ],
+    "root": "."
+  },
+  "shards": [
+    {
+      "bytes": 1073,
+      "path": "facts/integrations.jsonl",
+      "sha256": "4c13449910c63940e9c9368b5f1624782b810fd235bb5c67461cfd3c254148a8"
+    },
+    {
+      "bytes": 56013,
+      "path": "facts/packages.jsonl",
+      "sha256": "988a28df47dd50b12d16981216d49eb6c38a97f407345cd65429f73c55afd5c0"
+    },
+    {
+      "bytes": 2149,
+      "path": "facts/summary.json",
+      "sha256": "44c041258fbc67df7fa7e9736a50b0ed2dabb58e997d6a33346bdd23044c49d9"
+    },
+    {
+      "bytes": 3911456,
+      "path": "facts/tree.jsonl",
+      "sha256": "27a09ebe7399f60abf18a0215520d291fbd28918c5f82562e6795b93d0862930"
+    },
+    {
+      "bytes": 3929,
+      "path": "facts/workflows.jsonl",
+      "sha256": "54dc44e7494579bd8d038d94866c16930df11b57d7d577aa4ca473c28d427177"
+    },
+    {
+      "bytes": 77064,
+      "path": "navigation/targets.json",
+      "sha256": "15bc0853ca4c9e0c03eb053557e8f125f09fac7ae3e370e8ccafa50514942867"
+    }
+  ],
+  "snapshotId": "map-189e97a156af88a3ef55e24b",
+  "source": {
+    "commit": "88cdfb86218022d98119f05e940cfb6068b25959",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 33,
+    "workingTreeFingerprint": "16abb746d43b9832a39ef18af26e2796a0e08ff2351e82a5cc3bfcf58030acab"
+  },
+  "views": {
+    "artifacts": [
+      {
+        "bytes": 13948,
+        "path": "views/map.html",
+        "sha256": "8206c1115631ab9f149d3accac1f5edad85f68ab87ec9233d7b3cc7de156b4c6"
+      },
+      {
+        "bytes": 13071,
+        "path": "views/map.md",
+        "sha256": "e81cd65695b9ba7304efea99b3f575343bcfa86ed0985a87f0975325f8ccd340"
+      }
+    ],
+    "defaultTargetLimit": 100
+  }
+}

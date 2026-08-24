@@ -67,6 +67,7 @@ leave the remaining implementation tickets bounded and verifiable.
 - [Completed authenticated live collection acceptance](#a31--authenticated-live-collection-acceptance-t) — A real authenticated fresh collection completed against the fixed three-repository brief; the live path also exposed and fixed the standard-library timeout invocation bug.
 - [Completed fresh-ledger technical report republish](#a32--fresh-ledger-technical-report-republish-t) — The A31 sealed ledger was rebuilt into a new technical-c4 report and published healthy without the A29 ledger or fingerprint.
 - [Completed roadmap-driven handoff](#a33--roadmap-driven-handoff-for-langgraph-checkpoint-probe-t) — The settled LangGraph checkpoint/resume validation route now has a separate execution roadmap in ZAgenticLoop, with a native-baseline focus and no migration of Wayfinder history.
+- [Completed second real research-combination acceptance](#a34--second-real-research-combination-acceptance-t) — A second `zj-code-research → zj-research → zj-tech-research-report` run passed on a dirty-but-pinned ZAgenticLoop checkpoint slice, with two authenticated fresh ledgers, explicit semantic gaps, and a healthy technical-c4 report.
 
 ## Not yet specified
 
@@ -1131,3 +1132,57 @@ Wayfinder remains the historical decision map; the new roadmap is the sole
 execution tracker for the probe. Existing unrelated `ZAgenticLoop` changes in
 `tools/zj-loop-mcp-server/package-lock.json`, `.tmp/`, and
 `tools/zj-loop-core/.tmp/` were preserved.
+
+## A34 — Second real research combination acceptance [T] ✅
+
+### Question
+
+Can the composed `zj-code-research → zj-research → zj-tech-research-report`
+route complete a second real acceptance on the A33 LangGraph checkpoint/resume
+decision, while keeping a dirty consumer snapshot pinned, collecting fresh
+external evidence, and refusing to overstate mechanically matched gaps?
+
+### Resolution
+
+Completed a second real research-combination run against the current
+`ZAgenticLoop` consumer repository and the explicit `langchain-ai/langgraph`
+repository:
+
+- `zj-code-research` produced and validated Repository Map
+  `map-107165ed1ab7a867791fc300` at commit
+  `88cdfb86218022d98119f05e940cfb6068b25959`, explicitly recording a dirty
+  working tree, 2,340 files, 547 directories, 71,572,479 source bytes, and one
+  unreadable socket path as an unknown. Its map-bound Architecture Study
+  `study-55b124aa9d5fcfa0e67cc114` selected nine checkpoint/graph/runtime
+  targets and passed with 461 line-addressable Evidence records, one unknown,
+  three risks, and unique record IDs.
+- `zj-research` completed two authenticated fresh collections, retaining both
+  status sidecars and sealed ledgers. The first pass recorded 13 files and
+  33,109 source bytes; the discriminating v2 pass is the report source, with
+  fingerprint `c012ac5ea04d673fb1e7c7f6f317c62dc822d34727f78ef39889c61f5d544250`,
+  LangGraph commit `f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f`, 24 files,
+  41,617 source bytes, and five canonical Evidence IDs. Both statuses are
+  `fresh-collection`, authenticated, and non-cache.
+- The v2 evidence supports LangGraph's `BaseCheckpointSaver` storage and
+  conformance seam plus a Postgres persistence boundary. It does not directly
+  establish `thread_id`/interrupt resume identity, a native TypeScript/Node.js
+  checkpointer seam, or host security/approval ownership. These remain explicit
+  unknown follow-ups even though the compiler's `unknownCriteria` is empty.
+- `zj-tech-research-report` published a new `technical-c4/v1` report from the
+  v2 ledger, with five ledger Evidence links, seven claims, four comparisons,
+  six recommendations, and seven metrics. The receipt reports compiler and
+  technical quality gates `healthy: true`, `publishExactlyOnce: true`, and
+  report hash `49ef31bb98927dc89313a010c9228b8a89fc17146fefae72ff2b41bcb9ebbea3`.
+
+The decision is bounded: keep the ZAgenticLoop native Graph/OPN core and use
+LangGraph only for an isolated, removable checkpoint adapter probe. Native
+execution identity, duplicate delivery, Evidence, verification, Human
+acceptance, security, and lifecycle remain the conformance authority; identity
+drift, digest drift, second execution authority, authority bypass, or failed
+adapter removal are hard stops.
+
+Verification passed: repository-map and architecture-study contracts,
+code-research quality assets/map/study gates, research runtime and golden
+contracts, technical report quality gate, compiler publication consistency,
+recursive plugin validation, and `git diff --check`. Existing uncommitted
+changes in `ZAgenticLoop` were not modified.

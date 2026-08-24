@@ -1,0 +1,4948 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "result": {
+    "schema": "zj-verified-evidence-ledger/v1",
+    "compilerVersion": "research/v1",
+    "briefFingerprint": "c012ac5ea04d673fb1e7c7f6f317c62dc822d34727f78ef39889c61f5d544250",
+    "policyVersion": "v1",
+    "observedAt": "2026-08-23T17:15:41.823Z",
+    "repositories": [
+      {
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "revision": {
+          "sha": "f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f",
+          "branch": "main",
+          "url": "https://github.com/langchain-ai/langgraph/commit/f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f"
+        },
+        "tree": [
+          {
+            "path": ".github",
+            "sha": "16ec85acbf3ff3cf9d77bceb22669c1dea9c746c",
+            "type": "tree"
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE",
+            "sha": "939b3f44cf6b55ef20727df9aea3e74c7b77761f",
+            "type": "tree"
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE/bug-report.yml",
+            "sha": "2f45d59cbe20067797049920cb010af26dded9ef",
+            "type": "blob",
+            "size": 4766
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE/config.yml",
+            "sha": "649f8b9fd79ad26bd6befc988a940d2af93da3d9",
+            "type": "blob",
+            "size": 689
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE/privileged.yml",
+            "sha": "db5fecb6e2725d6d0336048227da30c54cc183a0",
+            "type": "blob",
+            "size": 1169
+          },
+          {
+            "path": ".github/PULL_REQUEST_TEMPLATE.md",
+            "sha": "14b12f13e351a1964901d895e60696f8429100de",
+            "type": "blob",
+            "size": 2127
+          },
+          {
+            "path": ".github/THREAT_MODEL.md",
+            "sha": "e257c8f477c8915b9b98c863d7031ea911982c4a",
+            "type": "blob",
+            "size": 58370
+          },
+          {
+            "path": ".github/actions",
+            "sha": "cdc2430ad9c9bd1699dcee11f11e181868d2a9d9",
+            "type": "tree"
+          },
+          {
+            "path": ".github/actions/uv_setup",
+            "sha": "5aab966420173abf0ddebff7f35585424944c50c",
+            "type": "tree"
+          },
+          {
+            "path": ".github/actions/uv_setup/action.yml",
+            "sha": "13741777da57b21216fcfa76d35e098e6e5126e8",
+            "type": "blob",
+            "size": 1088
+          },
+          {
+            "path": ".github/dependabot.yml",
+            "sha": "afffbbf122dfa74c66a9457dd161c4118cec976b",
+            "type": "blob",
+            "size": 3603
+          },
+          {
+            "path": ".github/images",
+            "sha": "306bef5e42bdfc25889e43857ab183ca9c25af50",
+            "type": "tree"
+          },
+          {
+            "path": ".github/images/logo-dark.svg",
+            "sha": "948f973b0d1f01927977bb81fa611a40f8564964",
+            "type": "blob",
+            "size": 4840
+          },
+          {
+            "path": ".github/images/logo-light.svg",
+            "sha": "bbd06e1798c19a481c3a2f90397401604c494c16",
+            "type": "blob",
+            "size": 4817
+          },
+          {
+            "path": ".github/scripts",
+            "sha": "3a862a19fd9e96d18697b26a92352f354fcded1f",
+            "type": "tree"
+          },
+          {
+            "path": ".github/scripts/check_sdk_methods.py",
+            "sha": "48c7429ddd0e1a5960886f505f4dae108bb3858f",
+            "type": "blob",
+            "size": 2550
+          },
+          {
+            "path": ".github/scripts/run_langgraph_cli_test.py",
+            "sha": "e296ba7d58250f8764fd6ee2d484f9ee4b843578",
+            "type": "blob",
+            "size": 6215
+          },
+          {
+            "path": ".github/workflows",
+            "sha": "1c2d4080a5f42bf84f975c6c4117a82afc840cbd",
+            "type": "tree"
+          },
+          {
+            "path": ".github/workflows/_integration_test.yml",
+            "sha": "97b941fd15e8e303386d539c3983db0de73b7835",
+            "type": "blob",
+            "size": 8627
+          },
+          {
+            "path": ".github/workflows/_lint.yml",
+            "sha": "c3b121698b9ad57048e52746bcd5e4df09f9300f",
+            "type": "blob",
+            "size": 2870
+          },
+          {
+            "path": ".github/workflows/_sdk_integration_test.yml",
+            "sha": "6c4068a2ff2d860f617617e9a552b701b15e239b",
+            "type": "blob",
+            "size": 2659
+          },
+          {
+            "path": ".github/workflows/_test.yml",
+            "sha": "5da546297fd171ec5812d58c76932a922e3d7366",
+            "type": "blob",
+            "size": 1862
+          },
+          {
+            "path": ".github/workflows/_test_langgraph.yml",
+            "sha": "84637b072e6dade47048516cec3370ece56e2ba0",
+            "type": "blob",
+            "size": 1831
+          },
+          {
+            "path": ".github/workflows/_test_release.yml",
+            "sha": "e29da52959927bbcde5dd749416462f551ff07a6",
+            "type": "blob",
+            "size": 3515
+          },
+          {
+            "path": ".github/workflows/baseline.yml",
+            "sha": "e34c618caad3f1b77bff1322d7ed469562f89060",
+            "type": "blob",
+            "size": 1033
+          },
+          {
+            "path": ".github/workflows/bench.yml",
+            "sha": "d733b53ba713df91f69722a7b61a74fc4c721ae6",
+            "type": "blob",
+            "size": 2385
+          },
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha": "42627b6d002d6ca2b00b98995804a1b1f203b61c",
+            "type": "blob",
+            "size": 6399
+          },
+          {
+            "path": ".github/workflows/deploy-redirects.yml",
+            "sha": "81475ba2d0a2e49c2b5c8b5deeef6294c5d49d44",
+            "type": "blob",
+            "size": 1229
+          },
+          {
+            "path": ".github/workflows/pr_lint.yml",
+            "sha": "5ea236352034ac421c16e64d2959d02dbdab72d5",
+            "type": "blob",
+            "size": 989
+          },
+          {
+            "path": ".github/workflows/release.yml",
+            "sha": "f3d7bbe763773c512fa2450831850fb31f149d55",
+            "type": "blob",
+            "size": 12223
+          },
+          {
+            "path": ".github/workflows/reopen_on_assignment.yml",
+            "sha": "a27bae145be80510efbe8b50ee03795f29a1a0b1",
+            "type": "blob",
+            "size": 8193
+          },
+          {
+            "path": ".github/workflows/require_issue_link.yml",
+            "sha": "492afdd37e3a3219ce07b43d84c200df0ba784b3",
+            "type": "blob",
+            "size": 22086
+          },
+          {
+            "path": ".github/workflows/tag-external-issues.yml",
+            "sha": "b8044d35af8c49e4b250648ca5b08b2b170db0bc",
+            "type": "blob",
+            "size": 16097
+          },
+          {
+            "path": ".github/workflows/tag-external-prs.yml",
+            "sha": "1e6af158ab5917d0575d63f2288d5fed0f179335",
+            "type": "blob",
+            "size": 7009
+          },
+          {
+            "path": ".github/workflows/uv_lock_ugprade.yml",
+            "sha": "abff218045cec93c3872b6b0e01ee4411e45e29a",
+            "type": "blob",
+            "size": 1297
+          },
+          {
+            "path": ".gitignore",
+            "sha": "7cf97c0d082db44b3604048f06376ae6c79e87da",
+            "type": "blob",
+            "size": 1278
+          },
+          {
+            "path": ".markdownlint.json",
+            "sha": "1da2ca701c0809bdd63b81065b0d2ec248b9300a",
+            "type": "blob",
+            "size": 195
+          },
+          {
+            "path": "AGENTS.md",
+            "sha": "7a8d1dc123639a5db6acd2e09563b7340154d77c",
+            "type": "blob",
+            "size": 1866
+          },
+          {
+            "path": "CLAUDE.md",
+            "sha": "cc4ee1a9a254d47ed182622392e67f437df9b945",
+            "type": "blob",
+            "size": 1863
+          },
+          {
+            "path": "LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "Makefile",
+            "sha": "477e03123df8ef4847a40f183fafbc6acc8eba39",
+            "type": "blob",
+            "size": 1403
+          },
+          {
+            "path": "README.md",
+            "sha": "97c31e9cb4d8fe56be8d768ce3eb5e22400e897e",
+            "type": "blob",
+            "size": 6395
+          },
+          {
+            "path": "docs",
+            "sha": "a1064c628e685e9ebd3eaabc33e5a563816cfe29",
+            "type": "tree"
+          },
+          {
+            "path": "docs/.gitignore",
+            "sha": "57510a2be4e3c97b34624a5d0966b97421692034",
+            "type": "blob",
+            "size": 7
+          },
+          {
+            "path": "docs/generate_redirects.py",
+            "sha": "e8555ebdfce89b9ec97e7fe2a4965c4e5c0d54d6",
+            "type": "blob",
+            "size": 4497
+          },
+          {
+            "path": "docs/llms.txt",
+            "sha": "75017c34f33f9f6ea3a121a784b0954408dcfba8",
+            "type": "blob",
+            "size": 1962
+          },
+          {
+            "path": "docs/redirects.json",
+            "sha": "1510ed38b03c7aa1b41d6c2eb52e79382aac46f1",
+            "type": "blob",
+            "size": 28152
+          },
+          {
+            "path": "examples",
+            "sha": "77d537ba376595e6d40648635aa75e8ec659a73b",
+            "type": "tree"
+          },
+          {
+            "path": "examples/README.md",
+            "sha": "daabd089dd19484e25fba4180153bd6d355e2c53",
+            "type": "blob",
+            "size": 617
+          },
+          {
+            "path": "examples/chatbot-simulation-evaluation",
+            "sha": "3175e8358855f00b958848faefc20330ccc49419",
+            "type": "tree"
+          },
+          {
+            "path": "examples/chatbot-simulation-evaluation/agent-simulation-evaluation.ipynb",
+            "sha": "eddf0570b346515d933f4fde9417832aea311880",
+            "type": "blob",
+            "size": 1104
+          },
+          {
+            "path": "examples/chatbot-simulation-evaluation/langsmith-agent-simulation-evaluation.ipynb",
+            "sha": "9d29ab5a2332fdce3fd0c2d7c1d13e287a912c0c",
+            "type": "blob",
+            "size": 1114
+          },
+          {
+            "path": "examples/chatbot-simulation-evaluation/simulation_utils.py",
+            "sha": "be3b32e8cf65848d171fd8ac71c3ed475a54ea56",
+            "type": "blob",
+            "size": 6486
+          },
+          {
+            "path": "examples/chatbots",
+            "sha": "da810fecb3fb4f66d56276321a113695fe0b804e",
+            "type": "tree"
+          },
+          {
+            "path": "examples/chatbots/information-gather-prompting.ipynb",
+            "sha": "2a9d52aae4b11b534e3539d09133fead05aa448d",
+            "type": "blob",
+            "size": 1084
+          },
+          {
+            "path": "examples/code_assistant",
+            "sha": "83ba1c31e43a4286516dd0c79c27c1c36415439d",
+            "type": "tree"
+          },
+          {
+            "path": "examples/code_assistant/langgraph_code_assistant.ipynb",
+            "sha": "3b0c4c9d9c3dff409d4e76e93c4cf81ee9d03a2a",
+            "type": "blob",
+            "size": 1086
+          },
+          {
+            "path": "examples/code_assistant/langgraph_code_assistant_mistral.ipynb",
+            "sha": "4b5468e260445210a764e1206b6a58fbbce8dde9",
+            "type": "blob",
+            "size": 209058
+          },
+          {
+            "path": "examples/customer-support",
+            "sha": "d2583c68d76ad9afd9ac9ac53177ce2cee17dd66",
+            "type": "tree"
+          },
+          {
+            "path": "examples/customer-support/customer-support.ipynb",
+            "sha": "449e1180d3c5f3ca8d957749f771d8c5966494a3",
+            "type": "blob",
+            "size": 1080
+          },
+          {
+            "path": "examples/delta-channel-dump",
+            "sha": "cf76302969eb61e137eb69d390066793037fb8cd",
+            "type": "tree"
+          },
+          {
+            "path": "examples/delta-channel-dump/README.md",
+            "sha": "f760f085085afb5c4fe65087593ac9cb64ee332f",
+            "type": "blob",
+            "size": 3965
+          },
+          {
+            "path": "examples/delta-channel-dump/dump.py",
+            "sha": "bd23de0b0a4145fe9db0a5220ccbb402a2801200",
+            "type": "blob",
+            "size": 14361
+          },
+          {
+            "path": "examples/extraction",
+            "sha": "8a742f0b55f5e9b7f6f2de5edfcb07a02ed9f5dc",
+            "type": "tree"
+          },
+          {
+            "path": "examples/extraction/retries.ipynb",
+            "sha": "7d70839c5886f9c1b0339ce4bb104e6e379be565",
+            "type": "blob",
+            "size": 1065
+          },
+          {
+            "path": "examples/human_in_the_loop",
+            "sha": "f64801a87d97d6db1ef604f024403b39f73e83c9",
+            "type": "tree"
+          },
+          {
+            "path": "examples/human_in_the_loop/wait-user-input.ipynb",
+            "sha": "cac624b2325aaf3b1109e65ef15b2c260c650b20",
+            "type": "blob",
+            "size": 1078
+          },
+          {
+            "path": "examples/lats",
+            "sha": "406664072a4b5fe21b90085da0d1053fce64a9df",
+            "type": "tree"
+          },
+          {
+            "path": "examples/lats/lats.ipynb",
+            "sha": "e3b7c93ab1b098d90204ddd8777880f7363571a3",
+            "type": "blob",
+            "size": 1056
+          },
+          {
+            "path": "examples/llm-compiler",
+            "sha": "3b4088a8fe2bb4e4d30d099c2e5054b22c3df997",
+            "type": "tree"
+          },
+          {
+            "path": "examples/llm-compiler/LLMCompiler.ipynb",
+            "sha": "d31905ddf491997919252f9e36b09b3e5acb7d59",
+            "type": "blob",
+            "size": 1071
+          },
+          {
+            "path": "examples/multi_agent",
+            "sha": "9395dad185736e4dd88309b1ae7abf5327e3a925",
+            "type": "tree"
+          },
+          {
+            "path": "examples/multi_agent/hierarchical_agent_teams.ipynb",
+            "sha": "f4754a06f772efbd7db10880387aaa9c96e8b215",
+            "type": "blob",
+            "size": 1083
+          },
+          {
+            "path": "examples/multi_agent/multi-agent-collaboration.ipynb",
+            "sha": "3da5c9484e59069eb1f4764110543b5d4001076b",
+            "type": "blob",
+            "size": 1084
+          },
+          {
+            "path": "examples/plan-and-execute",
+            "sha": "1e714ff3c1840b1ef34a4309517b85e3b9d8cdc7",
+            "type": "tree"
+          },
+          {
+            "path": "examples/plan-and-execute/plan-and-execute.ipynb",
+            "sha": "d529446bec25ff2e42e9af77f697c0d152cbf92f",
+            "type": "blob",
+            "size": 1080
+          },
+          {
+            "path": "examples/rag",
+            "sha": "e92b59af094b17dcc41c6cf0fd1922abba9fbeb3",
+            "type": "tree"
+          },
+          {
+            "path": "examples/rag/langgraph_adaptive_rag.ipynb",
+            "sha": "d118d5884c43521da25df00833e44dab0a6d2692",
+            "type": "blob",
+            "size": 216515
+          },
+          {
+            "path": "examples/rag/langgraph_adaptive_rag_cohere.ipynb",
+            "sha": "e3732931b2aeba7ef9241a7692aa5e347a6dfd99",
+            "type": "blob",
+            "size": 199168
+          },
+          {
+            "path": "examples/rag/langgraph_adaptive_rag_local.ipynb",
+            "sha": "0b289636ba7d72497a6ab7f7da66ccdd6e92a9f8",
+            "type": "blob",
+            "size": 180934
+          },
+          {
+            "path": "examples/rag/langgraph_agentic_rag.ipynb",
+            "sha": "268914f5142ab066e2fe08a75c74082dfaf48022",
+            "type": "blob",
+            "size": 181906
+          },
+          {
+            "path": "examples/rag/langgraph_crag.ipynb",
+            "sha": "e039ffa3186bb22fb97aa6c82e5438ee365c8c81",
+            "type": "blob",
+            "size": 152443
+          },
+          {
+            "path": "examples/rag/langgraph_crag_local.ipynb",
+            "sha": "9ace47871f1e7ebb13e200bdfd5a8b8407be2bfb",
+            "type": "blob",
+            "size": 210963
+          },
+          {
+            "path": "examples/rag/langgraph_self_rag.ipynb",
+            "sha": "23751308ce25e9dfe0d1e6e7aa8f10e2e007605f",
+            "type": "blob",
+            "size": 168855
+          },
+          {
+            "path": "examples/rag/langgraph_self_rag_local.ipynb",
+            "sha": "b7b729bdde52c8c302f56962115e5cb4dfb7a0da",
+            "type": "blob",
+            "size": 248431
+          },
+          {
+            "path": "examples/rag/langgraph_self_rag_pinecone_movies.ipynb",
+            "sha": "cb6dd761f471a2dc2f77509e07a749863733cba5",
+            "type": "blob",
+            "size": 164434
+          },
+          {
+            "path": "examples/react-agent-from-scratch.ipynb",
+            "sha": "37e605ceef4e514597478c27e74de5a84965fb79",
+            "type": "blob",
+            "size": 1036
+          },
+          {
+            "path": "examples/react-agent-structured-output.ipynb",
+            "sha": "8a4bd9b7fdeeeb430739fa36811e1c130c2ff640",
+            "type": "blob",
+            "size": 1053
+          },
+          {
+            "path": "examples/reflection",
+            "sha": "3c104d88f570c8c2f621e15d12c55aea4857ac57",
+            "type": "tree"
+          },
+          {
+            "path": "examples/reflection/reflection.ipynb",
+            "sha": "63fea05d0fe6e1ff715a6d3a79503b041c42ff97",
+            "type": "blob",
+            "size": 1068
+          },
+          {
+            "path": "examples/reflexion",
+            "sha": "f47d2d545dc510d93f5f736713fc9d55cca0f036",
+            "type": "tree"
+          },
+          {
+            "path": "examples/reflexion/reflexion.ipynb",
+            "sha": "481395dd92643aed7ab69d39e7548140a949410d",
+            "type": "blob",
+            "size": 1066
+          },
+          {
+            "path": "examples/rewoo",
+            "sha": "42122410360b12526cf33c9fc232bda03761374d",
+            "type": "tree"
+          },
+          {
+            "path": "examples/rewoo/rewoo.ipynb",
+            "sha": "add5406e260d11ed76eb9f3d9b72324ec7458b78",
+            "type": "blob",
+            "size": 1058
+          },
+          {
+            "path": "examples/run-id-langsmith.ipynb",
+            "sha": "19f46a167f7912600a4fb176dd65192f75b715b3",
+            "type": "blob",
+            "size": 1037
+          },
+          {
+            "path": "examples/self-discover",
+            "sha": "c2cb985ddc11ea5fc610b96541c569d3cede8c08",
+            "type": "tree"
+          },
+          {
+            "path": "examples/self-discover/self-discover.ipynb",
+            "sha": "ccdf3b72258f0def6c8a448aa349eaf8414ba44e",
+            "type": "blob",
+            "size": 1074
+          },
+          {
+            "path": "examples/subgraph.ipynb",
+            "sha": "d9822a8bf8233cb2fe14b1f0da3ccb80d4b31dbf",
+            "type": "blob",
+            "size": 1029
+          },
+          {
+            "path": "examples/tool-calling.ipynb",
+            "sha": "ccec5fec47df9423babe2d63c1f48d5e1223fe76",
+            "type": "blob",
+            "size": 1033
+          },
+          {
+            "path": "examples/tutorials",
+            "sha": "edb7962563d62c8594cf4816549316edc1594ef2",
+            "type": "tree"
+          },
+          {
+            "path": "examples/tutorials/sql-agent.ipynb",
+            "sha": "b8ce442f7b2c23b464581ae1d4a3c0131fef393a",
+            "type": "blob",
+            "size": 1057
+          },
+          {
+            "path": "examples/tutorials/tnt-llm",
+            "sha": "67bea83ad4bcd712b55daa3d49fb05bd80513875",
+            "type": "tree"
+          },
+          {
+            "path": "examples/tutorials/tnt-llm/tnt-llm.ipynb",
+            "sha": "5c562ac1015ff274599eb051d4b61d9190e9ba09",
+            "type": "blob",
+            "size": 1062
+          },
+          {
+            "path": "examples/usaco",
+            "sha": "e1463b8a0fe3df4d7ea174b0fbaedad1586f5181",
+            "type": "tree"
+          },
+          {
+            "path": "examples/usaco/usaco.ipynb",
+            "sha": "f4667a77c6ca6852355d0bd9cf49ab0858beb52b",
+            "type": "blob",
+            "size": 1058
+          },
+          {
+            "path": "examples/web-navigation",
+            "sha": "332e0c7f10c20874948fff20c1f7125cb6769553",
+            "type": "tree"
+          },
+          {
+            "path": "examples/web-navigation/web_voyager.ipynb",
+            "sha": "28990d51c1490354b427114e011813bda422c87a",
+            "type": "blob",
+            "size": 1073
+          },
+          {
+            "path": "libs",
+            "sha": "ea12da9f0ae1e6d59a5815552b4c0bbd4cd7536c",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance",
+            "sha": "3056313d8fd89c35f409fa15113e24f8574375ee",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance/Makefile",
+            "sha": "26ca6263b42949c2960130297ad1ae9300f8e235",
+            "type": "blob",
+            "size": 158
+          },
+          {
+            "path": "libs/checkpoint-conformance/README.md",
+            "sha": "e8a8a8a7973ff453ba226f4f1de6d245a5368ffd",
+            "type": "blob",
+            "size": 4700
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph",
+            "sha": "0a7b3787aa3c55eda8d29cec2c74b200795ddff6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint",
+            "sha": "6f508061e4b1c19288e3d166aa7841a5715d01cd",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance",
+            "sha": "00ecb6ca87eb422840de0d845f2c20f0ba629092",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/__init__.py",
+            "sha": "304ed4726d306b5744ec9fbc8fbba6ec582dc89a",
+            "type": "blob",
+            "size": 292
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/capabilities.py",
+            "sha": "b65f85de17cfde80922d05282a9f4629a5dccdda",
+            "type": "blob",
+            "size": 2770
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/initializer.py",
+            "sha": "c1307409299d2d009823cb1b9bcda96b0efac4d0",
+            "type": "blob",
+            "size": 2979
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/report.py",
+            "sha": "f555322965ae3f58f4cfab12d272f07cc0b95763",
+            "type": "blob",
+            "size": 6663
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec",
+            "sha": "20804bdbaea44d759ce7dc16cf2c5229284e3908",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/__init__.py",
+            "sha": "edcf3d07bd805578a1a8a72f057850b6470f0db2",
+            "type": "blob",
+            "size": 1148
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/_delta_fixtures.py",
+            "sha": "e15b18058125388edddc5f3c18b73a3d37d25be2",
+            "type": "blob",
+            "size": 3250
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_copy_thread.py",
+            "sha": "04e3984aeceaf136a7d9c222970d02387a8e57c2",
+            "type": "blob",
+            "size": 7841
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_delete_for_runs.py",
+            "sha": "3cb174a8124ec4ead83c84021f3785bef42e3d86",
+            "type": "blob",
+            "size": 7269
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_delete_thread.py",
+            "sha": "20ab2498f043738142ccc78e0eab42a7edbd90a8",
+            "type": "blob",
+            "size": 4709
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_delta_channel_history.py",
+            "sha": "330e6507d2416f8c48173e464b88ea2c19aab7d8",
+            "type": "blob",
+            "size": 11631
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_get_tuple.py",
+            "sha": "efaf9e6280f4bf10e95f4b7b13bc783768513017",
+            "type": "blob",
+            "size": 8549
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_list.py",
+            "sha": "3d1e20ad24364953ba0a0baafe93d249b8c89032",
+            "type": "blob",
+            "size": 11665
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_prune.py",
+            "sha": "a1d34f90ddc15760578bdc1013b84775bb446835",
+            "type": "blob",
+            "size": 7022
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_put.py",
+            "sha": "f752172e8441e27576a0f5af742409108b89de60",
+            "type": "blob",
+            "size": 15081
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/spec/test_put_writes.py",
+            "sha": "6d049afff760c36d55d1cd07337f05799e94ea99",
+            "type": "blob",
+            "size": 11373
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/test_utils.py",
+            "sha": "8f19a7ecd39edc44ba8b929b32deec20589e93c1",
+            "type": "blob",
+            "size": 6920
+          },
+          {
+            "path": "libs/checkpoint-conformance/langgraph/checkpoint/conformance/validate.py",
+            "sha": "2f294544998ed584a4e5b3b14670c950964f4a2e",
+            "type": "blob",
+            "size": 5199
+          },
+          {
+            "path": "libs/checkpoint-conformance/pyproject.toml",
+            "sha": "4278393cc0a5f092f7d7836a0bc3424eb1e7df98",
+            "type": "blob",
+            "size": 2169
+          },
+          {
+            "path": "libs/checkpoint-conformance/tests",
+            "sha": "63749194f816de128a21344c53cb3744e15eefb6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-conformance/tests/test_validate_memory.py",
+            "sha": "f458c82a2ee5cae2588f8d0c8614b5b7788b706c",
+            "type": "blob",
+            "size": 621
+          },
+          {
+            "path": "libs/checkpoint-conformance/uv.lock",
+            "sha": "5ac5ad8e38a5a9d9eeef0fad41bbd1e46c1839e0",
+            "type": "blob",
+            "size": 280154
+          },
+          {
+            "path": "libs/checkpoint-postgres",
+            "sha": "e969fdd5513c3be34ecd277328cd4d10a198ba0a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/checkpoint-postgres/Makefile",
+            "sha": "574f0640321e25a2ec641fe81b85e61db9746cc3",
+            "type": "blob",
+            "size": 1965
+          },
+          {
+            "path": "libs/checkpoint-postgres/README.md",
+            "sha": "048d118828b9cee3c47863d47b7edf795113dacb",
+            "type": "blob",
+            "size": 6090
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph",
+            "sha": "3aa42a65acdedb1cee20b22a06abb250b1942463",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint",
+            "sha": "0757461ae3e18f9eee462e35a957829849f89f46",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres",
+            "sha": "d017a13bad090a7209db5f05d730fc3b7708036b",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/__init__.py",
+            "sha": "c2a8ea985970dec664becc7bd92fcce9dc0ef716",
+            "type": "blob",
+            "size": 24072
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/_ainternal.py",
+            "sha": "9339a5623d264c64c7688a0d21ca38e5d84d87b9",
+            "type": "blob",
+            "size": 731
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/_internal.py",
+            "sha": "77988444ca067dcf52aa0d758d04abe0dac45115",
+            "type": "blob",
+            "size": 646
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/aio.py",
+            "sha": "ab48f6670a1bf3becf680d81dee823c2fe776378",
+            "type": "blob",
+            "size": 27328
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/base.py",
+            "sha": "d58d2cc384ae08704abbbd77f222c710d8dab945",
+            "type": "blob",
+            "size": 26353
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/checkpoint/postgres/shallow.py",
+            "sha": "350b20bb5d963822a5935131f840f565e1facf7e",
+            "type": "blob",
+            "size": 36898
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/store",
+            "sha": "779da64523d0476fa73dcaf8a2bd5634e34f2da0",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/store/postgres",
+            "sha": "310bcb0352677a5eb0cb3256ec7163e47b4eccdc",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/store/postgres/__init__.py",
+            "sha": "d0432b588b56cddc5b0c7b77c1565612d8f90616",
+            "type": "blob",
+            "size": 193
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/store/postgres/aio.py",
+            "sha": "d8fd53d96bac088b38d69cbace034dd9bc566294",
+            "type": "blob",
+            "size": 22583
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/store/postgres/base.py",
+            "sha": "100e1e2d396457671d491810bc123af43a5dd3b2",
+            "type": "blob",
+            "size": 55433
+          },
+          {
+            "path": "libs/checkpoint-postgres/langgraph/store/postgres/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint-postgres/pyproject.toml",
+            "sha": "72e91882660b20fc2408cd1218aeff89d66a675d",
+            "type": "blob",
+            "size": 2059
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests",
+            "sha": "236fa0850c3892a463734bdd240104532975e7ce",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/compose-postgres.yml",
+            "sha": "7217844336671dbfd8ba587455fadbdec3715fb7",
+            "type": "blob",
+            "size": 445
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/conftest.py",
+            "sha": "b44977ebdd8e967ab589630a593335eb9a06c110",
+            "type": "blob",
+            "size": 1394
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/embed_test_utils.py",
+            "sha": "d28cd959f380264e1e651b7782e65c354f33ae4c",
+            "type": "blob",
+            "size": 1827
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/test_async.py",
+            "sha": "ec941da909c01a147820f8eb5b5e0ac70224c7df",
+            "type": "blob",
+            "size": 14831
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/test_async_store.py",
+            "sha": "080a7885205804350a2e7d69f93f9184a0a82533",
+            "type": "blob",
+            "size": 30915
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/test_conformance_delta.py",
+            "sha": "b641d345e13c50d66aa37be0fb2abee3f74c318d",
+            "type": "blob",
+            "size": 977
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/test_delta_plain_value_seed.py",
+            "sha": "f441f9160fd45389ce35711351e151590e204a65",
+            "type": "blob",
+            "size": 8552
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/test_store.py",
+            "sha": "af5655f3e0e9bd7fb119bb6f0bf6653219deeb96",
+            "type": "blob",
+            "size": 39947
+          },
+          {
+            "path": "libs/checkpoint-postgres/tests/test_sync.py",
+            "sha": "63b93715f23f36e529545057dcc3f0cb2b2033c9",
+            "type": "blob",
+            "size": 12286
+          },
+          {
+            "path": "libs/checkpoint-postgres/uv.lock",
+            "sha": "a701fce35aecda9ba477e9a71979d2e1d4fc6b0d",
+            "type": "blob",
+            "size": 295529
+          },
+          {
+            "path": "libs/checkpoint-sqlite",
+            "sha": "cd90397e56c556cd2ede38eb1cf16117f4cbe700",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/checkpoint-sqlite/Makefile",
+            "sha": "a071dddc74d3668e92baa93e15f01a1f9bb1d68a",
+            "type": "blob",
+            "size": 972
+          },
+          {
+            "path": "libs/checkpoint-sqlite/README.md",
+            "sha": "16ff9dc3cd0f0735939a82532a498a0a8f7f4b2f",
+            "type": "blob",
+            "size": 4446
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph",
+            "sha": "c7f954ff7ae3feb415e478fa55760ae0afdadb5c",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/cache",
+            "sha": "15485eb154978b438ea16079da6246b770e6c0b9",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/cache/sqlite",
+            "sha": "384a7bbc7d4f327a5305e6117671849c26a75ed7",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/cache/sqlite/__init__.py",
+            "sha": "cd327bd4876856bababa3604f23c0574d17f4cae",
+            "type": "blob",
+            "size": 4781
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint",
+            "sha": "c5d3db9dda75d0772fe6437e93e41d9fdf4654e3",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint/sqlite",
+            "sha": "a693fc343dfc05029892c14563043d3bee835666",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint/sqlite/__init__.py",
+            "sha": "3259ff150116d128614ffa759427866981dd5edf",
+            "type": "blob",
+            "size": 25525
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint/sqlite/_delta.py",
+            "sha": "1fe617ff7dd1c09b0acfb30aff1b3e3be52aff55",
+            "type": "blob",
+            "size": 6932
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint/sqlite/aio.py",
+            "sha": "1ad0777c1ca38a90630681061fe33aa49ee200fa",
+            "type": "blob",
+            "size": 29318
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint/sqlite/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/checkpoint/sqlite/utils.py",
+            "sha": "7c7e0600053ebb73eafa36d2e617c76eab547475",
+            "type": "blob",
+            "size": 4264
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/store",
+            "sha": "db2838c1be0d1c3de989347a3cff62357f01038a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/store/sqlite",
+            "sha": "e2cc321b9e23cc66ace528a49077a8ade15a7f93",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/store/sqlite/__init__.py",
+            "sha": "b70192f5ee50b9589cb7c8ccdffa0bd9c49df0e5",
+            "type": "blob",
+            "size": 155
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/store/sqlite/aio.py",
+            "sha": "b0d711dffad115ab9555a515d7b6ae19f8a26c68",
+            "type": "blob",
+            "size": 23449
+          },
+          {
+            "path": "libs/checkpoint-sqlite/langgraph/store/sqlite/base.py",
+            "sha": "70d4481cd5a542d6f1fcf4341b99c7b38ce2647a",
+            "type": "blob",
+            "size": 59332
+          },
+          {
+            "path": "libs/checkpoint-sqlite/pyproject.toml",
+            "sha": "fe0f42b320169934908a80282b1ad304eb3efa19",
+            "type": "blob",
+            "size": 2138
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests",
+            "sha": "9450a606276565d2a298ebe3e48a6f1edbd61621",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_aiosqlite.py",
+            "sha": "36d3294075c96837a6706a8b1225a513868e50fb",
+            "type": "blob",
+            "size": 7765
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_async_store.py",
+            "sha": "428c4e90c8934a1d2931e276a27b0c968fc2d733",
+            "type": "blob",
+            "size": 27852
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_conformance_delta.py",
+            "sha": "2e0b58dbaa3f0ce29115a13f0166598b03f06ba5",
+            "type": "blob",
+            "size": 891
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_delta_channel_migration.py",
+            "sha": "f9f511c1e6beac78ad505d5ace2b3858b7af4a05",
+            "type": "blob",
+            "size": 6581
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_get_delta_channel_history.py",
+            "sha": "20c694223ad58db48feecc044599fc94409923f5",
+            "type": "blob",
+            "size": 10870
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_sqlite.py",
+            "sha": "9eda0bc2cd261970e12806a494119acba3a95901",
+            "type": "blob",
+            "size": 12795
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_store.py",
+            "sha": "d4b06847e23a70ca33f28dfda1b2c3cb3ca22b1d",
+            "type": "blob",
+            "size": 54582
+          },
+          {
+            "path": "libs/checkpoint-sqlite/tests/test_ttl.py",
+            "sha": "28d43a790517efdfe02d67773b1cc0f2de110a9f",
+            "type": "blob",
+            "size": 13531
+          },
+          {
+            "path": "libs/checkpoint-sqlite/uv.lock",
+            "sha": "b6a8e9616514cd6b30d7c2fec4b05721d107dcdf",
+            "type": "blob",
+            "size": 277845
+          },
+          {
+            "path": "libs/checkpoint",
+            "sha": "d9bf4dbdf62a8ce08ef2e189a6552cf3b0795f9a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/checkpoint/Makefile",
+            "sha": "c89d8d7bb1d01ce3ff49a5535700d4506c204ba8",
+            "type": "blob",
+            "size": 961
+          },
+          {
+            "path": "libs/checkpoint/README.md",
+            "sha": "a9eb928f64756c79a1697883832a7337093319ef",
+            "type": "blob",
+            "size": 6144
+          },
+          {
+            "path": "libs/checkpoint/langgraph",
+            "sha": "fd695e4ab4de42c62743ef13c8c77cacc0f96bdf",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache",
+            "sha": "1d559f6a60f65145efd7658eb606a5b26272b192",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/base",
+            "sha": "dc816752dd824e020141bd964361fc0b2826fa1c",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/base/__init__.py",
+            "sha": "092324e721d4717bdc35bc843ee0c317aabaf19c",
+            "type": "blob",
+            "size": 1835
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/base/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/memory",
+            "sha": "a9f9498cfac7855ca75d1e308300b15217e1779a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/memory/__init__.py",
+            "sha": "7b10db0511c62f2e4c98a19a8bc796599db71124",
+            "type": "blob",
+            "size": 3071
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/redis",
+            "sha": "7a78e139886e27ea7ee4bcd961a4b6db0b1c3233",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/cache/redis/__init__.py",
+            "sha": "ea4f71480d02a01ec242335d32ac532f61ccfb7d",
+            "type": "blob",
+            "size": 5188
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint",
+            "sha": "5c6da14334ba2a7de7d45e20fd22827846fb1079",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/base",
+            "sha": "2017d0a04b30f5e908eb64e3a352d7811a0f1fa0",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/base/__init__.py",
+            "sha": "6e42061190d539c20c4358771824837e8598da6c",
+            "type": "blob",
+            "size": 30659
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/base/id.py",
+            "sha": "30abc48a509601216fe7ddee3be55ceaa6cd93bd",
+            "type": "blob",
+            "size": 3647
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/base/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/memory",
+            "sha": "fc3d32662776bb396ca1357ead455b7891d04754",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/memory/__init__.py",
+            "sha": "0f0719c61fe64efddd0e1837eefd94eff23d39f9",
+            "type": "blob",
+            "size": 26150
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/memory/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde",
+            "sha": "47038a17a8ec839b81dcb4de748873c01419a77b",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/_msgpack.py",
+            "sha": "1a5188f1fd9da8e80b8d090454883885ca3aa466",
+            "type": "blob",
+            "size": 3500
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/base.py",
+            "sha": "186e162fa76eb9cbabca88419673996a07453b28",
+            "type": "blob",
+            "size": 1933
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/encrypted.py",
+            "sha": "9f517e40551974671830a32151b1ee4f830082aa",
+            "type": "blob",
+            "size": 3180
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/event_hooks.py",
+            "sha": "9ea0a5b496265f1c2fa4b1b08fd704395078a1ff",
+            "type": "blob",
+            "size": 1235
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/jsonplus.py",
+            "sha": "abd03f1ca8448dcc80793c5f8cd41539f85fbd32",
+            "type": "blob",
+            "size": 31710
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/langgraph/checkpoint/serde/types.py",
+            "sha": "72e37206462758bef1adf3abbe2d43e58a034532",
+            "type": "blob",
+            "size": 1636
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store",
+            "sha": "fdfc1a8eb8f99de6e43a7c4012a09ce085dbb258",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/base",
+            "sha": "88197f3d0af07044aafe7d8403e4b35e5ef653fa",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/base/__init__.py",
+            "sha": "08fe74525a302741172a1dcd9a94ef60c7d31e11",
+            "type": "blob",
+            "size": 43090
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/base/batch.py",
+            "sha": "64019d68fc04e30e523e0ff00f934674263411c2",
+            "type": "blob",
+            "size": 11205
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/base/embed.py",
+            "sha": "4255886e2b30b511d41e35f6df420f5f6de18a70",
+            "type": "blob",
+            "size": 14497
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/base/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/memory",
+            "sha": "dda9f7ab6d6f028e9f3a0c442f928aee71abf2e0",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/memory/__init__.py",
+            "sha": "b156c457df67ca021e090d90c1373e2d713a2123",
+            "type": "blob",
+            "size": 21155
+          },
+          {
+            "path": "libs/checkpoint/langgraph/store/memory/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/pyproject.toml",
+            "sha": "d98630b4c934ab628319d5a0b1429aae28698615",
+            "type": "blob",
+            "size": 2116
+          },
+          {
+            "path": "libs/checkpoint/tests",
+            "sha": "7e91cf2d44ab23d794459850f5b03d6d8421232a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/checkpoint/tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/checkpoint/tests/embed_test_utils.py",
+            "sha": "d28cd959f380264e1e651b7782e65c354f33ae4c",
+            "type": "blob",
+            "size": 1827
+          },
+          {
+            "path": "libs/checkpoint/tests/test_conformance_delta.py",
+            "sha": "5443601cf81d054e5bfbc0f36411e4f91c2001c2",
+            "type": "blob",
+            "size": 1167
+          },
+          {
+            "path": "libs/checkpoint/tests/test_encrypted.py",
+            "sha": "43f3424857aa804a1bb5f6d1b525fb3045fae213",
+            "type": "blob",
+            "size": 15817
+          },
+          {
+            "path": "libs/checkpoint/tests/test_jsonplus.py",
+            "sha": "c7e7cc9959a4b24bc1069b2378158b7521a38483",
+            "type": "blob",
+            "size": 40910
+          },
+          {
+            "path": "libs/checkpoint/tests/test_memory.py",
+            "sha": "51d10a5dd4486708f798a552266888944c86b2be",
+            "type": "blob",
+            "size": 26284
+          },
+          {
+            "path": "libs/checkpoint/tests/test_redis_cache.py",
+            "sha": "ca1fce09c9dc14225d18e532fe614bc8de08a71f",
+            "type": "blob",
+            "size": 10616
+          },
+          {
+            "path": "libs/checkpoint/tests/test_store.py",
+            "sha": "42e7a769763594f8d48f67630629b4a1de99c0cd",
+            "type": "blob",
+            "size": 36112
+          },
+          {
+            "path": "libs/checkpoint/uv.lock",
+            "sha": "054ce0a4b686acce834b2132a71fde1084bcfece",
+            "type": "blob",
+            "size": 348293
+          },
+          {
+            "path": "libs/cli",
+            "sha": "5be3831d327f24682f36e173234f930f7e6b47ac",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/.gitignore",
+            "sha": "132fa2e5460fb536053127e3e08432f2d22bf3c0",
+            "type": "blob",
+            "size": 16
+          },
+          {
+            "path": "libs/cli/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/cli/Makefile",
+            "sha": "c90376fdae8ef76715cdcce32ef5b219239bbab1",
+            "type": "blob",
+            "size": 1141
+          },
+          {
+            "path": "libs/cli/README.md",
+            "sha": "cac7808bb09ddb7496fd1e8dcdb67d2eac0fe931",
+            "type": "blob",
+            "size": 4240
+          },
+          {
+            "path": "libs/cli/examples",
+            "sha": "efc899d2b621fe361d5ee24e5ed8cd1747403bf9",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/.env.example",
+            "sha": "d9649108e12bbf8f931c81ce8a0ac4f402574abe",
+            "type": "blob",
+            "size": 84
+          },
+          {
+            "path": "libs/cli/examples/.gitignore",
+            "sha": "8bbdbd273fedb18183cffd8dcef134b5a4d48331",
+            "type": "blob",
+            "size": 16
+          },
+          {
+            "path": "libs/cli/examples/Makefile",
+            "sha": "a2b91ff9a3a9b0c18d74ad9b3becf78f54e366fe",
+            "type": "blob",
+            "size": 265
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs",
+            "sha": "b819a6845c4865f14a05bbf26d1975fdefb7ba19",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/agent.py",
+            "sha": "57d8543a2ecb2fd827a3cea72fb3bce6ded5ce54",
+            "type": "blob",
+            "size": 2704
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/deps",
+            "sha": "8ce796b1e193cccfb8bd736b3393ebfc9f76fbc5",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/deps/additional_deps",
+            "sha": "1f2e12e567b0f0bfe659ee0852876f8788d9a672",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/deps/additional_deps/pyproject.toml",
+            "sha": "dedd48bf2567648f869fa6ef136519b90bb6bfa5",
+            "type": "blob",
+            "size": 204
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/deps/zuper_deps",
+            "sha": "6518eb53be232826f1547d64736fc3a2ced9f4e1",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/deps/zuper_deps/pyproject.toml",
+            "sha": "4e777c163d438bea9ff241c081cac0adc11ef656",
+            "type": "blob",
+            "size": 207
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/langgraph.json",
+            "sha": "6d3a7b92b8160d69fe7b80249fd733c73212810f",
+            "type": "blob",
+            "size": 214
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs/pyproject.toml",
+            "sha": "0ddd02255fee12aac209adf21877ab79d10986e8",
+            "type": "blob",
+            "size": 283
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs_fail",
+            "sha": "c96e8e96f5f64ac4a32165d44f5e639e2b731724",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs_fail/agent.py",
+            "sha": "4801c7c0bca8e486f47784cd92ce5c65db9e53df",
+            "type": "blob",
+            "size": 2810
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs_fail/langgraph.json",
+            "sha": "8bc7d8b2cde6ad730e7edda5fc6631d033ba9669",
+            "type": "blob",
+            "size": 155
+          },
+          {
+            "path": "libs/cli/examples/graph_prerelease_reqs_fail/pyproject.toml",
+            "sha": "08acf1f2a34b783b0243529d43f9345dd719d49c",
+            "type": "blob",
+            "size": 251
+          },
+          {
+            "path": "libs/cli/examples/graphs",
+            "sha": "08d91d807faba05a0f84d87459f5e29721b9fbd6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graphs/agent.py",
+            "sha": "931982061ac3a1502dde4239309062f7f0fd6c58",
+            "type": "blob",
+            "size": 3145
+          },
+          {
+            "path": "libs/cli/examples/graphs/langgraph.json",
+            "sha": "fce75dd9e187e476ca445035866aa5893a6e19f1",
+            "type": "blob",
+            "size": 330
+          },
+          {
+            "path": "libs/cli/examples/graphs/storm.py",
+            "sha": "ccacc9cf389bd8eea7829082257bbff1c027dd44",
+            "type": "blob",
+            "size": 20877
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a",
+            "sha": "07aee27602c1e8121cad4effe22e3fec525cdc4a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/graphs_submod",
+            "sha": "f0e5b6d004e134469cb022f8f3b37751a5438439",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/graphs_submod/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/graphs_submod/agent.py",
+            "sha": "7971b3ce00da62717ab77993dc3f745ecf17b3a4",
+            "type": "blob",
+            "size": 3301
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/graphs_submod/subprompt.txt",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/hello.py",
+            "sha": "eedc4d11aecce0247827f057f5a375826fd89c8a",
+            "type": "blob",
+            "size": 60
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/langgraph.json",
+            "sha": "c6215ae8499a1808f64fae0391d74e1bc79f310e",
+            "type": "blob",
+            "size": 154
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/prompt.txt",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_a/requirements.txt",
+            "sha": "b3ca5836127e379ecd65c9fa64f6207a8f6cdea7",
+            "type": "blob",
+            "size": 66
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b",
+            "sha": "7214a7f5c765b820a57ca1311f69c5616e22e4bb",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/graphs_submod",
+            "sha": "58b50a24c7fbdee7d5eb9633075e46518c7ef18d",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/graphs_submod/agent.py",
+            "sha": "eb81a0a7f373ed90675017addc6878b108152c5f",
+            "type": "blob",
+            "size": 3302
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/graphs_submod/subprompt.txt",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/hello.py",
+            "sha": "8943551a03fa229dd512840a6ad3fa7d96de3da2",
+            "type": "blob",
+            "size": 87
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/langgraph.json",
+            "sha": "c6215ae8499a1808f64fae0391d74e1bc79f310e",
+            "type": "blob",
+            "size": 154
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/prompt.txt",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/requirements.txt",
+            "sha": "b3ca5836127e379ecd65c9fa64f6207a8f6cdea7",
+            "type": "blob",
+            "size": 66
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/utils",
+            "sha": "e56d68862461c6d345016ba5bad6a45c817e0d57",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/utils/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/examples/graphs_reqs_b/utils/greeter.py",
+            "sha": "ab178f3faadeb99f66b47dda1e5ef9c452756f97",
+            "type": "blob",
+            "size": 40
+          },
+          {
+            "path": "libs/cli/examples/langgraph.json",
+            "sha": "0d8563e55c1fcae6b4183574bde374c2c6e58eab",
+            "type": "blob",
+            "size": 339
+          },
+          {
+            "path": "libs/cli/examples/my_app.py",
+            "sha": "15bfa54afd3e9b13aa8d9696cf7bdc7c6bff1530",
+            "type": "blob",
+            "size": 1748
+          },
+          {
+            "path": "libs/cli/examples/pipconf.txt",
+            "sha": "eaeb330dbda2097e66871d6da35a7d53ee84ec4b",
+            "type": "blob",
+            "size": 22
+          },
+          {
+            "path": "libs/cli/examples/poetry.lock",
+            "sha": "d14131f2784a15069d9604178db805bb753e88a4",
+            "type": "blob",
+            "size": 14981
+          },
+          {
+            "path": "libs/cli/examples/pyproject.toml",
+            "sha": "c8dd2d7e19ac014628ee416af7a2483abb77339a",
+            "type": "blob",
+            "size": 419
+          },
+          {
+            "path": "libs/cli/generate_schema.py",
+            "sha": "750496939299a90d47d08222be552becda134489",
+            "type": "blob",
+            "size": 10203
+          },
+          {
+            "path": "libs/cli/js-examples",
+            "sha": "9633e180701addbd41c86ce544c8ad7f779ddb21",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-examples/.dockerignore",
+            "sha": "76add878f8dd778c3381fb3da45c8140db7db510",
+            "type": "blob",
+            "size": 17
+          },
+          {
+            "path": "libs/cli/js-examples/.editorconfig",
+            "sha": "1ed453a371ba5c23ea9e365f9a6984d6aec0a13e",
+            "type": "blob",
+            "size": 134
+          },
+          {
+            "path": "libs/cli/js-examples/.env.example",
+            "sha": "1f381d1b129b523afeec2434dc90ad4ca76ab28e",
+            "type": "blob",
+            "size": 73
+          },
+          {
+            "path": "libs/cli/js-examples/.eslintrc.cjs",
+            "sha": "da4c3ecb471bcd309ae38967e5e24cbb5f66ee23",
+            "type": "blob",
+            "size": 1770
+          },
+          {
+            "path": "libs/cli/js-examples/.gitignore",
+            "sha": "e5363cc2926b727391be20bc4d77cb4f66f24b85",
+            "type": "blob",
+            "size": 190
+          },
+          {
+            "path": "libs/cli/js-examples/LICENSE",
+            "sha": "57d0481d4b50c89fee2cb9e88242639d8e674028",
+            "type": "blob",
+            "size": 1066
+          },
+          {
+            "path": "libs/cli/js-examples/README.md",
+            "sha": "5130cd4c4f9e25ed09027c334ab4c4b52201f5f2",
+            "type": "blob",
+            "size": 5661
+          },
+          {
+            "path": "libs/cli/js-examples/jest.config.js",
+            "sha": "9e8937435158ceef918958454726118faf89f599",
+            "type": "blob",
+            "size": 342
+          },
+          {
+            "path": "libs/cli/js-examples/langgraph.json",
+            "sha": "79f2b36736703c152e673a292be24896b4cc2ec2",
+            "type": "blob",
+            "size": 177
+          },
+          {
+            "path": "libs/cli/js-examples/package.json",
+            "sha": "4819187fcfb62a314e71343de2e24950573cf509",
+            "type": "blob",
+            "size": 1668
+          },
+          {
+            "path": "libs/cli/js-examples/src",
+            "sha": "befee0f87091d11db7646b5ad7429e8525866408",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-examples/src/agent",
+            "sha": "572c5f480fa712f515e7b1fee0199d5f49fa04b8",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-examples/src/agent/graph.ts",
+            "sha": "244f88ee491d4040ed9ba68524be44c453534417",
+            "type": "blob",
+            "size": 3131
+          },
+          {
+            "path": "libs/cli/js-examples/src/agent/state.ts",
+            "sha": "6f796340516063cdb08b51c71ce03f07adf30578",
+            "type": "blob",
+            "size": 2537
+          },
+          {
+            "path": "libs/cli/js-examples/static",
+            "sha": "ca07a6d1ce984c8c0ff8646a02a260dbc2bc58b5",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-examples/static/studio.png",
+            "sha": "5338518f90d7ad672d8a40cf321fbd993f135e35",
+            "type": "blob",
+            "size": 596538
+          },
+          {
+            "path": "libs/cli/js-examples/tests",
+            "sha": "d0e7a705b220e741aec93df39d1e50425dc64b47",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-examples/tests/agent.test.ts",
+            "sha": "d2948bbaebe9ee67d37aabc9aa13ab6d8872b182",
+            "type": "blob",
+            "size": 260
+          },
+          {
+            "path": "libs/cli/js-examples/tests/graph.int.test.ts",
+            "sha": "a05978f4c9e4594616fdf29e29654dc5e6eefdd4",
+            "type": "blob",
+            "size": 717
+          },
+          {
+            "path": "libs/cli/js-examples/tsconfig.json",
+            "sha": "6e51abd3dd9ac8fc779b141fe45cc09823a198a7",
+            "type": "blob",
+            "size": 701
+          },
+          {
+            "path": "libs/cli/js-examples/yarn.lock",
+            "sha": "75ebc59c66239428c9072ecebb26f9e1ca90d008",
+            "type": "blob",
+            "size": 232934
+          },
+          {
+            "path": "libs/cli/js-monorepo-example",
+            "sha": "b2067c9eeb70dd6157a9c0ce1ececcf3f3e0f7fa",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/.eslintrc.cjs",
+            "sha": "da4c3ecb471bcd309ae38967e5e24cbb5f66ee23",
+            "type": "blob",
+            "size": 1770
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps",
+            "sha": "280906d99d0c38a26e27671e78ad49b4b76c6c60",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent",
+            "sha": "e62282e7ed6e6398df1367af669ad4c3402fec95",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent/langgraph.json",
+            "sha": "e39ef7891e2d1506cf441019de1467435971c1dc",
+            "type": "blob",
+            "size": 105
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent/package.json",
+            "sha": "ce3eb1afd3cf0397e745cafc8c733aab0f18069a",
+            "type": "blob",
+            "size": 368
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent/src",
+            "sha": "5504ac8da90f2dfc71c0c9e128941a18dfe9a015",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent/src/graph.ts",
+            "sha": "6bc4e6311ef2967849228426d1519fdbd204e686",
+            "type": "blob",
+            "size": 1106
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent/src/state.ts",
+            "sha": "eeeecd4172bff311bff02c92f05ce87319033d80",
+            "type": "blob",
+            "size": 446
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/apps/agent/tsconfig.json",
+            "sha": "ed464a96bfffe451987adb9723928a45a9f23da9",
+            "type": "blob",
+            "size": 180
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/libs",
+            "sha": "863453206c884fced19045d2c9e0fe4e959c64bb",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/libs/shared",
+            "sha": "d7e782e7c6db1b96e8af625b078bf1e9742bb76e",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/libs/shared/package.json",
+            "sha": "b36f9367c847e6666f4e68c1a81afc259654ccfe",
+            "type": "blob",
+            "size": 265
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/libs/shared/src",
+            "sha": "19bebff0b19867570d5ea98e53e6c844d6165fc7",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/libs/shared/src/index.ts",
+            "sha": "19878933cad4771aca838a87233c4cc3d5175ab6",
+            "type": "blob",
+            "size": 138
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/libs/shared/tsconfig.json",
+            "sha": "ed464a96bfffe451987adb9723928a45a9f23da9",
+            "type": "blob",
+            "size": 180
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/package.json",
+            "sha": "6049eeace6c77fe9b7dd55016f7416e6a5f4f9d2",
+            "type": "blob",
+            "size": 946
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/tsconfig.json",
+            "sha": "55e25f72b072c359a4811d0770548cac2b3a7142",
+            "type": "blob",
+            "size": 397
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/turbo.json",
+            "sha": "815403faacf5df55a793f73a86639ef34bc764c3",
+            "type": "blob",
+            "size": 252
+          },
+          {
+            "path": "libs/cli/js-monorepo-example/yarn.lock",
+            "sha": "99326c28fb2ef04bd57c8ff3f826be15f85e6265",
+            "type": "blob",
+            "size": 96619
+          },
+          {
+            "path": "libs/cli/langgraph_cli",
+            "sha": "2a0da269b8b87e406ec9636a55f1da7fbd9070a6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/langgraph_cli/__init__.py",
+            "sha": "e2b01a98c07837eedca7de6dbcbf709a82257b62",
+            "type": "blob",
+            "size": 23
+          },
+          {
+            "path": "libs/cli/langgraph_cli/__main__.py",
+            "sha": "98dcca0c2836ae53d67260be8a5431b855e461bb",
+            "type": "blob",
+            "size": 59
+          },
+          {
+            "path": "libs/cli/langgraph_cli/_ignore.py",
+            "sha": "5c0989516777edd6bc7a9cae1c96309081fe7568",
+            "type": "blob",
+            "size": 4193
+          },
+          {
+            "path": "libs/cli/langgraph_cli/analytics.py",
+            "sha": "c64588673fd821d414313097a1764794a21f71e6",
+            "type": "blob",
+            "size": 2706
+          },
+          {
+            "path": "libs/cli/langgraph_cli/archive.py",
+            "sha": "81f96315aa43ceefaa91689f53c1e0ccdd294671",
+            "type": "blob",
+            "size": 4808
+          },
+          {
+            "path": "libs/cli/langgraph_cli/cli.py",
+            "sha": "3a3b8b6b0cf6c9f72f5d9a1009edda7dd9a7f535",
+            "type": "blob",
+            "size": 34316
+          },
+          {
+            "path": "libs/cli/langgraph_cli/config.py",
+            "sha": "57b22518728130dad4960b8b5da3c6e2baf54eb6",
+            "type": "blob",
+            "size": 66742
+          },
+          {
+            "path": "libs/cli/langgraph_cli/constants.py",
+            "sha": "117062a970f8c973df15450ac37f82bd9fb57de3",
+            "type": "blob",
+            "size": 362
+          },
+          {
+            "path": "libs/cli/langgraph_cli/dependency_tracking.py",
+            "sha": "b3ec9eb3a1ac9b9e6d14304a287bd5ce136aa133",
+            "type": "blob",
+            "size": 4544
+          },
+          {
+            "path": "libs/cli/langgraph_cli/deploy.py",
+            "sha": "822028cb2ae2024dfd5b41392f47386568b25bb3",
+            "type": "blob",
+            "size": 71579
+          },
+          {
+            "path": "libs/cli/langgraph_cli/docker.py",
+            "sha": "a376b5698a2adb2083349f424cfe2afbec1764ef",
+            "type": "blob",
+            "size": 12888
+          },
+          {
+            "path": "libs/cli/langgraph_cli/exec.py",
+            "sha": "974fc75f3905d5ce50d1839421be831ef9cbb312",
+            "type": "blob",
+            "size": 5195
+          },
+          {
+            "path": "libs/cli/langgraph_cli/host_backend.py",
+            "sha": "4ab608675f80f8c4db2f97a8f7577ce01770cc6b",
+            "type": "blob",
+            "size": 6903
+          },
+          {
+            "path": "libs/cli/langgraph_cli/progress.py",
+            "sha": "f0b60c1a87b707e01d1cc65788dd1c70a4a3698c",
+            "type": "blob",
+            "size": 3412
+          },
+          {
+            "path": "libs/cli/langgraph_cli/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/langgraph_cli/schemas.py",
+            "sha": "5a00fc673559108337e1ee7f83667287906b1c58",
+            "type": "blob",
+            "size": 27283
+          },
+          {
+            "path": "libs/cli/langgraph_cli/templates.py",
+            "sha": "bd53902b271f3cf7c60b974296f739b05cd44e97",
+            "type": "blob",
+            "size": 6978
+          },
+          {
+            "path": "libs/cli/langgraph_cli/util.py",
+            "sha": "0dae6a5ffafdc2e44d316e0122beb28d6af1950a",
+            "type": "blob",
+            "size": 1619
+          },
+          {
+            "path": "libs/cli/langgraph_cli/uv_lock.py",
+            "sha": "985b7d9efa5a0af2fd960df697df18dc8f6611c5",
+            "type": "blob",
+            "size": 38521
+          },
+          {
+            "path": "libs/cli/langgraph_cli/version.py",
+            "sha": "3368893c0ea39205491fa6d63a7f23a35ffc0653",
+            "type": "blob",
+            "size": 308
+          },
+          {
+            "path": "libs/cli/pyproject.toml",
+            "sha": "8a301f8a8cf1a29552bd7baf0a947f7a0cf20760",
+            "type": "blob",
+            "size": 2423
+          },
+          {
+            "path": "libs/cli/python-monorepo-example",
+            "sha": "d7926519f646536bf3a66da5634280b915c89076",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps",
+            "sha": "3fd1f089bcd05cd3f5cd1b214e6c13b500c4094e",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent",
+            "sha": "ddf21f8af056d2faa656fb49bf6efff46ecd74e0",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/.env.example",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/langgraph.json",
+            "sha": "10cf04d1d8da72c920137bb45ae27d64121ffa98",
+            "type": "blob",
+            "size": 194
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/pyproject.toml",
+            "sha": "43475d21a5b3d98c8ba1a42642a2b32fc844a468",
+            "type": "blob",
+            "size": 408
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/src",
+            "sha": "0db253870d0c2dc36eb06ae532a17b3dca6ff4e8",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/src/agent",
+            "sha": "28a043b601de3272a33c940290f948a68bda8fd5",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/src/agent/__init__.py",
+            "sha": "62617ff1c8c9768723e3da6222e0b76675e6c566",
+            "type": "blob",
+            "size": 21
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/src/agent/graph.py",
+            "sha": "39ee31c758966665024ed1e9bcfba8e01a4a290c",
+            "type": "blob",
+            "size": 1021
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/apps/agent/src/agent/state.py",
+            "sha": "8ef10fa21b2b77ea857b6e1e991e82f55a83e1ed",
+            "type": "blob",
+            "size": 336
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs",
+            "sha": "c9aac461d86f3f522d0b13d59b38a1b721a16cd9",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/common",
+            "sha": "f3384bd6aa25deb94ada078f0ed945c23b967ac7",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/common/__init__.py",
+            "sha": "8c49dd1ad41c18070f47bf2ebf1c85462bf9d6ce",
+            "type": "blob",
+            "size": 112
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/common/helpers.py",
+            "sha": "f745dbddce0b0a9edad086112ff7433e299e3039",
+            "type": "blob",
+            "size": 131
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/shared",
+            "sha": "4b2e1714e1ed05a2f6fe5218a9e5f92adb1c4467",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/shared/pyproject.toml",
+            "sha": "319411a4c2eae1a6facc7d6c035319f55f6786a5",
+            "type": "blob",
+            "size": 441
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/shared/src",
+            "sha": "47f4650f85a0a6957a0256896e535a92058140ce",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/shared/src/shared",
+            "sha": "4ee66ee8374f9de60d976376277f5486932b9bad",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/shared/src/shared/__init__.py",
+            "sha": "c30c138c1d204df8cbc7e6e35c8f49a75520f85a",
+            "type": "blob",
+            "size": 103
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/libs/shared/src/shared/utils.py",
+            "sha": "b26dcf1873f0e27fa235adb3ddbb9424ae3644b5",
+            "type": "blob",
+            "size": 149
+          },
+          {
+            "path": "libs/cli/python-monorepo-example/pyproject.toml",
+            "sha": "faae3a65e8cdf54b91ea736da5076195e51a1e6f",
+            "type": "blob",
+            "size": 1120
+          },
+          {
+            "path": "libs/cli/schemas",
+            "sha": "9dd5ce91859ab3c196dba71ae2029bcf545acad8",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/schemas/schema.json",
+            "sha": "6eec6205b34b4161aa103cb41730d8f203ea23b6",
+            "type": "blob",
+            "size": 53071
+          },
+          {
+            "path": "libs/cli/schemas/schema.v0.json",
+            "sha": "6eec6205b34b4161aa103cb41730d8f203ea23b6",
+            "type": "blob",
+            "size": 53071
+          },
+          {
+            "path": "libs/cli/schemas/version.schema.json",
+            "sha": "041b130c177dcd4cd126840ab046ea331696b0c8",
+            "type": "blob",
+            "size": 1140
+          },
+          {
+            "path": "libs/cli/tests",
+            "sha": "ce5d1f7545643ac341f3e929eb9d467fef246fe9",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/integration_tests",
+            "sha": "c4e53965e8d32b3760a19b4d486bd2c95b5b93da",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/tests/integration_tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/integration_tests/test_cli.py",
+            "sha": "7cb41b47bf9e74770a99ad90cb4b7b51d560b712",
+            "type": "blob",
+            "size": 524
+          },
+          {
+            "path": "libs/cli/tests/unit_tests",
+            "sha": "dd2a635e4eebcda2d82248402dddf4fd610a605c",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/agent.py",
+            "sha": "214a4919897be0fdd71074ed16428ee82221398a",
+            "type": "blob",
+            "size": 2145
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/cli",
+            "sha": "a8658e053183626edd3324fa4494a5a80190aadd",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/cli/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/cli/langgraph.json",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/cli/pyproject.toml",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/cli/test_cli.py",
+            "sha": "8b3ae47c6f480b7bafa6f1846ea81fad61874148",
+            "type": "blob",
+            "size": 43322
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/cli/test_templates.py",
+            "sha": "cbdf4bbe1b6e4090e617a4deb24ec7fc23a98e50",
+            "type": "blob",
+            "size": 2581
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/conftest.py",
+            "sha": "5caaa6c81227787551fde9264cbd6246359d0468",
+            "type": "blob",
+            "size": 533
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/graphs",
+            "sha": "9d6537df8a3a72c8ced66e0335cb402902db5551",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/graphs/agent.py",
+            "sha": "700ba9fcb45b6304cc8a053552c0e538d88d2f90",
+            "type": "blob",
+            "size": 88
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/helpers.py",
+            "sha": "79b67a2c937e6160833f2589546b9bd4180db0b4",
+            "type": "blob",
+            "size": 98
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/multiplatform",
+            "sha": "29b253b5bcd2a82ada05a9d6ebd76bbe94fc2bc4",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/multiplatform/js.mts",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/multiplatform/python.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/pipconfig.txt",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_archive.py",
+            "sha": "8f4dafc7d65571d6e7ff707c64c67fc5a62c3348",
+            "type": "blob",
+            "size": 11258
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_config.json",
+            "sha": "3ec8f0908ec9348fb4670abaf216e308df534b9e",
+            "type": "blob",
+            "size": 371
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_config.py",
+            "sha": "fb9a36ccf05e971357ad9512743fcd13effaa6ce",
+            "type": "blob",
+            "size": 127059
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_dependency_tracking.py",
+            "sha": "699b552c9b5674854147d140605a4c7c399c4e99",
+            "type": "blob",
+            "size": 4801
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_deploy_helpers.py",
+            "sha": "5112450f828233174f4fd00369b3ebdbe194bd08",
+            "type": "blob",
+            "size": 28033
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_docker.py",
+            "sha": "b902b0f1b5191015a35ae5e6efa35cfbfa2d0283",
+            "type": "blob",
+            "size": 13266
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_host_backend.py",
+            "sha": "85c2a93d54cb7a86be6421ede2ce6c2f7be70f8f",
+            "type": "blob",
+            "size": 9623
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_logs_helpers.py",
+            "sha": "f38e4d151f081f644d2f448a6a1700607e53851f",
+            "type": "blob",
+            "size": 1762
+          },
+          {
+            "path": "libs/cli/tests/unit_tests/test_util.py",
+            "sha": "0fef596d6f5c03ed917051e7d1a449d4bb737327",
+            "type": "blob",
+            "size": 8081
+          },
+          {
+            "path": "libs/cli/uv-examples",
+            "sha": "dd19096536b265b2c6b8ee753bb5ec01d054e0a6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo",
+            "sha": "66163a4772d48c53abe100ab6bec17d04e9b2095",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps",
+            "sha": "5754437341f0e5d9ca90e26d981fdf8b64cb3d1e",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent",
+            "sha": "ea30940a4f72d0e101d6f0abff62c209c2c4c6db",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/.env.example",
+            "sha": "e570b8b55999053e360c4e80f83f14881b17966f",
+            "type": "blob",
+            "size": 16
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/langgraph.json",
+            "sha": "90ff75df3523f4a7f07a9cae0c7eb9cb86ddf4fe",
+            "type": "blob",
+            "size": 190
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/pyproject.toml",
+            "sha": "e381d6710c98ad9417348fd45aa0f9c12516305c",
+            "type": "blob",
+            "size": 445
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/src",
+            "sha": "088730292dcf5073e23473a66fab69541115fab1",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/src/agent",
+            "sha": "3063ff28cf6cb9b61d033fe45f7be69a648557dc",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/src/agent/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/apps/agent/src/agent/graph.py",
+            "sha": "64604e093418715c161d9bfe14447a7c516e1e14",
+            "type": "blob",
+            "size": 859
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs",
+            "sha": "972dbdeed8ca2c1ed09787d5621d8bf3ecc6790d",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs/shared",
+            "sha": "ef843e0cdac74e901b3cb85ceb1617cbbc38b410",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs/shared/pyproject.toml",
+            "sha": "cf2915bbbfb8a38987fad194a2285f4cc249e86e",
+            "type": "blob",
+            "size": 345
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs/shared/src",
+            "sha": "eaefed13ac3ab24bde251e46496c64d1a644b977",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs/shared/src/shared",
+            "sha": "b94e901b460d7453c70e0ce5cc9af69193aa94c0",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs/shared/src/shared/__init__.py",
+            "sha": "d7eaca2161eef48993f111cc4260fdb972d5c087",
+            "type": "blob",
+            "size": 70
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/libs/shared/src/shared/utils.py",
+            "sha": "5dc3e0c51dc9a25e9546a92bc5aa9d665971358d",
+            "type": "blob",
+            "size": 72
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/pyproject.toml",
+            "sha": "ea115628f7a484cbb0d38f7b52d6dbba154979f7",
+            "type": "blob",
+            "size": 510
+          },
+          {
+            "path": "libs/cli/uv-examples/monorepo/uv.lock",
+            "sha": "b7a1c926c64edad30a3d7861e56714db05f54e77",
+            "type": "blob",
+            "size": 188989
+          },
+          {
+            "path": "libs/cli/uv-examples/simple",
+            "sha": "d15e1909ec74662673d0715de34889e213405b87",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/.env.example",
+            "sha": "e570b8b55999053e360c4e80f83f14881b17966f",
+            "type": "blob",
+            "size": 16
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/langgraph.json",
+            "sha": "3fa5e61d2a0f822aa13a7c30482156de57db975e",
+            "type": "blob",
+            "size": 162
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/pyproject.toml",
+            "sha": "59d0f72130ed55566f1838d71d45e905ce2d4405",
+            "type": "blob",
+            "size": 431
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/src",
+            "sha": "378e13c6770d47de4d809730fa814bd0d3d66f53",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/src/agent",
+            "sha": "5c4384fba63b6a916f783b1fc5c518ade13689d5",
+            "type": "tree"
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/src/agent/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/src/agent/graph.py",
+            "sha": "2e8a3bede803b766ca16a5aba54f39ab6c4358ce",
+            "type": "blob",
+            "size": 781
+          },
+          {
+            "path": "libs/cli/uv-examples/simple/uv.lock",
+            "sha": "08c28d88c55802638cbd9992411f4fad84043326",
+            "type": "blob",
+            "size": 221216
+          },
+          {
+            "path": "libs/cli/uv.lock",
+            "sha": "3ee064c2b61279ff5bc1ea4ee0418e7a6f3c5b6c",
+            "type": "blob",
+            "size": 517445
+          },
+          {
+            "path": "libs/langgraph",
+            "sha": "184920ee4922e4c5f341d0cb766096bbdb804c21",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/.gitignore",
+            "sha": "0dbce5c72062cb9a78f5a3c71fe2b56abfab4ce4",
+            "type": "blob",
+            "size": 31
+          },
+          {
+            "path": "libs/langgraph/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/langgraph/Makefile",
+            "sha": "bfad74585d21719f9171a98c4477f2a8b3b626f6",
+            "type": "blob",
+            "size": 4484
+          },
+          {
+            "path": "libs/langgraph/README.md",
+            "sha": "b6267fd466c5175e1c49dba52f73b691b4c42a30",
+            "type": "blob",
+            "size": 3364
+          },
+          {
+            "path": "libs/langgraph/bench",
+            "sha": "fd76de4ed6ad3ef1841d311aa0ccec4cb3341f1a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/bench/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/langgraph/bench/__main__.py",
+            "sha": "d824abe5fe40af7c367e5ad18a1497964a506b47",
+            "type": "blob",
+            "size": 15058
+          },
+          {
+            "path": "libs/langgraph/bench/fanout_to_subgraph.py",
+            "sha": "491d0d301c3c06f81e743da13c13f6dc119c3fc7",
+            "type": "blob",
+            "size": 4023
+          },
+          {
+            "path": "libs/langgraph/bench/pydantic_state.py",
+            "sha": "2f737bf7a999e9cb13c8c927be5acdaceed0635c",
+            "type": "blob",
+            "size": 11808
+          },
+          {
+            "path": "libs/langgraph/bench/react_agent.py",
+            "sha": "9834e3b913041a744613b21b2adb0be47656ef8f",
+            "type": "blob",
+            "size": 2513
+          },
+          {
+            "path": "libs/langgraph/bench/sequential.py",
+            "sha": "886f51ba3118beb04bbe0978b5c87cf7f804ac14",
+            "type": "blob",
+            "size": 1292
+          },
+          {
+            "path": "libs/langgraph/bench/serde_allowlist.py",
+            "sha": "4278b9af591de4609d019334dbe1c9a63e373a06",
+            "type": "blob",
+            "size": 1628
+          },
+          {
+            "path": "libs/langgraph/bench/wide_dict.py",
+            "sha": "19b41148038c5df1ca5b1e317434be6c2e427062",
+            "type": "blob",
+            "size": 4891
+          },
+          {
+            "path": "libs/langgraph/bench/wide_state.py",
+            "sha": "218655f5fbd5a2f22494992232aa6aa3e4a88283",
+            "type": "blob",
+            "size": 5430
+          },
+          {
+            "path": "libs/langgraph/langgraph",
+            "sha": "0bae2d962feccfba4db93c77c1c0a20240812783",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal",
+            "sha": "f291a154cfbc774f692778f6133c8c27c66f73ea",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/__init__.py",
+            "sha": "2e71cdc23604618ae999e82ee1a796b78543ddc4",
+            "type": "blob",
+            "size": 121
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_cache.py",
+            "sha": "c9c451474b96509db622e1197a4a95d9a21ca4a2",
+            "type": "blob",
+            "size": 1199
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_config.py",
+            "sha": "b79b24c26663278d60eebeb4004867e0d8a413ba",
+            "type": "blob",
+            "size": 16338
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_constants.py",
+            "sha": "58a4e791708f977660513895067e37a0fdfd681f",
+            "type": "blob",
+            "size": 5972
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_fields.py",
+            "sha": "7ada8dfa0cb053a98b5c1ce9d9dca3dcedda2775",
+            "type": "blob",
+            "size": 7368
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_future.py",
+            "sha": "31c56bf4bfab0c5edec7e42e6c816acd2ad4637d",
+            "type": "blob",
+            "size": 7259
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_pydantic.py",
+            "sha": "33319d0ee2598ca2cad9b0f59e05404ad9b532ad",
+            "type": "blob",
+            "size": 8755
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_queue.py",
+            "sha": "b2cc02a772ad64ca10b67da30c05d88fc37bb9eb",
+            "type": "blob",
+            "size": 4451
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_replay.py",
+            "sha": "a86c13319eb4584163c2fe18d86e70ca189c27dd",
+            "type": "blob",
+            "size": 3304
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_retry.py",
+            "sha": "8d4e41fd78fc046530246c05555864bcc50ea44a",
+            "type": "blob",
+            "size": 773
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_runnable.py",
+            "sha": "aa7e51425b62d0db18488325403ec828e1569a30",
+            "type": "blob",
+            "size": 34003
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_scratchpad.py",
+            "sha": "fd96b726c66276761acc88d88324d9bc3d7ea7d1",
+            "type": "blob",
+            "size": 434
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_serde.py",
+            "sha": "933f76ec52008af4f9cee4f1ff16c2832f0c2ceb",
+            "type": "blob",
+            "size": 7292
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_timeout.py",
+            "sha": "11ff43527d9b6e849776c6ad2acad50d029a9cfd",
+            "type": "blob",
+            "size": 770
+          },
+          {
+            "path": "libs/langgraph/langgraph/_internal/_typing.py",
+            "sha": "19854d1c814ba83a9236aef6816645ccc17e2e85",
+            "type": "blob",
+            "size": 1536
+          },
+          {
+            "path": "libs/langgraph/langgraph/callbacks.py",
+            "sha": "49997a87094182dab4d76e1eea91d3d6fd65c351",
+            "type": "blob",
+            "size": 12262
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels",
+            "sha": "ca2af3850a0ce358c07fafc826ec8deaaf5f1b52",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/__init__.py",
+            "sha": "cc7fcc471f55c0b4911a0c5d11b4c1875799d281",
+            "type": "blob",
+            "size": 868
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/any_value.py",
+            "sha": "9ba25557469dce738422287050393c98714be0fc",
+            "type": "blob",
+            "size": 1985
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/base.py",
+            "sha": "9207aa2bbf2c1dd3c4a3a32624f882ce845433d5",
+            "type": "blob",
+            "size": 3643
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/binop.py",
+            "sha": "58346198c928e79b4efcfe9d2eec83b29f2da150",
+            "type": "blob",
+            "size": 5313
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/delta.py",
+            "sha": "eecf954770b42cfcfc9dbdf4adb0c90024c7f875",
+            "type": "blob",
+            "size": 7772
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/ephemeral_value.py",
+            "sha": "108588d0b8276d0b818d53cd908d0563e7181035",
+            "type": "blob",
+            "size": 2402
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/last_value.py",
+            "sha": "54caac7581ea5e1929f89e2b8a21653621dfac37",
+            "type": "blob",
+            "size": 4324
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/named_barrier_value.py",
+            "sha": "d45644110f47956d7adb5ef9c2138eae597dcf3c",
+            "type": "blob",
+            "size": 5165
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/topic.py",
+            "sha": "4f17d7c9e8152c9bbe7b779f404ad2f7701101dd",
+            "type": "blob",
+            "size": 2863
+          },
+          {
+            "path": "libs/langgraph/langgraph/channels/untracked_value.py",
+            "sha": "bcd55186b9ae7199205e8ad527adbb3bbf660e49",
+            "type": "blob",
+            "size": 2186
+          },
+          {
+            "path": "libs/langgraph/langgraph/config.py",
+            "sha": "c8a321d8399d1fe2965d58b3a6f86a3ff602be94",
+            "type": "blob",
+            "size": 5603
+          },
+          {
+            "path": "libs/langgraph/langgraph/constants.py",
+            "sha": "5b7e52aae2d7c1c0824a475f71b9a45e985f254d",
+            "type": "blob",
+            "size": 1930
+          },
+          {
+            "path": "libs/langgraph/langgraph/errors.py",
+            "sha": "65b57d61e44ce4faed08d9ac244bd8a128239bad",
+            "type": "blob",
+            "size": 7540
+          },
+          {
+            "path": "libs/langgraph/langgraph/func",
+            "sha": "d87ecb444839d3b64e87442e0f36cfeaf51acab1",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/func/__init__.py",
+            "sha": "be310f0f8bac79efd9f19cd8983776f697d0f676",
+            "type": "blob",
+            "size": 23816
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph",
+            "sha": "3028038f2d1c55bef5805e925d234d3953c3f15b",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph/__init__.py",
+            "sha": "7bea3fc8294fa3f0fc60451d46e40fa1d74c28fd",
+            "type": "blob",
+            "size": 284
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph/_branch.py",
+            "sha": "df5136d5f741742a9e25f9ea6315d0eefe744f07",
+            "type": "blob",
+            "size": 7515
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph/_node.py",
+            "sha": "4cb2676a90dcff0d13f25c4f811b91051f8065d8",
+            "type": "blob",
+            "size": 3305
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph/message.py",
+            "sha": "64f375ad2ad52d97e199caea9964769b1ea19b7a",
+            "type": "blob",
+            "size": 15476
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph/state.py",
+            "sha": "9a87f16fa91a794b2e9be09352c1cb03ae89a90d",
+            "type": "blob",
+            "size": 76310
+          },
+          {
+            "path": "libs/langgraph/langgraph/graph/ui.py",
+            "sha": "847b2c7fac4087e0dc5d25d70bf5d9272b718928",
+            "type": "blob",
+            "size": 6593
+          },
+          {
+            "path": "libs/langgraph/langgraph/managed",
+            "sha": "202dd0cde96b5f6d0008a250ce596c484ea7f200",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/managed/__init__.py",
+            "sha": "2d50f323b2703f9747a7450d07f6eac868c665fd",
+            "type": "blob",
+            "size": 114
+          },
+          {
+            "path": "libs/langgraph/langgraph/managed/base.py",
+            "sha": "7205967f29744a429a187a1b63dcb7f04a762ba2",
+            "type": "blob",
+            "size": 639
+          },
+          {
+            "path": "libs/langgraph/langgraph/managed/is_last_step.py",
+            "sha": "e53058db3660bca50e4c93ba4438ea02e25e1a07",
+            "type": "blob",
+            "size": 634
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel",
+            "sha": "9cf2e104039f8cd1c0a83e5af3875ef2e7e139f2",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/__init__.py",
+            "sha": "90eb44b85492bf210333122b3f93bf26cefdd475",
+            "type": "blob",
+            "size": 91
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_algo.py",
+            "sha": "103f6cce01757d6db94ad113a50528909d78c6f7",
+            "type": "blob",
+            "size": 52186
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_call.py",
+            "sha": "6c3fb385668850fc9d3a626823849fc576fe7a2a",
+            "type": "blob",
+            "size": 9820
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_checkpoint.py",
+            "sha": "c336f75a60a103bb5323ef41db8ba58a2e5913ee",
+            "type": "blob",
+            "size": 12437
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_config.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_draw.py",
+            "sha": "922450df9a8bdaf122f4a4565ca0f7584b3a97fa",
+            "type": "blob",
+            "size": 10464
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_executor.py",
+            "sha": "10a43cf2b3cb8e20030bec5f5526b4546089bf8f",
+            "type": "blob",
+            "size": 8185
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_io.py",
+            "sha": "3c05dbda70ed04f1038268a201000d5141535832",
+            "type": "blob",
+            "size": 5826
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_log.py",
+            "sha": "fd127777b23fab1a3daa78b552a93b1a13ce38b1",
+            "type": "blob",
+            "size": 56
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_loop.py",
+            "sha": "3710377685c15edb5d27de6f41f182cebafec5b4",
+            "type": "blob",
+            "size": 82085
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_messages.py",
+            "sha": "2b61c834994dba7c5586adc1005c569766adf014",
+            "type": "blob",
+            "size": 17446
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_read.py",
+            "sha": "7e1f9a68695ad51a30e46c7a21fcfc82fa3a6196",
+            "type": "blob",
+            "size": 10686
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_remote_run_stream.py",
+            "sha": "2e6cd1ef5c6005072969813f9ffc07ec1044c65b",
+            "type": "blob",
+            "size": 13910
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_retry.py",
+            "sha": "ecd485084e9fc2900f9155ff61364c606e9f4ca3",
+            "type": "blob",
+            "size": 33048
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_runner.py",
+            "sha": "4d53b9f9de80dc397ec23c79f0707e38152f9519",
+            "type": "blob",
+            "size": 36898
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_tools.py",
+            "sha": "fd7bb63bc0ce57c1100e33beabd751d10831f07e",
+            "type": "blob",
+            "size": 9065
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_utils.py",
+            "sha": "dabc309e0fd740bb700beb196831dfd2192a93f7",
+            "type": "blob",
+            "size": 8101
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_validate.py",
+            "sha": "fcfb54c9a1241699490dcb562020bc9ee83c50d8",
+            "type": "blob",
+            "size": 4473
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/_write.py",
+            "sha": "8b4508257653e54c94cb2360bd32de91bb161bfd",
+            "type": "blob",
+            "size": 7309
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/debug.py",
+            "sha": "b3ef5a874e1e12e6504b765e6ff2562089613874",
+            "type": "blob",
+            "size": 10010
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/main.py",
+            "sha": "f4ca480244718a9c0b3cf20a8238bf1306664c87",
+            "type": "blob",
+            "size": 175454
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/protocol.py",
+            "sha": "259554ddb0d6afaaeba1a40537486716792a8780",
+            "type": "blob",
+            "size": 8597
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/remote.py",
+            "sha": "b5c4245f04f5b4217a83839acf6a211e8ba17e72",
+            "type": "blob",
+            "size": 48550
+          },
+          {
+            "path": "libs/langgraph/langgraph/pregel/types.py",
+            "sha": "39a36df68787da3cf33bbfd8a9ca8ab8b14874a2",
+            "type": "blob",
+            "size": 737
+          },
+          {
+            "path": "libs/langgraph/langgraph/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/langgraph/langgraph/runtime.py",
+            "sha": "9e6d32bf84e36015a8813d01e021da2b9874e0b1",
+            "type": "blob",
+            "size": 10319
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream",
+            "sha": "8ca0a333b44915657f47a1741f2a99015f9b59ba",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/__init__.py",
+            "sha": "e67b5131ab76912e440f5386c866dd761ba5c120",
+            "type": "blob",
+            "size": 1221
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/_convert.py",
+            "sha": "c1a14b5b0d9e95d0b8e40b112e65f239ff4c4265",
+            "type": "blob",
+            "size": 914
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/_mux.py",
+            "sha": "061166ee13af4aeb3cf95a4e34551a6599412900",
+            "type": "blob",
+            "size": 21479
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/_types.py",
+            "sha": "13b202aaa6a620a48779685e484ec12c4f88cc5b",
+            "type": "blob",
+            "size": 13117
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/run_stream.py",
+            "sha": "37062c64daef36cea2e99d8c5b769226e122671c",
+            "type": "blob",
+            "size": 25510
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/stream_channel.py",
+            "sha": "9af48ee287d4a3edb83c1b051a0d18e082bf198e",
+            "type": "blob",
+            "size": 12793
+          },
+          {
+            "path": "libs/langgraph/langgraph/stream/transformers.py",
+            "sha": "29e247b5ecd77a61b539e76fd1211568c2bf8c1e",
+            "type": "blob",
+            "size": 40751
+          },
+          {
+            "path": "libs/langgraph/langgraph/types.py",
+            "sha": "2fcf5bef929632390ea25761f29c2bff18bdd45a",
+            "type": "blob",
+            "size": 34950
+          },
+          {
+            "path": "libs/langgraph/langgraph/typing.py",
+            "sha": "c1187357baab7f3e3de85ac0a7905292843c4c70",
+            "type": "blob",
+            "size": 1260
+          },
+          {
+            "path": "libs/langgraph/langgraph/utils",
+            "sha": "1fe0461ac2d350e58bdec3372a1ce36a437bebc3",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/langgraph/utils/__init__.py",
+            "sha": "d0f11b2b494ae7eecd26b675a550efeb6de20cf5",
+            "type": "blob",
+            "size": 52
+          },
+          {
+            "path": "libs/langgraph/langgraph/utils/config.py",
+            "sha": "f855d0a12dc617a0842d008a73a4b2a8356ed7c9",
+            "type": "blob",
+            "size": 228
+          },
+          {
+            "path": "libs/langgraph/langgraph/utils/runnable.py",
+            "sha": "6e7ccc668b8dc1cd4061e4f550438eac5cc780c8",
+            "type": "blob",
+            "size": 164
+          },
+          {
+            "path": "libs/langgraph/langgraph/version.py",
+            "sha": "a81f647c745a56fe11179db19bbbefb81d7a2e7e",
+            "type": "blob",
+            "size": 331
+          },
+          {
+            "path": "libs/langgraph/langgraph/warnings.py",
+            "sha": "aa447fb02b3f9c92e6712baa6e72f45dd02ca2af",
+            "type": "blob",
+            "size": 2482
+          },
+          {
+            "path": "libs/langgraph/pyproject.toml",
+            "sha": "e3d95cfec83fb9ce4a887c264a060f4513be2e9d",
+            "type": "blob",
+            "size": 4466
+          },
+          {
+            "path": "libs/langgraph/tests",
+            "sha": "0e5464c6b4c2ee497c23b2f933e09e0ce75b98b0",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/langgraph/tests/__snapshots__",
+            "sha": "313002343da33ec99ff1d0423e577acead9d143a",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/tests/__snapshots__/test_large_cases.ambr",
+            "sha": "c48ecd84cac18ec814aa5887c62d7de88788f619",
+            "type": "blob",
+            "size": 53001
+          },
+          {
+            "path": "libs/langgraph/tests/__snapshots__/test_pregel.ambr",
+            "sha": "fded3d0c4c97c1b4baf81b8030cd6b952bd0ccc8",
+            "type": "blob",
+            "size": 31549
+          },
+          {
+            "path": "libs/langgraph/tests/__snapshots__/test_pregel_async.ambr",
+            "sha": "0832ff61edb5e7b9b8096c3f5d565d70125d0cc4",
+            "type": "blob",
+            "size": 3015
+          },
+          {
+            "path": "libs/langgraph/tests/agents.py",
+            "sha": "d9e9257d928e9bcb8610c5b3600713c5519b2738",
+            "type": "blob",
+            "size": 805
+          },
+          {
+            "path": "libs/langgraph/tests/any_int.py",
+            "sha": "2fb2dba5564294a54fca98d244f4418e848520ca",
+            "type": "blob",
+            "size": 162
+          },
+          {
+            "path": "libs/langgraph/tests/any_str.py",
+            "sha": "e4175fd8b48b063a5061efb0e738bc59dcd9549d",
+            "type": "blob",
+            "size": 2406
+          },
+          {
+            "path": "libs/langgraph/tests/compose-postgres.yml",
+            "sha": "221b35dafe48b4e1fa1cb714f5571dd3d8b6230f",
+            "type": "blob",
+            "size": 368
+          },
+          {
+            "path": "libs/langgraph/tests/compose-redis.yml",
+            "sha": "be43437095aac34831e9d947c453bfccadb4603d",
+            "type": "blob",
+            "size": 382
+          },
+          {
+            "path": "libs/langgraph/tests/conftest.py",
+            "sha": "2e2857ae3e667da3f20e9b74c9473094821d9efc",
+            "type": "blob",
+            "size": 7081
+          },
+          {
+            "path": "libs/langgraph/tests/conftest_checkpointer.py",
+            "sha": "b74e55923f28e0b2e39a630bac2f3f61c3f81573",
+            "type": "blob",
+            "size": 7963
+          },
+          {
+            "path": "libs/langgraph/tests/conftest_store.py",
+            "sha": "4ae8c2445e161fd29349dbbf59d16cbafc63d88a",
+            "type": "blob",
+            "size": 4688
+          },
+          {
+            "path": "libs/langgraph/tests/example_app",
+            "sha": "7b4760f2c76ef1e6c8b39906d05b3ba98c5316c7",
+            "type": "tree"
+          },
+          {
+            "path": "libs/langgraph/tests/example_app/example_graph.py",
+            "sha": "2a3f2a52c57e64896b1953f66cf28b8736d743a3",
+            "type": "blob",
+            "size": 2448
+          },
+          {
+            "path": "libs/langgraph/tests/example_app/langgraph.json",
+            "sha": "5d0a88e41fa10e8708ec565a74d20de4ef4bc0dd",
+            "type": "blob",
+            "size": 162
+          },
+          {
+            "path": "libs/langgraph/tests/example_app/requirements.txt",
+            "sha": "b3557ec4e5e330784260d9c33fa9e0e48bfbeb04",
+            "type": "blob",
+            "size": 19
+          },
+          {
+            "path": "libs/langgraph/tests/fake_chat.py",
+            "sha": "827089d4a96613e9d43e42d0ced2dc1fd25f34db",
+            "type": "blob",
+            "size": 5620
+          },
+          {
+            "path": "libs/langgraph/tests/fake_tracer.py",
+            "sha": "37133980f1f4646459f9111fe82ee0a3fa0fa079",
+            "type": "blob",
+            "size": 3559
+          },
+          {
+            "path": "libs/langgraph/tests/memory_assert.py",
+            "sha": "3987d422b3b6cb80221f16fce1e50f1667cb1703",
+            "type": "blob",
+            "size": 3372
+          },
+          {
+            "path": "libs/langgraph/tests/messages.py",
+            "sha": "ecc657a3622b048fc63b2cee0c3fd5612efc84bf",
+            "type": "blob",
+            "size": 1463
+          },
+          {
+            "path": "libs/langgraph/tests/test_algo.py",
+            "sha": "0bf988173212f86b4961f7a7df97a7ee3924650e",
+            "type": "blob",
+            "size": 1840
+          },
+          {
+            "path": "libs/langgraph/tests/test_channels.py",
+            "sha": "1e4066c4cf03312760a32730310829033b917c12",
+            "type": "blob",
+            "size": 28019
+          },
+          {
+            "path": "libs/langgraph/tests/test_checkpoint_migration.py",
+            "sha": "c53c5c72f4ebda6974ec37f690d1aa365c5cc804",
+            "type": "blob",
+            "size": 70609
+          },
+          {
+            "path": "libs/langgraph/tests/test_config_async.py",
+            "sha": "13f922534ae4498f6ad59263ec7b6c12d1e5d18e",
+            "type": "blob",
+            "size": 4331
+          },
+          {
+            "path": "libs/langgraph/tests/test_delta_channel_benchmark.py",
+            "sha": "41ae6b7d23d82283103831e2067aa419c7187d37",
+            "type": "blob",
+            "size": 10996
+          },
+          {
+            "path": "libs/langgraph/tests/test_delta_channel_exit_mode.py",
+            "sha": "3d18ce70856f0c3905d2ffd7c65b965010b7400f",
+            "type": "blob",
+            "size": 14096
+          },
+          {
+            "path": "libs/langgraph/tests/test_delta_channel_id_stability.py",
+            "sha": "5886160122028a23c6c2e9bd26991c707016d978",
+            "type": "blob",
+            "size": 4583
+          },
+          {
+            "path": "libs/langgraph/tests/test_delta_channel_migration.py",
+            "sha": "ec183239d8e5c26d7418fd80bf4a3564423f038e",
+            "type": "blob",
+            "size": 29460
+          },
+          {
+            "path": "libs/langgraph/tests/test_delta_channel_supersteps_bound.py",
+            "sha": "a2c3a27765bf6e5ad8e063d436a4d8792bdbbfc8",
+            "type": "blob",
+            "size": 7135
+          },
+          {
+            "path": "libs/langgraph/tests/test_delta_channel_update_state.py",
+            "sha": "da6db40f6c86660332999bafb8bcb603a80037eb",
+            "type": "blob",
+            "size": 12171
+          },
+          {
+            "path": "libs/langgraph/tests/test_deprecation.py",
+            "sha": "e57d57283c380f4a4beeae6b8155176f4aea1162",
+            "type": "blob",
+            "size": 12971
+          },
+          {
+            "path": "libs/langgraph/tests/test_graph_callbacks.py",
+            "sha": "941cf415d12749f4622c4c7bace32483bc4fbbdc",
+            "type": "blob",
+            "size": 11417
+          },
+          {
+            "path": "libs/langgraph/tests/test_interleave_arrival_order.py",
+            "sha": "3e8ede178aa51a151f803b166814c53b04b868cc",
+            "type": "blob",
+            "size": 12018
+          },
+          {
+            "path": "libs/langgraph/tests/test_interrupt_migration.py",
+            "sha": "53f2269f220f71dae5f5eaa8488795f9faf39c93",
+            "type": "blob",
+            "size": 2352
+          },
+          {
+            "path": "libs/langgraph/tests/test_interruption.py",
+            "sha": "a484d74e5adc4c6391835134a23ec8acbfab9326",
+            "type": "blob",
+            "size": 3470
+          },
+          {
+            "path": "libs/langgraph/tests/test_large_cases.py",
+            "sha": "5d831a07141ba5a5b5496f3104d3e52326719832",
+            "type": "blob",
+            "size": 214154
+          },
+          {
+            "path": "libs/langgraph/tests/test_large_cases_async.py",
+            "sha": "d90ed5b144a3b5f550704771c722c9820839ee90",
+            "type": "blob",
+            "size": 127454
+          },
+          {
+            "path": "libs/langgraph/tests/test_managed_values.py",
+            "sha": "0202a1400114cdc4c2e708f1ef7b4e71ccbe9f8c",
+            "type": "blob",
+            "size": 683
+          },
+          {
+            "path": "libs/langgraph/tests/test_messages_state.py",
+            "sha": "f41552b16160448cab771cfd898f87f6028788b9",
+            "type": "blob",
+            "size": 10989
+          },
+          {
+            "path": "libs/langgraph/tests/test_parent_command.py",
+            "sha": "6b368232b95e753c9a53db28913f3d0f74ac67fb",
+            "type": "blob",
+            "size": 1696
+          },
+          {
+            "path": "libs/langgraph/tests/test_parent_command_async.py",
+            "sha": "39a077631d6faf60c5030631ce5c567f1a94f0ef",
+            "type": "blob",
+            "size": 1918
+          },
+          {
+            "path": "libs/langgraph/tests/test_pregel.py",
+            "sha": "c166c5837a966b7c2b4f1e2888a1b96a00730a73",
+            "type": "blob",
+            "size": 309499
+          },
+          {
+            "path": "libs/langgraph/tests/test_pregel_async.py",
+            "sha": "150801ffc11eeaf85d2748d6b473a3228313e65e",
+            "type": "blob",
+            "size": 309167
+          },
+          {
+            "path": "libs/langgraph/tests/test_pregel_debug.py",
+            "sha": "38e1a47373fc4ad457d076f12b0b10eb515b3a28",
+            "type": "blob",
+            "size": 5903
+          },
+          {
+            "path": "libs/langgraph/tests/test_pregel_stream_events_v3.py",
+            "sha": "a0b038c09b12e02b44f1121dc26c426d58971144",
+            "type": "blob",
+            "size": 62310
+          },
+          {
+            "path": "libs/langgraph/tests/test_pydantic.py",
+            "sha": "062a450fe00836667fd0d827dac799046e9fccde",
+            "type": "blob",
+            "size": 11204
+          },
+          {
+            "path": "libs/langgraph/tests/test_remote_graph.py",
+            "sha": "8e10e209ee4f6980eacc6ead26fc058e62ba55f4",
+            "type": "blob",
+            "size": 45455
+          },
+          {
+            "path": "libs/langgraph/tests/test_remote_graph_v3.py",
+            "sha": "2239b73fb6c453d1387994cb117d3132c1cb582a",
+            "type": "blob",
+            "size": 22633
+          },
+          {
+            "path": "libs/langgraph/tests/test_retry.py",
+            "sha": "aa48b0812692bc18286757b04fad4d91451bbf94",
+            "type": "blob",
+            "size": 95871
+          },
+          {
+            "path": "libs/langgraph/tests/test_runnable.py",
+            "sha": "e7d1950ce9d89df4dda04f1b5522722281bb7af0",
+            "type": "blob",
+            "size": 12805
+          },
+          {
+            "path": "libs/langgraph/tests/test_runtime.py",
+            "sha": "0f8cc944b41eaebbdbb7f04a0142cc51e03378ca",
+            "type": "blob",
+            "size": 38871
+          },
+          {
+            "path": "libs/langgraph/tests/test_serde_allowlist.py",
+            "sha": "b6bc93b2fef2afee8606d04db930888f095c758b",
+            "type": "blob",
+            "size": 4932
+          },
+          {
+            "path": "libs/langgraph/tests/test_state.py",
+            "sha": "f1ff21a82ac5d8ace73f2af40fc73238a73e667c",
+            "type": "blob",
+            "size": 10983
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_before_builtins.py",
+            "sha": "6e01dfb39bef733daa69de8419527b03682a984f",
+            "type": "blob",
+            "size": 9697
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_data_transformers.py",
+            "sha": "ae94c8943170a3c041b201a924740975791900ec",
+            "type": "blob",
+            "size": 21214
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_events_v3.py",
+            "sha": "71d81325efb48efece29b6828fbdae652f6f8076",
+            "type": "blob",
+            "size": 45078
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_events_v3_e2e.py",
+            "sha": "e8ea87de9623ad6dcf358a107a65ccae82251cd1",
+            "type": "blob",
+            "size": 30080
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_events_v3_kwarg_forwarding.py",
+            "sha": "a5f353ad33a7a89b1d552d0acd819be2cb8dea12",
+            "type": "blob",
+            "size": 3523
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_lifecycle_transformer.py",
+            "sha": "893b0b3b70bd392e6ce185881ae0c283b4c3c30d",
+            "type": "blob",
+            "size": 26470
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_messages_transformer.py",
+            "sha": "30443b7732656e5f35c88a34a10537bd21ab88d0",
+            "type": "blob",
+            "size": 33103
+          },
+          {
+            "path": "libs/langgraph/tests/test_stream_subgraph_transformer.py",
+            "sha": "236f732572bd351d996f399e67b17d58054aec4d",
+            "type": "blob",
+            "size": 26573
+          },
+          {
+            "path": "libs/langgraph/tests/test_subgraph_detection.py",
+            "sha": "dca56139f11950d2727ae3e203eeef69958d0197",
+            "type": "blob",
+            "size": 7762
+          },
+          {
+            "path": "libs/langgraph/tests/test_subgraph_persistence.py",
+            "sha": "c320a094e4ce0bdfe6da729d5f82765937141eac",
+            "type": "blob",
+            "size": 23318
+          },
+          {
+            "path": "libs/langgraph/tests/test_subgraph_persistence_async.py",
+            "sha": "ba4ca1a91779b2d389cf602be3dd55781ba6651d",
+            "type": "blob",
+            "size": 24168
+          },
+          {
+            "path": "libs/langgraph/tests/test_time_travel.py",
+            "sha": "fe544274f4175ed250405a37d5e8176d96e13a58",
+            "type": "blob",
+            "size": 135977
+          },
+          {
+            "path": "libs/langgraph/tests/test_time_travel_async.py",
+            "sha": "458b32c6a3715a6df0966e694b1c9135089fbeb2",
+            "type": "blob",
+            "size": 109860
+          },
+          {
+            "path": "libs/langgraph/tests/test_tool_stream_handler.py",
+            "sha": "722c70b9a25a8dd96dbe6db5bf04b7bb8a050d9c",
+            "type": "blob",
+            "size": 9473
+          },
+          {
+            "path": "libs/langgraph/tests/test_trace_policy.py",
+            "sha": "9496525a972a152d700124dbda6c4fa3055e2a9d",
+            "type": "blob",
+            "size": 4427
+          },
+          {
+            "path": "libs/langgraph/tests/test_tracing_interops.py",
+            "sha": "aeac91dc2fdc9aee481a4b38006ce270b6912ea3",
+            "type": "blob",
+            "size": 3744
+          },
+          {
+            "path": "libs/langgraph/tests/test_type_checking.py",
+            "sha": "5f807ddaae3e4148ebad3085a4372556d3fed53b",
+            "type": "blob",
+            "size": 4922
+          },
+          {
+            "path": "libs/langgraph/tests/test_utils.py",
+            "sha": "9efbd0269522922266d3e8e9f7b8058ae73b8378",
+            "type": "blob",
+            "size": 27507
+          },
+          {
+            "path": "libs/langgraph/uv.lock",
+            "sha": "a3d49f446adc664140e8fca0a8f6318be05a8dd7",
+            "type": "blob",
+            "size": 706052
+          },
+          {
+            "path": "libs/prebuilt",
+            "sha": "b722b0fe2abf6d97382205c02a29c2ae769ad433",
+            "type": "tree"
+          },
+          {
+            "path": "libs/prebuilt/.claude",
+            "sha": "417439f5f2719eac88863e8f9af4183e546faaf1",
+            "type": "tree"
+          },
+          {
+            "path": "libs/prebuilt/.claude/settings.local.json",
+            "sha": "269a4e496d5de896010c18536c2652c287fe9b26",
+            "type": "blob",
+            "size": 519
+          },
+          {
+            "path": "libs/prebuilt/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/prebuilt/Makefile",
+            "sha": "3f5ca1e40f41fb8c89e98d33e69825d42f6a1177",
+            "type": "blob",
+            "size": 2565
+          },
+          {
+            "path": "libs/prebuilt/README.md",
+            "sha": "b3da58470454fe408743f90601eb015e8145b987",
+            "type": "blob",
+            "size": 5759
+          },
+          {
+            "path": "libs/prebuilt/langgraph",
+            "sha": "3579492c33be551214d7deb4971d493db7d01221",
+            "type": "tree"
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt",
+            "sha": "bd20b8af4e00e6911e9354048b1a010ff4c429b6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/__init__.py",
+            "sha": "0d879526272880963cf851928e5d718dfe1f6a5f",
+            "type": "blob",
+            "size": 628
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/_tool_call_stream.py",
+            "sha": "da2e1c737f3c960f7d79e090aa4c16fa9ae87d32",
+            "type": "blob",
+            "size": 4078
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/_tool_call_transformer.py",
+            "sha": "37ed1b8e8cbc4810edfdaad383bae677d06a7a87",
+            "type": "blob",
+            "size": 6086
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/chat_agent_executor.py",
+            "sha": "6c11c8847febbafd2b4fb3634868d40636c3b53b",
+            "type": "blob",
+            "size": 39821
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/interrupt.py",
+            "sha": "d23c11c8565a6fc364c5eb7c31a78c9d532cb33f",
+            "type": "blob",
+            "size": 3975
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/tool_node.py",
+            "sha": "95e161b9078e3123afa1854247a5dfd132410a53",
+            "type": "blob",
+            "size": 79179
+          },
+          {
+            "path": "libs/prebuilt/langgraph/prebuilt/tool_validator.py",
+            "sha": "ec9b3c29035007a3e283f133e7de365957d9dc12",
+            "type": "blob",
+            "size": 9089
+          },
+          {
+            "path": "libs/prebuilt/pyproject.toml",
+            "sha": "3c9c573154140ddc555de7c39581c4aa0601990a",
+            "type": "blob",
+            "size": 2906
+          },
+          {
+            "path": "libs/prebuilt/tests",
+            "sha": "551ba0537fb0a507dd0b5c6abf6c843d4f24a7ee",
+            "type": "tree"
+          },
+          {
+            "path": "libs/prebuilt/tests/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/prebuilt/tests/__snapshots__",
+            "sha": "0840ab78e43c3dd1538d254e65ebdd44ff5e0f70",
+            "type": "tree"
+          },
+          {
+            "path": "libs/prebuilt/tests/__snapshots__/test_react_agent_graph.ambr",
+            "sha": "dca7fc751604aa4296b4f6a9758bb977849aaeb4",
+            "type": "blob",
+            "size": 4266
+          },
+          {
+            "path": "libs/prebuilt/tests/any_str.py",
+            "sha": "ccc69eada9acfbb5c9af6b96e4a5df6c70801c8e",
+            "type": "blob",
+            "size": 456
+          },
+          {
+            "path": "libs/prebuilt/tests/compose-postgres.yml",
+            "sha": "221b35dafe48b4e1fa1cb714f5571dd3d8b6230f",
+            "type": "blob",
+            "size": 368
+          },
+          {
+            "path": "libs/prebuilt/tests/compose-redis.yml",
+            "sha": "18862fd28dddc6af1b30acbb3184bbcf6da671ae",
+            "type": "blob",
+            "size": 388
+          },
+          {
+            "path": "libs/prebuilt/tests/conftest.py",
+            "sha": "72ee4ad97232487a5057c434cb7019b13245dae2",
+            "type": "blob",
+            "size": 5523
+          },
+          {
+            "path": "libs/prebuilt/tests/conftest_checkpointer.py",
+            "sha": "c71e46c4a756f39d81a507238d17cbb5f438ac48",
+            "type": "blob",
+            "size": 5909
+          },
+          {
+            "path": "libs/prebuilt/tests/conftest_store.py",
+            "sha": "4ae8c2445e161fd29349dbbf59d16cbafc63d88a",
+            "type": "blob",
+            "size": 4688
+          },
+          {
+            "path": "libs/prebuilt/tests/memory_assert.py",
+            "sha": "3c602c4137f37441134ec39e00a71967ef71d2e5",
+            "type": "blob",
+            "size": 1879
+          },
+          {
+            "path": "libs/prebuilt/tests/messages.py",
+            "sha": "06f64bc7d1275fe4a6097c7c098649f40323b0c0",
+            "type": "blob",
+            "size": 842
+          },
+          {
+            "path": "libs/prebuilt/tests/model.py",
+            "sha": "54518b3bad9212060330e78fe462b3bf0f79da83",
+            "type": "blob",
+            "size": 3123
+          },
+          {
+            "path": "libs/prebuilt/tests/test_deprecation.py",
+            "sha": "72fc1eede6c703c75cba775c4079ac348a2875b1",
+            "type": "blob",
+            "size": 1454
+          },
+          {
+            "path": "libs/prebuilt/tests/test_injected_state_not_required.py",
+            "sha": "58b77eaeb8026c1e0678c93b4e02a06e97496b74",
+            "type": "blob",
+            "size": 9235
+          },
+          {
+            "path": "libs/prebuilt/tests/test_on_tool_call.py",
+            "sha": "f2af11b46f24962dfa147b72e34a0e2cf2f9ba8c",
+            "type": "blob",
+            "size": 47055
+          },
+          {
+            "path": "libs/prebuilt/tests/test_react_agent.py",
+            "sha": "c801a96dcd77af5d98d8f440d4775ee9b8ebb20c",
+            "type": "blob",
+            "size": 70608
+          },
+          {
+            "path": "libs/prebuilt/tests/test_react_agent_graph.py",
+            "sha": "8b45962763eef021b623fff4c08ac29a209e78de",
+            "type": "blob",
+            "size": 1280
+          },
+          {
+            "path": "libs/prebuilt/tests/test_tool_call_transformer.py",
+            "sha": "ae8fedd67ea608e0e83176891edead2727c01d41",
+            "type": "blob",
+            "size": 14702
+          },
+          {
+            "path": "libs/prebuilt/tests/test_tool_node.py",
+            "sha": "47ebdcae0d936167649c0d33103650388d290a9a",
+            "type": "blob",
+            "size": 78336
+          },
+          {
+            "path": "libs/prebuilt/tests/test_tool_node_interceptor_unregistered.py",
+            "sha": "dadf36ad1dbb7a0dc7cced39134db098bba2e5a1",
+            "type": "blob",
+            "size": 25460
+          },
+          {
+            "path": "libs/prebuilt/tests/test_tool_node_validation_error_filtering.py",
+            "sha": "af2fd00e3e28712d830ddbc044b4ced16b87cbee",
+            "type": "blob",
+            "size": 15383
+          },
+          {
+            "path": "libs/prebuilt/tests/test_validation_node.py",
+            "sha": "674c96f76b3d0f677d53dd8354ffe8031f3cb9bf",
+            "type": "blob",
+            "size": 2419
+          },
+          {
+            "path": "libs/prebuilt/uv.lock",
+            "sha": "53e34cdb514424455a3b23cff159e20af0d6e905",
+            "type": "blob",
+            "size": 314840
+          },
+          {
+            "path": "libs/sdk-js",
+            "sha": "3bdebeb8945319e81f2a63934e2dc6f63bdff46b",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-js/README.md",
+            "sha": "924e755a900b6533fadb9e4b04c59896cab930c7",
+            "type": "blob",
+            "size": 432
+          },
+          {
+            "path": "libs/sdk-py",
+            "sha": "fdd20eacbfc517486877a8337a24282c135c8915",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/CHANGELOG.md",
+            "sha": "32c29f0e13c1955262fcc8433a508a42a45b8ece",
+            "type": "blob",
+            "size": 2102
+          },
+          {
+            "path": "libs/sdk-py/LICENSE",
+            "sha": "fc0602feecdd6748623c852ab534e1ca612673c7",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "libs/sdk-py/MIGRATION.md",
+            "sha": "f1a37c2928b5c85a07a43a28a03952a65fff08a7",
+            "type": "blob",
+            "size": 3676
+          },
+          {
+            "path": "libs/sdk-py/Makefile",
+            "sha": "caf6c436e368dcb7af79da6467248b89dba3ef7c",
+            "type": "blob",
+            "size": 695
+          },
+          {
+            "path": "libs/sdk-py/README.md",
+            "sha": "24bf823182cdf049a37453b2e6efed9c33d960b4",
+            "type": "blob",
+            "size": 4458
+          },
+          {
+            "path": "libs/sdk-py/integration",
+            "sha": "da2fd64e36a84f4d7569e401392b52fa5804a2e7",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/integration/Dockerfile",
+            "sha": "cd830b8e82a3444c9913f34474768564503a9000",
+            "type": "blob",
+            "size": 2121
+          },
+          {
+            "path": "libs/sdk-py/integration/docker-compose.yml",
+            "sha": "320607342c4347ac90e4fc3d7b4aba0e3062e1ce",
+            "type": "blob",
+            "size": 3629
+          },
+          {
+            "path": "libs/sdk-py/integration/graph",
+            "sha": "ab2f4447c9931bd90882c79c86dc8ee0afecb0e4",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/integration/graph/__init__.py",
+            "sha": "c9c3dd7f4af7177b927d8373d77532dc98961e1a",
+            "type": "blob",
+            "size": 201
+          },
+          {
+            "path": "libs/sdk-py/integration/graph/deep_agent.py",
+            "sha": "5dc6d73a431e2191a251939f2270fba50e29dc0f",
+            "type": "blob",
+            "size": 3251
+          },
+          {
+            "path": "libs/sdk-py/integration/graph/factory_graph.py",
+            "sha": "845290d00a7e67ce2478884d43cd1ebced861dd0",
+            "type": "blob",
+            "size": 2457
+          },
+          {
+            "path": "libs/sdk-py/integration/graph/streaming_graph.py",
+            "sha": "c71765fc60db704a05ebc9548c0b54e3fb7ae30e",
+            "type": "blob",
+            "size": 11328
+          },
+          {
+            "path": "libs/sdk-py/integration/graph/tools_agent.py",
+            "sha": "a4aeb5649996ce38e686e050dd00383af0b73452",
+            "type": "blob",
+            "size": 4004
+          },
+          {
+            "path": "libs/sdk-py/integration/langgraph.json",
+            "sha": "23da8ca57d08229dadaa3d8ed0da723d12123441",
+            "type": "blob",
+            "size": 321
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts",
+            "sha": "346400ff82088deeea0e6e13dc38f0a7765a4d3b",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/_common.py",
+            "sha": "49aa33e23b5db007573937e1dbf0130cde5b52d3",
+            "type": "blob",
+            "size": 4206
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_cancel.py",
+            "sha": "ad757d0b9a056b751ed19583448c3ddf36406c3b",
+            "type": "blob",
+            "size": 6517
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_concurrent.py",
+            "sha": "62e18c1a953ca1a577dec15c8691b8ab9a2c0bcf",
+            "type": "blob",
+            "size": 4245
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_extensions.py",
+            "sha": "1bb2ec08e95a6c0b150c9a7ad6b44d127e3e57a5",
+            "type": "blob",
+            "size": 2053
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_helpers.py",
+            "sha": "1da8ce0d751faec1f8e60b6208bc552502d1cbf7",
+            "type": "blob",
+            "size": 2183
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_lifecycle.py",
+            "sha": "7c7226456c0f7a6e8292c6dbc1247086d6d6097e",
+            "type": "blob",
+            "size": 3271
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_messages.py",
+            "sha": "a713031c1fd32cd6ceb72f8c9d70a63915e2eca6",
+            "type": "blob",
+            "size": 2869
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_reconnect.py",
+            "sha": "5b3753fa816a893617e9f67d1232a5e19c344bac",
+            "type": "blob",
+            "size": 7468
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_subgraphs.py",
+            "sha": "109a57c63980c1fd043ce1619bf261d7da1a80e5",
+            "type": "blob",
+            "size": 3980
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_tools.py",
+            "sha": "e4bc33c6e8c53998fb4178239e577796d4ff49c1",
+            "type": "blob",
+            "size": 3510
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_update_state.py",
+            "sha": "5265d22b339674168372bffb013491ea5a779b15",
+            "type": "blob",
+            "size": 5837
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_values.py",
+            "sha": "abec783782b0aeaa7033fb3815ea7aeec144b6ad",
+            "type": "blob",
+            "size": 2723
+          },
+          {
+            "path": "libs/sdk-py/integration/scripts/test_websocket.py",
+            "sha": "f31668271e923e841a51cd14a9d7f0bcd45ad16a",
+            "type": "blob",
+            "size": 2663
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk",
+            "sha": "4387dd6e7230c27321f5e47df9c5d7b19c0be25c",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/__init__.py",
+            "sha": "a56e0b3b3fd9803ba65355082b1cb0e615bbf6bf",
+            "type": "blob",
+            "size": 376
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async",
+            "sha": "71665df79443dd874e3f666a31b96724d5adce18",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/__init__.py",
+            "sha": "16bf0e4ffd13a100a8141ed0f050c10021380704",
+            "type": "blob",
+            "size": 585
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/assistants.py",
+            "sha": "24d3cfa99d06297d594c983524671fbb1d20a744",
+            "type": "blob",
+            "size": 27082
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/client.py",
+            "sha": "dc852c41f65b3f1461d36b40766277b00a90453c",
+            "type": "blob",
+            "size": 6154
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/cron.py",
+            "sha": "824b86f55b72f4b0f1526883188abc297b09eb66",
+            "type": "blob",
+            "size": 22685
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/http.py",
+            "sha": "47c0f043fd0a8cb08ea92d438c299eb20c4c1282",
+            "type": "blob",
+            "size": 11167
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/runs.py",
+            "sha": "76782b36c54e43c71a8684df5d03007d83932bfa",
+            "type": "blob",
+            "size": 48946
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/store.py",
+            "sha": "9efb2758150d16c30a95a0c0e73f2b8a708be11d",
+            "type": "blob",
+            "size": 10617
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/stream.py",
+            "sha": "870ce2556e0f092fd71a9f93433205e3c08aa535",
+            "type": "blob",
+            "size": 85262
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_async/threads.py",
+            "sha": "7b2930047cb16659fd85c1bf0646c27bfabde36e",
+            "type": "blob",
+            "size": 29392
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_shared",
+            "sha": "1da2c2e90e867d418893807623ad4701a58199ec",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_shared/__init__.py",
+            "sha": "5783ce0c2365d7063cec3d2bf9fdfaefc557575b",
+            "type": "blob",
+            "size": 51
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_shared/types.py",
+            "sha": "073b1380a249c620c5e788dda25bb321a484e60d",
+            "type": "blob",
+            "size": 219
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_shared/utilities.py",
+            "sha": "da2db64377a03a772cbc6e22d71ae85ee6aa50bd",
+            "type": "blob",
+            "size": 8898
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync",
+            "sha": "345b8cf9c979f50bff421b7972f7ba010eafccd9",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/__init__.py",
+            "sha": "1ab36bf804bf431c415683bae0e69d7baa813bd7",
+            "type": "blob",
+            "size": 643
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/assistants.py",
+            "sha": "af3a63965e83a3377b3e6417973ee6c76091aee0",
+            "type": "blob",
+            "size": 26999
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/client.py",
+            "sha": "0d943b554647e6869ca46d2f3b64e41d81177c95",
+            "type": "blob",
+            "size": 4221
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/cron.py",
+            "sha": "464edb80db60f4005380629add778fa1abc8c9ae",
+            "type": "blob",
+            "size": 22239
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/http.py",
+            "sha": "ba56543be0cc30b157f5afe4aaa3c5ab8288ea16",
+            "type": "blob",
+            "size": 10547
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/runs.py",
+            "sha": "5d2d1708609970ff3870c7713715daab14549657",
+            "type": "blob",
+            "size": 47990
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/store.py",
+            "sha": "1e698fe70d3130976c80244e66278c65d49ca29b",
+            "type": "blob",
+            "size": 10418
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/stream.py",
+            "sha": "9405e7f83241d83cafece1280fb1d67788ca11cc",
+            "type": "blob",
+            "size": 66904
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/_sync/threads.py",
+            "sha": "ad1139a00142990c8c3e22b0cc64931bb4c8a4e3",
+            "type": "blob",
+            "size": 27861
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/auth",
+            "sha": "978dd28e48eb2be9e9aff4dc8b1219a4e87d8a15",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/auth/__init__.py",
+            "sha": "8c8c6ad722c8d2e4fd14fff3c93c49ab4213bfb8",
+            "type": "blob",
+            "size": 30899
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/auth/exceptions.py",
+            "sha": "594939e752d1c3d218cf7284d5eda55600a84891",
+            "type": "blob",
+            "size": 1744
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/auth/types.py",
+            "sha": "84211878d919fdc3bfd62a472f123ca32f0735fe",
+            "type": "blob",
+            "size": 31360
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/cache.py",
+            "sha": "9b15dbec7976ab3fdc8caa5b77d203e7dd05f430",
+            "type": "blob",
+            "size": 4728
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/client.py",
+            "sha": "f9ce571e80cda9cd58d592690bc86752559a4c4d",
+            "type": "blob",
+            "size": 1951
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/encryption",
+            "sha": "ee0131d054e7694c70b755075d1ef734b33610b6",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/encryption/__init__.py",
+            "sha": "c2b3f8a03b3b3c3f433ff9b129b9a3b7f5e9f49c",
+            "type": "blob",
+            "size": 16262
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/encryption/types.py",
+            "sha": "fca78fa8ec1e5bce8a9e2d7ece1a16e67664c78a",
+            "type": "blob",
+            "size": 6049
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/errors.py",
+            "sha": "b2dfadeb27243f66460e0ed5afa0b6e882c92bb5",
+            "type": "blob",
+            "size": 6622
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/py.typed",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/runtime.py",
+            "sha": "04704c0fbc9331be00dde622390e3f12a63aa871",
+            "type": "blob",
+            "size": 8477
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/schema.py",
+            "sha": "18b1b44f33711848a781f4e2119fdbd85b96a89b",
+            "type": "blob",
+            "size": 28871
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/sse.py",
+            "sha": "9002d90dcfa743bec7aeb5d993c38b6610da75b6",
+            "type": "blob",
+            "size": 4701
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream",
+            "sha": "a6fa9e233be261ee01180b30ec8327ed1e9b46c9",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/__init__.py",
+            "sha": "a1fe5ed76a561b11e2e35914d82c22de3440f9ed",
+            "type": "blob",
+            "size": 221
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/controller.py",
+            "sha": "6e23365ff8e0b4fee3e519f1dd9e66bfe7c8edc8",
+            "type": "blob",
+            "size": 15688
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/decoders.py",
+            "sha": "45959bf46dc2b3d9c5f84f8694c2775ed25779c2",
+            "type": "blob",
+            "size": 13797
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/multi_cursor_buffer.py",
+            "sha": "6e0b37e860a2b94955a59e9048aab25bd89e2d37",
+            "type": "blob",
+            "size": 2188
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/subscription.py",
+            "sha": "aa8298e908993c8ec2e68cae2b396379491f33fe",
+            "type": "blob",
+            "size": 6866
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/sync_controller.py",
+            "sha": "165c7bfdf2430122efb3bc04966c957b710a5ce4",
+            "type": "blob",
+            "size": 13357
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport",
+            "sha": "0d1340f314c5cfb191b80d169a96d1c37ec9ed74",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport/__init__.py",
+            "sha": "9d936d05e1f148cff2de56dcf1cf3d06ff402ce7",
+            "type": "blob",
+            "size": 891
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport/base.py",
+            "sha": "f3eef86930169fd3e211950d449a445531af1aa2",
+            "type": "blob",
+            "size": 2442
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport/http.py",
+            "sha": "501bc412573b8c707a9dfbe5dd4b036774a83c9e",
+            "type": "blob",
+            "size": 8211
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport/sync_http.py",
+            "sha": "c60abe8f51789fb0e7981840d2b888d18e2b8393",
+            "type": "blob",
+            "size": 5045
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport/sync_ws.py",
+            "sha": "1db8ccd1c3d8472684632d49a527de093b42d41d",
+            "type": "blob",
+            "size": 5827
+          },
+          {
+            "path": "libs/sdk-py/langgraph_sdk/stream/transport/ws.py",
+            "sha": "af7d30acebc13632c2c2fbc6bb437b0c4e1416e8",
+            "type": "blob",
+            "size": 9124
+          },
+          {
+            "path": "libs/sdk-py/pyproject.toml",
+            "sha": "d2e8d9c84195036752ce3863a680c5d5f541eadb",
+            "type": "blob",
+            "size": 3040
+          },
+          {
+            "path": "libs/sdk-py/tests",
+            "sha": "8c8f9e4b0c3434c6706d5f0c9abffdd6460b6694",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/tests/fixtures",
+            "sha": "0f58aaf04cb1a6c1b8fc377aa3806ef844e5672d",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/tests/fixtures/response.txt",
+            "sha": "3d53efe56627889f79786838c6d1848c1e3783fd",
+            "type": "blob",
+            "size": 263401
+          },
+          {
+            "path": "libs/sdk-py/tests/integration",
+            "sha": "f5b759550cf085626df6ad9a836017fa4cecd3ee",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/conftest.py",
+            "sha": "0fb8bf468b347c2a8d61264de7de119d6fd53a54",
+            "type": "blob",
+            "size": 2351
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_assistants.py",
+            "sha": "430f65dff6db07719f4a6e60ecdb49dc9af514ba",
+            "type": "blob",
+            "size": 4022
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_cancel.py",
+            "sha": "822897161bfd8beb5c90260e40cd558cff2bf3d8",
+            "type": "blob",
+            "size": 4457
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_concurrent.py",
+            "sha": "e07836a0b207f92255c46dbb3606861b384e3006",
+            "type": "blob",
+            "size": 2535
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_crons.py",
+            "sha": "64b842634af5e1e60fb2e2c36ef29730d4f1d58c",
+            "type": "blob",
+            "size": 1988
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_extensions.py",
+            "sha": "04b0c94d415b6a6e0aa7055fac0dc5919c5251c3",
+            "type": "blob",
+            "size": 1506
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_factory_graph.py",
+            "sha": "c45933b9f4d789d808b15ed71f5abc3abed5114a",
+            "type": "blob",
+            "size": 2297
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_helpers.py",
+            "sha": "0e57ba27f1b2e8f7fe438187c5656fc6114f160c",
+            "type": "blob",
+            "size": 1544
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_lifecycle.py",
+            "sha": "d249cc50fdfbf8deb88385648a5b6cf8ad6f3edf",
+            "type": "blob",
+            "size": 1517
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_messages.py",
+            "sha": "30ce9f1e07220ce7ae6a8881f398e09fa5cdf812",
+            "type": "blob",
+            "size": 1345
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_reconnect.py",
+            "sha": "97a3f0de82ba7cc1d88b7f17a720ac789bee050e",
+            "type": "blob",
+            "size": 6040
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_remote_graph_v3.py",
+            "sha": "42562133a1b95af7f833ed1ee052f81e35647d55",
+            "type": "blob",
+            "size": 4934
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_runs.py",
+            "sha": "83dcc32ce5559bb571da6398d07cebbadb362366",
+            "type": "blob",
+            "size": 3961
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_store.py",
+            "sha": "03493ab5a846fbdd5341831b7fb0fea70bf8fad6",
+            "type": "blob",
+            "size": 3961
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_subgraphs.py",
+            "sha": "dda35f3807a1d35f6a840944d6527b880af3a40c",
+            "type": "blob",
+            "size": 2070
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_threads_crud.py",
+            "sha": "c2dc23d254cd412f995bb0d43e1136eced325e28",
+            "type": "blob",
+            "size": 4152
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_tools.py",
+            "sha": "47ee1c538e3fe0903d90b9a638b8a99d0a077e10",
+            "type": "blob",
+            "size": 1932
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_update_state.py",
+            "sha": "2387eb3c0b05125e081c477711b6166543264b7a",
+            "type": "blob",
+            "size": 3656
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_values.py",
+            "sha": "9c7d489a1e5f336795ea878c30a9417644b1a0e2",
+            "type": "blob",
+            "size": 1590
+          },
+          {
+            "path": "libs/sdk-py/tests/integration/test_websocket.py",
+            "sha": "defeb21ed6cf33b30738f681268d5f851947bb29",
+            "type": "blob",
+            "size": 1606
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming",
+            "sha": "a25c9cf5a3219744f111ccdfbf2d018a67e258ae",
+            "type": "tree"
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/__init__.py",
+            "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+            "type": "blob",
+            "size": 0
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/_events.py",
+            "sha": "5db352df60788be2152c27af9a328379d38bb5ca",
+            "type": "blob",
+            "size": 8370
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/_fake_server.py",
+            "sha": "50a7b1abe5afcc66d52c929b8b4aa22dfdfe41b8",
+            "type": "blob",
+            "size": 11126
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/_sync_fake_server.py",
+            "sha": "6b133fc92af146ab0355cce0b10e6a99af84ede2",
+            "type": "blob",
+            "size": 4958
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/assert_transport_replays.py",
+            "sha": "88e5429adcc58b30d942df192655bff560790c4c",
+            "type": "blob",
+            "size": 2364
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_controller.py",
+            "sha": "98ec1d35af84f0af4076c0c6edcabe776a2f08ce",
+            "type": "blob",
+            "size": 11247
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_decoders.py",
+            "sha": "7b706977d1391c4eb8e66a5db4963fdba2ff6f0a",
+            "type": "blob",
+            "size": 17172
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_extensions_projection.py",
+            "sha": "05bbb3ac52c8c3544ae0f66c9b67e82a7d7d4538",
+            "type": "blob",
+            "size": 2335
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_lifecycle_watcher.py",
+            "sha": "2d759361a9c9c635f4cc3f8fd4929b5d40747f93",
+            "type": "blob",
+            "size": 10735
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_messages_projection.py",
+            "sha": "35b359094fdc10e6f2376876ea5fe32022b8471e",
+            "type": "blob",
+            "size": 8876
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_multi_cursor_buffer.py",
+            "sha": "51d5cc3b1c2ca4b1f504ee51d8c101bc82ba4b11",
+            "type": "blob",
+            "size": 1557
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_output.py",
+            "sha": "395a6f6984d98457244fcb720385c9ad4d5a40be",
+            "type": "blob",
+            "size": 8295
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_replay_conformance.py",
+            "sha": "167692fa3019be9b4f3ebb26d0f7af96cb6f1d12",
+            "type": "blob",
+            "size": 821
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_scoped_handles.py",
+            "sha": "8479315dbae6e9cc9df32f4517b68e70258ff332",
+            "type": "blob",
+            "size": 25702
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_shared_stream.py",
+            "sha": "75835444c5c0f044d41866835d248336a89fe71b",
+            "type": "blob",
+            "size": 14393
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_subscription.py",
+            "sha": "3d3878d9f6b8fc816cd2999231f91e8e88dcd757",
+            "type": "blob",
+            "size": 8998
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_extensions_projection.py",
+            "sha": "926dc0a5de34bd65d22f8b3280d9dbb027ea909a",
+            "type": "blob",
+            "size": 2145
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_projections.py",
+            "sha": "f22c529e4451fe7ffc066a534fa085483a9cefbd",
+            "type": "blob",
+            "size": 26255
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_scoped_handles.py",
+            "sha": "8c3fc04e6b86def5da6a17417b3ba589ed9d4b7b",
+            "type": "blob",
+            "size": 30815
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_shared_stream.py",
+            "sha": "456241384385a9be979fbef7bf5ee12ed68ae5d1",
+            "type": "blob",
+            "size": 3440
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_thread_stream.py",
+            "sha": "59a02da5dffda2f59dc22a9a6d8193472dad89e9",
+            "type": "blob",
+            "size": 33547
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_transport_http.py",
+            "sha": "8b9536b72dac42ab5b43e2e720ac5f5fc344f3b8",
+            "type": "blob",
+            "size": 1855
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_sync_transport_ws.py",
+            "sha": "bf06abbfb4479ecdea4f0dc65b00bd66364084ed",
+            "type": "blob",
+            "size": 9323
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_thread_stream.py",
+            "sha": "4617f46901beb65f345ae89198f71588bef77fac",
+            "type": "blob",
+            "size": 49551
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_tool_calls_projection.py",
+            "sha": "226eacc39bd0fe40aa43954f6adc39793135b54f",
+            "type": "blob",
+            "size": 10582
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_transport_http.py",
+            "sha": "e97d66d672f34511847d8b67ae99d28e6e15ef6f",
+            "type": "blob",
+            "size": 19270
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_transport_path_encoding.py",
+            "sha": "f1d7d838a76497cd84690cdd95641a9d3d7db39d",
+            "type": "blob",
+            "size": 5136
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_transport_ws.py",
+            "sha": "391284d200739505cced687c6c06ed585f5d2ff8",
+            "type": "blob",
+            "size": 21361
+          },
+          {
+            "path": "libs/sdk-py/tests/streaming/test_values_projection.py",
+            "sha": "280aac8df9e7e7daa58afac712738188dbb17984",
+            "type": "blob",
+            "size": 6680
+          },
+          {
+            "path": "libs/sdk-py/tests/test_api_parity.py",
+            "sha": "b67f8bfe0c03cf28b76bd9a47b171cc948867c1e",
+            "type": "blob",
+            "size": 4586
+          },
+          {
+            "path": "libs/sdk-py/tests/test_assistants_client.py",
+            "sha": "82238cc7d7871c165d6808a804c85ad3e2d813a0",
+            "type": "blob",
+            "size": 2921
+          },
+          {
+            "path": "libs/sdk-py/tests/test_cache.py",
+            "sha": "1ef2a97fd8ce1b0a1ad140d9b438e62ec62ee70e",
+            "type": "blob",
+            "size": 2010
+          },
+          {
+            "path": "libs/sdk-py/tests/test_client_exports.py",
+            "sha": "ac45d5a0ac729c7530337857dac3bcec81ced9b1",
+            "type": "blob",
+            "size": 2616
+          },
+          {
+            "path": "libs/sdk-py/tests/test_client_stream.py",
+            "sha": "d2b4c18d566f2a685ac03283d1324fbaedd49053",
+            "type": "blob",
+            "size": 14562
+          },
+          {
+            "path": "libs/sdk-py/tests/test_crons_client.py",
+            "sha": "7e38e25f1bb1deabf71b70201ccf8f6788423512",
+            "type": "blob",
+            "size": 23446
+          },
+          {
+            "path": "libs/sdk-py/tests/test_encryption.py",
+            "sha": "5fabbe952fd0ad751a469abc30fa7c53827dd202",
+            "type": "blob",
+            "size": 3084
+          },
+          {
+            "path": "libs/sdk-py/tests/test_errors.py",
+            "sha": "97c81c3aa89fb8cb4870d00c4d3cc557611e7618",
+            "type": "blob",
+            "size": 4254
+          },
+          {
+            "path": "libs/sdk-py/tests/test_langsmith_tracing.py",
+            "sha": "0720039fc32188cd2ef5e17877d99a659dd49c00",
+            "type": "blob",
+            "size": 4416
+          },
+          {
+            "path": "libs/sdk-py/tests/test_path_encoding.py",
+            "sha": "8bdf3860c85c5af2c32310f31bebc88c163c2cf3",
+            "type": "blob",
+            "size": 17974
+          },
+          {
+            "path": "libs/sdk-py/tests/test_serde.py",
+            "sha": "1b8d7a7ef6aa447a8e8ea5234c32ca0a772ba4f7",
+            "type": "blob",
+            "size": 1672
+          },
+          {
+            "path": "libs/sdk-py/tests/test_serde_schema.py",
+            "sha": "7b868c0f0cffa5d656761f839760ce4ad7b99b71",
+            "type": "blob",
+            "size": 519
+          },
+          {
+            "path": "libs/sdk-py/tests/test_skip_auto_load_api_key.py",
+            "sha": "4ac3b7482933fa1f7458428887f88ac2da028424",
+            "type": "blob",
+            "size": 2986
+          },
+          {
+            "path": "libs/sdk-py/tests/test_threads_client.py",
+            "sha": "34e8040beae3e409c330d054e4f522a57a6dffe1",
+            "type": "blob",
+            "size": 1815
+          },
+          {
+            "path": "libs/sdk-py/uv.lock",
+            "sha": "1006e6c4618064f0b3232490ef0a11e5020888fc",
+            "type": "blob",
+            "size": 296900
+          }
+        ]
+      }
+    ],
+    "candidates": [
+      {
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "stars": 40282,
+        "topicMatch": 4,
+        "origin": "explicit"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "062b826405b696d0a9fa4f64",
+        "criterionId": "checkpoint-interface",
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "revision": "f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f",
+        "path": "libs/checkpoint-conformance/README.md",
+        "sourceUrl": "https://github.com/langchain-ai/langgraph/blob/f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f/libs/checkpoint-conformance/README.md",
+        "excerpt": "\nThis library provides a conformance test suite for [LangGraph](https://github.com/langchain-ai/langgraph) checkpointer implementations. It validates that a `BaseCheckpointSaver` subclass correctly implements the checkpoint storage contract — blob round-trips, metadata preservation, namespace isolation, incremental channel updates, and more.\n\n## 📖 Documentation\n\nFor full documentation, see the [API reference](https://reference.langchain.com/python/langgraph/). For conceptual guides on persistence and memory, see the [LangGraph Docs](https://docs.langchain.com/oss/python/langgraph/overview).",
+        "kind": "canonical"
+      },
+      {
+        "id": "6ee57429e8b6891fcd4fd1c6",
+        "criterionId": "storage-conformance",
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "revision": "f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f",
+        "path": "libs/checkpoint-conformance/README.md",
+        "sourceUrl": "https://github.com/langchain-ai/langgraph/blob/f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f/libs/checkpoint-conformance/README.md",
+        "excerpt": "# LangGraph Checkpoint Conformance\n\n[![PyPI - Version](https://img.shields.io/pypi/v/langgraph-checkpoint-conformance?label=%20)](https://pypi.org/project/langgraph-checkpoint-conformance/#history)\n[![PyPI - License](https://img.shields.io/pypi/l/langgraph-checkpoint-conformance)](https://opensource.org/licenses/MIT)\n[![PyPI - Downloads](https://img.shields.io/pepy/dt/langgraph-checkpoint-conformance)](https://pypistats.org/packages/langgraph-checkpoint-conformance)",
+        "kind": "canonical"
+      },
+      {
+        "id": "e0458f396bb78f8b06a9f3fd",
+        "criterionId": "runtime-boundary",
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "revision": "f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f",
+        "path": "libs/checkpoint-conformance/README.md",
+        "sourceUrl": "https://github.com/langchain-ai/langgraph/blob/f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f/libs/checkpoint-conformance/README.md",
+        "excerpt": "\n[![PyPI - Version](https://img.shields.io/pypi/v/langgraph-checkpoint-conformance?label=%20)](https://pypi.org/project/langgraph-checkpoint-conformance/#history)\n[![PyPI - License](https://img.shields.io/pypi/l/langgraph-checkpoint-conformance)](https://opensource.org/licenses/MIT)\n[![PyPI - Downloads](https://img.shields.io/pepy/dt/langgraph-checkpoint-conformance)](https://pypistats.org/packages/langgraph-checkpoint-conformance)\n[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchain_oss.svg?style=social&label=Follow%20%40LangChain)](https://x.com/langchain_oss)\n",
+        "kind": "canonical"
+      },
+      {
+        "id": "28fbdbbeb69b0dd1ca4882e2",
+        "criterionId": "host-authority-boundary",
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "revision": "f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f",
+        "path": "libs/checkpoint-conformance/README.md",
+        "sourceUrl": "https://github.com/langchain-ai/langgraph/blob/f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f/libs/checkpoint-conformance/README.md",
+        "excerpt": "\nThis library provides a conformance test suite for [LangGraph](https://github.com/langchain-ai/langgraph) checkpointer implementations. It validates that a `BaseCheckpointSaver` subclass correctly implements the checkpoint storage contract — blob round-trips, metadata preservation, namespace isolation, incremental channel updates, and more.\n\n## 📖 Documentation\n\nFor full documentation, see the [API reference](https://reference.langchain.com/python/langgraph/). For conceptual guides on persistence and memory, see the [LangGraph Docs](https://docs.langchain.com/oss/python/langgraph/overview).",
+        "kind": "canonical"
+      },
+      {
+        "id": "7146173f86f924c4895d1114",
+        "criterionId": "thread-resume-interrupt",
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "revision": "f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f",
+        "path": "libs/checkpoint-postgres/README.md",
+        "sourceUrl": "https://github.com/langchain-ai/langgraph/blob/f09cfe8ffc1eeffd68f4b628ed69c30f7cad229f/libs/checkpoint-postgres/README.md",
+        "excerpt": "\nThis library provides a Postgres implementation of LangGraph's checkpoint saver. Use it when you want LangGraph state persistence backed by Postgres for durable, long-running workflows and agents.\n\nBy default, `langgraph-checkpoint-postgres` installs `psycopg` (Psycopg 3) without any extras. You can choose a specific installation that best suits your needs in the [Psycopg installation docs](https://www.psycopg.org/psycopg3/docs/basic/install.html), for example `psycopg[binary]`.\n\n## 📖 Documentation",
+        "kind": "canonical"
+      }
+    ],
+    "unknownCriteria": [],
+    "navigation": [
+      {
+        "adapter": "heuristic",
+        "repository": {
+          "owner": "langchain-ai",
+          "name": "langgraph"
+        },
+        "status": "used"
+      }
+    ],
+    "collection": {
+      "filesRead": 24,
+      "sourceBytesRead": 41617,
+      "durationMs": 14942,
+      "cacheHit": false
+    }
+  }
+}

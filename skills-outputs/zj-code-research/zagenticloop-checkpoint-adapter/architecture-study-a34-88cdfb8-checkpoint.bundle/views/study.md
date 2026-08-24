@@ -1,0 +1,309 @@
+# Architecture Study: git@github.com:jununfly/ZAgenticLoop.git
+
+- Snapshot: `study-55b124aa9d5fcfa0e67cc114`
+- Commit: `88cdfb86218022d98119f05e940cfb6068b25959`
+- Map snapshot: `map-107165ed1ab7a867791fc300`
+
+## Selected scope
+
+- `docs/plans/opn-langgraph-checkpoint-adapter-probe-roadmap.json` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/package.json` — node package manifest
+- `tools/zj-loop-core/src/index.ts` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/src/native-checkpoint-fixture.ts` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/src/real-agent-dogfood-graph-conformance-coordinator.ts` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/src/real-agent-dogfood-graph-human-acceptance-state-store-adapter.ts` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/src/real-agent-dogfood-graph-state.ts` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/src/sqlite-state-store.ts` — human-supplied scope converted to a study target
+- `tools/zj-loop-core/test/native-checkpoint-fixture.test.mjs` — human-supplied scope converted to a study target
+
+## Claims
+
+- `observed` tools/zj-loop-core/src/native-checkpoint-fixture.ts contains a declared module or interface symbol.
+- `observed` tools/zj-loop-core/src/real-agent-dogfood-graph-conformance-coordinator.ts contains a declared module or interface symbol.
+- `observed` tools/zj-loop-core/src/real-agent-dogfood-graph-human-acceptance-state-store-adapter.ts contains a declared module or interface symbol.
+- `observed` tools/zj-loop-core/src/real-agent-dogfood-graph-state.ts contains a declared module or interface symbol.
+- `observed` tools/zj-loop-core/src/sqlite-state-store.ts contains a declared module or interface symbol.
+- `observed` tools/zj-loop-core/test/native-checkpoint-fixture.test.mjs contains a declared module or interface symbol.
+- `inferred` tools/zj-loop-core/package.json has a source-reference relationship to : .
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./registry.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./project.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./providers.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./semantic.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./cli.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./route.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./completion-alignment.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./completion-alignment-text.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./consumer-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./first-run-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./route-consumer-cli.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./live-runner-contract.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./ci-sweeper-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./post-merge-closeout-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./issue-fix-request-contract.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./dependency-sweeper-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./pr-steward-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./changelog-drafter-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./issue-triage-action-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./issue-triage-transition-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./issue-backlog-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./schedule-health-contract.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./schedule-probe-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./roadmap-activation-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./prd-handoff-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./harness-protocol-contract.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./harness-protocol-cli.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./run-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./doctor-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./dispatch-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./completion-evidence.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./completion-evidence-compatibility.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-completion-evidence.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./human-handoff.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./consumer-adapter.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./preflight.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./workspace-route-decision.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./workspace-review.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./workspace-closeout.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./workspace-evidence.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./triage-role-mapping.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-triage-transition-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-request-lifecycle.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-dependency-sweeper-adapter.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-dependency-sweeper-closeout.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-pr-steward-report.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-pr-steward-request.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-pr-steward-claim.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-pr-steward-escalation.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-pr-steward-verifier.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-changelog-drafter-adapter.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-changelog-drafter-closeout.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-control-route-evidence.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-config.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-receipts.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-trigger.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-server.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-capability.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-side-effect-gate.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-repair-safety.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-preflight.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./gitlab-issue-note-bridge-consumer.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-local.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-local-bridge.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-local-worktree.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./execution-context.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-context.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-context-capability-review.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./node-enrollment.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-registration.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./opn-graph-atom-enrollment.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./opn-same-device-readonly-runner.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-task.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-execution.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./native-checkpoint-fixture.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./native-agent-runtime.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-evidence.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./agent-review-handoff.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./native-agent-graph-bridge.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./human-authority.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./human-signer.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./human-action.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./human-action-opn-projection.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./parse-bounded-json.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./approval-canonicalization.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./macos-keychain-human-signer.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./pairing-projection.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./pairing-records.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./pairing-record-store.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./sqlite-pairing-record-store.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./dual-agent-enrollment-conformance.js.
+- `inferred` tools/zj-loop-core/src/index.ts has a source-reference relationship to ./pairing-http-server.js.
+
+## Relationships
+
+- `tools/zj-loop-core/package.json` → `: ` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./registry.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./project.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./providers.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./semantic.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./cli.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./route.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./completion-alignment.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./completion-alignment-text.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./consumer-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./first-run-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./route-consumer-cli.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./live-runner-contract.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./ci-sweeper-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./post-merge-closeout-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./issue-fix-request-contract.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./dependency-sweeper-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./pr-steward-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./changelog-drafter-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./issue-triage-action-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./issue-triage-transition-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./issue-backlog-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./schedule-health-contract.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./schedule-probe-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./roadmap-activation-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./prd-handoff-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./harness-protocol-contract.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./harness-protocol-cli.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./run-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./doctor-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./dispatch-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./completion-evidence.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./completion-evidence-compatibility.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-completion-evidence.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./human-handoff.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./consumer-adapter.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./preflight.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./workspace-route-decision.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./workspace-review.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./workspace-closeout.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./workspace-evidence.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./triage-role-mapping.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-triage-transition-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-request-lifecycle.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-dependency-sweeper-adapter.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-dependency-sweeper-closeout.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-pr-steward-report.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-pr-steward-request.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-pr-steward-claim.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-pr-steward-escalation.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-pr-steward-verifier.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-changelog-drafter-adapter.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-changelog-drafter-closeout.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-control-route-evidence.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-config.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-receipts.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-trigger.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-server.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-capability.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-side-effect-gate.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-repair-safety.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-preflight.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./gitlab-issue-note-bridge-consumer.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-local.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-local-bridge.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-local-worktree.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./execution-context.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-context.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-context-capability-review.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./node-enrollment.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-registration.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./opn-graph-atom-enrollment.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./opn-same-device-readonly-runner.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-task.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-execution.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./native-checkpoint-fixture.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./native-agent-runtime.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-evidence.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./agent-review-handoff.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./native-agent-graph-bridge.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./human-authority.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./human-signer.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./human-action.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./human-action-opn-projection.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./parse-bounded-json.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./approval-canonicalization.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./macos-keychain-human-signer.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./pairing-projection.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./pairing-records.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./pairing-record-store.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./sqlite-pairing-record-store.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./dual-agent-enrollment-conformance.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./pairing-http-server.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./pairing-owner-authenticator.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./sqlite-state-store.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./sqlite-state-store-server.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./sqlite-credential-verifier.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./content-addressed-artifact-store.js` (imports-or-requires)
+- `tools/zj-loop-core/src/index.ts` → `./relay-contract.js` (imports-or-requires)
+
+## Runtime flows
+
+- `tools/zj-loop-core/package.json` → `tools/zj-loop-core/package.json` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/package.json` → `tools/zj-loop-core/package.json` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/package.json` → `tools/zj-loop-core/package.json` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/package.json` → `tools/zj-loop-core/package.json` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/package.json` → `tools/zj-loop-core/package.json` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/package.json` → `tools/zj-loop-core/package.json` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+- `tools/zj-loop-core/src/index.ts` → `tools/zj-loop-core/src/index.ts` (entrypoint-to-selected-module)
+
+## Risks
+
+- execution-and-sandbox: credentials, approvals, isolation, and recovery may be coupled to this path
+- persistence-and-recovery: data ownership, migration, consistency, and rollback need explicit review
+- ownership: maintenance and incident responsibility are not established by this pass
+
+## Unknowns
+
+- unreadable-path: [Errno 102] Operation not supported on socket: '/Users/bilibili/Documents/workspace/github/jununfly/ZAgenticLoop/tools/zj-loop-core/.tmp/provider-runtim'
+
+## Follow-up targets
+
+- `package.json` — map target not selected for this bounded study
+- `tools/zj-goal-audit/package.json` — map target not selected for this bounded study
+- `tools/zj-goal-audit/test/fixtures/good-goal-project/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-audit/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-cost/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-github-infra/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-gitlab-infra/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-init/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-mcp-server/package.json` — map target not selected for this bounded study
+- `tools/zj-loop-sync/package.json` — map target not selected for this bounded study
+- `zj-loop/dogfood/dependency-fixture/package.json` — map target not selected for this bounded study
+- `.` — map target not selected for this bounded study
+- `.codex` — map target not selected for this bounded study
+- `.github` — map target not selected for this bounded study
+- `.npm-cache-release-validation` — map target not selected for this bounded study
+- `.zcodegraph` — map target not selected for this bounded study
+- `docs` — map target not selected for this bounded study
+- `examples` — map target not selected for this bounded study
+- `patterns` — map target not selected for this bounded study
+- `resources` — map target not selected for this bounded study
+- `scripts` — map target not selected for this bounded study
+- `skills` — map target not selected for this bounded study
+- `src` — map target not selected for this bounded study
+- `starters` — map target not selected for this bounded study
+- `stories` — map target not selected for this bounded study
+- `templates` — map target not selected for this bounded study
+- `tools` — map target not selected for this bounded study
+- `zj-loop` — map target not selected for this bounded study
+- `.github/workflows/audit.yml` — map target not selected for this bounded study
+- `.github/workflows/changelog-drafter.yml` — map target not selected for this bounded study
+- `.github/workflows/ci-sweeper.yml` — map target not selected for this bounded study
+- `.github/workflows/daily-triage.yml` — map target not selected for this bounded study
+- `.github/workflows/github-infra-dogfood.yml` — map target not selected for this bounded study
+- `.github/workflows/post-merge-roadmap-closeout.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-goal-audit.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-audit.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-core.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-cost.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-github-infra.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-gitlab-infra.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-init.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-mcp-server.yml` — map target not selected for this bounded study
+- `.github/workflows/release-zj-loop-sync.yml` — map target not selected for this bounded study
+- `.github/workflows/validate-patterns.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-changelog-drafter.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-ci-sweeper.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-daily-triage.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-dependency-sweeper.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-issue-triage.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-post-merge-cleanup.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-pr-steward.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-roadmap-activation.yml` — map target not selected for this bounded study
+- `.github/workflows/zj-loop-smoke.yml` — map target not selected for this bounded study
+
+> This study is descriptive; solution selection belongs to zj-tech-research-report.

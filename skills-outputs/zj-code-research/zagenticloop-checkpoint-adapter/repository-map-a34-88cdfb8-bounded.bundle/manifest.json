@@ -1,0 +1,72 @@
+{
+  "immutable": true,
+  "kind": "repository-map",
+  "schema": "zj-repository-map-manifest/v1",
+  "scope": {
+    "exclusions": [
+      ".codegraph",
+      ".git",
+      ".tmp",
+      "dist",
+      "node_modules"
+    ],
+    "root": "."
+  },
+  "shards": [
+    {
+      "bytes": 1073,
+      "path": "facts/integrations.jsonl",
+      "sha256": "4c13449910c63940e9c9368b5f1624782b810fd235bb5c67461cfd3c254148a8"
+    },
+    {
+      "bytes": 53274,
+      "path": "facts/packages.jsonl",
+      "sha256": "1b3d682eb1f7f39ca3a8cd4ac1e43679c6290236b9b2104f6d8cda7645cf3e22"
+    },
+    {
+      "bytes": 2219,
+      "path": "facts/summary.json",
+      "sha256": "3b422b1d7284993d30601b83551f0f963932e251931c5467baad63e28d8bb7a6"
+    },
+    {
+      "bytes": 3522534,
+      "path": "facts/tree.jsonl",
+      "sha256": "70a98784ed7e8220f80344e03074916cb3749f11b055e028a35deeb673a2cf71"
+    },
+    {
+      "bytes": 3929,
+      "path": "facts/workflows.jsonl",
+      "sha256": "54dc44e7494579bd8d038d94866c16930df11b57d7d577aa4ca473c28d427177"
+    },
+    {
+      "bytes": 73593,
+      "path": "navigation/targets.json",
+      "sha256": "6c9237b26670f186eaecbd4188a80e4117560a0b869d8614b466a8a4ff87d333"
+    }
+  ],
+  "snapshotId": "map-f99edfe71ea135fd926e5c90",
+  "source": {
+    "commit": "88cdfb86218022d98119f05e940cfb6068b25959",
+    "identity": "commit-plus-working-tree",
+    "ref": "codex/fix-agent-local-worktree-git-flag",
+    "repository": "git@github.com:jununfly/ZAgenticLoop.git",
+    "state": "dirty",
+    "statusEntries": 33,
+    "workingTreeFingerprint": "2643fa5174050d20b621f708a318e4aa73cbf13af3854b7b8088e72ec0fec25a"
+  },
+  "views": {
+    "artifacts": [
+      {
+        "bytes": 11571,
+        "path": "views/map.html",
+        "sha256": "0afaa9dbe7e4898f1dc804229a571a14cd8909ee25a60c05a1afb8b87e9d41d5"
+      },
+      {
+        "bytes": 10834,
+        "path": "views/map.md",
+        "sha256": "33d64b59b109f067b89eb4b251a90c9bfd1449ee8c1c7168077304a55946e22e"
+      }
+    ],
+    "defaultTargetLimit": 80
+  }
+}

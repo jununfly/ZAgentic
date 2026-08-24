@@ -1,0 +1,52 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "ZAgenticLoop LangGraph checkpoint/resume adapter probe — discriminating source pass",
+    "criteria": [
+      {
+        "id": "checkpoint-interface",
+        "question": "Which first-party LangGraph source defines BaseCheckpointSaver, CheckpointTuple, get_tuple, put, put_writes, or the canonical checkpoint identity fields?",
+        "critical": true,
+        "keywords": ["BaseCheckpointSaver", "CheckpointTuple", "get_tuple", "put_writes", "checkpoint_id"]
+      },
+      {
+        "id": "thread-resume-interrupt",
+        "question": "Which first-party LangGraph source demonstrates thread_id, interrupt, Command resume, or durable execution behavior across a checkpoint-backed resume?",
+        "critical": true,
+        "keywords": ["thread_id", "interrupt", "Command", "resume", "durable"]
+      },
+      {
+        "id": "storage-conformance",
+        "question": "Which first-party LangGraph source defines checkpoint conformance, get_tuple/put semantics, SQLite or Postgres storage, serializer behavior, or pending writes?",
+        "critical": true,
+        "keywords": ["conformance", "get_tuple", "put_writes", "SQLite", "Postgres", "serializer"]
+      },
+      {
+        "id": "runtime-boundary",
+        "question": "Which first-party source establishes LangGraph's language/runtime/package boundary, especially Python packages, JavaScript examples, Node.js integration, or the absence of a native host seam?",
+        "critical": true,
+        "keywords": ["pyproject", "Python", "JavaScript", "TypeScript", "Node.js", "langgraph-checkpoint"]
+      },
+      {
+        "id": "host-authority-boundary",
+        "question": "Which first-party source states what LangGraph or its checkpointer owns, and what remains outside it for approvals, credentials, sandboxing, Evidence, or lifecycle authority?",
+        "critical": true,
+        "keywords": ["human-in-the-loop", "approval", "credential", "sandbox", "security", "checkpointer"]
+      }
+    ],
+    "repositories": [
+      {
+        "owner": "langchain-ai",
+        "name": "langgraph"
+      }
+    ],
+    "policyVersion": "v1",
+    "budget": {
+      "maxFiles": 40,
+      "maxBytes": 1600000,
+      "deadlineMs": 180000
+    }
+  }
+}

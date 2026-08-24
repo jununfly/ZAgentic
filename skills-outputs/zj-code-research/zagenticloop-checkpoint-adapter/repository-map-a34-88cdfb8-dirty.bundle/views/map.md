@@ -1,0 +1,115 @@
+# Repository Map: git@github.com:jununfly/ZAgenticLoop.git
+
+- Snapshot: `map-189e97a156af88a3ef55e24b`
+- Commit: `88cdfb86218022d98119f05e940cfb6068b25959`
+- Working tree: `dirty`
+- Files / directories / bytes: `15343 / 1969 / 405085632`
+
+## Navigation targets
+
+- `integration` **tools/zj-loop-mcp-server/node_modules/hono/dist/adapter** — `tools/zj-loop-mcp-server/node_modules/hono/dist/adapter` — integration-named-directory
+- `integration` **tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/adapter** — `tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/adapter` — integration-named-directory
+- `integration` **tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/helper/adapter** — `tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/helper/adapter` — integration-named-directory
+- `integration` **tools/zj-loop-mcp-server/node_modules/hono/dist/helper/adapter** — `tools/zj-loop-mcp-server/node_modules/hono/dist/helper/adapter` — integration-named-directory
+- `integration` **tools/zj-loop-mcp-server/node_modules/hono/dist/types/adapter** — `tools/zj-loop-mcp-server/node_modules/hono/dist/types/adapter` — integration-named-directory
+- `integration` **tools/zj-loop-mcp-server/node_modules/hono/dist/types/helper/adapter** — `tools/zj-loop-mcp-server/node_modules/hono/dist/types/helper/adapter` — integration-named-directory
+- `package` **@types/node** — `node_modules/@types/node/package.json` — node package manifest
+- `package` **ajv** — `node_modules/ajv/package.json` — node package manifest
+- `package` **cron-parser** — `node_modules/cron-parser/package.json` — node package manifest
+- `package` **fast-deep-equal** — `node_modules/fast-deep-equal/package.json` — node package manifest
+- `package` **benchmark** — `node_modules/fast-uri/benchmark/package.json` — node package manifest
+- `package` **fast-uri** — `node_modules/fast-uri/package.json` — node package manifest
+- `package` **json-schema-traverse** — `node_modules/json-schema-traverse/package.json` — node package manifest
+- `package` **luxon** — `node_modules/luxon/package.json` — node package manifest
+- `package` **node_modules/luxon/src/package.json** — `node_modules/luxon/src/package.json` — node package manifest
+- `package` **require-from-string** — `node_modules/require-from-string/package.json` — node package manifest
+- `package` **typescript** — `node_modules/typescript/package.json` — node package manifest
+- `package` **undici-types** — `node_modules/undici-types/package.json` — node package manifest
+- `package` **node_modules/yaml/browser/package.json** — `node_modules/yaml/browser/package.json` — node package manifest
+- `package` **yaml** — `node_modules/yaml/package.json` — node package manifest
+- `package` **zod** — `node_modules/zod/package.json` — node package manifest
+- `package` **zagenticloop** — `package.json` — node package manifest
+- `package` **@types/node** — `tools/zj-goal-audit/node_modules/@types/node/package.json` — node package manifest
+- `package` **typescript** — `tools/zj-goal-audit/node_modules/typescript/package.json` — node package manifest
+- `package` **undici-types** — `tools/zj-goal-audit/node_modules/undici-types/package.json` — node package manifest
+- `package` **@jununfly/zj-goal-audit** — `tools/zj-goal-audit/package.json` — node package manifest
+- `package` **fixture** — `tools/zj-goal-audit/test/fixtures/good-goal-project/package.json` — node package manifest
+- `package` **@jununfly/zj-loop-core** — `tools/zj-loop-audit/node_modules/@jununfly/zj-loop-core/package.json` — node package manifest
+- `package` **@types/node** — `tools/zj-loop-audit/node_modules/@types/node/package.json` — node package manifest
+- `package` **typescript** — `tools/zj-loop-audit/node_modules/typescript/package.json` — node package manifest
+- `package` **undici-types** — `tools/zj-loop-audit/node_modules/undici-types/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/yaml/browser/package.json** — `tools/zj-loop-audit/node_modules/yaml/browser/package.json` — node package manifest
+- `package` **yaml** — `tools/zj-loop-audit/node_modules/yaml/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/locales/package.json** — `tools/zj-loop-audit/node_modules/zod/locales/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/mini/package.json** — `tools/zj-loop-audit/node_modules/zod/mini/package.json` — node package manifest
+- `package` **zod** — `tools/zj-loop-audit/node_modules/zod/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v3/package.json** — `tools/zj-loop-audit/node_modules/zod/v3/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v4-mini/package.json** — `tools/zj-loop-audit/node_modules/zod/v4-mini/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v4/classic/package.json** — `tools/zj-loop-audit/node_modules/zod/v4/classic/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v4/core/package.json** — `tools/zj-loop-audit/node_modules/zod/v4/core/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v4/locales/package.json** — `tools/zj-loop-audit/node_modules/zod/v4/locales/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v4/mini/package.json** — `tools/zj-loop-audit/node_modules/zod/v4/mini/package.json` — node package manifest
+- `package` **tools/zj-loop-audit/node_modules/zod/v4/package.json** — `tools/zj-loop-audit/node_modules/zod/v4/package.json` — node package manifest
+- `package` **@jununfly/zj-loop-audit** — `tools/zj-loop-audit/package.json` — node package manifest
+- `package` **@jununfly/zj-loop-gitlab-infra** — `tools/zj-loop-core/node_modules/@jununfly/zj-loop-gitlab-infra/package.json` — node package manifest
+- `package` **@types/better-sqlite3** — `tools/zj-loop-core/node_modules/@types/better-sqlite3/package.json` — node package manifest
+- `package` **@types/node** — `tools/zj-loop-core/node_modules/@types/node/package.json` — node package manifest
+- `package` **base64-js** — `tools/zj-loop-core/node_modules/base64-js/package.json` — node package manifest
+- `package` **better-sqlite3** — `tools/zj-loop-core/node_modules/better-sqlite3/package.json` — node package manifest
+- `package` **bindings** — `tools/zj-loop-core/node_modules/bindings/package.json` — node package manifest
+- `package` **bl** — `tools/zj-loop-core/node_modules/bl/package.json` — node package manifest
+- `package` **buffer** — `tools/zj-loop-core/node_modules/buffer/package.json` — node package manifest
+- `package` **canonicalize** — `tools/zj-loop-core/node_modules/canonicalize/package.json` — node package manifest
+- `package` **chownr** — `tools/zj-loop-core/node_modules/chownr/package.json` — node package manifest
+- `package` **cron-parser** — `tools/zj-loop-core/node_modules/cron-parser/package.json` — node package manifest
+- `package` **decompress-response** — `tools/zj-loop-core/node_modules/decompress-response/package.json` — node package manifest
+- `package` **deep-extend** — `tools/zj-loop-core/node_modules/deep-extend/package.json` — node package manifest
+- `package` **detect-libc** — `tools/zj-loop-core/node_modules/detect-libc/package.json` — node package manifest
+- `package` **end-of-stream** — `tools/zj-loop-core/node_modules/end-of-stream/package.json` — node package manifest
+- `package` **expand-template** — `tools/zj-loop-core/node_modules/expand-template/package.json` — node package manifest
+- `package` **file-uri-to-path** — `tools/zj-loop-core/node_modules/file-uri-to-path/package.json` — node package manifest
+- `package` **fs-constants** — `tools/zj-loop-core/node_modules/fs-constants/package.json` — node package manifest
+- `package` **beep-boop** — `tools/zj-loop-core/node_modules/github-from-package/example/package.json` — node package manifest
+- `package` **github-from-package** — `tools/zj-loop-core/node_modules/github-from-package/package.json` — node package manifest
+- `package` **ieee754** — `tools/zj-loop-core/node_modules/ieee754/package.json` — node package manifest
+- `package` **inherits** — `tools/zj-loop-core/node_modules/inherits/package.json` — node package manifest
+- `package` **ini** — `tools/zj-loop-core/node_modules/ini/package.json` — node package manifest
+- `package` **jsonc-parser** — `tools/zj-loop-core/node_modules/jsonc-parser/package.json` — node package manifest
+- `package` **luxon** — `tools/zj-loop-core/node_modules/luxon/package.json` — node package manifest
+- `package` **tools/zj-loop-core/node_modules/luxon/src/package.json** — `tools/zj-loop-core/node_modules/luxon/src/package.json` — node package manifest
+- `package` **mimic-response** — `tools/zj-loop-core/node_modules/mimic-response/package.json` — node package manifest
+- `package` **minimist** — `tools/zj-loop-core/node_modules/minimist/package.json` — node package manifest
+- `package` **mkdirp-classic** — `tools/zj-loop-core/node_modules/mkdirp-classic/package.json` — node package manifest
+- `package` **napi-build-utils** — `tools/zj-loop-core/node_modules/napi-build-utils/package.json` — node package manifest
+- `package` **node-abi** — `tools/zj-loop-core/node_modules/node-abi/package.json` — node package manifest
+- `package` **once** — `tools/zj-loop-core/node_modules/once/package.json` — node package manifest
+- `package` **prebuild-install** — `tools/zj-loop-core/node_modules/prebuild-install/package.json` — node package manifest
+- `package` **pump** — `tools/zj-loop-core/node_modules/pump/package.json` — node package manifest
+- `package` **rc** — `tools/zj-loop-core/node_modules/rc/package.json` — node package manifest
+- `package` **readable-stream** — `tools/zj-loop-core/node_modules/readable-stream/package.json` — node package manifest
+- `package` **safe-buffer** — `tools/zj-loop-core/node_modules/safe-buffer/package.json` — node package manifest
+- `package` **semver** — `tools/zj-loop-core/node_modules/semver/package.json` — node package manifest
+- `package` **simple-concat** — `tools/zj-loop-core/node_modules/simple-concat/package.json` — node package manifest
+- `package` **simple-get** — `tools/zj-loop-core/node_modules/simple-get/package.json` — node package manifest
+- `package` **string_decoder** — `tools/zj-loop-core/node_modules/string_decoder/package.json` — node package manifest
+- `package` **strip-json-comments** — `tools/zj-loop-core/node_modules/strip-json-comments/package.json` — node package manifest
+- `package` **tar-fs** — `tools/zj-loop-core/node_modules/tar-fs/package.json` — node package manifest
+- `package` **tar-stream** — `tools/zj-loop-core/node_modules/tar-stream/package.json` — node package manifest
+- `package` **tunnel-agent** — `tools/zj-loop-core/node_modules/tunnel-agent/package.json` — node package manifest
+- `package` **typescript** — `tools/zj-loop-core/node_modules/typescript/package.json` — node package manifest
+- `package` **undici-types** — `tools/zj-loop-core/node_modules/undici-types/package.json` — node package manifest
+- `package` **util-deprecate** — `tools/zj-loop-core/node_modules/util-deprecate/package.json` — node package manifest
+- `package` **wrappy** — `tools/zj-loop-core/node_modules/wrappy/package.json` — node package manifest
+- `package` **tools/zj-loop-core/node_modules/yaml/browser/package.json** — `tools/zj-loop-core/node_modules/yaml/browser/package.json` — node package manifest
+- `package` **yaml** — `tools/zj-loop-core/node_modules/yaml/package.json` — node package manifest
+- `package` **tools/zj-loop-core/node_modules/zod/locales/package.json** — `tools/zj-loop-core/node_modules/zod/locales/package.json` — node package manifest
+- `package` **tools/zj-loop-core/node_modules/zod/mini/package.json** — `tools/zj-loop-core/node_modules/zod/mini/package.json` — node package manifest
+- `package` **zod** — `tools/zj-loop-core/node_modules/zod/package.json` — node package manifest
+- `package` **tools/zj-loop-core/node_modules/zod/v3/package.json** — `tools/zj-loop-core/node_modules/zod/v3/package.json` — node package manifest
+- `package` **tools/zj-loop-core/node_modules/zod/v4-mini/package.json** — `tools/zj-loop-core/node_modules/zod/v4-mini/package.json` — node package manifest
+
+> View truncated to 100 targets. Use `view --limit` for another bounded view.
+
+## Unknowns
+
+- `unreadable-path` `tools/zj-loop-core/.tmp/provider-runtim` — [Errno 102] Operation not supported on socket: '/Users/bilibili/Documents/workspace/github/jununfly/ZAgenticLoop/tools/zj-loop-core/.tmp/provider-runtim'

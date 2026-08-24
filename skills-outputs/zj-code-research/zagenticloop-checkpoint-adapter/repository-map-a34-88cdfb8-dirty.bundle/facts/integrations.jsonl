@@ -1,0 +1,6 @@
+{"id": "integration-c080d474e074b6de9fce", "kind": "directory", "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/adapter", "reason": "integration-named-directory"}
+{"id": "integration-6e765a72c675bd1ebbae", "kind": "directory", "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/adapter", "reason": "integration-named-directory"}
+{"id": "integration-34f1e42237f82214a129", "kind": "directory", "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/cjs/helper/adapter", "reason": "integration-named-directory"}
+{"id": "integration-511f4fef2e47c9170550", "kind": "directory", "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/helper/adapter", "reason": "integration-named-directory"}
+{"id": "integration-dabf82b3097ecdb985b9", "kind": "directory", "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/adapter", "reason": "integration-named-directory"}
+{"id": "integration-e44aa87c0f47d3c0c9ee", "kind": "directory", "path": "tools/zj-loop-mcp-server/node_modules/hono/dist/types/helper/adapter", "reason": "integration-named-directory"}
