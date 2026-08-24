@@ -13,6 +13,32 @@ Material placement is purpose-based: put shared input material in
 `skills-inputs/<topic>/`; put artifacts produced by a skill in
 `skills-outputs/<skill>/<topic>/`.
 
+## ZAgenticOPN activation seam
+
+When Human says only `检查 shared context` while this repository is the
+owning project for the current ZAgenticOPN Work Item, enter the coordination
+seam before writing a repository summary. For the current Experience Version
+task, the owning scope is `jununfly/ZAgentic/zj-research-report`; run the
+project-local entrypoint from the sibling ZAgenticOPN checkout with the
+Agent's stable identity and profile:
+
+```sh
+python ../ZAgenticOPN/scripts/activate_agent.py \
+  --db ../ZAgenticOPN/.zagenticopn/shared.sqlite3 \
+  --scope junjunfly/ZAgentic/zj-research-report \
+  --agent-id <stable-agent-id> \
+  --device-id <device-id> \
+  --capabilities technical-writing \
+  --permissions zagentic-skill-write
+```
+
+Do not provide a Work Item id. The command performs one discover and claims
+at most one item. If it returns `claimed`, execute that handoff in this
+repository within the same activation; if it returns `claim_conflict`, stop
+without executing; if it returns `no_eligible_work`, report that result only
+after confirming the activation used this scope. A generic repository brief
+is not a substitute for the activation handoff.
+
 Every skill in `engineering/`, `productivity/`, `misc/`, or `research/` must have a reference in the top-level `README.md` and participate in the recursive `./skills/` plugin discovery. Skills in the root-level `personal/` tree must not appear in either.
 
 Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.
