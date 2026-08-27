@@ -121,6 +121,49 @@ def main() -> int:
         if quality_gate.get("reportFamily") != "technical-c4/v1":
             raise AssertionError("receipt quality gate did not identify technical-c4/v1")
 
+        positive_gaps = copy.deepcopy(report)
+        positive_gaps["informationGaps"] = {
+            "status": "has-gaps",
+            "rationale": "Cross-device permission enforcement remains an evidence gap in this run.",
+        }
+        positive_gaps_ledger = copy.deepcopy(ledger)
+        positive_gaps_ledger["result"]["unknownCriteria"] = [
+            {
+                "criterionId": "cross-device-permission-enforcement",
+                "repository": {"owner": "TencentCloud", "name": "TencentDB-Agent-Memory"},
+            }
+        ]
+        positive_gaps_path = root / "positive-information-gaps-report-ir.json"
+        positive_gaps_ledger_path = root / "positive-information-gaps-ledger.json"
+        write_json(positive_gaps_path, positive_gaps)
+        write_json(positive_gaps_ledger_path, positive_gaps_ledger)
+        run([
+            sys.executable,
+            str(VALIDATOR),
+            str(positive_gaps_path),
+            str(positive_gaps_ledger_path),
+            str(brief_path),
+        ])
+        positive_markdown = root / "positive-information-gaps.md"
+        positive_receipt_path = root / "positive-information-gaps-receipt.json"
+        run([
+            sys.executable,
+            str(PUBLISHER),
+            str(positive_gaps_path),
+            str(positive_gaps_ledger_path),
+            str(positive_markdown),
+            "--receipt",
+            str(positive_receipt_path),
+            "--brief",
+            str(brief_path),
+        ])
+        positive_receipt = json.loads(positive_receipt_path.read_text(encoding="utf-8"))
+        positive_quality_gate = positive_receipt.get("qualityGate")
+        if not isinstance(positive_quality_gate, dict) or positive_quality_gate.get("healthy") is not True:
+            raise AssertionError("positive has-gaps report did not pass the quality gate")
+        if positive_quality_gate.get("counts", {}).get("ledgerUnknownCriteria") != 1:
+            raise AssertionError("positive has-gaps receipt did not count the unknown criterion")
+
         invalid_brief = copy.deepcopy(brief)
         invalid_brief["stage"] = "not-a-lifecycle-stage"
         invalid_brief_path = root / "invalid-brief.json"
