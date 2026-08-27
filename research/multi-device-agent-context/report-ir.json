@@ -42,7 +42,7 @@
     {"id":"comparison-deployment","text":"MyContext 与 MineContext 的本地/个人取向更适合单人隐私边界；TencentDB-Agent-Memory 的独立 Gateway、容器和 API 更适合集中式共享服务，但会增加部署、权限和迁移治理。","claimIds":["mine-local","my-personal","tdai-api","tdai-gap"]}
   ],
   "recommendations":[
-    {"id":"recommendation-primary","text":"选择 TencentDB-Agent-Memory 作为共享 memory/metadata layer，并通过明确 adapter 接入 ZHarness/ZAgentic control plane；不要让它替代 Git、canonical roadmap、Work Packet、planned-cell claim、预算协调或发布门。","comparisonIds":["comparison-context","comparison-governance","comparison-deployment"]},
+    {"id":"recommendation-primary","text":"选择 TencentDB-Agent-Memory 作为共享 memory/metadata layer，并通过明确 adapter 接入 ZHarness/ZAgentic control plane；不要让它替代 Git、canonical roadmap、Work Packet、planned-cell claim、预算协调或发布门。本议题未发现未决信息缺口（ledger unknownCriteria 为空），信息完备。","comparisonIds":["comparison-context","comparison-governance","comparison-deployment"]},
     {"id":"recommendation-secondary","text":"如果第一阶段优先解决个人设备上的私有上下文捕获和检索，选择 MyContext；MineContext 作为本地优先个人 context companion 评估，不作为多人协作底座。","comparisonIds":["comparison-context","comparison-deployment"]}
   ],
   "metrics":[

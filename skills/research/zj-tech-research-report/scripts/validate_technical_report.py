@@ -211,11 +211,18 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
     for index, metric in enumerate(metrics):
         if not isinstance(metric, dict) or any(not nonempty(metric.get(field)) for field in METRIC_FIELDS):
             errors.append(f"report.metrics[{index}] needs key, definition, unit, method, condition, and expected")
-    unknown_count = len(ledger.get("unknownCriteria", []))
-    recommendation_text = " ".join(str(item.get("text", "")) for item in recommendations if isinstance(item, dict))
-    unknowns_explicit = unknown_count == 0 or any(token in recommendation_text.lower() for token in ("unknown", "unverified", "gap", "待验证", "未知", "未验证", "信息缺口"))
+    unknown_criteria = ledger.get("unknownCriteria", [])
+    recommendation_text = " ".join(str(item.get("text", "")) for item in recommendations if isinstance(item, dict)).lower()
+    gap_tokens = ("unknown", "unverified", "gap", "待验证", "未知", "未验证", "信息缺口")
+    no_gap_tokens = ("no gap", "no information gap", "no known gap", "无信息缺口", "无已知gap", "信息完整", "不含未决", "无未决")
+    # SKILL.md §5: do NOT treat unknownCriteria: [] as "no information gaps".
+    # The report must explicitly address information-gap status either way.
+    unknowns_explicit = any(token in recommendation_text for token in gap_tokens + no_gap_tokens)
     if not unknowns_explicit:
-        errors.append("sealed-ledger unknownCriteria must surface as explicit report follow-up")
+        if unknown_criteria:
+            errors.append("sealed-ledger unknownCriteria must surface as explicit report follow-up (report missing gap/unverified/unknown token)")
+        else:
+            errors.append("sealed-ledger reports no unknownCriteria; report must explicitly acknowledge no information gaps (do not treat [] as none)")
     if errors:
         raise QualityError("technical Report IR failed: " + "; ".join(errors))
     return {
@@ -242,7 +249,7 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
             "recommendations": len(recommendations),
             "metrics": len(metrics),
             "ledgerEvidence": len(ledger_evidence),
-            "ledgerUnknownCriteria": unknown_count,
+            "ledgerUnknownCriteria": len(unknown_criteria),
         },
         "brief": brief_result,
     }

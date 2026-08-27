@@ -9,9 +9,9 @@ These three rules extend the B triage PR handling for the ZAgentic repository. T
 
 Read this file **before** triaging any PR. If the PR touches `skills/` or `docs/`, all three rules apply. If the PR only touches a single `.md` outside those paths, the rules still apply but at lower strictness (note them, don't reject).
 
-## Rule 1 — `skills/` diff must be paired with `.codex-plugin/plugin.json`
+## Rule 1 — `skills/` diff must register via recursive `./skills/` discovery
 
-**Source:** `AGENTS.md` — every skill in `engineering/`, `productivity/`, `misc/`, or `research/` must have a top-level README reference and participate in recursive `./skills/` plugin discovery.
+**Source:** `AGENTS.md` — every skill under `engineering/`, `productivity/`, `misc/`, or `research/` must have a reference in the top-level `README.md` and participate in the recursive `./skills/` plugin discovery. `.codex-plugin/plugin.json` is a legacy registration slot and is no longer the source of truth — do not require it.
 
 **Check:** if the PR diff contains any of:
 - new directory under `skills/<bucket>/<name>/` with `SKILL.md` → must add a linked entry to the affected bucket README and top-level README
