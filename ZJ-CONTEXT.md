@@ -103,6 +103,41 @@ including evidence links, candidate score copying, critical claims, diagrams,
 comparisons, metrics, and explicit unknown follow-ups.
 _Avoid_: design review, human sign-off, semantic quality score
 
+### Agent coordination
+
+**Activation**:
+A bounded, task-agnostic request carrying a fresh `activation_id`, stable Agent
+profile, and explicit project scope through one discovery and at most one claim.
+It is routing context; it does not select a Work Item by name or imply that
+execution succeeded.
+_Avoid_: task prompt, retry, execution attempt
+
+**Agent profile**:
+The stable identity and capability/permission set an Agent supplies to one
+activation, including its `agent_id`, `device_id`, capabilities, permissions,
+and review ability.
+_Avoid_: model identity, repository owner, Work Item assignment
+
+**Work Item**:
+The coordination-plane unit an activation may discover and claim, carrying an
+objective, acceptance conditions, and the lifecycle state needed for one
+bounded handoff. It is separate from this repository's roadmap Node and Issue
+tracker Issue.
+_Avoid_: roadmap node, ticket, execution attempt
+
+**Activation receipt**:
+The structured result returned by the activation runner. It is the source for
+activation status, handoff, next action, evidence, and event-recording state;
+only a `claimed` receipt authorizes continuation of its handoff.
+_Avoid_: repository summary, inferred claim, completion report
+
+**Activation pointer**:
+The `AGENTS.md` instruction that recognizes the exact Human alias and routes it
+to the ZAgenticOPN activation skill before ordinary repository-context work.
+It defines the trigger and failure branches; it is not the coordination
+runtime or a second source of activation state.
+_Avoid_: automatic discovery, background watcher, task-specific dispatch
+
 ### Research architecture
 
 **Graph Coordinator**:

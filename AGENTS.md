@@ -13,6 +13,38 @@ Material placement is purpose-based: put shared input material in
 `skills-inputs/<topic>/`; put artifacts produced by a skill in
 `skills-outputs/<skill>/<topic>/`.
 
+## ZAgenticOPN activation pointer
+
+When Human sends the exact alias `检查 shared context` in this repository,
+follow the sibling `../ZAgenticOPN/skills/zj-opn-activation/SKILL.md` before
+producing a repository summary. Use a host-provided receipt when the host
+already activated the request; otherwise bind this repository to the canonical
+scope `jununfly/ZAgentic/zj-research-report`, use a fresh `activation_id` and
+the host's stable Agent profile, and route one activation through the
+project-local entrypoint:
+
+```sh
+python ../ZAgenticOPN/scripts/activate_agent.py \
+  --db ../ZAgenticOPN/.zagenticopn/shared.sqlite3 \
+  --scope jununfly/ZAgentic/zj-research-report \
+  --agent-id "${ZAGENTICOPN_AGENT_ID:-workbuddy-01}" \
+  --device-id "${ZAGENTICOPN_DEVICE_ID:-device-a}" \
+  --capabilities "${ZAGENTICOPN_CAPABILITIES:-technical-writing}" \
+  --permissions "${ZAGENTICOPN_PERMISSIONS:-zagentic-skill-write}"
+```
+
+The environment values above are the host's stable profile; override them when
+the host identity differs. The entrypoint generates a fresh activation id when
+the host has not supplied one. Do not run a second activation when a valid
+receipt is already present. The activation selects work through discovery; it
+receives no Work Item id.
+For a `claimed` receipt, continue the returned handoff within the same
+activation. For `no_eligible_work`, `claim_conflict`, `unsupported_host`,
+`scope_unbound`, `handoff_delivery_failed`, `invalid_contract`, or
+`invalid_runtime_config`, report the receipt's status and its
+`next_action`/`repair_action`, then stop. Other requests follow the ordinary
+repository instructions.
+
 Every skill in `engineering/`, `productivity/`, `misc/`, or `research/` must have a reference in the top-level `README.md` and participate in the recursive `./skills/` plugin discovery. Skills in the root-level `personal/` tree must not appear in either.
 
 Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.
