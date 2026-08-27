@@ -159,6 +159,70 @@ def main() -> int:
             raise AssertionError("publisher accepted a report claim with a broken evidence link")
         assert_no_publication(root, "broken-claim")
 
+        empty_gaps = copy.deepcopy(report)
+        empty_gaps["informationGaps"] = {}
+        empty_gaps_path = root / "empty-information-gaps-report-ir.json"
+        write_json(empty_gaps_path, empty_gaps)
+        rejected_empty_gaps = run([
+            sys.executable,
+            str(PUBLISHER),
+            str(empty_gaps_path),
+            str(ledger_path),
+            str(root / "empty-information-gaps.md"),
+            "--receipt",
+            str(root / "empty-information-gaps-receipt.json"),
+            "--brief",
+            str(brief_path),
+        ], check=False)
+        if rejected_empty_gaps.returncode == 0 or "informationGaps.status" not in rejected_empty_gaps.stderr:
+            raise AssertionError("publisher accepted an empty informationGaps object")
+        assert_no_publication(root, "empty-information-gaps")
+
+        invalid_gaps = copy.deepcopy(report)
+        invalid_gaps["informationGaps"] = {"status": "unknown", "rationale": "The evidence is complete."}
+        invalid_gaps_path = root / "invalid-information-gaps-report-ir.json"
+        write_json(invalid_gaps_path, invalid_gaps)
+        rejected_invalid_gaps = run([
+            sys.executable,
+            str(PUBLISHER),
+            str(invalid_gaps_path),
+            str(ledger_path),
+            str(root / "invalid-information-gaps.md"),
+            "--receipt",
+            str(root / "invalid-information-gaps-receipt.json"),
+            "--brief",
+            str(brief_path),
+        ], check=False)
+        if rejected_invalid_gaps.returncode == 0 or "informationGaps.status must" not in rejected_invalid_gaps.stderr:
+            raise AssertionError("publisher accepted an invalid informationGaps status")
+        assert_no_publication(root, "invalid-information-gaps")
+
+        mismatched_gaps = copy.deepcopy(report)
+        mismatched_gaps["informationGaps"] = {
+            "status": "no-gaps",
+            "rationale": "No information gap is known.",
+        }
+        mismatched_gaps_path = root / "mismatched-information-gaps-report-ir.json"
+        mismatched_ledger = copy.deepcopy(ledger)
+        mismatched_ledger["result"]["unknownCriteria"] = [{"id": "open-question"}]
+        mismatched_ledger_path = root / "mismatched-information-gaps-ledger.json"
+        write_json(mismatched_gaps_path, mismatched_gaps)
+        write_json(mismatched_ledger_path, mismatched_ledger)
+        rejected_mismatched_gaps = run([
+            sys.executable,
+            str(PUBLISHER),
+            str(mismatched_gaps_path),
+            str(mismatched_ledger_path),
+            str(root / "mismatched-information-gaps.md"),
+            "--receipt",
+            str(root / "mismatched-information-gaps-receipt.json"),
+            "--brief",
+            str(brief_path),
+        ], check=False)
+        if rejected_mismatched_gaps.returncode == 0 or "status='no-gaps'" not in rejected_mismatched_gaps.stderr:
+            raise AssertionError("publisher accepted informationGaps status mismatched with ledger")
+        assert_no_publication(root, "mismatched-information-gaps")
+
     print("technical research-report contract passed")
     return 0
 
