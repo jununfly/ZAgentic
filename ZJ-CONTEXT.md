@@ -52,6 +52,14 @@ frontmatter `name:`. Renaming a skill is therefore a three-way coordinated
 change (mv the dir, update frontmatter, update all references), verified by grepping the old
 name down to zero repo-wide (append-only history logs exempt).
 _Avoid_: rename-in-place, dir-only rename
+- **Runtime alias exception (board-approved)**: installed copies under
+  `~/.codex/skills/` and `~/.workbuddy/skills/` may keep a legacy directory name
+  (`zj-research-report`) while the SKILL.md `name:` stays canonical
+  (`zj-tech-research-report`). This is an intentional, documented exception to
+  preserve existing path references — each copy carries an `ALIAS.md`, and the
+  exception is ratified in `docs/zj-adr/0004-research-report-improvement-scope.md`.
+  It applies only to runtime install copies, never to the repo source skill
+  (where dir == name still holds strictly).
 
 **Evidence Compiler**:
 The versioned research component that accepts one shared comparison brief, fixes every repository to a commit, performs bounded source reads, and returns a **Sealed ledger**. `zj-research` reaches it through the **Research CLI protocol** rather than reproducing collection logic in a prompt.

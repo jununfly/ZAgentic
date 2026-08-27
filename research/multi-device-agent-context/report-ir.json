@@ -4,6 +4,7 @@
   "title":"多设备多 Agent 协同开发的上下文与记忆层选型",
   "summary":"对于 Human-led federation 场景，TencentDB-Agent-Memory 最适合作为共享记忆与协作元数据底座；MyContext 更适合作为个人工作上下文层，MineContext 更适合作为本地优先的个人上下文伙伴。三者都不能单独替代 Git、canonical roadmap、Work Packet、任务 claim、预算协调或发布治理，因此推荐将 TencentDB-Agent-Memory 接入现有 ZHarness/ZAgentic control plane，而不是让记忆系统承担控制面职责。",
   "ledgerFingerprint":"299299409d8779435aa7c58252af6a203bb44abfe7caed15b4f0c153a8fa4d96",
+  "informationGaps":{"status":"no-gaps","rationale":"Ledger 的 unknownCriteria 为空（0 项），本选型议题信息完备，无未决信息缺口。"},
   "concepts":[
     {"key":"Human-led federation","value":"Human Lead 跨设备做方向、边界、预算和发布决策；设备与 Agent 是隔离执行单元。"},
     {"key":"Memory layer","value":"保存可检索的对话、事实、persona、技能和上下文，不等于任务控制面。"},

@@ -17,7 +17,7 @@ Read this file **before** triaging any PR. If the PR touches `skills/` or `docs/
 - new directory under `skills/<bucket>/<name>/` with `SKILL.md` → must add a linked entry to the affected bucket README and top-level README
 - deleted directory under `skills/<bucket>/<name>/` → must remove its bucket and top-level entries
 - renamed directory (git rename detection) → must update both linked entries and the frontmatter name
-- changed bucket (`engineering/` ↔ `productivity/`) → must update the entry
+- changed bucket (any of `engineering/` ↔ `productivity/` ↔ `misc/` ↔ `research/`) → must update the entry in both the bucket and top-level README
 
 **Outcome if missing:** wontfix (`enhancement` if reasoning is documented) + comment listing missing entries + ask author to run `/zj-agents-init` to fix.
 

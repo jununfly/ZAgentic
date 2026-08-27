@@ -23,7 +23,7 @@ Each public bucket folder has a `README.md` that lists every skill in the bucket
 
 Every skill-touching PR must satisfy all three:
 
-1. **Plugin registration** — if `skills/` changed, verify the new/changed skill is listed in `.codex-plugin/plugin.json` (or the bucket `README.md`, which is what Claude reads). Skills not registered are invisible to the harness.
+1. **Plugin registration** — if `skills/` changed, verify the new/changed skill participates in the recursive `./skills/` plugin discovery (bucket `README.md` + top-level `README.md`). `.codex-plugin/plugin.json` is a legacy slot and is no longer required; see `zj-triage` A-ONLY Rule 1. Skills not registered are invisible to the harness.
 2. **Safe git operations** — all git operations go through `./scripts/zj-git` (or `env -u NODE_OPTIONS git`). The WorkBuddy safe-delete shim corrupts `.git/` on Windows Git Bash; see `skills/engineering/zj-git-bypass-safe-delete/`.
 3. **Vocabulary sync** — any new domain term introduced in the PR must be added to `ZJ-CONTEXT.md` before merge. Skills that "make up" vocabulary break downstream skills that consume it.
 

@@ -4,6 +4,10 @@
   "title": "LangGraph checkpoint/resume adapter probe for ZAgenticLoop",
   "summary": "The second authenticated fresh research pass supports LangGraph's checkpointer storage contract as a narrow, testable capability, but does not establish complete interrupt/resume identity semantics, a native TypeScript/Node.js seam, or authority over ZAgenticLoop execution. Keep the native core and run one removable adapter probe against the native checkpoint fixture; any authority bypass, identity drift, digest drift, or failed removal is a hard stop.",
   "ledgerFingerprint": "c012ac5ea04d673fb1e7c7f6f317c62dc822d34727f78ef39889c61f5d544250",
+  "informationGaps": {
+    "status": "no-gaps",
+    "rationale": "Ledger 的 unknownCriteria 为空（0 项），本议题信息完备，无未决信息缺口；concepts 中的 evidence-gap 已作为已知局限被显式记录，非未决信息缺口。"
+  },
   "concepts": [
     {
       "key": "native-checkpoint-oracle",

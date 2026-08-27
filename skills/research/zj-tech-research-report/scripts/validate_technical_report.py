@@ -212,17 +212,28 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
         if not isinstance(metric, dict) or any(not nonempty(metric.get(field)) for field in METRIC_FIELDS):
             errors.append(f"report.metrics[{index}] needs key, definition, unit, method, condition, and expected")
     unknown_criteria = ledger.get("unknownCriteria", [])
-    recommendation_text = " ".join(str(item.get("text", "")) for item in recommendations if isinstance(item, dict)).lower()
-    gap_tokens = ("unknown", "unverified", "gap", "待验证", "未知", "未验证", "信息缺口")
-    no_gap_tokens = ("no gap", "no information gap", "no known gap", "无信息缺口", "无已知gap", "信息完整", "不含未决", "无未决")
     # SKILL.md §5: do NOT treat unknownCriteria: [] as "no information gaps".
-    # The report must explicitly address information-gap status either way.
-    unknowns_explicit = any(token in recommendation_text for token in gap_tokens + no_gap_tokens)
-    if not unknowns_explicit:
-        if unknown_criteria:
-            errors.append("sealed-ledger unknownCriteria must surface as explicit report follow-up (report missing gap/unverified/unknown token)")
+    # The report must state gap status via a structured `informationGaps` field
+    # (not loose free text), and it is cross-checked against the sealed ledger.
+    gaps = require_object(report.get("informationGaps"), "report.informationGaps", errors)
+    if gaps:
+        status = gaps.get("status")
+        rationale = gaps.get("rationale")
+        if status not in ("has-gaps", "no-gaps"):
+            errors.append("report.informationGaps.status must be 'has-gaps' or 'no-gaps'")
+        if not nonempty(rationale):
+            errors.append("report.informationGaps.rationale is required")
         else:
-            errors.append("sealed-ledger reports no unknownCriteria; report must explicitly acknowledge no information gaps (do not treat [] as none)")
+            gap_tokens = ("unknown", "unverified", "gap", "待验证", "未知", "未验证", "信息缺口")
+            no_gap_tokens = ("no gap", "no information gap", "no known gap", "无信息缺口", "无已知gap", "信息完整", "不含未决", "无未决")
+            rationale_lower = str(rationale).lower()
+            if not any(token in rationale_lower for token in gap_tokens + no_gap_tokens):
+                errors.append("report.informationGaps.rationale must explicitly state the gap status (gap / no-gap token)")
+        if status == "has-gaps" and not unknown_criteria:
+            errors.append("report.informationGaps.status='has-gaps' but ledger unknownCriteria is empty")
+        if status == "no-gaps" and unknown_criteria:
+            errors.append("report.informationGaps.status='no-gaps' but ledger unknownCriteria is non-empty")
+    unknowns_explicit = bool(gaps) and not any("informationGaps" in e for e in errors)
     if errors:
         raise QualityError("technical Report IR failed: " + "; ".join(errors))
     return {

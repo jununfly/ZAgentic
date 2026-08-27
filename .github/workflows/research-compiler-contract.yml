@@ -8,6 +8,7 @@ on:
       - "research/evaluation/**"
       - "skills/research/zj-research/**"
       - "skills/research/zj-tech-research-report/**"
+      - "research/multi-device-agent-context/**"
   pull_request:
     paths:
       - ".github/workflows/research-compiler-contract.yml"
@@ -15,6 +16,7 @@ on:
       - "research/evaluation/**"
       - "skills/research/zj-research/**"
       - "skills/research/zj-tech-research-report/**"
+      - "research/multi-device-agent-context/**"
 
 jobs:
   golden-contract:

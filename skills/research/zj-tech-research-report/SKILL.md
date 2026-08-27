@@ -123,7 +123,7 @@ Construct complete `zj-research-report-ir/v1` with `family: "technical-c4/v1"` f
 - `recommendations`: include overall choice, constraint→choice table in prose, phased landing path, paths to avoid, and remaining risks;
 - `metrics`: define measurable fit, health, validation, and ownership indicators with unit, method, condition, and expected value.
 
-For `technical-c4/v1`, put user-known or newly discovered `fog`, `unverified`, and `absent` items in the recommendations as explicit follow-up entries; do not treat `unknownCriteria: []` as “no information gaps.”
+For `technical-c4/v1`, record information-gap status in a structured top-level `informationGaps` field — `{"status": "has-gaps" | "no-gaps", "rationale": "<explicit gap/no-gap statement>"}` — cross-checked against the sealed ledger's `unknownCriteria`. The `informationGaps.status` must be `no-gaps` exactly when the ledger lists no unknown criteria, and `has-gaps` otherwise; do not treat `unknownCriteria: []` as "no information gaps." Free-text gap mentions inside `recommendations` are not sufficient on their own — the structured field is the contract the quality gate enforces.
 
 ## 6. Compile and publish
 
