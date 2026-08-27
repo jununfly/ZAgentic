@@ -53,5 +53,10 @@
     {"key":"ownership_resolution_rate","definition":"每个 shared context、task 或 memory 是否能解析到 user/team/agent/owner/access policy 的比例","unit":"%","method":"对 metadata graph 做完整性查询并将缺失关系计为失败","condition":"每次发布前和 nightly audit","expected":"100%"},
     {"key":"control_plane_bypass_rate","definition":"绕过 Work Packet、roadmap gate、claim 或 budget gate 直接产生协作事实的运行占比","unit":"%","method":"对 control-plane audit log 与 memory API 写入做关联审计","condition":"所有生产 Agent run","expected":"0%"},
     {"key":"memory_write_conflict_rate","definition":"并发写入同一 logical memory/task 导致冲突、覆盖或人工裁决的比例","unit":"%","method":"以 logical key、revision 和 writer identity 统计冲突事件","condition":"多设备并发 pilot 与 baseline","expected":"< 1%；所有冲突可恢复且可审计"}
+  ],
+  "graduationCriteria":[
+    {"condition":"Pilot 能在 >=2 台设备间检索到带权限过滤、可溯源的共享 context","threshold":"context_recall_latency p95 <= 800 ms 且 context_provenance_rate >= 98%","metric":"context_recall_latency,context_provenance_rate","promoteTo":"usefulness-validation"},
+    {"condition":"Pilot 期间未观测到绕过 control plane 的协作事实写入","threshold":"control_plane_bypass_rate = 0%","metric":"control_plane_bypass_rate","promoteTo":"usefulness-validation"},
+    {"condition":"共享 metadata 的 owner/access 关系完整可解析","threshold":"ownership_resolution_rate = 100%","metric":"ownership_resolution_rate","promoteTo":"usefulness-validation"}
   ]
 }

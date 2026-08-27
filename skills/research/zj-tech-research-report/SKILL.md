@@ -121,7 +121,9 @@ Construct complete `zj-research-report-ir/v1` with `family: "technical-c4/v1"` f
 - `claims`: cite every non-trivial finding and critical claim;
 - `comparisons`: include role families, alternatives, capability composition, ownership/risk, and evidence gaps;
 - `recommendations`: include overall choice, constraint→choice table in prose, phased landing path, paths to avoid, and remaining risks;
-- `metrics`: define measurable fit, health, validation, and ownership indicators with unit, method, condition, and expected value.
+- `metrics`: define measurable fit, health, validation, and ownership indicators with unit,  method, condition, and expected value.
+- `graduationCriteria`: for any stage beyond `problem-discovery`, list the observable exit conditions that promote the recommended option to the next lifecycle stage (`experience-version` → `usefulness-validation` → `dogfood` → `release`). Encode each as `{condition, threshold, metric, promoteTo}` — this is KEP-753 step 7 (Graduation criteria), kept separate from the validation plan so the promotion chain is explicit and machine-checkable.
+- `versionSkew`: for `dogfood` and `release` stages, state how the recommended choice is upgraded, downgraded, and how version skew between it and adjacent components is handled — `{upgrade, downgrade, versionSkewRisks}` — this is KEP-753 step 8 (Upgrade/downgrade and version skew). Omit only when the scope never reaches those stages.
 
 For `technical-c4/v1`, record information-gap status in a non-empty structured top-level `informationGaps` field — `{"status": "has-gaps" | "no-gaps", "rationale": "<explicit gap/no-gap statement>"}` — with both fields required, cross-checked against the sealed ledger's `unknownCriteria`. The `informationGaps.status` must be `no-gaps` exactly when the ledger lists no unknown criteria, and `has-gaps` otherwise; do not treat `unknownCriteria: []` as "no information gaps." Free-text gap mentions inside `recommendations` are not sufficient on their own — the structured field is the contract the quality gate enforces.
 
