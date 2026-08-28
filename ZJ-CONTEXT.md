@@ -100,8 +100,25 @@ The `technical-research-quality-gate/v1` mechanical check owned by
 `zj-tech-research-report`. It validates a Technical Decision Brief against a
 sealed ledger and `technical-c4/v1` Report IR before compiler publication,
 including evidence links, candidate score copying, critical claims, diagrams,
-comparisons, metrics, and explicit unknown follow-ups.
+comparisons, metrics, the **Risk Register**, and explicit unknown follow-ups.
 _Avoid_: design review, human sign-off, semantic quality score
+
+**Risk Register**:
+The `riskRegister` field of a `technical-c4/v1` Report IR: a non-empty list of
+the risks that survive the recommendation, each carrying `risk`, `trigger`,
+`impact`, `mitigation`, `residualRisk`, and `owner` — all six required and
+non-empty. A mitigation that merely restates the risk, and placeholders such as
+`TBD` or `待定` in any field, are rejected. This is KEP-753 step 4, kept
+separate from the validation plan so residual ownership stays explicit.
+_Avoid_: risk prose, risk section, recommendation follow-up, risk table
+
+**Risk-register coverage**:
+The `riskRegisterCoverage` check inside the Technical Research Quality Gate. It
+passes only when the Report IR carries a fully populated Risk Register, and
+reports the entry count as `counts.riskRegister`. It is a contract check, not a
+render: the shared compiler does not render `riskRegister` into the published
+Markdown, so passing this check does not make the register visible to a reader.
+_Avoid_: risk review, human risk sign-off, rendered risk table
 
 ### Agent coordination
 

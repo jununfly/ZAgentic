@@ -16,6 +16,13 @@ REPORT_FAMILY = "technical-c4/v1"
 QUALITY_GATE_SCHEMA = "technical-research-quality-gate/v1"
 STAGES = {"problem-discovery", "experience-version", "usefulness-validation", "dogfood", "release"}
 METRIC_FIELDS = ("key", "definition", "unit", "method", "condition", "expected")
+RISK_FIELDS = ("risk", "trigger", "impact", "mitigation", "residualRisk", "owner")
+# A non-empty string is not the same as real content. "TBD" and its kin satisfy
+# `nonempty` while naming nothing, which is exactly the drift SKILL.md §5 forbids.
+PLACEHOLDER_VALUES = {
+    "tbd", "tba", "tbc", "n/a", "n.a.", "na", "none", "null", "nil", "unknown",
+    "?", "-", "--", "待定", "未定", "未知", "无", "暂无", "不清楚",
+}
 
 
 class QualityError(RuntimeError):
@@ -211,6 +218,24 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
     for index, metric in enumerate(metrics):
         if not isinstance(metric, dict) or any(not nonempty(metric.get(field)) for field in METRIC_FIELDS):
             errors.append(f"report.metrics[{index}] needs key, definition, unit, method, condition, and expected")
+    # KEP-753 step 4: Risks and mitigations — a machine-checked risk register, not
+    # prose. Every entry carries trigger, impact, mitigation, residual risk, and
+    # owner; a mitigation that only restates the risk is not a mitigation.
+    risk_items = require_list(report.get("riskRegister"), "report.riskRegister", errors, 1)
+    for index, item in enumerate(risk_items):
+        if not isinstance(item, dict):
+            errors.append(f"report.riskRegister[{index}] must be an object")
+            continue
+        for field in RISK_FIELDS:
+            value = item.get(field)
+            if not nonempty(value):
+                errors.append(f"report.riskRegister[{index}].{field} is required")
+            elif str(value).strip().casefold() in PLACEHOLDER_VALUES:
+                errors.append(f"report.riskRegister[{index}].{field} is a placeholder, not real content")
+        mitigation = item.get("mitigation")
+        risk = item.get("risk")
+        if nonempty(mitigation) and nonempty(risk) and str(mitigation).strip().casefold() == str(risk).strip().casefold():
+            errors.append(f"report.riskRegister[{index}].mitigation restates the risk")
     # KEP-753 step 7: Graduation criteria — observable exit conditions per stage.
     stage = brief.get("stage")
     grad_items = require_list(report.get("graduationCriteria"), "report.graduationCriteria", errors)
@@ -270,6 +295,7 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
             "comparisonTraceability": True,
             "recommendationTraceability": True,
             "metricCoverage": True,
+            "riskRegisterCoverage": True,
             "unknownsSurfaced": unknowns_explicit,
         },
         "counts": {
@@ -280,6 +306,7 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
             "comparisons": len(comparisons),
             "recommendations": len(recommendations),
             "metrics": len(metrics),
+            "riskRegister": len(risk_items),
             "ledgerEvidence": len(ledger_evidence),
             "ledgerUnknownCriteria": len(unknown_criteria),
             "graduationCriteria": len(grad_items),

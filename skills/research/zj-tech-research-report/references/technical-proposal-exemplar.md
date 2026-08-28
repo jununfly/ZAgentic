@@ -24,14 +24,14 @@ The sequence below is this skill's decision chain distilled from that structure.
 
 ## Executable check items for the eleven steps
 
-Run these before publication. A failing item is a missing decision, not a style defect. Steps 7 and 8 also have a machine-checked Report IR contract; where this table and that contract differ, the contract enforced by [`scripts/validate_technical_report.py`](../scripts/validate_technical_report.py) and [the technical decision brief](technical-decision-brief.md) is the authority. This table is an authoring check, not a second specification.
+Run these before publication. A failing item is a missing decision, not a style defect. Steps 4, 7, and 8 also have a machine-checked Report IR contract; where this table and that contract differ, the contract enforced by [`scripts/validate_technical_report.py`](../scripts/validate_technical_report.py) and [the technical decision brief](technical-decision-brief.md) is the authority. This table is an authoring check, not a second specification.
 
 | # | Step | Pass condition | Fails when |
 |---|---|---|---|
 | 1 | Summary and motivation | The report names the actor, the job, and a baseline failure mode, and says why existing primitives cannot absorb it. | Motivation is a feature description with no failing workflow, or the baseline is asserted without a cited source. |
 | 2 | Goals and non-goals | `goals` and `nonGoals` are both non-empty, and each non-goal names a capability a reader would otherwise assume is included. | Non-goals restate goals, or the only boundary is the phrase "out of scope". |
 | 3 | Proposal | Intended behavior is described as an observable state change before any API, format, or component is named. | The first concrete statement is an interface, or the proposal is only a component list. |
-| 4 | Risks and mitigations | Each risk carries trigger, impact, mitigation, residual risk, and owner. | A risk has no owner, or the mitigation restates the risk. |
+| 4 | Risks and mitigations | `riskRegister` is a non-empty list; every entry carries `risk`, `trigger`, `impact`, `mitigation`, `residualRisk`, and `owner` — the validator rejects an empty list and any entry with an empty field. | A risk has no owner, an entry leaves any of the six fields empty, or the mitigation restates the risk instead of naming the mechanism that contains it. |
 | 5 | Design details | Compatibility, resource or state effects, lifecycle behavior, and dependent components are each covered or deferred with a stated reason. | Backward compatibility is never mentioned. |
 | 6 | Test plan | Every important claim maps to a reproducible scenario with an expected observation and a threshold. | Only the happy path is tested, or no claim-to-scenario mapping exists. |
 | 7 | Graduation criteria | Beyond `problem-discovery`, `graduationCriteria` is a non-empty list of `{condition, threshold}` entries — the validator rejects an empty list; `metric` and `promoteTo` extend an entry. | Merged code is treated as completion, or an entry lacks either required field. |

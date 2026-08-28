@@ -106,7 +106,7 @@ Distinguish whole-product adoption from unit-capability reuse. Keep a matrix for
 
 ### Risk and validation
 
-Include a risk register with trigger, impact, mitigation, residual risk, and owner. Include a validation plan mapping each important claim to a reproducible scenario, expected observation, threshold, and lifecycle exit decision. Include upgrade/rollback/version-skew tests only when the proposed scope creates those obligations.
+Encode the risk register as the top-level `riskRegister` field — see section 5 for the contract the quality gate enforces; a risk described only in prose does not satisfy it. Include a validation plan mapping each important claim to a reproducible scenario, expected observation, threshold, and lifecycle exit decision. Include upgrade/rollback/version-skew tests only when the proposed scope creates those obligations.
 
 For systems executing model-generated code, always include a security/sandbox theme: credentials, approvals, dangerous operations, isolation, provenance, and recovery.
 
@@ -122,6 +122,7 @@ Construct complete `zj-research-report-ir/v1` with `family: "technical-c4/v1"` f
 - `comparisons`: include role families, alternatives, capability composition, ownership/risk, and evidence gaps;
 - `recommendations`: include overall choice, constraint→choice table in prose, phased landing path, paths to avoid, and remaining risks;
 - `metrics`: define measurable fit, health, validation, and ownership indicators with unit,  method, condition, and expected value.
+- `riskRegister`: a non-empty list of the risks that survive the recommendation, each encoded as `{risk, trigger, impact, mitigation, residualRisk, owner}` with all six fields required and non-empty. This is KEP-753 step 4 (Risks and mitigations). A mitigation that merely restates the risk is rejected — it must name the mechanism or policy that contains it. `owner` must name the role or party that carries the residual risk, not "TBD"; placeholders (`TBD`, `N/A`, `unknown`, `待定`, and similar) are rejected in **all six** fields, because a non-empty string that names nothing is not content. Prose risk discussion inside `recommendations` is not sufficient on its own; the structured list is the contract the quality gate enforces.
 - `graduationCriteria`: for any stage beyond `problem-discovery`, list the observable exit conditions that promote the recommended option to the next lifecycle stage (`experience-version` → `usefulness-validation` → `dogfood` → `release`). Encode each as `{condition, threshold}` — the two fields the machine-checked gate requires — and extend an entry with `metric` (how the condition is measured) and `promoteTo` (the next lifecycle stage) when they are meaningful. `promoteTo` has nothing left to name at the last stage in the chain, so an entry that names no successor is not incomplete; the list itself must be non-empty. This is KEP-753 step 7 (Graduation criteria), kept separate from the validation plan so the promotion chain is explicit and machine-checkable.
 - `versionSkew`: for `dogfood` and `release` stages, state how the recommended choice is upgraded, downgraded, and how version skew between it and adjacent components is handled — `{upgrade, downgrade, versionSkewRisks}` — this is KEP-753 step 8 (Upgrade/downgrade and version skew). Omit only when the scope never reaches those stages.
 
