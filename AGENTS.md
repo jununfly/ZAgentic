@@ -21,23 +21,42 @@ producing a repository summary. Use a host-provided receipt when the host
 already activated the request; otherwise bind this repository to the canonical
 scope `jununfly/ZAgentic/zj-research-report`, use a fresh `activation_id` and
 the host's stable Agent profile, and route one activation through the
-project-local entrypoint:
+canonical runner `python -m zagentic_opn.activation_runner`, which reads one
+JSON-Call on stdin and prints one receipt on stdout:
 
 ```sh
-python ../ZAgenticOPN/scripts/activate_agent.py \
-  --db ../ZAgenticOPN/.zagenticopn/shared.sqlite3 \
-  --scope jununfly/ZAgentic/zj-research-report \
-  --agent-id "${ZAGENTICOPN_AGENT_ID:-workbuddy-01}" \
-  --device-id "${ZAGENTICOPN_DEVICE_ID:-device-a}" \
-  --capabilities "${ZAGENTICOPN_CAPABILITIES:-technical-writing}" \
-  --permissions "${ZAGENTICOPN_PERMISSIONS:-zagentic-skill-write}"
+cd ../ZAgenticOPN
+AID=$(uuidgen | tr 'A-Z' 'a-z')
+cat <<EOF | python3 -m zagentic_opn.activation_runner
+{
+  "schema_version": "zagenticopn.activation.v1",
+  "intent_id": "zagenticopn.activation.check_shared_context.v1",
+  "activation_id": "$AID",
+  "scope": "jununfly/ZAgentic/zj-research-report",
+  "agent_profile": {
+    "agent_id": "${ZAGENTICOPN_AGENT_ID:-workbuddy-01}",
+    "device_id": "${ZAGENTICOPN_DEVICE_ID:-device-a}",
+    "capabilities": ["${ZAGENTICOPN_CAPABILITIES:-technical-writing}"],
+    "permissions": ["${ZAGENTICOPN_PERMISSIONS:-zagentic-skill-write}"],
+    "can_review": false
+  },
+  "host_capabilities": ["pre_model_handoff_injection"]
+}
+EOF
 ```
 
 The environment values above are the host's stable profile; override them when
-the host identity differs. The entrypoint generates a fresh activation id when
-the host has not supplied one. Do not run a second activation when a valid
-receipt is already present. The activation selects work through discovery; it
-receives no Work Item id.
+the host identity differs. `activation_id` must be freshly generated for every
+activation. The store path comes from the host runtime config
+(`~/Library/Application Support/zagenticopn/runtime.json`), never from the
+request. Do not run a second activation when a valid receipt is already
+present. The activation selects work through discovery; it receives no Work
+Item id.
+
+Do not call `../ZAgenticOPN/scripts/activate_agent.py`. It bypasses the
+versioned contract: no `host_capabilities` check, no rejection event recorded,
+and its stdout is the raw adapter result rather than a
+`zagenticopn.activation.receipt.v1` receipt.
 For a `claimed` receipt, continue the returned handoff within the same
 activation. For `no_eligible_work`, `claim_conflict`, `unsupported_host`,
 `scope_unbound`, `handoff_delivery_failed`, `invalid_contract`, or
