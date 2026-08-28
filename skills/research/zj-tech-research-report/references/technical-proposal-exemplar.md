@@ -24,7 +24,7 @@ The sequence below is this skill's decision chain distilled from that structure.
 
 ## Executable check items for the eleven steps
 
-Run these before publication. A failing item is a missing decision, not a style defect. Steps 7 and 8 also have a mechanical contract in the Report IR; that contract lives in [the technical decision brief](technical-decision-brief.md) and is the authority whenever the two disagree.
+Run these before publication. A failing item is a missing decision, not a style defect. Steps 7 and 8 also have a machine-checked Report IR contract; where this table and that contract differ, the contract enforced by [`scripts/validate_technical_report.py`](../scripts/validate_technical_report.py) and [the technical decision brief](technical-decision-brief.md) is the authority. This table is an authoring check, not a second specification.
 
 | # | Step | Pass condition | Fails when |
 |---|---|---|---|
@@ -34,8 +34,8 @@ Run these before publication. A failing item is a missing decision, not a style 
 | 4 | Risks and mitigations | Each risk carries trigger, impact, mitigation, residual risk, and owner. | A risk has no owner, or the mitigation restates the risk. |
 | 5 | Design details | Compatibility, resource or state effects, lifecycle behavior, and dependent components are each covered or deferred with a stated reason. | Backward compatibility is never mentioned. |
 | 6 | Test plan | Every important claim maps to a reproducible scenario with an expected observation and a threshold. | Only the happy path is tested, or no claim-to-scenario mapping exists. |
-| 7 | Graduation criteria | Beyond `problem-discovery`, `graduationCriteria` is a list of `{condition, threshold}` entries; `metric` and `promoteTo` extend an entry. | Merged code is treated as completion, or an entry lacks either required field. |
-| 8 | Upgrade, downgrade, version skew | A `dogfood` or `release` report carries `versionSkew` with `upgrade`, `downgrade`, and `versionSkewRisks`; the three earlier stages omit it by convention. | A dogfood/release recommendation has no stated downgrade path. |
+| 7 | Graduation criteria | Beyond `problem-discovery`, `graduationCriteria` is a non-empty list of `{condition, threshold}` entries — the validator rejects an empty list; `metric` and `promoteTo` extend an entry. | Merged code is treated as completion, or an entry lacks either required field. |
+| 8 | Upgrade, downgrade, version skew | A `dogfood` or `release` report carries `versionSkew` with `upgrade`, `downgrade`, and `versionSkewRisks`; the three earlier stages omit it by convention. | A `dogfood` or `release` recommendation omits or leaves empty any of `upgrade`, `downgrade`, or `versionSkewRisks`. |
 | 9 | Production readiness | For `dogfood` and `release`, enablement, rollback, rollout, monitoring, dependencies, scalability, and troubleshooting are each covered. | An early-stage report imports these without evidence, or a release report omits one. |
 | 10 | Drawbacks and alternatives | Every serious alternative states the constraint that rejected it. | Alternatives are strawmen, or a rejection gives no constraint. |
 | 11 | Implementation history and infrastructure | What was learned and what operational support the design requires are recorded; a section with nothing in it is recorded as empty. | A known gap is omitted instead of recorded. |
@@ -51,7 +51,8 @@ Do not copy KEP-753's production depth into every early-stage report. Scale the 
 | `problem-discovery` | User, current workflow, baseline with failure modes, falsifiable hypothesis, goals, non-goals, alternatives, and the evidence that ends discovery. | The hypothesis survives contact with the baseline and one option is cheap enough to build as a slice. | No baseline failure mode is named, or only one option was ever considered. |
 | `experience-version` | One vertical slice, minimum product contract, failure categories, test fixtures, success thresholds, and a discardable implementation boundary. | The slice meets its thresholds on the agreed fixtures. | The slice has no discard boundary, or thresholds were set after the results were seen. |
 | `usefulness-validation` | Baseline comparison, repeated experiments, value metrics, failure frequency, and the continue/revise/stop decision. | The margin over the baseline repeats across runs. | A single run is presented as validation, or no stop condition exists. |
-| `dogfood`, `release` | Rollout, rollback, monitoring, upgrade compatibility, support, and data handling. | Rollback has been exercised and the monitoring signals are within the stated thresholds. | Rollback is designed but never executed, or no one owns support. |
+| `dogfood` | Rollout inside the producing team, rollback, monitoring, upgrade compatibility, support, and data handling. | The team runs its own workload on it and rollback has been exercised end to end. | Rollback is designed but never executed, or no one owns support. |
+| `release` | The dogfood evidence plus external rollout, published monitoring signals with thresholds, supported upgrade and downgrade paths, and a named support owner. | External users run on it, the monitoring signals stay within the published thresholds, and the downgrade path has been exercised. | Monitoring signals exist without thresholds, or the downgrade path is documented but never exercised. |
 
 ## Invariants
 
