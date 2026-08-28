@@ -211,6 +211,21 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
     for index, metric in enumerate(metrics):
         if not isinstance(metric, dict) or any(not nonempty(metric.get(field)) for field in METRIC_FIELDS):
             errors.append(f"report.metrics[{index}] needs key, definition, unit, method, condition, and expected")
+    # KEP-753 step 7: Graduation criteria — observable exit conditions per stage.
+    stage = brief.get("stage")
+    grad_items = require_list(report.get("graduationCriteria"), "report.graduationCriteria", errors)
+    if stage != "problem-discovery":
+        if len(grad_items) < 1:
+            errors.append("report.graduationCriteria needs at least one entry for non-discovery stages")
+        for index, item in enumerate(grad_items):
+            if not isinstance(item, dict) or not nonempty(item.get("condition")) or not nonempty(item.get("threshold")):
+                errors.append(f"report.graduationCriteria[{index}] needs condition and threshold")
+    # KEP-753 step 8: upgrade/downgrade and version skew.
+    if stage in ("dogfood", "release"):
+        skew = require_object(report.get("versionSkew"), "report.versionSkew", errors)
+        for field in ("upgrade", "downgrade", "versionSkewRisks"):
+            if not nonempty(skew.get(field)):
+                errors.append(f"report.versionSkew.{field} is required for dogfood/release stages")
     unknown_criteria = ledger.get("unknownCriteria", [])
     # SKILL.md §5: do NOT treat unknownCriteria: [] as "no information gaps".
     # The report must state gap status via a structured `informationGaps` field
@@ -267,6 +282,8 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
             "metrics": len(metrics),
             "ledgerEvidence": len(ledger_evidence),
             "ledgerUnknownCriteria": len(unknown_criteria),
+            "graduationCriteria": len(grad_items),
+            "versionSkew": bool(report.get("versionSkew")),
         },
         "brief": brief_result,
     }
