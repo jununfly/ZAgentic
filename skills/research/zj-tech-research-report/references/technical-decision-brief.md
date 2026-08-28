@@ -49,19 +49,22 @@ Kubernetes KEP-753 exemplar (see
   Merged code is not completion; the condition-plus-threshold pair is what
   the gate counts. A non-discovery report with an empty list, or an entry
   missing either field, fails publication.
-- **Step 8 — Upgrade, downgrade, and version skew.** `versionSkew` is
-  omitted for `problem-discovery`, `experience-version`, and
-  `usefulness-validation` — an experience-version report carries no
-  mixed-version obligations. It appears only for `dogfood` and `release`
-  stages, as `{upgrade, downgrade, versionSkewRisks}` stating how the
-  recommended choice behaves during upgrade, downgrade, and version skew
-  against adjacent components. A dogfood/release report missing any of the
-  three fields fails publication.
+- **Step 8 — Upgrade, downgrade, and version skew.** Per the KEP-753
+  exemplar, pre-dogfood stages carry no mixed-version obligations: a
+  `problem-discovery`, `experience-version`, or `usefulness-validation`
+  report is expected to omit `versionSkew` entirely. The field appears only
+  for `dogfood` and `release`, as `{upgrade, downgrade, versionSkewRisks}`
+  stating how the recommended choice behaves during upgrade, downgrade, and
+  version skew against adjacent components.
 
-The gate that enforces this is
-[scripts/validate_technical_report.py](../scripts/validate_technical_report.py):
-it reads `stage` from this brief and applies the two stage conditions above.
-The publication receipt echoes the outcome as
-`counts.graduationCriteria` (entry count) and `counts.versionSkew` (`false`
-when omitted), so each published report carries auditable evidence of which
-lifecycle conditions were satisfied.
+  Gate behavior to rely on:
+  [scripts/validate_technical_report.py](../scripts/validate_technical_report.py)
+  reads `stage` from this brief and, for `dogfood`/`release` only, *requires*
+  `versionSkew` with all three fields — a dogfood/release report missing any
+  of them fails publication. For pre-dogfood stages the gate does **not**
+  reject a report that carries `versionSkew`; omission there is a contract
+  convention recorded in this brief and in the source of truth, not a
+  mechanically enforced rejection. The publication receipt echoes the outcome
+  as `counts.graduationCriteria` (entry count) and `counts.versionSkew`
+  (`true` when present, `false` when omitted), so each published report
+  carries auditable evidence of which lifecycle conditions were satisfied.
