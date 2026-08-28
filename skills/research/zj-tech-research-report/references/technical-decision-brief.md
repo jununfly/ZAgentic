@@ -50,21 +50,26 @@ Kubernetes KEP-753 exemplar (see
   the gate counts. A non-discovery report with an empty list, or an entry
   missing either field, fails publication.
 - **Step 8 — Upgrade, downgrade, and version skew.** Per the KEP-753
-  exemplar, pre-dogfood stages carry no mixed-version obligations: a
-  `problem-discovery`, `experience-version`, or `usefulness-validation`
-  report is expected to omit `versionSkew` entirely. The field appears only
-  for `dogfood` and `release`, as `{upgrade, downgrade, versionSkewRisks}`
-  stating how the recommended choice behaves during upgrade, downgrade, and
-  version skew against adjacent components.
+  exemplar, the three stages before `dogfood` carry no mixed-version
+  obligations: a `problem-discovery`, `experience-version`, or
+  `usefulness-validation` report is expected to omit `versionSkew` entirely.
+  The field appears only for `dogfood` and `release`, as `{upgrade,
+  downgrade, versionSkewRisks}` stating how the recommended choice behaves
+  during upgrade, downgrade, and version skew against adjacent components.
 
   Gate behavior to rely on:
   [scripts/validate_technical_report.py](../scripts/validate_technical_report.py)
   reads `stage` from this brief and, for `dogfood`/`release` only, *requires*
   `versionSkew` with all three fields — a dogfood/release report missing any
-  of them fails publication. For pre-dogfood stages the gate does **not**
+  of them fails publication. For those three stages the gate does **not**
   reject a report that carries `versionSkew`; omission there is a contract
   convention recorded in this brief and in the source of truth, not a
   mechanically enforced rejection. The publication receipt echoes the outcome
-  as `counts.graduationCriteria` (entry count) and `counts.versionSkew`
-  (`true` when present, `false` when omitted), so each published report
-  carries auditable evidence of which lifecycle conditions were satisfied.
+  as `counts.graduationCriteria` (entry count) and `counts.versionSkew`. The
+  latter is a truthiness test on the field's value rather than a presence
+  test: `counts.versionSkew` is `true` only when `versionSkew` is present
+  *and* non-empty, and `false` when the field is omitted or present but empty
+  (for example `{}`), which the gate accepts for those three stages. Each
+  published report therefore carries auditable evidence of which lifecycle
+  conditions were satisfied, and `false` does not by itself prove the field
+  is absent.
