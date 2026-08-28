@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,9 @@ PLACEHOLDER_VALUES = {
     "tbd", "tba", "tbc", "n/a", "n.a.", "na", "none", "null", "nil", "unknown",
     "?", "-", "--", "待定", "未定", "未知", "无", "暂无", "不清楚",
 }
+# Punctuation, spacing, and case carry no content, so "The risk." must not slip
+# past a restatement check aimed at "The risk".
+_NON_CONTENT_RE = re.compile(r"\W")
 
 
 class QualityError(RuntimeError):
@@ -47,6 +51,11 @@ def unwrap_ledger(value: dict[str, Any]) -> dict[str, Any]:
 
 def nonempty(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def content_key(value: Any) -> str:
+    """Reduce text to its content: no punctuation, no spacing, no case."""
+    return _NON_CONTENT_RE.sub("", str(value).casefold())
 
 
 def require_object(value: Any, name: str, errors: list[str]) -> dict[str, Any]:
@@ -234,7 +243,11 @@ def validate_report(report: dict[str, Any], ledger_value: dict[str, Any], brief:
                 errors.append(f"report.riskRegister[{index}].{field} is a placeholder, not real content")
         mitigation = item.get("mitigation")
         risk = item.get("risk")
-        if nonempty(mitigation) and nonempty(risk) and str(mitigation).strip().casefold() == str(risk).strip().casefold():
+        # Deliberately content-only and deliberately exact: a fuzzy similarity
+        # score would reject mitigations that legitimately quote the risk before
+        # naming their mechanism, and a false rejection blocks publication. The
+        # gate owns verbatim restatement; paraphrase is a review responsibility.
+        if nonempty(mitigation) and nonempty(risk) and content_key(mitigation) == content_key(risk):
             errors.append(f"report.riskRegister[{index}].mitigation restates the risk")
     # KEP-753 step 7: Graduation criteria — observable exit conditions per stage.
     stage = brief.get("stage")

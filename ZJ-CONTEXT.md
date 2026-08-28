@@ -107,17 +107,23 @@ _Avoid_: design review, human sign-off, semantic quality score
 The `riskRegister` field of a `technical-c4/v1` Report IR: a non-empty list of
 the risks that survive the recommendation, each carrying `risk`, `trigger`,
 `impact`, `mitigation`, `residualRisk`, and `owner` — all six required and
-non-empty. A mitigation that merely restates the risk, and placeholders such as
-`TBD` or `待定` in any field, are rejected. This is KEP-753 step 4, kept
-separate from the validation plan so residual ownership stays explicit.
+non-empty. A mitigation that restates the risk is rejected; the gate compares
+content only, so punctuation, spacing, and case cannot buy a pass. Placeholders
+such as `TBD` or `待定` in any field are also rejected. Paraphrase that names no
+mechanism escapes the gate and is a review responsibility, not a gate check.
+This is KEP-753 step 4, kept separate from the validation plan so residual
+ownership stays explicit. The pinned ZHarness compiler does not render it — see
+**Risk-register coverage**.
 _Avoid_: risk prose, risk section, recommendation follow-up, risk table
 
 **Risk-register coverage**:
 The `riskRegisterCoverage` check inside the Technical Research Quality Gate. It
 passes only when the Report IR carries a fully populated Risk Register, and
 reports the entry count as `counts.riskRegister`. It is a contract check, not a
-render: the shared compiler does not render `riskRegister` into the published
-Markdown, so passing this check does not make the register visible to a reader.
+render: the compiler that produces Markdown is the ZHarness artifact pinned by
+`zj-research/artifacts/compiler-lock.json`, a different repository, and it does
+not render `riskRegister`. Passing the check therefore does not make the
+register visible to a reader; the rendered surface is `recommendations`.
 _Avoid_: risk review, human risk sign-off, rendered risk table
 
 ### Agent coordination

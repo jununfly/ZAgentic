@@ -122,7 +122,7 @@ Construct complete `zj-research-report-ir/v1` with `family: "technical-c4/v1"` f
 - `comparisons`: include role families, alternatives, capability composition, ownership/risk, and evidence gaps;
 - `recommendations`: include overall choice, constraint→choice table in prose, phased landing path, paths to avoid, and remaining risks;
 - `metrics`: define measurable fit, health, validation, and ownership indicators with unit,  method, condition, and expected value.
-- `riskRegister`: a non-empty list of the risks that survive the recommendation, each encoded as `{risk, trigger, impact, mitigation, residualRisk, owner}` with all six fields required and non-empty. This is KEP-753 step 4 (Risks and mitigations). A mitigation that merely restates the risk is rejected — it must name the mechanism or policy that contains it. `owner` must name the role or party that carries the residual risk, not "TBD"; placeholders (`TBD`, `N/A`, `unknown`, `待定`, and similar) are rejected in **all six** fields, because a non-empty string that names nothing is not content. Prose risk discussion inside `recommendations` is not sufficient on its own; the structured list is the contract the quality gate enforces.
+- `riskRegister`: a non-empty list of the risks that survive the recommendation, each encoded as `{risk, trigger, impact, mitigation, residualRisk, owner}` with all six fields required and non-empty. This is KEP-753 step 4 (Risks and mitigations). A mitigation that merely restates the risk is rejected — it must name the mechanism or policy that contains it. The gate compares **content only** (punctuation, spacing, and case are ignored), so appending a period or re-spacing the sentence is still a restatement. Deliberately exact rather than fuzzy: a similarity rule would reject mitigations that legitimately quote the risk before naming their mechanism, and a false rejection blocks publication. Paraphrase that adds no mechanism is therefore a **review responsibility**, not a gate check. `owner` must name the role or party that carries the residual risk, not "TBD"; placeholders (`TBD`, `N/A`, `unknown`, `待定`, and similar) are rejected in **all six** fields, because a non-empty string that names nothing is not content. Prose risk discussion inside `recommendations` is not sufficient on its own; the structured list is the contract the quality gate enforces. **The shared compiler does not render `riskRegister`** — it lives in the ZHarness compiler pinned by `../zj-research/artifacts/compiler-lock.json`, outside this skill — so a passing gate is not the same as a reader seeing the risks. Restate the surviving risks in `recommendations` (already required below as "remaining risks"), which the compiler does render. The gate checks the structured field only; keeping that field and the rendered prose in agreement is a review responsibility.
 - `graduationCriteria`: for any stage beyond `problem-discovery`, list the observable exit conditions that promote the recommended option to the next lifecycle stage (`experience-version` → `usefulness-validation` → `dogfood` → `release`). Encode each as `{condition, threshold}` — the two fields the machine-checked gate requires — and extend an entry with `metric` (how the condition is measured) and `promoteTo` (the next lifecycle stage) when they are meaningful. `promoteTo` has nothing left to name at the last stage in the chain, so an entry that names no successor is not incomplete; the list itself must be non-empty. This is KEP-753 step 7 (Graduation criteria), kept separate from the validation plan so the promotion chain is explicit and machine-checkable.
 - `versionSkew`: for `dogfood` and `release` stages, state how the recommended choice is upgraded, downgraded, and how version skew between it and adjacent components is handled — `{upgrade, downgrade, versionSkewRisks}` — this is KEP-753 step 8 (Upgrade/downgrade and version skew). Omit only when the scope never reaches those stages.
 
@@ -144,7 +144,16 @@ For `technical-c4/v1`, the helper runs the technical research quality gate
 before invoking the shared compiler. It then compiles authoritative Markdown,
 derives HTML from that exact Markdown, creates all files without overwrite,
 evaluates application-owned publication facts, and fails when either gate is
-unhealthy. The receipt records both the compiler evaluation and the
+unhealthy.
+
+A healthy receipt is **not** proof that everything in the IR reached the reader.
+The compiler is a pinned external artifact (`skills/research/zj-research/artifacts/compiler-lock.json`,
+ZHarness `9172aa0`) with a fixed rendered field set — `concepts`, `diagrams`,
+`candidates`, `cards`, `claims`, `comparisons`, `recommendations`, `metrics`.
+Contract-only fields such as `graduationCriteria` and `riskRegister` are
+enforced by the gate but are **not rendered** into the report. Do not
+post-process the Markdown or HTML to compensate; rendering changes belong to the
+compiler, and the fix is an upstream change plus a lock bump. The receipt records both the compiler evaluation and the
 `technical-research-quality-gate/v1` result. Never hand-author or edit a
 competing Markdown or HTML version. Verify JSON, evidence IDs, ledger
 fingerprint, candidate scores, trailing whitespace, and the receipt before

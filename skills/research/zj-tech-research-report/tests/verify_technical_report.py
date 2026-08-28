@@ -298,6 +298,25 @@ def main() -> int:
         assert_rejected(root, "restated-risk", restated_risk_path, ledger_path, brief_path,
                         "mitigation restates the risk")
 
+        # A trailing period (or spacing/case changes) must not buy a pass.
+        punctuated_risk = copy.deepcopy(report)
+        punctuated_risk["riskRegister"][0]["mitigation"] = punctuated_risk["riskRegister"][0]["risk"] + "."
+        punctuated_risk_path = root / "punctuated-restated-risk-report-ir.json"
+        write_json(punctuated_risk_path, punctuated_risk)
+        assert_rejected(root, "punctuated-restated-risk", punctuated_risk_path, ledger_path, brief_path,
+                        "mitigation restates the risk")
+
+        # Quoting the risk before naming the mechanism is allowed on purpose: a
+        # containment or similarity rule would reject this and block publication.
+        quoted_risk = copy.deepcopy(report)
+        quoted_risk["riskRegister"][0]["mitigation"] = (
+            quoted_risk["riskRegister"][0]["risk"]
+            + " — contained by read-only grants and a nightly control-plane bypass audit"
+        )
+        quoted_risk_path = root / "quoted-risk-report-ir.json"
+        write_json(quoted_risk_path, quoted_risk)
+        run([sys.executable, str(VALIDATOR), str(quoted_risk_path), str(ledger_path), str(brief_path)])
+
     print("technical research-report contract passed")
     return 0
 
