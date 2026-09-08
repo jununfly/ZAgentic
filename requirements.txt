@@ -1,0 +1,8 @@
+# Python dependencies for the repository's validation scripts.
+#
+# Only the SKILL.md frontmatter validator needs a third-party package; every
+# other script runs on the standard library alone.
+#
+# Install with:
+#   python3 -m pip install -r requirements.txt
+PyYAML>=6.0

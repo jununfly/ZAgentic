@@ -83,6 +83,16 @@ or returns non-zero, it runs ZAgentic's recursive layout validator, which checks
 the five public buckets, root-level `personal/`, skill frontmatter, README
 registration, and public coverage in `zj-guide`.
 
+Frontmatter validation needs PyYAML; install it once before validating:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+The script works on macOS, Linux, and Windows shells (including Git Bash and
+WSL). On Windows it converts paths to the form the detected Python interpreter
+expects, and it accepts either `python3` or `python` on `PATH`.
+
 ## Recommended paths
 
 - **Documentation system** — `/zj-docs-ontology` discovers and proposes;

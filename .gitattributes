@@ -1,0 +1,14 @@
+# Cross-platform line endings.
+#
+# Shell and Python entry points must stay LF. A trailing CR is invisible on
+# Windows but fatal on Unix checkouts: it becomes part of the shebang
+# (`#!/usr/bin/env python3\r`) and part of shell option names
+# (`set: pipefail\r: invalid option name`). Marking them `eol=lf` keeps every
+# checkout byte-identical regardless of core.autocrlf.
+*.sh text eol=lf
+*.py text eol=lf
+
+# Extensionless shell entry point, and a data file read by shell loops where a
+# stray CR would be swallowed into each value.
+scripts/zj-git text eol=lf
+scripts/zagentic-skills-list text eol=lf
