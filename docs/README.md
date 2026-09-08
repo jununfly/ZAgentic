@@ -20,6 +20,7 @@ surfaces; navigation order does not establish global truth precedence.
 | Why and how does a bounded design work? | [docs/designs/](designs/) | Design rationale and implementation-facing explanations. |
 | What is the current technical architecture of ZAgentic? | [docs/architecture/](architecture/) | Long-lived architecture handbook; routing only — view pages own their bounded questions and link (not duplicate) design and ADR authorities. |
 | Why was a hard-to-reverse decision accepted? | [docs/zj-adr/](zj-adr/) | Decision rationale; it does not replace current architecture or rules. |
+| What is specified and ready for an Agent to build? | [docs/plans/](plans/) | Agent-grabbable specs produced by `zj-to-spec`; a spec records intent, decisions and test seams, it does not replace ADR rationale or current skill behavior. |
 
 ### Primary design authorities
 
