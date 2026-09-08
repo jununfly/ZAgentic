@@ -68,6 +68,47 @@ complementary overview, layer, subsystem, flow, and cross-cutting views with
 explicit source maps.
 _Avoid_: duplicated architecture essay, code inventory
 
+**Architecture map**:
+The reader-facing routing page of an architecture handbook. It links each
+architecture view once and states that view's bounded question; for a primary
+view the same list item also carries its `authority-id`. The map routes; it does
+not restate the views it points at.
+_Avoid_: parallel manifest, duplicated architecture essay, site map
+
+**Architecture view**:
+One of the five complementary page kinds an architecture handbook uses:
+`architecture-overview`, `architecture-layers`, `architecture-subsystem`,
+`architecture-flow`, and `architecture-cross-cutting`. Each view answers one
+bounded question and is named with a `ta-`, `ba-`, or `pa-` file prefix.
+_Avoid_: architecture page, generic document, diagram
+
+**View contract**:
+The view-specific headings one architecture view must supply in addition to the
+common `Question` / `Scope` / `Boundaries` / `Source map` / `Related authority`
+sections. Example: a flow view must supply trigger, sequence, state and effects,
+failure or exit behavior, and observable evidence.
+_Avoid_: page template, optional heading list
+
+**Source map target**:
+A path named under a page's `## Source map` heading — code, tests, fixtures, an
+accepted ADR, or a stable external reference. The validator checks that the
+target resolves from the repository root, so source-map entries use
+root-relative paths rather than paths relative to the owning skill.
+_Avoid_: bare skill name, unresolvable path, evidence payload
+
+**Bucket discipline**:
+The cross-cutting rule that a skill's discoverability depends on exactly three
+things: its bucket is its public entry, the root-level `personal/` tree is a
+parallel path rather than a sixth bucket, and no architecture page duplicates a
+design or ADR authority. Every architecture view consumes this rule.
+_Avoid_: bucket policy, folder convention
+
+**5 + 1 model**:
+The shape of the ZAgentic skills collection: five public purpose-based buckets
+under `skills/` plus one root-level `personal/` tree that is installable but
+outside plugin discovery and public indexes.
+_Avoid_: six buckets, personal bucket
+
 **Repository collaboration setup**:
 The tracker, triage-vocabulary, and Agent-entrypoint configuration established
 by `zj-repo-init` after a documentation map has been selected.
