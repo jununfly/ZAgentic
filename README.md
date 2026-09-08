@@ -1,325 +1,168 @@
-
 # ZAgentic Skills
 
 [![skills.sh](https://skills.sh/b/jununfly/ZAgentic)](https://skills.sh/jununfly/ZAgentic)
 
-Jununfly's agent skills for real engineering - not vibe coding.
+ZAgentic is a collection of composable skills for human-guided engineering,
+codebase documentation, research, and everyday agent workflows. Public skills
+live in five purpose-based buckets under `skills/`; setup-specific skills live
+in root-level `personal/` and are deliberately excluded from this catalog.
 
-Developing real applications is hard. Approaches like GSD, BMAD, and Spec-Kit try to help by owning the process. But while doing so, they take away your control and make bugs in the process hard to resolve.
+Start with [`/zj-guide`](./skills/engineering/zj-guide/SKILL.md) when you do
+not know which route fits your situation.
 
-These skills are designed to be small, easy to adapt, and composable. They work with any model. They're based on decades of engineering experience. Hack around with them. Make them your own. Enjoy.
+## Quick start
 
-If you want to keep up with changes to these skills, follow the ZAgentic repository updates.
-
-## Quickstart (30-second setup)
-
-1. Run the skills.sh installer:
+Install selected public skills through skills.sh:
 
 ```bash
 npx skills@latest add jununfly/ZAgentic
 ```
 
-2. Pick the skills you want, and which coding agents you want to install them on. **Make sure you select `/zj-agents-init`**.
+Then choose the entry point that matches the repository's state:
 
-3. Run `/zj-agents-init` in your agent. It will:
-   - Ask you which issue tracker you want to use (GitHub, Linear, or local files)
-   - Ask you what labels you apply to tickets when you triage them (`/zj-triage` uses labels)
-   - Ask you where you want to save any docs we create
+- Use [`/zj-docs-ontology`](./skills/codebase-docs/zj-docs-ontology/SKILL.md)
+  to establish, migrate, or govern a documentation system, including when no
+  document map has been selected.
+- Use [`/zj-repo-init`](./skills/engineering/zj-repo-init/SKILL.md) after a
+  document map is selected to configure tracker, triage vocabulary, and concise
+  Agent entrypoints.
+- Use [`/zj-guide`](./skills/engineering/zj-guide/SKILL.md) for every other
+  route, including implementation, research, maintenance, and standalone work.
 
-4. Bam - you're ready to go.
+## Local installation
 
-## Manual install & uninstall (from a local clone)
+From a local clone, [`scripts/link-skills.sh`](./scripts/link-skills.sh)
+installs every public and personal skill into detected supported agent skill
+directories:
 
-The Quickstart above uses `skills.sh`, which installs individual skills onto Claude/Codex through its own UI. When you have this repo cloned locally and want to install the **whole set** onto Claude, Codex, or WorkBuddy in one go, use the bundled scripts instead.
-
-### Install with `scripts/link-skills.sh`
-
-This script flattens every public skill in `skills/` and private skill in
-`personal/` into the agent's skills directory. Private skills remain outside
-the plugin's `skills/` path. It supports three platforms and two methods:
-
-| Platform  | Skill directory        |
-| --------- | ---------------------- |
-| `claude`    | `~/.claude/skills`     |
-| `codex`     | `~/.codex/skills`      |
-| `workbuddy` | `~/.workbuddy/skills`  |
+| Platform | Skill directory |
+| --- | --- |
+| `claude` | `~/.claude/skills` |
+| `codex` | `~/.codex/skills` |
+| `workbuddy` | `~/.workbuddy/skills` |
 
 ```bash
-# install into every agent skill dir that already exists
+# Install into every detected platform.
 scripts/link-skills.sh
 
-# install only into WorkBuddy
-scripts/link-skills.sh --platform workbuddy
+# Limit installation and preview it first.
+scripts/link-skills.sh --platform codex --dry-run
 
-# install copied (default) vs. symlinked back to the repo
-scripts/link-skills.sh --platform workbuddy --method copy      # default
-scripts/link-skills.sh --platform workbuddy --method symlink   # live updates; auto-falls-back to copy if OS blocks symlinks
-
-# preview without changing anything
-scripts/link-skills.sh --dry-run
+# Copy is the default snapshot; symlink keeps a local checkout live.
+scripts/link-skills.sh --platform codex --method copy
+scripts/link-skills.sh --platform codex --method symlink
 ```
 
-Notes:
-- Default method is `copy` — robust on Windows and immune to later edits in this repo. `symlink` links back to the repo for live updates while you develop, and silently falls back to `copy` when the OS refuses symlinks (e.g. Windows without Developer Mode).
-- Pre-existing skill folders are moved to `~/.workbuddy/.zagentic-prev/` (outside the skills dir) rather than deleted, so the agent's scanner never picks up leftovers as extra skills.
-- **WorkBuddy only**: after installing, run `/reload-plugins` (or restart WorkBuddy) so its skill scanner re-reads the directory. The scanner caches results in memory and does not watch the filesystem.
+The installer replaces a same-named target skill folder; use `--dry-run` before
+overwriting an existing installation. Reload WorkBuddy plugins (or restart it)
+after installation so its scanner sees the new skills.
 
-### Uninstall the whole set with `scripts/zagentic-skills-list`
+### Refresh or remove a local installation
 
-This plain-text file is the single source of truth for "the entire skill set". To remove every ZAgentic skill from an agent, reference it in one prompt — no need to hunt names down:
-
-> Read `scripts/zagentic-skills-list`, then delete every listed directory from `~/.workbuddy/skills` (skip any that don't exist). Then tell me which were removed.
-
-Swap the path for `~/.claude/skills` or `~/.codex/skills` per agent, and remember to `/reload-plugins` (WorkBuddy) afterwards.
-
-**Keeping the list in sync.** The list is generated by `scripts/list-skills.sh` (which scans public `skills/` and root-level `personal/` for `SKILL.md`). After you add or remove a skill, regenerate the list and commit the result:
+[`scripts/zagentic-skills-list`](./scripts/zagentic-skills-list) is the
+generated inventory for uninstalling the locally installed collection. Regenerate
+it after adding or removing a public or personal skill:
 
 ```bash
 scripts/list-skills.sh > scripts/zagentic-skills-list
 ```
 
-`scripts/link-skills.sh` (install) and `scripts/zagentic-skills-list` (uninstall) share the same model: pre-existing targets in the agent's skills dir are discarded, not backed up. Treat the installed set as a snapshot of the repo's `skills/` tree.
+Review that inventory before removing the matching directories from an agent's
+skills folder. The installer itself only installs or replaces skills.
 
-### Validate the plugin layout
+### Validate the repository layout
 
-Run the repository validation entrypoint before distributing a local clone:
+Run the validation entry point before distributing a local clone:
 
 ```bash
 scripts/validate-plugin.sh
 ```
 
-It runs the official plugin validator first. If that command returns non-zero,
-it runs ZAgentic's recursive validator for the public bucket layout under
-`skills/` and the root-level `personal/` skills. To select an official
-validator explicitly, pass `--official-validator PATH` or set
-`ZAGENTIC_OFFICIAL_PLUGIN_VALIDATOR`.
+It runs the official plugin validator first. If that validator is unavailable
+or returns non-zero, it runs ZAgentic's recursive layout validator, which checks
+the five public buckets, root-level `personal/`, skill frontmatter, README
+registration, and public coverage in `zj-guide`.
 
-## Human-Agent Workflow
+## Recommended paths
 
-These skills are meant to be used as a loop, not as isolated commands. Humans keep judgment; agents handle repeatable execution and verification.
+- **Documentation system** — `/zj-docs-ontology` discovers and proposes;
+  `/zj-docs-architecture` owns architecture views. Migrations and deletions
+  require explicit Human confirmation.
+- **Feature delivery** — use `/zj-grill-with-docs` or `/zj-grilling` to align,
+  then `/zj-to-spec` → `/zj-to-tickets` → `/zj-implement` as the work needs.
+  `/zj-steelman`, `/zj-dry-run`, and `/zj-debrief` are the pre-plan,
+  pre-implementation, and post-task checkpoints.
+- **Long-running uncertainty** — `/zj-wayfinder` carries decisions and
+  blockers until the work is ready for a spec and tickets; `/zj-roadmap-driven`
+  tracks an agreed execution route.
+- **Research and design** — `/zj-research` produces evidence,
+  `/zj-code-research` maps a repository, `/zj-tech-research-report` makes a
+  technical recommendation, and `/zj-tech-design-review` tests a proposed
+  design.
+- **Closeout** — `/zj-debrief` records process material after work;
+  `/zj-docs-ontology` later governs durable extraction and proposed deletion.
+  `/zj-neat-freak` reconciles broader docs, rules, memory, and workspace drift.
 
-The workflow is issue-centered: humans own intent, priority, trade-offs, acceptance criteria, and final review. Agents gather context, slice work into issues, implement one issue at a time, run verification loops, and leave handoff notes when work moves between contributors.
-
-The ZJ-prefixed docs (`ZJ-CONTEXT.md`, `docs/zj-agents/`, `docs/zj-adr/`) keep this workflow's context, decisions, and coordination notes separate from other agents or human-maintained documentation.
-
-### Default Issue-Centered Loop
-
-```text
-Idea
-  ↓
-Align intent and language
-  ↓
-Slice into issues
-  ↓
-Triage when coordination is needed
-  ↓
-Implement one issue with tests
-  ↓
-Diagnose if stuck
-  ↓
-Review, merge, or hand off
-```
-
-1. **Align intent and language**
-   Use `/zj-grilling` for general planning, or `/zj-domain-modeling` when the repo's domain language and ADRs matter.
-   Don't know which skill fits? Use `/zj-guide` — the user-only router over every skill in this repo.
-
-2. **Slice the work into issues**
-   Use `/zj-to-tickets` to turn the agreed plan into small, independently grabbable tickets.
-
-3. **Triage when coordination is needed**
-   Use `/zj-triage` when an issue is ambiguous, missing context, blocked on a human decision, or needs an explicit human/agent readiness label.
-
-4. **Implement one issue at a time**
-   Use `/zj-tdd` to solve one issue with a red-green-refactor loop and explicit verification.
-
-5. **Diagnose if stuck**
-   Use `/zj-diagnosing-bugs` when a test failure, bug, or performance regression needs root-cause analysis instead of guesswork.
-
-6. **Review, merge, or hand off**
-   Humans review the result and make the final call. Use `/zj-handoff` when another human or agent needs to continue from the current context.
-
-For solo work, you can often skip triage and move directly from a well-scoped issue to `/zj-tdd`.
-
-> **In multi-human or multi-agent workflows, triage becomes the coordination contract.** Keep issue labels accurate and state transitions explicit so contributors can pick up work without guessing, duplicating effort, or fighting hidden assumptions.
-
-### Example: Idea → Issue → Implementation
-
-1. Human: "We need to improve onboarding."
-2. Align the intent with `/zj-grilling`.
-3. Turn the agreed plan into issues with `/zj-to-tickets`.
-4. Pick one issue and implement it with `/zj-tdd`.
-5. If the implementation gets stuck, switch to `/zj-diagnosing-bugs`.
-6. Use `/zj-handoff` when another human or agent needs to continue.
-
-### Variations
-
-- Need product framing before issue slicing? Use `/zj-to-spec`.
-- Need broader codebase context first? Ask for a module/caller map; use [`/zj-codebase-design`](./skills/engineering/zj-codebase-design/SKILL.md) when the question is about module boundaries.
-- Need architecture improvement? Use `/zj-improve-codebase-architecture`.
-- Need a throwaway design or logic spike before committing? Use `/zj-prototype`.
-- Need a compact operating mode for long sessions? Use `/zj-caveman`.
-
-## Why These Skills Exist
-
-Jununfly maintains these skills as a way to fix common failure modes in Claude Code, Codex, and other coding agents.
-
-### #1: The Agent Didn't Do What I Want
-
-> "No-one knows exactly what they want"
->
-> David Thomas & Andrew Hunt, [The Pragmatic Programmer](https://www.amazon.co.uk/Pragmatic-Programmer-Anniversary-Journey-Mastery/dp/B0833F1T3V)
-
-**The Problem**. The most common failure mode in software development is misalignment. You think the dev knows what you want. Then you see what they've built - and you realize it didn't understand you at all.
-
-This is just the same in the AI age. There is a communication gap between you and the agent. The fix for this is a **grilling session** - getting the agent to ask you detailed questions about what you're building.
-
-**The Fix** is to use:
-
-- [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md) - for non-code uses
-- [`/zj-domain-modeling`](./skills/engineering/zj-domain-modeling/SKILL.md) - grilling _plus_ the domain-language and ADR documentation goodies
-
-These are my most popular skills. They help you align with the agent before you get started, and think deeply about the change you're making. Use them _every_ time you want to make a change.
-
-### #2: The Agent Is Way Too Verbose
-
-> With a ubiquitous language, conversations among developers and expressions of the code are all derived from the same domain model.
->
-> Eric Evans, [Domain-Driven-Design](https://www.amazon.co.uk/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
-
-**The Problem**: At the start of a project, devs and the people they're building the software for (the domain experts) are usually speaking different languages.
-
-Agents are usually dropped into a project and asked to figure out the jargon as they go. So they use 20 words where 1 will do.
-
-**The Fix** for this is a shared language. It's a document that helps agents decode the jargon used in the project.
-
-<details>
-<summary>
-Example
-</summary>
-
-Here's an example `ZJ-CONTEXT.md` from a course video manager repo. Which one is easier to read?
-
-- **BEFORE**: "There's a problem when a lesson inside a section of a course is made 'real' (i.e. given a spot in the file system)"
-- **AFTER**: "There's a problem with the materialization cascade"
-
-This concision pays off session after session.
-
-</details>
-
-This is built into [`/zj-domain-modeling`](./skills/engineering/zj-domain-modeling/SKILL.md) and [`/zj-grilling`](./skills/productivity/zj-grilling/SKILL.md). Together they're a grilling session that helps you build a shared language with the AI, and document hard-to-explain decisions in ADRs.
-
-It's hard to explain how powerful this is. It might be the single coolest technique in this repo. Try it, and see.
-
-> [!TIP]
-> A shared language has many other benefits than reducing verbosity:
->
-> - **Variables, functions and files are named consistently**, using the shared language
-> - As a result, the **codebase is easier to navigate** for the agent
-> - The agent also **spends fewer tokens on thinking**, because it has access to a more concise language
-
-### #3: The Code Doesn't Work
-
-> "Always take small, deliberate steps. The rate of feedback is your speed limit. Never take on a task that’s too big."
->
-> David Thomas & Andrew Hunt, [The Pragmatic Programmer](https://www.amazon.co.uk/Pragmatic-Programmer-Anniversary-Journey-Mastery/dp/B0833F1T3V)
-
-**The Problem**: Let's say that you and the agent are aligned on what to build. What happens when the agent _still_ produces crap?
-
-It's time to look at your feedback loops. Without feedback on how the code it produces actually runs, the agent will be flying blind.
-
-**The Fix**: You need the usual tranche of feedback loops: static types, browser access, and automated tests.
-
-For automated tests, a red-green-refactor loop is critical. This is where the agent writes a failing test first, then fixes the test. This helps give the agent a consistent level of feedback that results in far better code.
-
-This repo includes a **[`/zj-tdd`](./skills/engineering/zj-tdd/SKILL.md) skill** you can slot into any project. It encourages red-green-refactor and gives the agent plenty of guidance on what makes good and bad tests.
-
-For debugging, it also includes a **[`/zj-diagnosing-bugs`](./skills/engineering/zj-diagnosing-bugs/SKILL.md)** skill that wraps best debugging practices into a simple loop.
-
-### #4: We Built A Ball Of Mud
-
-> "Invest in the design of the system _every day_."
->
-> Kent Beck, [Extreme Programming Explained](https://www.amazon.co.uk/Extreme-Programming-Explained-Embrace-Change/dp/0321278658)
-
-> "The best modules are deep. They allow a lot of functionality to be accessed through a simple interface."
->
-> John Ousterhout, [A Philosophy Of Software Design](https://www.amazon.co.uk/Philosophy-Software-Design-2nd/dp/173210221X)
-
-**The Problem**: Most apps built with agents are complex and hard to change. Because agents can radically speed up coding, they also accelerate software entropy. Codebases get more complex at an unprecedented rate.
-
-**The Fix** for this is a radical new approach to AI-powered development: caring about the design of the code.
-
-This is built in to every layer of these skills:
-
-- [`/zj-to-spec`](./skills/engineering/zj-to-spec/SKILL.md) quizzes you about which modules you're touching before creating a spec
-- [`/zj-codebase-design`](./skills/engineering/zj-codebase-design/SKILL.md) keeps module and interface discussions grounded in the broader codebase context
-
-And crucially, [`/zj-improve-codebase-architecture`](./skills/engineering/zj-improve-codebase-architecture/SKILL.md) helps you rescue a codebase that has become a ball of mud. I recommend running it on your codebase once every few days.
-
-### Summary
-
-Software engineering fundamentals matter more than ever. These skills condense those fundamentals into repeatable practices, to help you ship better software with agents.
-
-## Reference
+## Public skills
 
 ### Engineering
 
-Skills I use daily for code work.
+- [zj-guide](./skills/engineering/zj-guide/SKILL.md) — Route a request to the skill or flow that fits it.
+- [zj-diagnosing-bugs](./skills/engineering/zj-diagnosing-bugs/SKILL.md) — Diagnose hard bugs and performance regressions through a disciplined feedback loop.
+- [zj-triage](./skills/engineering/zj-triage/SKILL.md) — Move incoming issues through explicit triage roles.
+- [zj-codebase-design](./skills/engineering/zj-codebase-design/SKILL.md) — Design deeper modules, clear seams, and small interfaces.
+- [zj-git-bypass-safe-delete](./skills/engineering/zj-git-bypass-safe-delete/SKILL.md) — Diagnose and recover from WorkBuddy safe-delete Git corruption.
+- [zj-steelman](./skills/engineering/zj-steelman/SKILL.md) — Reality-check a plan before grilling it.
+- [zj-dry-run](./skills/engineering/zj-dry-run/SKILL.md) — Rehearse a ticketed plan before implementation.
+- [zj-implement](./skills/engineering/zj-implement/SKILL.md) — Implement a spec or ticket with TDD and review checkpoints.
+- [zj-improve-codebase-architecture](./skills/engineering/zj-improve-codebase-architecture/SKILL.md) — Find codebase-deepening opportunities and turn a chosen one into work.
+- [zj-merge-skill-pair](./skills/engineering/zj-merge-skill-pair/SKILL.md) — Execute one approved skill-pair merge as an atomic commit.
+- [zj-merge-skills-wave](./skills/engineering/zj-merge-skills-wave/SKILL.md) — Plan a multi-skill merge wave from another collection.
+- [zj-resolving-merge-conflicts](./skills/engineering/zj-resolving-merge-conflicts/SKILL.md) — Resolve an in-progress merge or rebase by each side's intent.
+- [zj-leader](./skills/engineering/zj-leader/SKILL.md) — Turn a one-line idea into an agent-runnable `/goal` brief.
+- [zj-repo-init](./skills/engineering/zj-repo-init/SKILL.md) — Configure tracker, triage vocabulary, and Agent entrypoints after a document map is selected.
+- [zj-tdd](./skills/engineering/zj-tdd/SKILL.md) — Build a feature or fix test-first with red-green-refactor.
+- [zj-wizard](./skills/engineering/zj-wizard/SKILL.md) — Generate a guided Bash workflow for steps only a Human can perform.
+- [zj-code-review](./skills/engineering/zj-code-review/SKILL.md) — Review a change against repository standards and its originating spec.
+- [zj-tech-design-review](./skills/engineering/zj-tech-design-review/SKILL.md) — Review a technical design from framing through rollout and validation.
+- [zj-to-tickets](./skills/engineering/zj-to-tickets/SKILL.md) — Slice a plan or spec into blocking-aware tracer-bullet tickets.
+- [zj-to-spec](./skills/engineering/zj-to-spec/SKILL.md) — Turn the current conversation into a spec and issue.
+- [zj-prototype](./skills/engineering/zj-prototype/SKILL.md) — Build a throwaway prototype to answer a design question.
 
-- **[zj-diagnosing-bugs](./skills/engineering/zj-diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
-- **[zj-triage](./skills/engineering/zj-triage/SKILL.md)** — Triage issues through a state machine of triage roles.
-- **[zj-codebase-design](./skills/engineering/zj-codebase-design/SKILL.md)** — Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.
-- **[zj-git-bypass-safe-delete](./skills/engineering/zj-git-bypass-safe-delete/SKILL.md)** — Diagnose and recover from WorkBuddy's safe-delete shim corrupting Git repositories on Windows Git Bash.
-- **[zj-debrief](./skills/engineering/zj-debrief/SKILL.md)** — User-only close-out for a finished task: drift walkthrough vs the prior `/zj-grilling` plan, new-term extraction into `ZJ-CONTEXT.md`, and 1-3 actions written to `docs/zj-retros/YYYY-MM-DD.md` with a 7-slot pointer index in ZJ-CONTEXT.md.
-- **[zj-steelman](./skills/engineering/zj-steelman/SKILL.md)** — User-only one-shot reality check on a plan: extract 2-5 core assumptions, write the strongest case for each, judge Strong/Adequate/Weak, route to `/zj-grilling` only if a case is Weak. No file written.
-- **[zj-dry-run](./skills/engineering/zj-dry-run/SKILL.md)** — User-only pre-flight rehearsal of a ticketed plan: walk each ticket, flag friction (blocker/ambiguity/dependency), output a per-ticket table + decision bottlenecks, route to `/zj-to-spec` or `/zj-grilling` if recut-worthy. No file written.
-- **[zj-domain-modeling](./skills/engineering/zj-domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms, stress-test with scenarios, update `ZJ-CONTEXT.md` and ADRs inline.
-- **[zj-grill-with-docs](./skills/engineering/zj-grill-with-docs/SKILL.md)** — User-only entry point: run a `/zj-grilling` session, using `/zj-domain-modeling` to write ADRs and glossary entries as decisions crystallise.
-- **[zj-improve-codebase-architecture](./skills/engineering/zj-improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
-- **[zj-merge-skill-pair](./skills/engineering/zj-merge-skill-pair/SKILL.md)** — Execute one skill-pair merge as an atomic commit. Reads strategy from a zj-roadmap-driven node, applies 12 classes of side effects, commits, leaves roadmap update to human. Pair with zj-merge-skills-wave.
-- **[zj-merge-skills-wave](./skills/engineering/zj-merge-skills-wave/SKILL.md)** — Plan a whole merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, lays out a skill-pair plan as a roadmap subtree, delegates each pair to zj-merge-skill-pair.
-- **[zj-roadmap-driven](./skills/engineering/zj-roadmap-driven/SKILL.md)** — 路线图驱动开发：以树形 roadmap 和决策记录帮助 Human 和 Agent 保持共享地图。
-- **[zj-initiative-registry](./skills/engineering/zj-initiative-registry/SKILL.md)** — Manage a GitHub-hosted Initiative → Spec → Plan registry across devices and Agents, with deterministic validation and safe Git handoff.
-- **[zj-leader](./skills/engineering/zj-leader/SKILL.md)** — Turn a one-line idea into an agent-runnable `/goal` brief with measured scope, acceptance checks, and resumable handoff.
-- **[zj-neat-freak](./skills/engineering/zj-neat-freak/SKILL.md)** — Reconcile project docs, rules, memory, and workspace residue with what the code and runtime actually do.
-- **[zj-research](./skills/research/zj-research/SKILL.md)** — Produce cited primary-source findings or a sealed evidence ledger with provenance and explicit unknowns.
-- **[zj-code-research](./skills/research/zj-code-research/SKILL.md)** — Build a commit-scoped Repository Map, then deep-read selected code architecture with evidence-linked claims.
-- **[zj-tech-research-report](./skills/research/zj-tech-research-report/SKILL.md)** — Turn technical findings and, for technical comparisons, a sealed evidence ledger into a compiler-validated solution research report.
-- **[zj-systematic-research](./skills/research/zj-systematic-research/SKILL.md)** — 系统性研究产品、公司、概念、技术或人物：重建演进脉络，分析当前竞品/同类格局，综合形成判断。
-- **[zj-agents-init](./skills/engineering/zj-agents-init/SKILL.md)** — Initialize the per-repo agent context (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `zj-to-tickets`, `zj-to-spec`, `zj-triage`, `zj-diagnosing-bugs`, `zj-tdd`, or `zj-improve-codebase-architecture`.
-- **[zj-tdd](./skills/engineering/zj-tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
-- **[zj-wayfinder](./skills/engineering/zj-wayfinder/SKILL.md)** — Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on the issue tracker, resolving them one at a time until the way to the destination is clear.
-- **[zj-guide](./skills/engineering/zj-guide/SKILL.md)** — User-only router: when you don't know which skill fits, ask. Maps the main flow, cross-stage checkpoints, on-ramps, planning/tracking, research/design, skill maintenance, vocabulary, and standalone utilities. See PHASE-BOUNDARIES.md for context-window decisions.
-- **[zj-implement](./skills/engineering/zj-implement/SKILL.md)** — User-only total commander: implement a piece of work from a spec or tickets. Drives `/zj-tdd` internally at pre-agreed seams, ends with `/zj-code-review`, commits to the current branch.
-- **[zj-resolving-merge-conflicts](./skills/engineering/zj-resolving-merge-conflicts/SKILL.md)** — Resolve in-progress git merge/rebase conflicts hunk by hunk, by intent traced to each side's primary source. Never `--abort`.
-- **[zj-wizard](./skills/engineering/zj-wizard/SKILL.md)** — Generate an interactive bash script that walks a human through steps only they can perform (provisioning, CI secrets, third-party dashboards, one-off migrations). Bundles a `scripts/template.sh` library for the consistent UX.
-- **[zj-code-review](./skills/engineering/zj-code-review/SKILL.md)** — Two-axis review of a diff since a fixed point — Standards (does the code follow this repo's documented coding standards, plus a fixed code-smell baseline?) and Spec (does it faithfully implement the originating issue/spec?). Runs both reviews as parallel sub-agents and reports them side by side.
-- **[zj-tech-design-review](./skills/engineering/zj-tech-design-review/SKILL.md)** — Guide an evidence-backed technical design review from problem framing through architecture, metrics, risk, rollout, testing, and follow-up.
-- **[zj-to-tickets](./skills/engineering/zj-to-tickets/SKILL.md)** — Break any plan, spec, or the current conversation into tracer-bullet tickets (vertical slices), each declaring its blocking edges, published to the configured tracker — one file per ticket locally or native blocking links on a real tracker.
-- **[zj-to-spec](./skills/engineering/zj-to-spec/SKILL.md)** — Turn the current conversation context into a spec and submit it as an issue. No interview — just synthesizes what you've already discussed.
-- **[zj-prototype](./skills/engineering/zj-prototype/SKILL.md)** — Build a throwaway prototype to answer a design question — a single shareable HTML file for logic/state-model questions, or several radically different UI variations on one route.
+### Codebase Docs
+
+- [zj-docs-architecture](./skills/codebase-docs/zj-docs-architecture/SKILL.md) — Maintain and validate complementary architecture handbook views.
+- [zj-docs-ontology](./skills/codebase-docs/zj-docs-ontology/SKILL.md) — Discover, govern, validate, and report on one codebase's documentation system.
+- [zj-debrief](./skills/codebase-docs/zj-debrief/SKILL.md) — Close out a task as process material and route durable conclusions for later synthesis.
+- [zj-domain-modeling](./skills/codebase-docs/zj-domain-modeling/SKILL.md) — Maintain a project's domain language and glossary.
+- [zj-grill-with-docs](./skills/codebase-docs/zj-grill-with-docs/SKILL.md) — Conduct repository-aware grilling with documentation updates.
+- [zj-neat-freak](./skills/codebase-docs/zj-neat-freak/SKILL.md) — Reconcile codebase knowledge and governance drift.
+- [zj-roadmap-driven](./skills/codebase-docs/zj-roadmap-driven/SKILL.md) — Maintain a decision-carrying execution roadmap.
+- [zj-wayfinder](./skills/codebase-docs/zj-wayfinder/SKILL.md) — Maintain a shared map of large-work planning decisions.
 
 ### Productivity
 
-General workflow tools, not code-specific.
-
-- **[zj-caveman](./skills/productivity/zj-caveman/SKILL.md)** — Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler while keeping full technical accuracy.
-- **[zj-grilling](./skills/productivity/zj-grilling/SKILL.md)** — Grill the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved (frontier/rounds method).
-- **[zj-handoff](./skills/productivity/zj-handoff/SKILL.md)** — Compact the current conversation into a handoff document so another agent can continue the work.
-- **[zj-write-a-skill](./skills/productivity/zj-write-a-skill/SKILL.md)** — Create new skills with proper structure, progressive disclosure, and bundled resources.
-- **[zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md)** — Reference for writing any document an agent consumes (skills, AGENTS.md/CLAUDE.md, pointer-reached docs): context pointers, progressive disclosure, leading words, pruning.
-- **[zj-teach](./skills/productivity/zj-teach/SKILL.md)** — Teach the user a new skill or concept over multiple sessions via a stateful teaching workspace (mission, resources, lessons, reference, glossary, learning records).
-- **[zj-to-questionnaire](./skills/productivity/zj-to-questionnaire/SKILL.md)** — Turn a decision the user can't answer alone into a Markdown questionnaire for one person to fill in (async or in a meeting). User-only.
-- **[zj-wait-what](./skills/productivity/zj-wait-what/SKILL.md)** — Re-pitch the last message — it didn't land. User-only; supplements with project glossary terms from `ZJ-CONTEXT.md` and ASD-STE100 simplified English.
+- [zj-caveman](./skills/productivity/zj-caveman/SKILL.md) — Switch to ultra-compressed communication mode.
+- [zj-grilling](./skills/productivity/zj-grilling/SKILL.md) — Stress-test a plan, decision, or idea through structured questions.
+- [zj-handoff](./skills/productivity/zj-handoff/SKILL.md) — Create a compact handoff for another human or agent.
+- [zj-wait-what](./skills/productivity/zj-wait-what/SKILL.md) — Re-pitch the last message when it did not land.
+- [zj-write-a-skill](./skills/productivity/zj-write-a-skill/SKILL.md) — Create a skill with progressive disclosure and bundled resources.
+- [zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md) — Write skills, rules, and agent-consumed documents clearly.
+- [zj-teach](./skills/productivity/zj-teach/SKILL.md) — Teach a concept across multiple sessions in a stateful workspace.
+- [zj-to-questionnaire](./skills/productivity/zj-to-questionnaire/SKILL.md) — Turn an unresolved decision into a questionnaire for another person.
 
 ### Misc
 
-Tools I keep around but rarely use.
+- [zj-git-guardrails-claude-code](./skills/misc/zj-git-guardrails-claude-code/SKILL.md) — Add Claude Code hooks that block dangerous Git operations.
+- [zj-migrate-to-shoehorn](./skills/misc/zj-migrate-to-shoehorn/SKILL.md) — Migrate test assertions to `@total-typescript/shoehorn`.
+- [zj-scaffold-exercises](./skills/misc/zj-scaffold-exercises/SKILL.md) — Scaffold lintable exercises, problems, solutions, and explainers.
+- [zj-setup-pre-commit](./skills/misc/zj-setup-pre-commit/SKILL.md) — Set up Husky, lint-staged, type checks, and tests at commit time.
+- [zj-aihot](./skills/misc/zj-aihot/SKILL.md) — Retrieve current Chinese AI news and highlights from AIHOT's read-only API.
+- [zj-storage-analyzer](./skills/misc/zj-storage-analyzer/SKILL.md) — Analyze macOS or Windows storage usage and produce an actionable cleanup report.
 
-- **[zj-git-guardrails-claude-code](./skills/misc/zj-git-guardrails-claude-code/SKILL.md)** — Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, etc.) before they execute.
-- **[zj-migrate-to-shoehorn](./skills/misc/zj-migrate-to-shoehorn/SKILL.md)** — Migrate test files from `as` type assertions to @total-typescript/shoehorn.
-- **[zj-scaffold-exercises](./skills/misc/zj-scaffold-exercises/SKILL.md)** — Create exercise directory structures with sections, problems, solutions, and explainers.
-- **[zj-setup-pre-commit](./skills/misc/zj-setup-pre-commit/SKILL.md)** — Set up Husky pre-commit hooks with lint-staged, Prettier, type checking, and tests.
-- **[zj-aihot](./skills/misc/zj-aihot/SKILL.md)** — 查询 AIHOT 中文 AI 资讯、精选和日报，使用匿名只读 API 获取当前数据。
-- **[zj-storage-analyzer](./skills/misc/zj-storage-analyzer/SKILL.md)** — 只读扫描 macOS/Windows 磁盘占用，分级清理风险并生成可执行的 HTML 报告。
+### Research
+
+- [zj-research](./skills/research/zj-research/SKILL.md) — Produce cited primary-source findings or a sealed evidence ledger.
+- [zj-code-research](./skills/research/zj-code-research/SKILL.md) — Build a commit-scoped repository map and bounded architecture study.
+- [zj-tech-research-report](./skills/research/zj-tech-research-report/SKILL.md) — Turn findings and sealed ledgers into a technical-solution research report.
+- [zj-systematic-research](./skills/research/zj-systematic-research/SKILL.md) — Systematically study a product, company, concept, technology, or person.

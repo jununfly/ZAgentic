@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import os
+import importlib.util
 import stat
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,9 +15,66 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ENTRYPOINT = ROOT / "scripts" / "validate-plugin.sh"
+LAYOUT_VALIDATOR = ROOT / "scripts" / "validate-zagentic-plugin.py"
+SPEC = importlib.util.spec_from_file_location("zagentic_layout_validator", LAYOUT_VALIDATOR)
+assert SPEC and SPEC.loader
+VALIDATOR = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = VALIDATOR
+SPEC.loader.exec_module(VALIDATOR)
 
 
 class ValidatePluginTest(unittest.TestCase):
+    def test_public_bucket_skill_needs_readme_and_guide_registration(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = Path(temporary)
+            (fixture / ".codex-plugin").mkdir()
+            (fixture / ".codex-plugin" / "plugin.json").write_text('{"skills":"./skills/"}', encoding="utf-8")
+            (fixture / "scripts").mkdir()
+            (fixture / "scripts" / "validate-skill-frontmatter.py").write_text("raise SystemExit(0)\n", encoding="utf-8")
+            (fixture / "README.md").write_text(
+                "[zj-guide](./skills/engineering/zj-guide/SKILL.md)\n"
+                "[zj-example](./skills/codebase-docs/zj-example/SKILL.md)\n",
+                encoding="utf-8",
+            )
+            for bucket in VALIDATOR.PUBLIC_BUCKETS:
+                directory = fixture / "skills" / bucket
+                directory.mkdir(parents=True)
+                (directory / "README.md").write_text("", encoding="utf-8")
+            (fixture / "personal").mkdir()
+            guide_dir = fixture / "skills" / "engineering" / "zj-guide"
+            guide_dir.mkdir()
+            (guide_dir / "SKILL.md").write_text(
+                "---\nname: zj-guide\n---\n\nRoutes zj-guide and zj-example.\n",
+                encoding="utf-8",
+            )
+            skill_dir = fixture / "skills" / "codebase-docs" / "zj-example"
+            skill_dir.mkdir()
+            (skill_dir / "SKILL.md").write_text("---\nname: zj-example\n---\n", encoding="utf-8")
+            personal_dir = fixture / "personal" / "zj-private"
+            personal_dir.mkdir()
+            (personal_dir / "SKILL.md").write_text("---\nname: zj-private\n---\n", encoding="utf-8")
+            guide_readme = fixture / "skills" / "engineering" / "README.md"
+            guide_readme.write_text("[zj-guide](./zj-guide/SKILL.md)\n", encoding="utf-8")
+            bucket_readme = fixture / "skills" / "codebase-docs" / "README.md"
+            bucket_readme.write_text("[zj-example](./zj-example/SKILL.md)\n", encoding="utf-8")
+
+            self.assertEqual(VALIDATOR.validate(fixture), [])
+            (fixture / "README.md").write_text("", encoding="utf-8")
+            self.assertIn("README.md does not register public skill zj-example", VALIDATOR.validate(fixture))
+            (fixture / "README.md").write_text(
+                "[zj-guide](./skills/engineering/zj-guide/SKILL.md)\n"
+                "[zj-example](./skills/codebase-docs/zj-example/SKILL.md)\n",
+                encoding="utf-8",
+            )
+            (guide_dir / "SKILL.md").write_text(
+                "---\nname: zj-guide\n---\n\nRoutes zj-guide.\n",
+                encoding="utf-8",
+            )
+            self.assertIn(
+                "zj-guide does not route public skill zj-example",
+                VALIDATOR.validate(fixture),
+            )
+
     def test_official_success_is_the_first_and_only_stage(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             official = Path(temporary) / "official-passes.py"

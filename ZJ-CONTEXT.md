@@ -2,17 +2,76 @@
 
 Project domain glossary for `jununfly/ZAgentic`. Owned by `zj-grill-with-docs` /
 `zj-domain-modeling`. Updated inline as decisions crystallise, per the format in
-`skills/engineering/zj-domain-modeling/CONTEXT-FORMAT.md`.
+`skills/codebase-docs/zj-domain-modeling/CONTEXT-FORMAT.md`.
 
 ## Language
 
 ### Skills meta
 
 **Skill bucket**:
-One of the four public dirs under `skills/` — `engineering/`, `productivity/`,
-`misc/`, or `research/`. Each bucket has its own `README.md` listing its skills with a
-one-line description. See `AGENTS.md` for the bucket policy.
+A public purpose-based directory under `skills/` — `engineering/`,
+`codebase-docs/`, `productivity/`, `misc/`, or `research/`. Each bucket has its
+own `README.md` listing its skills with a one-line description. See `AGENTS.md`
+for the bucket policy.
 _Avoid_: category, folder, group
+
+### Codebase documentation
+
+**Codebase docs**:
+The documentation system belonging to one codebase: its document map,
+long-lived authorities, process material, evidence-surface boundaries and
+governance loop. It is not a cross-project knowledge store.
+_Avoid_: documentation dump, shared evidence repository
+
+**Document map**:
+The reader-facing routing page that names a codebase's documentation categories,
+their primary questions, authority boundaries, lifecycle and entry points.
+_Avoid_: document manifest, duplicate README, site map
+
+**Long-lived document**:
+A maintained authority that states a stable entity, connection, fact or rule for
+a codebase. It excludes execution status and other temporary process context.
+_Avoid_: permanent note, process log, current task record
+
+**Process material**:
+Documentation that carries dynamic planning, execution focus, decisions or
+observability while work is active. Durable value is extracted before the
+material is proposed for deletion.
+_Avoid_: long-lived authority, disposable scratch by default
+
+**Evidence surface**:
+Code, tests, fixtures, traces, research packages or evaluation output that can
+support a document claim without becoming a long-lived documentation page.
+_Avoid_: documentation category, authoritative prose
+
+**Authority boundary**:
+The bounded question for which one documentation page or category is the
+maintained answer. Contradictory normative answers are a Human-review signal,
+not an automatic precedence decision.
+_Avoid_: global document hierarchy, newest-file-wins
+
+**Authority ID**:
+A stable identifier that the document map binds to exactly one primary page and
+the bounded question it answers. It gives documentation validation a mechanical
+ownership seam without making prose similarity the source of truth.
+_Avoid_: page title, path-derived status, heuristic duplicate detector
+
+**Document contract**:
+The minimal machine-checkable header and category-specific readable sections a
+governed documentation page supplies. It identifies kind and authority while
+the body answers the page's bounded question.
+_Avoid_: metadata-only document, prose-only implicit contract
+
+**Architecture handbook**:
+The architecture layer of a codebase documentation system: one routing map and
+complementary overview, layer, subsystem, flow, and cross-cutting views with
+explicit source maps.
+_Avoid_: duplicated architecture essay, code inventory
+
+**Repository collaboration setup**:
+The tracker, triage-vocabulary, and Agent-entrypoint configuration established
+by `zj-repo-init` after a documentation map has been selected.
+_Avoid_: documentation-system bootstrap, implicit docs migration
 
 **Personal skill tree**:
 The root-level `personal/` directory for skills tied to the user's own setup.
@@ -153,13 +212,6 @@ The structured result returned by the activation runner. It is the source for
 activation status, handoff, next action, evidence, and event-recording state;
 only a `claimed` receipt authorizes continuation of its handoff.
 _Avoid_: repository summary, inferred claim, completion report
-
-**Activation pointer**:
-The `AGENTS.md` instruction that recognizes the exact Human alias and routes it
-to the ZAgenticOPN activation skill before ordinary repository-context work.
-It defines the trigger and failure branches; it is not the coordination
-runtime or a second source of activation state.
-_Avoid_: automatic discovery, background watcher, task-specific dispatch
 
 ### Research architecture
 
@@ -373,32 +425,6 @@ _Avoid_: vague confidence, sign-off, success hope
 A human review gate where a reviewer reads a design briefly, without validator output, and recovers the decision, blocking finding and owner, and next validation action with threshold and owner. It tests whether the document makes its critical path legible, not whether the prose is stylistically polished.
 _Avoid_: skimming, automated approval, prose review
 
-### Global initiative navigation
-
-**Initiative**:
-An independently owned, continuously evolving direction registered in the configured **Initiative Registry**. Its repository URL resolves to the Initiative's fact source; it may be a Product, shared capability, experiment, or external dependency.
-_Avoid_: product line, project line, workspace entry
-
-**Initiative Registry**:
-The GitHub-hosted, cross-device navigation fact source that compiles versioned manifests into an `Initiative → Spec → Plan` projection. ZInitiatives owns the Registry protocol and data; `zj-initiative-registry` provides the management workflow.
-_Avoid_: global roadmap, local project list, Plan status aggregator
-
-**Initiative Node**:
-The first navigation level under the global initiative roadmap. It identifies one **Initiative**, its stable id, label, relative path, and child **Spec Nodes**.
-_Avoid_: roadmap root, product node
-
-**Spec Node**:
-The second navigation level under an **Initiative Node**. It identifies one existing PRD/spec under that Initiative's `docs/prds/` directory and holds its child **Plan Nodes**.
-_Avoid_: feature node, epic, roadmap node
-
-**Plan Node**:
-The third navigation level under a **Spec Node**. It points to one existing `zj-roadmap-driven` JSON roadmap-plan-file under that Initiative's `docs/plans/` directory; execution status and decisions live in that target, not in the global index.
-_Avoid_: task node, work item, embedded plan
-
-**Closeout reminder**:
-An advisory result emitted by `zj-initiative-registry` when a registered roadmap Plan is completed or blocked. A completed result asks the Human to consolidate durable documents and refresh Registry navigation; a blocked result asks for a Human decision. It never deletes entries or changes source repositories.
-_Avoid_: automatic archive, compaction, Plan status aggregator
-
 ### Roadmap
 
 **Roadmap**:
@@ -471,14 +497,14 @@ _Avoid_: issue record, issue row (these are the same thing, just less specific)
 A canonical state-machine label applied to an **Issue** during triage
 (e.g. `needs-triage`, `ready-for-agent`, `ready-for-human`, `needs-info`,
 `wontfix`). Each role maps to a real label string in the **Issue tracker**
-configured by `zj-agents-init`.
+configured by `zj-repo-init`.
 _Avoid_: status label, workflow state, kanban column
 
 **Hard dependency**:
-A skill whose correctness depends on per-repo config (issue tracker, triage
-labels, domain doc layout). Without `zj-agents-init` output, the skill's
-output is **wrong, not just fuzzy**. Such skills include an explicit one-
-liner: "_… should have been provided to you — run `/zj-agents-init` if not._"
+A skill whose correctness depends on per-repo collaboration config (issue
+tracker and triage labels). Without `zj-repo-init` output, the skill's output
+is **wrong, not just fuzzy**. Such skills include an explicit one-liner:
+"_… should have been provided to you — run `/zj-repo-init` if not._"
 _Avoid_: required dependency, mandatory module
 
 **Soft dependency**:
@@ -489,7 +515,7 @@ _Avoid_: optional dependency, nice-to-have
 
 **Setup pointer**:
 The explicit one-liner inside a **hard dependency** skill's body that
-tells the agent to run `/zj-agents-init` if the per-repo config is missing.
+tells the agent to run `/zj-repo-init` if the per-repo config is missing.
 See ADR `0001` for the rationale.
 _Avoid_: setup hint, setup reminder, bootstrap call
 
@@ -513,7 +539,11 @@ _Avoid_: setup hint, setup reminder, bootstrap call
 Vocabulary for the three skills that span multiple workflow stages — not bound to A↔B processing, but to any skill-pair work.
 
 **Debrief**:
-The post-task close-out. Walks drift between the planned path and the actual path, surfaces new domain terms, captures 1-3 "do differently next time" actions. Writes to `docs/zj-retros/YYYY-MM-DD.md` and updates the `## Retros` pointer index in this file.
+The post-task close-out. Walks drift between the planned path and the actual
+path, surfaces new domain terms, and captures 1-3 "do differently next time"
+actions in `docs/zj-retros/YYYY-MM-DD-retro.md`. The record is process
+material; a separate Human-invoked `zj-docs-ontology` pass decides durable
+extraction and deletion.
 _Avoid_: post-mortem, retrospective (overloaded with agile ceremony meaning), notes dump
 
 **Steelman**:
@@ -527,26 +557,6 @@ _Avoid_: trace through, simulate (too general), risk analysis (different goal)
 **Complementarity check**:
 The rule for adding a new skill: it must name a specific existing skill it complements, and the complement must be on a clear axis — time (before/after/during), direction (defense/attack), or scope (micro/macro). A skill that doesn't name its complement is rejected as duplicating existing capability.
 _Avoid_: useful in principle, fills a gap, nice to have
-
-## Retros
-
-Pointer index for `zj-debrief`. Each entry links to a section in a `docs/zj-retros/YYYY-MM-DD.md` file. The full retro content lives in those files; this section is the agent's morning-reading path — what to do differently on the next task, without opening any file.
-
-🔄 (recurring actions pinned at the top)
-
-- *(entries appended by `/zj-debrief`; cap 7, oldest non-🔄 dropped first)*
-
-- 生成式 study record 的 ID 必须包含 source locator 或 evidence identity，并在下游前跑唯一性 hard gate  — docs/zj-retros/2026-08-23-retro.md#2239
-- 外部网络适配器先覆盖真实标准库调用签名，再做受控 live smoke test  — docs/zj-retros/2026-08-23-retro.md#2334
-- live fresh collection 同时保留 status sidecar 与 sealed ledger，并以三态 status 验收  — docs/zj-retros/2026-08-23-retro.md#2334
-- 更换 sealed ledger 时重建 findings/Report IR，并对旧 fingerprint 做 negative check  — docs/zj-retros/2026-08-23-retro.md#2351
-- 技术报告先过 owning quality gate，再做 compiler publication 与 receipt 一致性检查  — docs/zj-retros/2026-08-23-retro.md#2351
-- fresh collection 完成后先检查 Evidence 是否集中在单一来源；机械 unknownCriteria 命中不能替代语义 unknown review  — docs/zj-retros/2026-08-24-retro.md#0120
-- 执行 roadmap 节点前先确认交付物和授权范围；legacy/技能验收路线保持目标项目只读。 — docs/zj-retros/2026-08-24-retro.md#16:15
-
-**Format per entry**: `- <one-line action>  — docs/zj-retros/YYYY-MM-DD.md#HH:MM`
-
-Done actions are removed from this index. The retro file itself stays in `docs/zj-retros/` as permanent history (git-tracked).
 
 ## Flagged ambiguities
 

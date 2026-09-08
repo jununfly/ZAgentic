@@ -130,6 +130,12 @@ For `technical-c4/v1`, record information-gap status in a non-empty structured t
 
 ## 6. Compile and publish
 
+Treat a replacement sealed ledger as a new evidence base. Rebuild the cited
+findings and Report IR from it; do not replace only `ledgerFingerprint`. Before
+publication, perform a negative check that the prior Report IR cannot validate
+against the new ledger, then run the owning quality gate, compiler publication,
+and receipt-consistency checks in that order.
+
 Run:
 
 ```sh

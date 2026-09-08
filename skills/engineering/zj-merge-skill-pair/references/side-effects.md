@@ -11,7 +11,7 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 | 5 | Cross-skill reference updates (other skills' SKILL.md referring to old name) | any name change |
 | 6 | Top-level `README.md` skill list update | any add/remove/rename |
 | 7 | the affected public bucket `README.md` update | any add/remove/rename in that bucket |
-| 8 | `zj-agents-init/issue-tracker-*.md` and `domain.md` template update | when hard-dependency list changes |
+| 8 | `zj-repo-init/issue-tracker-*.md` and `domain.md` template update | when hard-dependency list changes |
 | 9 | `ZJ-CONTEXT.md` term table update | when new domain terms are introduced or renamed |
 | 10 | `docs/zj-adr/*.md` cross-reference update | when ADR text mentions old skill name |
 | 11 | Copy supporting source files (CONTEXT-FORMAT.md, ADR-FORMAT.md, sub-skill docs...) | when source dir has them |
@@ -22,8 +22,8 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 - `skills/<bucket>/zj-<name>/...` (the skill body)
 - `README.md` (top-level)
 - `skills/<bucket>/README.md`
-- `skills/engineering/zj-agents-init/issue-tracker-*.md` (if hard-deps changed)
-- `skills/engineering/zj-agents-init/domain.md` (if domain terms changed)
+- `skills/engineering/zj-repo-init/issue-tracker-*.md` (if hard-deps changed)
+- `skills/engineering/zj-repo-init/domain.md` (if domain terms changed)
 - `ZJ-CONTEXT.md` (if domain terms changed)
 - `docs/zj-adr/*.md` (if ADR refs old name)
 - `docs/plans/roadmap-<wave>.json` (the active wave's roadmap JSON, when human runs `update` after)

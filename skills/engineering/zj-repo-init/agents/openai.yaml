@@ -1,0 +1,5 @@
+interface:
+  display_name: "Initialize Repository Collaboration"
+  short_description: "Configure tracker, triage, and Agent entrypoints"
+policy:
+  allow_implicit_invocation: false

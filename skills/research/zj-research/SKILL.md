@@ -25,11 +25,22 @@ Read [references/research-cli.md](references/research-cli.md), then:
 2. Run `python <this-skill>/scripts/research_cli.py request.json --output ledger-response.json --status-output collection-status.json`. The adapter performs a GitHub auth/quota preflight first; retain the status sidecar beside the request and ledger.
 3. Save the response's sealed ledger beside the findings. Use only its canonical evidence for GitHub claims.
 4. Write the cited findings from the ledger. Each `unknownCriteria` entry remains unknown; it is not a negative capability claim.
+5. Review fresh evidence semantically as well as mechanically. Inspect whether
+   substantive Evidence is concentrated in one source; `unknownCriteria` does
+   not prove that the selected evidence establishes the question. Record a
+   coverage limitation, collect discriminating evidence, or retain the
+   uncertainty explicitly.
 
 If a fresh collection is blocked, preserve the current brief and blocked
 status; do not present an older ledger as a fresh result. Reuse an older sealed
 ledger only through the explicit `--reuse-ledger <path>` option, which requires
 the ledger's brief fingerprint to match the current request.
+
+When changing an external-network adapter, make its mock match the real
+standard-library call signature, including keyword arguments. After its
+deterministic tests pass, run one controlled live smoke test when the current
+authentication and quota permit it; the smoke verifies the adapter seam and
+does not replace collection acceptance.
 
 Completion criterion: every selected repository is pinned to a commit, stars and topic match come from the sealed ledger, each claim traces to an Evidence ID, and every uncovered repository/criterion pair is explicit.
 

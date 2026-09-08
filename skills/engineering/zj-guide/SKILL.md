@@ -15,11 +15,11 @@ A **flow** is a path through the skills. Most paths run along one **main flow**,
 
 `zj-guide` is user-only, so it chooses a route for the Human; it does not
 silently invoke another user-only skill. The other user-only routes are
-`zj-agents-init`, `zj-caveman`, `zj-debrief`, `zj-dry-run`,
+`zj-caveman`, `zj-debrief`, `zj-docs-ontology`, `zj-dry-run`,
 `zj-grill-with-docs`, `zj-implement`, `zj-improve-codebase-architecture`,
-`zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-steelman`, `zj-teach`,
-`zj-to-questionnaire`, `zj-to-spec`, `zj-to-tickets`, `zj-triage`,
-`zj-wayfinder`, and `zj-wait-what`.
+`zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-repo-init`,
+`zj-steelman`, `zj-teach`, `zj-to-questionnaire`, `zj-to-spec`,
+`zj-to-tickets`, `zj-triage`, `zj-wait-what`, and `zj-wayfinder`.
 
 All other public skills remain model-invoked or reference-capable: the agent
 may reach them when their descriptions match, while the Human may still name
@@ -53,7 +53,7 @@ These are user-only guardrails around the main flow, not replacement flows:
 
 - **Before grilling** — **`/zj-steelman`** tests whether an existing proposal has a strong case. It routes to `/zj-grilling` only when an assumption is weak.
 - **After tickets, before implementation** — **`/zj-dry-run`** rehearses the ticket order, dependencies, and friction. Re-cut with `/zj-to-spec` or `/zj-grilling` if the plan cannot run as written.
-- **After the task** — **`/zj-debrief`** checks drift against the plan, extracts durable vocabulary, and records the next actions.
+- **After the task** — **`/zj-debrief`** checks drift against the plan and records process material plus next actions. A later explicit `/zj-docs-ontology` pass extracts any durable value into its long-lived authority and proposes retro deletion.
 
 Use these at their named phase; they complement `/zj-grill-with-docs`,
 `/zj-to-tickets`, `/zj-implement`, and `/zj-code-review` rather than adding a
@@ -78,10 +78,23 @@ A starting situation that generates work, then merges onto the main flow.
 - **`/zj-leader`** — turn one sentence into a self-contained `/goal` brief when the desired next step is to delegate work to an agent. It is a task-brief route, not a substitute for the idea→ship flow.
 - **`/zj-wayfinder`** — plan a foggy, multi-session effort and resolve decision tickets. When the map is clear, continue through `/zj-to-spec` → `/zj-to-tickets`.
 - **`/zj-roadmap-driven`** — track an agreed route in a local JSON roadmap, record decisions, and keep the Human-facing Markdown view current. It tracks; it does not replace wayfinder planning or ticket slicing.
-- **`/zj-initiative-registry`** — maintain cross-repository Initiative → Spec → Plan navigation, validation, drift checks, and closeout reminders. It is the control plane; the registered Plan still executes through its own roadmap.
 
 If the work is already well-scoped, skip `/zj-leader` and `/zj-wayfinder` and
 start at the main flow.
+
+## Codebase documentation
+
+Use this route when the job is to establish, migrate, navigate, or govern a
+repository's documentation system rather than to implement a feature.
+
+- **No selected document map; greenfield docs; legacy docs migration; durable/process boundary; or documentation drift** → **`/zj-docs-ontology`**. It is the Human-invoked governance entry point: discover and classify read-only first, then present a map, move, rewrite, synthesis, and deletion proposal. It does not mutate until the Human confirms each named action.
+- **Architecture reader cannot answer a system, layer, subsystem, flow, or shared-rule question** → **`/zj-docs-architecture`**. It maintains the five complementary handbook views and validates their authority and source maps. Use it directly for an architecture slice, or let an explicit ontology pass compose it.
+- **Tracker or triage configuration is missing after a map is selected** → **`/zj-repo-init`**. It configures the issue tracker, triage vocabulary, and concise Agent entrypoints; it never creates a docs map or invokes governance.
+- **A finished task needs a process closeout** → **`/zj-debrief`**. **Broader code/docs/rules/memory drift** → **`/zj-neat-freak`**. They are complementary, not automatic lifecycle triggers.
+
+For a domain word or glossary conflict inside any of these routes, use
+`/zj-domain-modeling`; it remains the vocabulary layer, not the documentation
+system owner.
 
 ## Codebase health
 
@@ -108,11 +121,11 @@ Two model-invoked references that run *beneath* the other skills — each the si
 - **`/zj-domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline `/zj-grill-with-docs` drives to keep `ZJ-CONTEXT.md` a clean glossary.
 - **`/zj-codebase-design`** — the deep-module vocabulary (module, interface, depth, seam, adapter, leverage, locality) for designing a module's *shape*: a lot of behaviour behind a small interface at a clean seam. `/zj-tdd` and `/zj-improve-codebase-architecture` both speak it.
 
-## Skill maintenance and repository closeout
+## Skill maintenance and broad repository closeout
 
 - **`/zj-write-a-skill`** — create a new skill or add its bundled resources. Pair it with **`/zj-writing-for-agents`**, the reference for editing skills, `AGENTS.md`, `CLAUDE.md`, or pointer-reached documents.
 - **`/zj-merge-skills-wave`** — plan a multi-skill adoption from another collection; **`/zj-merge-skill-pair`** executes one approved pair as the atomic merge unit.
-- **`/zj-neat-freak`** — close out knowledge drift by reconciling docs, rules, authorized memory, and workspace residue with actual code and runtime state.
+- **`/zj-neat-freak`** — reconcile docs, rules, authorized memory, and workspace residue with actual code and runtime state. Use `/zj-docs-ontology` first when the primary question is the documentation taxonomy, map, authority, or lifecycle.
 
 These routes maintain the skill system itself; ordinary feature work stays on
 the main flow.
@@ -153,6 +166,9 @@ Off the main flow entirely.
 - **`/zj-scaffold-exercises`** — scaffold lintable exercise sections, problems, solutions, and explainers.
 - **`/zj-setup-pre-commit`** — set up Husky, lint-staged, type checking, and tests at commit time.
 
-## Precondition
+## Scope of this router
 
-**`/zj-agents-init`** — run before your first engineering flow to configure the issue tracker, triage labels, and doc layout the other skills assume. Custom issue trackers also work.
+This router covers every public skill in `engineering/`, `codebase-docs/`,
+`productivity/`, `misc/`, and `research/`. Root-level personal skills are
+intentionally excluded: they are installable for the owner's setup but are not
+promoted as public routes.

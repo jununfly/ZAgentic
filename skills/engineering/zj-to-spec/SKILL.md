@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
 
-The issue tracker and triage label vocabulary should have been provided to you — run `/zj-agents-init` if not.
+The issue tracker and triage label vocabulary should have been provided to you — run `/zj-repo-init` if not.
 
 ## Process
 

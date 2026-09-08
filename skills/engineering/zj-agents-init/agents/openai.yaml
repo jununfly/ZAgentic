@@ -1,5 +1,0 @@
-interface:
-  display_name: "Setup ZAgentic Skills"
-  short_description: "Configure a repo for the engineering skills"
-policy:
-  allow_implicit_invocation: false

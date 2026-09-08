@@ -26,6 +26,9 @@ user problem → target outcome → constraints → design options
 
 Use the headings and prompts in [REVIEW-TEMPLATE.md](REVIEW-TEMPLATE.md). Keep the overview concise; put detailed rationale and evidence behind it. For an existing design, preserve the author's intent while marking unsupported claims and stale assumptions.
 
+For a Chromium-specific comparison, consult the preserved public source template
+in [references/chromium-design-doc-template-public.md](references/chromium-design-doc-template-public.md). It is evidence for the review shape, not a target-repository template or a source of Chromium-only requirements.
+
 ## Review standards
 
 - Every recommendation names the constraint and trade-off that led to it.

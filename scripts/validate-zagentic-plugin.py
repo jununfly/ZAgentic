@@ -3,8 +3,9 @@
 
 The official plugin validator is intentionally run by ``validate-plugin.sh``
 before this repository-specific validator. This validator owns only the
-repository layout contract: public skills live under ``skills/<bucket>/`` and
-private skills live under the root-level ``personal/`` directory.
+repository layout contract: public skills live under ``skills/<bucket>/``,
+private skills live under the root-level ``personal/`` directory, and every
+public skill is routed by ``zj-guide``.
 """
 
 from __future__ import annotations
@@ -17,7 +18,8 @@ from pathlib import Path
 from typing import Any
 
 
-PUBLIC_BUCKETS = ("engineering", "productivity", "misc", "research")
+PUBLIC_BUCKETS = ("engineering", "codebase-docs", "productivity", "misc", "research")
+GUIDE_PATH = Path("skills/engineering/zj-guide/SKILL.md")
 
 
 def parse_args() -> argparse.Namespace:
@@ -182,12 +184,70 @@ def validate_frontmatter(
         errors.append("repository frontmatter validation failed")
 
 
+def validate_readme_registration(
+    plugin_root: Path,
+    manifests: list[Path],
+    errors: list[str],
+) -> None:
+    """Ensure public skills are installed and discoverable through both indexes."""
+
+    top_level = plugin_root / "README.md"
+    if not top_level.is_file():
+        errors.append("missing top-level README.md")
+        return
+    top_text = top_level.read_text(encoding="utf-8")
+    for bucket in PUBLIC_BUCKETS:
+        bucket_root = plugin_root / "skills" / bucket
+        bucket_readme = bucket_root / "README.md"
+        if not bucket_readme.is_file():
+            errors.append(f"missing public bucket README: {bucket_readme}")
+            continue
+        bucket_text = bucket_readme.read_text(encoding="utf-8")
+        for manifest_path in manifests:
+            if manifest_path.parent.parent != bucket_root:
+                continue
+            skill = manifest_path.parent.name
+            bucket_link = f"](./{skill}/SKILL.md)"
+            top_link = f"](./skills/{bucket}/{skill}/SKILL.md)"
+            if bucket_link not in bucket_text:
+                errors.append(f"{bucket_readme} does not register {skill}")
+            if top_link not in top_text:
+                errors.append(f"README.md does not register public skill {skill}")
+
+
+def validate_guide_coverage(
+    plugin_root: Path,
+    manifests: list[Path],
+    errors: list[str],
+) -> None:
+    """Ensure the public-skill router stays current as the catalog changes."""
+
+    guide_path = plugin_root / GUIDE_PATH
+    if not guide_path.is_file():
+        errors.append(f"missing public skill router: {GUIDE_PATH}")
+        return
+
+    guide_text = guide_path.read_text(encoding="utf-8")
+    public_roots = {
+        plugin_root / "skills" / bucket
+        for bucket in PUBLIC_BUCKETS
+    }
+    for manifest_path in manifests:
+        if manifest_path.parent.parent not in public_roots:
+            continue
+        skill = manifest_path.parent.name
+        if skill not in guide_text:
+            errors.append(f"zj-guide does not route public skill {skill}")
+
+
 def validate(plugin_root: Path) -> list[str]:
     errors: list[str] = []
     manifest = load_manifest(plugin_root, errors)
     validate_manifest_contract(manifest, plugin_root, errors)
     manifests = discover_skill_manifests(plugin_root, errors)
     validate_frontmatter(plugin_root, manifests, errors)
+    validate_readme_registration(plugin_root, manifests, errors)
+    validate_guide_coverage(plugin_root, manifests, errors)
     return errors
 
 

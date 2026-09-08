@@ -84,6 +84,15 @@ external dependencies, ownership, design choices, risks, unknowns, diagrams,
 and follow-up targets. Every critical claim carries an evidence ID, commit,
 source path, and line range.
 
+## Record identity
+
+Derive every generated record ID from its kind and source identity. A
+source-derived record includes its repository identity, source locator, and a
+record-specific evidence identity; a path alone is insufficient when one file
+emits multiple records. Run the local quality gate before handing a bundle to a
+downstream consumer so duplicate or missing IDs fail before they make
+navigation ambiguous.
+
 ## Quality and handoff
 
 Read [the code-research quality contract](references/code-research-quality.md)

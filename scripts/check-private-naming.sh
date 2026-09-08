@@ -7,7 +7,7 @@ import re
 import sys
 
 ROOT = Path('.')
-PUBLIC_BUCKETS = ['engineering', 'productivity', 'misc', 'research']
+PUBLIC_BUCKETS = ['engineering', 'codebase-docs', 'productivity', 'misc', 'research']
 SKILL_ROOTS = [ROOT / 'skills' / bucket for bucket in PUBLIC_BUCKETS] + [ROOT / 'personal']
 SKIP_PARTS = {'.git', '.workbuddy', '.codegraph'}
 TEXT_SUFFIXES = {'.md', '.json', '.sh'}
@@ -74,7 +74,7 @@ old_path_patterns = [
     (re.compile(r'(?<!ZJ-)CONTEXT-MAP\.md'), 'use ZJ-CONTEXT-MAP.md'),
     # Require a path boundary so `dsh-translate-docs/agents/` is not treated
     # as the stale target path `docs/agents/`.
-    (re.compile(r'(?<![A-Za-z0-9_-])docs/agents/'), 'use docs/zj-agents/ZJ-*.md'),
+    (re.compile(r'(?<![A-Za-z0-9_-])docs/agents/'), 'use docs/agreements/agent-workflow/*.md'),
     (re.compile(r'(?<!\.zj-)\.out-of-scope/'), 'use .zj-out-of-scope/'),
     (re.compile('docs/' + 'adr/'), 'use docs/zj-adr/ZJ-*.md'),
 ]
@@ -91,9 +91,9 @@ required_new_refs = [
     'jununfly/ZAgentic',
     'ZJ-CONTEXT.md',
     'ZJ-CONTEXT-MAP.md',
-    'docs/zj-agents/ZJ-ISSUE-TRACKER.md',
-    'docs/zj-agents/ZJ-TRIAGE-LABELS.md',
-    'docs/zj-agents/ZJ-DOMAIN.md',
+    'docs/agreements/agent-workflow/issue-tracker.md',
+    'docs/agreements/agent-workflow/triage-labels.md',
+    'docs/agreements/agent-workflow/domain-docs.md',
     '.zj-out-of-scope',
     'docs/zj-adr',
     'ZJ-0001',
