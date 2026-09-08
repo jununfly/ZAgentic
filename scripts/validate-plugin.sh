@@ -11,6 +11,59 @@ PLUGIN_PATH="$REPO"
 PLUGIN_PATH_SET=0
 EXPLICIT_OFFICIAL=""
 
+# --- Cross-platform path handling ------------------------------------------
+# MSYS2/Git Bash rewrites POSIX-looking arguments before exec'ing a native
+# Windows program. `/c/...` is resolved against the *current drive root*, so it
+# becomes `C:\c\...` — a path that does not exist — and any native Windows
+# Python dies with "can't open file". Rather than rely on that heuristic (or on
+# MSYS_NO_PATHCONV, which then hands Windows Python a POSIX path it also cannot
+# resolve), convert each path to the form the configured interpreter expects.
+# Windows Python installs (and venvs) commonly provide only `python.exe`, so
+# `python3` is not a portable assumption. Prefer it, then fall back to any
+# interpreter that is actually Python 3.
+resolve_python() {
+  local candidate
+  for candidate in python3 python; do
+    if command -v "$candidate" >/dev/null 2>&1 &&
+      "$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info[0] == 3 else 1)' \
+        >/dev/null 2>&1; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+  printf '%s' "python3" # keep the conventional name so failures stay recognisable
+}
+
+PYTHON_BIN="$(resolve_python)"
+
+is_msys_shell() {
+  case "$(uname -s 2>/dev/null || echo unknown)" in
+    MINGW*|MSYS*|CYGWIN*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# True when $PYTHON_BIN is a native Windows build: its sys.executable carries a
+# drive letter. MSYS/Cygwin builds report a POSIX sys.executable and must keep
+# receiving POSIX arguments.
+python_is_windows() {
+  "$PYTHON_BIN" -c 'import sys; raise SystemExit(0 if sys.executable[1:2] == ":" else 1)' \
+    >/dev/null 2>&1
+}
+
+# Set to 1 below once the shell/interpreter pair is known to need Windows paths.
+NEED_WIN_PATHS=0
+
+# Echo $1 converted for the configured interpreter. A no-op on POSIX systems
+# and when the interpreter is not a native Windows build.
+to_python_path() {
+  if [[ "$NEED_WIN_PATHS" -eq 1 ]]; then
+    cygpath -m -- "$1" 2>/dev/null || printf '%s' "$1"
+  else
+    printf '%s' "$1"
+  fi
+}
+
 usage() {
   cat <<'USAGE'
 Usage: scripts/validate-plugin.sh [--official-validator PATH] [PLUGIN_PATH]
@@ -62,6 +115,13 @@ done
 
 PLUGIN_PATH="$(cd "$PLUGIN_PATH" && pwd)"
 
+# Resolve the conversion mode once: MSYS shell + cygpath + native Windows Python.
+NEED_WIN_PATHS=0
+if is_msys_shell && command -v cygpath >/dev/null 2>&1 && python_is_windows; then
+  NEED_WIN_PATHS=1
+fi
+PY_PLUGIN_PATH="$(to_python_path "$PLUGIN_PATH")"
+
 find_official_validator() {
   if [[ -n "$EXPLICIT_OFFICIAL" ]]; then
     printf '%s\n' "$EXPLICIT_OFFICIAL"
@@ -89,7 +149,7 @@ if OFFICIAL_VALIDATOR="$(find_official_validator)"; then
     exit 2
   fi
   official_status=0
-  python3 "$OFFICIAL_VALIDATOR" "$PLUGIN_PATH" || official_status=$?
+  "$PYTHON_BIN" "$(to_python_path "$OFFICIAL_VALIDATOR")" "$PY_PLUGIN_PATH" || official_status=$?
   if [[ "$official_status" -eq 0 ]]; then
     exit 0
   fi
@@ -98,4 +158,4 @@ else
   echo "Official validator was not found; running repository recursive validation."
 fi
 
-exec python3 "$REPO/scripts/validate-zagentic-plugin.py" "$PLUGIN_PATH"
+exec "$PYTHON_BIN" "$(to_python_path "$REPO/scripts/validate-zagentic-plugin.py")" "$PY_PLUGIN_PATH"

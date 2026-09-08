@@ -9,7 +9,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError as exc:  # pragma: no cover - environment-dependent
+    if exc.name != "yaml":
+        raise
+    sys.stderr.write(
+        "error: PyYAML is required to validate SKILL.md frontmatter.\n"
+        "       install it with:  python3 -m pip install -r requirements.txt\n"
+    )
+    raise SystemExit(2)
 
 
 ROOT = Path(__file__).resolve().parents[1]
