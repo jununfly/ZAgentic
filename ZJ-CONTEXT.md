@@ -152,14 +152,15 @@ frontmatter `name:`. Renaming a skill is therefore a three-way coordinated
 change (mv the dir, update frontmatter, update all references), verified by grepping the old
 name down to zero repo-wide (append-only history logs exempt).
 _Avoid_: rename-in-place, dir-only rename
-- **Runtime alias exception (board-approved)**: installed copies under
-  `~/.codex/skills/` and `~/.workbuddy/skills/` may keep a legacy directory name
-  (`zj-research-report`) while the SKILL.md `name:` stays canonical
-  (`zj-tech-research-report`). This is an intentional, documented exception to
-  preserve existing path references — each copy carries an `ALIAS.md`, and the
-  exception is ratified in `docs/zj-adr/0004-research-report-improvement-scope.md`.
-  It applies only to runtime install copies, never to the repo source skill
-  (where dir == name still holds strictly).
+- **Runtime alias exception (board-approved, retired 2026-09-09)**: installed copies
+  under `~/.codex/skills/` and `~/.workbuddy/skills/` were once allowed to keep a
+  legacy directory name (`zj-research-report`) while SKILL.md `name:` stayed canonical
+  (`zj-tech-research-report`); each copy carried an `ALIAS.md`, and the exception was
+  ratified in `docs/zj-adr/0004-research-report-improvement-scope.md`. On 2026-09-09 the
+  alias copies were deleted — no remaining path referenced them, and the copies had
+  drifted from canonical — so the exception is **retired**: installed copies now use the
+  canonical directory name, and Name-field coupling holds without exception.
+  _Avoid_: reintroducing a directory/name divergence for path compatibility
 
 **Evidence Compiler**:
 The versioned research component that accepts one shared comparison brief, fixes every repository to a commit, performs bounded source reads, and returns a **Sealed ledger**. `zj-research` reaches it through the **Research CLI protocol** rather than reproducing collection logic in a prompt.
