@@ -20,7 +20,6 @@ surfaces; navigation order does not establish global truth precedence.
 | Why and how does a bounded design work? | [docs/designs/](designs/) | Design rationale and implementation-facing explanations. |
 | What is the current technical architecture of ZAgentic? | [docs/architecture/](architecture/) | Long-lived architecture handbook; routing only — view pages own their bounded questions and link (not duplicate) design and ADR authorities. |
 | Why was a hard-to-reverse decision accepted? | [docs/zj-adr/](zj-adr/) | Decision rationale; it does not replace current architecture or rules. |
-| What is specified and ready for an Agent to build? | [docs/plans/](plans/) | Agent-grabbable specs produced by `zj-to-spec`; a spec records intent, decisions and test seams, it does not replace ADR rationale or current skill behavior. |
 
 ### Primary design authorities
 
@@ -49,11 +48,25 @@ recognises as the routing surface rather than a primary view page.
 - [Research bucket](architecture/ta-skill-bucket-research.md) — What does the `research/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.research`.
 - [Personal skill tree](architecture/ta-zagentic-personal-tree.md) — What does the root-level `personal/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.personal-tree`.
 
+### Accepted decision records
+
+Historical rationale for hard-to-reverse decisions. These pages carry no
+`authority-id` (only primary pages do), and none of them replaces the current
+architecture or rules.
+
+| ADR | Question it settles | Status |
+| --- | --- | --- |
+| [0001](zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md) | Which skills must demand `/zj-repo-init` config, and which may merely reference it? | accepted |
+| [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) | How is one skill-pair between two repositories processed, named and filed? | accepted |
+| [0003](zj-adr/0003-khazix-wave-absorb-key-decisions.md) | Under which rules do we absorb third-party skills wholesale? | accepted |
+| [0004](zj-adr/0004-research-report-improvement-scope.md) | What scope was ratified for the research-skills rearchitecture? | accepted |
+
 ## Process material
 
 | Question | Location | Lifecycle |
 | --- | --- | --- |
 | What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. |
+| What is specified and ready for an Agent to build? | [docs/plans/](plans/) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. |
 
 ## Evidence boundaries
 
@@ -65,7 +78,7 @@ documentation pages, and this map neither moves nor governs their storage.
 
 Create a category only when the repository has a concrete document for its
 bounded question. The current empty categories are `methods/`,
-`agreements/`, `testing/`, `benchmarks/`, `references/`, and `plans/`.
+`agreements/`, `testing/`, `benchmarks/`, and `references/`.
 When created, each must state its lifecycle, bounded question, and authority
 boundary here. New architecture pages also follow `zj-docs-architecture`'s
 view contract.

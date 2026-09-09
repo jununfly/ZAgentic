@@ -1,3 +1,9 @@
+---
+doc-kind: adr
+authority: historical
+status: accepted
+---
+
 # 1 阶段 A↔B skill-pair 处理: 4 个可重用决策
 
 1 阶段 (35 节点 95 决策) 已闭环. 决策全量记录在 git 历史 + 已删除的 `docs/plans/roadmap-skillpairs.json` 中. 本 ADR 抽出 **4 个有未来可重用价值** 的元决策 — 当未来再遇到"A 仓要跟其他 skill 仓对齐"或"要加新 skill"时, 这些决策点可作为判断依据.

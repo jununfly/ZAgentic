@@ -107,7 +107,7 @@ maintenance rules for a single skill's frontmatter (owned by
   design authority for the wayfinder/roadmap hand-off boundary.
 - [ADR 0001](../zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md)
   — pointer-only setup decision.
-- [ADR 0002](../zj-adr/0002-1-stage-skill-pair-key-decisions.md) — A-only PR
+- [ADR 0002](../zj-adr/0002-stage-skill-pair-key-decisions.md) — A-only PR
   three-rule decision and the cross-stage skill meta-rule.
 - [ADR 0003](../zj-adr/0003-khazix-wave-absorb-key-decisions.md) — historical
   absorb-wave decision.
