@@ -107,8 +107,26 @@ class IsLockContention(unittest.TestCase):
         exc = PermissionError(errno.EACCES, "permission denied")
         self.assertFalse(_is_lock_contention(self.lock_dir, exc))
 
-    def test_shim_permission_error_is_not_contention_when_dir_absent(self):
-        self.assertFalse(_is_lock_contention(self.lock_dir, raise_permission_eexist(self.lock_dir)))
+    def test_enospc_is_not_contention(self):
+        """Permanent failures must surface, not be waited out."""
+        for code in (errno.ENOSPC, errno.EROFS, errno.ENOENT):
+            with self.subTest(errno=errno.errorcode[code]):
+                self.assertFalse(_is_lock_contention(self.lock_dir, OSError(code, "disk full")))
+
+    def test_shim_eexist_is_contention_even_after_the_holder_released(self):
+        """TOCTOU regression: the holder can unlink the lock directory between
+        our failed mkdir and our stat, so "the directory is gone" is NOT proof
+        the failure was permanent. Classifying it as permanent made roughly one
+        concurrent writer in five die with exit 1."""
+        self.assertFalse(os.path.exists(self.lock_dir))
+        self.assertTrue(_is_lock_contention(self.lock_dir, raise_permission_eexist(self.lock_dir)))
+
+    def test_errno_less_oserror_is_treated_as_contention(self):
+        """When the platform withholds errno there is no witness left, so the
+        conservative reading is to wait — the deadline is still the backstop."""
+        exc = PermissionError("operation not permitted by the sandbox")
+        self.assertIsNone(exc.errno)
+        self.assertTrue(_is_lock_contention(self.lock_dir, exc))
 
     def test_non_oserror_is_not_contention(self):
         self.assertFalse(_is_lock_contention(self.lock_dir, RuntimeError("boom")))
@@ -159,6 +177,27 @@ class WaitAndAcquire(unittest.TestCase):
         self.assertGreaterEqual(state["calls"], 4)
         self.assertFalse(os.path.exists(roadmap_lock_dir(self.target)),
                          "lock directory must be released on exit")
+
+    def test_contention_is_retried_when_the_holder_releases_first(self):
+        """Same as above, except the failing mkdir leaves nothing behind — the
+        holder released the lock before we could look. This is the intermittent
+        variant of the crash: it only shows up when the release wins the race.
+        """
+        real_mkdir = os.mkdir
+        state = {"calls": 0}
+
+        def fake_mkdir(path, *a, **kw):
+            state["calls"] += 1
+            if state["calls"] <= 3:
+                raise raise_permission_eexist(path)  # no directory created
+            return real_mkdir(path, *a, **kw)
+
+        patcher = unittest.mock.patch.object(roadmap.os, "mkdir", fake_mkdir)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        with roadmap_file_lock(self.target, timeout_seconds=5.0):
+            self.assertTrue(os.path.isdir(roadmap_lock_dir(self.target)))
+        self.assertGreaterEqual(state["calls"], 4)
 
     def test_native_contention_is_retried_until_acquired(self):
         state = self._patch_mkdir(3, lambda p: FileExistsError(errno.EEXIST, "exists"))
