@@ -1,3 +1,9 @@
+---
+doc-kind: adr
+authority: historical
+status: accepted
+---
+
 # Research report improvement: ratified scope expansion beyond the original alignment contract
 
 The alignment contract in `ZAgenticOPN/docs/designs/agent-self-service-collaboration-experience-version-alignment.md` (Q1) limited this experiment to the old `skills/engineering/zj-research-report/` source skill, its reference/verification files, and the single device runtime copy. The actual deliverable landed in commit `869fa1f` ("rearchitect research skills and add technical report gate"), which changed 49 files: it migrated sibling skills, added `zj-code-research`, rewrote governance/index/docs, and relocated outputs — a full research-skills rearchitecture, not an isolated edit.

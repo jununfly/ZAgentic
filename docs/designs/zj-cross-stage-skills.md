@@ -59,5 +59,5 @@ Keeping those models separate avoids role conflicts and keeps each output small.
 - [ZAgentic documentation map](../README.md) — category and lifecycle routing.
 - [Codebase Docs capability spec](../prds/codebase-docs-capability.md) —
   process-material lifecycle.
-- [ADR 0002](../zj-adr/0002-1-stage-skill-pair-key-decisions.md) — historical
+- [ADR 0002](../zj-adr/0002-stage-skill-pair-key-decisions.md) — historical
   record of the original checkpoint decision.

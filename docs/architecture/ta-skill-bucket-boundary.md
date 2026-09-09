@@ -111,6 +111,6 @@ amended it.
 - [Skill frontmatter validation boundary](../designs/zj-skill-frontmatter-schema.md) —
   design page that establishes the discoverability contract this rule
   depends on.
-- [ADR 0002](../zj-adr/0002-1-stage-skill-pair-key-decisions.md) —
+- [ADR 0002](../zj-adr/0002-stage-skill-pair-key-decisions.md) —
   historical record of the A-only PR three-rule decision that parallels
   point 1.
