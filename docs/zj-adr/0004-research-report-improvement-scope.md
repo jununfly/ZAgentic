@@ -6,6 +6,8 @@ status: accepted
 
 # Research report improvement: ratified scope expansion beyond the original alignment contract
 
+> 注 (2026-09-09): 本 ADR 批准的 **runtime alias 例外已退役** —— `~/.codex/skills/zj-research-report/` 与 `~/.workbuddy/skills/zj-research-report/`（`~/.claude/skills/` 下另有一份陈旧副本）已全部删除，安装目录统一使用 canonical 名 `zj-tech-research-report`。决策本身不变，仅"保留 legacy 目录名"这一后果被后续操作取代；正文保留原文，同步更新见 `ZJ-CONTEXT.md` 的 Name-field coupling 条目。
+
 The alignment contract in `ZAgenticOPN/docs/designs/agent-self-service-collaboration-experience-version-alignment.md` (Q1) limited this experiment to the old `skills/engineering/zj-research-report/` source skill, its reference/verification files, and the single device runtime copy. The actual deliverable landed in commit `869fa1f` ("rearchitect research skills and add technical report gate"), which changed 49 files: it migrated sibling skills, added `zj-code-research`, rewrote governance/index/docs, and relocated outputs — a full research-skills rearchitecture, not an isolated edit.
 
 **Decision:** We ratify `869fa1f` as the intentional, broader scope for this work item. The report skill's quality gate (`validate_technical_report.py`), benchmark exemplar (`technical-proposal-exemplar.md`), and recompile pipeline could not be delivered as the narrow set the contract imagined; they depend on the shared recursive `./skills/` discovery and the new `skills/research/` bucket layout that the rearchitecture established. This ADR is the "formal scope decision" the reviewer requested as the alternative to narrowing the change (narrowing is impossible without rewriting already-pushed history, which the project forbids).
@@ -28,4 +30,4 @@ This ADR is the ZAgentic-side ratification; the OPN-side formal change to the ac
 
 ## Runtime alias (intentional, documented)
 
-`~/.codex/skills/zj-research-report/` and `~/.workbuddy/skills/zj-research-report/` keep the legacy directory name while SKILL.md `name:` stays canonical `zj-tech-research-report`. Each copy carries an `ALIAS.md`; this is a board-approved exception to the `ZJ-CONTEXT.md` "Name-field coupling" invariant, recorded there and ratified above. It applies only to runtime install copies, never to the repo source skill.
+`~/.codex/skills/zj-research-report/` and `~/.workbuddy/skills/zj-research-report/` keep the legacy directory name while SKILL.md `name:` stays canonical `zj-tech-research-report`. Each copy carries an `ALIAS.md`; this is a board-approved exception to the `ZJ-CONTEXT.md` "Name-field coupling" invariant, recorded there and ratified above. It applies only to runtime install copies, never to the repo source skill. **_(2026-09-09 退役：别名副本已删除，见顶部注记。)_**
