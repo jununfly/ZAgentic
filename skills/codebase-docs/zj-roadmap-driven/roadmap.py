@@ -6,6 +6,7 @@ zj-roadmap-driven — 路线图核心数据模型
 组成事实源，Markdown 只是渲染视图。
 """
 
+import errno
 import json
 import os
 import shutil
@@ -137,6 +138,36 @@ def roadmap_lock_dir(json_path: str) -> str:
     return os.path.abspath(json_path) + ".lock"
 
 
+def _is_lock_contention(lock_dir: str, exc: BaseException) -> bool:
+    """True when `exc` means "another writer already owns this lock".
+
+    `os.mkdir` on an existing path is specified to raise FileExistsError, and
+    the wait/retry loop below was written against that contract. It is not the
+    only thing that happens in practice: some runtimes interpose `os.mkdir`
+    (this repository's own safe-delete shim, and any sitecustomize doing the
+    same) and re-raise EEXIST as PermissionError with `errno` unset. Catching
+    only FileExistsError therefore turns ordinary lock contention into an
+    uncaught crash — which is exactly how the lost update in
+    `docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 actually manifests:
+    writers die with exit 1 instead of waiting their turn.
+
+    When errno is missing we disambiguate by stat'ing the path. If the lock
+    directory is really there, another writer holds it and we must wait; if it
+    is not, this is a genuine filesystem error (permissions, etc.) and the
+    caller must see it.
+    """
+    if isinstance(exc, FileExistsError):
+        return True
+    if not isinstance(exc, OSError):
+        return False
+    if exc.errno == errno.EEXIST:
+        return True
+    try:
+        return os.path.isdir(lock_dir)
+    except OSError:
+        return False
+
+
 def read_lock_owner(json_path: str) -> dict:
     owner_path = os.path.join(roadmap_lock_dir(json_path), "owner.json")
     try:
@@ -164,7 +195,9 @@ def roadmap_file_lock(json_path: str, timeout_seconds: float = DEFAULT_LOCK_TIME
         try:
             os.mkdir(lock_dir)
             acquired = True
-        except FileExistsError:
+        except OSError as exc:
+            if not _is_lock_contention(lock_dir, exc):
+                raise
             if time.monotonic() >= deadline:
                 raise RoadmapLockTimeout(lock_dir, read_lock_owner(json_path), timeout_seconds)
             time.sleep(LOCK_RETRY_INTERVAL_SECONDS)
