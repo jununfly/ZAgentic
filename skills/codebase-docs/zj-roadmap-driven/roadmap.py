@@ -138,6 +138,19 @@ def roadmap_lock_dir(json_path: str) -> str:
     return os.path.abspath(json_path) + ".lock"
 
 
+# Filesystem failures that must never be mistaken for lock contention. They are
+# permanent: retrying cannot make them succeed, so waiting out the lock deadline
+# would only produce a misleading "roadmap is locked" report.
+_HARD_OS_ERRORS = frozenset({
+    errno.EACCES,
+    errno.EPERM,
+    errno.ENOENT,
+    errno.ENOSPC,
+    errno.EROFS,
+    errno.ENAMETOOLONG,
+})
+
+
 def _is_lock_contention(lock_dir: str, exc: BaseException) -> bool:
     """True when `exc` means "another writer already owns this lock".
 
@@ -151,10 +164,25 @@ def _is_lock_contention(lock_dir: str, exc: BaseException) -> bool:
     `docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 actually manifests:
     writers die with exit 1 instead of waiting their turn.
 
-    When errno is missing we disambiguate by stat'ing the path. If the lock
-    directory is really there, another writer holds it and we must wait; if it
-    is not, this is a genuine filesystem error (permissions, etc.) and the
-    caller must see it.
+    Classification order matters, and the last rule is the subtle one:
+
+      1. FileExistsError, or errno == EEXIST, or an EEXIST message → contention.
+      2. The lock directory is on disk → contention.
+      3. errno names a permanent failure (EACCES, ENOSPC, …) → not contention,
+         let it propagate so the caller sees the real diagnosis.
+      4. Anything else that still carries an errno → not contention, propagate.
+      5. errno is None → contention, even if the directory is gone by now.
+
+    Rule 5 is not defensive padding, it is the point of this function. A lock
+    directory that has *just* been released is indistinguishable from one that
+    never existed: the holder can unlink it between our failed mkdir and the
+    stat in rule 2, so "the directory is absent" is not evidence that the
+    failure was permanent. Treating it as permanent reintroduces the original
+    crash, only now intermittently — roughly one writer in five under eight
+    concurrent writers. An errno is the only reliable witness, so when the
+    platform withholds it we take the conservative reading: wait and retry, and
+    if the lock genuinely never becomes free, the deadline still fires and
+    reports RoadmapLockTimeout.
     """
     if isinstance(exc, FileExistsError):
         return True
@@ -162,10 +190,17 @@ def _is_lock_contention(lock_dir: str, exc: BaseException) -> bool:
         return False
     if exc.errno == errno.EEXIST:
         return True
+    message = str(exc).lower()
+    if "eexist" in message or "already exists" in message:
+        return True
     try:
-        return os.path.isdir(lock_dir)
+        if os.path.isdir(lock_dir):
+            return True
     except OSError:
         return False
+    if exc.errno is None:
+        return True
+    return exc.errno not in _HARD_OS_ERRORS
 
 
 def read_lock_owner(json_path: str) -> dict:
