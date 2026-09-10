@@ -34,7 +34,7 @@
 
 同时给 Human 侧补三块：owner 列、待决问题（open question）队列、关键路径；并给 md 定三条护栏，防止视图膨胀毁掉"一眼看懂"这个卖点。
 
-**为什么 P5 是第二张图而不是扩现有 DAG**：plan layer 要稳定（Human 主视图、要被 `ready` 遍历、要人审），trace layer 天生快速增殖且由机器产出。合成一张图会让 `ready` 查询穿过机器噪音、让 md 视图失控（直接撞 Further Notes 风险 1），并让"随口一轮对话"这种日常动作变成修改规划。两张图共用同一套边存储与 `E_CYCLE` 约束，再用跨图层边连接，成本远低于强行合一。
+**为什么 P5 是第二张图而不是扩现有 DAG**：plan layer 要稳定（Human 主视图、要被 `ready` 遍历、要人审），trace layer 天生快速增殖且由机器产出。合成一张图会让 `ready` 查询穿过机器噪音、让 md 视图失控（直接撞 Further Notes 风险 1），并让"随口一轮对话"这种日常动作变成修改规划。两张图在存储上合一（§8.1.1），共用 uid 规则与 `E_CYCLE` 约束，概念边界再用跨图层边表达，成本远低于强行合一。
 
 ## User Stories
 
@@ -43,7 +43,7 @@
 1. As an Agent，I want every roadmap node to carry an immutable `uid` that never changes even if sibling nodes are deleted，so that leases, history and external references cannot silently point at a recycled id。
 2. As an Agent，I want the human-facing display id (`1-1-2`) to stay positional and readable，so that Human can keep saying "开始 1-3-1" without knowing about uids。
 3. As an Agent，I want every command to accept either a display id or a uid，so that I never have to guess which one a previous step recorded。
-4. As an Agent，I want a stable machine-readable error code (`E_NODE_NOT_FOUND` / `E_INVALID_STATUS` / `E_CYCLE` / `E_LOCKED` / `E_CONFLICT` / `E_SCOPE`)，so that I can branch on failure without string-matching stderr。
+4. As an Agent，I want a stable machine-readable error code (`E_NODE_NOT_FOUND` / `E_INVALID_STATUS` / `E_CYCLE` / `E_LOCKED` / `E_CONFLICT` / `E_SCOPE` / `E_BUDGET_EXCEEDED`)，so that I can branch on failure without string-matching stderr。
 5. As an Agent，I want a distinct process exit code per error class，so that a wrapper script can tell "retry later" from "never retry"。
 6. As an Agent，I want `--format json|jsonl|brief` on every read command，so that I can choose the cheapest representation for my context budget。
 7. As an Agent，I want `--fields id,status,label` projection，so that I stop paying tokens for fields I will not read。
@@ -102,11 +102,13 @@
 53. As an Agent，I want a node with several in-edges to have a determinate **mainline**（first edge in）while the others contribute context，so that display order, step ordering and role inheritance are reproducible instead of being recomputed geometrically。
 54. As an Agent，I want `why <node>` to return the causal chain that produced this node，so that I can answer "我们为什么会在这里" without replaying the whole transcript。
 55. As a Human，I want `whereami` to return current focus + mainline path to root + open branches，so that coming back after a day costs one command instead of a re-read。
-56. As an Agent，I want an `explore` node to carry a `budget` and an `exploit` node to carry `exit_criteria`，so that "还存在未知" is expressible at planning time instead of being a gap in the map（Problem 9）。
+56. As an Agent，I want an `explore` node to carry a `budget` **in structural units**（max children / max rounds，不是 token 预算）and an `exploit` node to carry `exit_criteria`，so that "还存在未知" is expressible at planning time and mechanically checkable at execution time（Problem 9）。
 57. As an Agent，I want explore output to become the node's children through `promote`，so that the map grows from evidence rather than from guesswork。
 58. As a Human，I want Agents to be able to **append** freely but never to **rewrite** my plan without me，so that autonomy does not quietly become plan drift。
 59. As an Agent，I want my promotions to be reviewable proposals rather than silent mutations of the plan，so that Human can batch-accept what I found while still owning the map。
 60. As a cross-device Agent，I want trace nodes to carry device / agent / session provenance from birth，so that when P4 lands the merge has something deterministic to merge on。
+61. As a skill maintainer，I want trace nodes and plan nodes to live in the same carrier and the same edge table with a `layer` field，so that cross-layer `derives-from` edges have their referential integrity enforced in exactly one place（§8.1.1）。
+62. As a skill maintainer，I want every traversal predicate（`ready` / `critical-path` / `impact` / `tree` / md render）to filter `layer == 'plan'` by construction，so that sharing one table cannot leak trace noise into scheduling or the human view（Further Notes 风险 8）。
 
 ### 视图与护栏（贯穿）
 
@@ -128,7 +130,7 @@
 
 ### 2. CLI 契约：错误码、输出格式、批量（P0）
 
-- 稳定错误码 + 退出码映射：`E_NODE_NOT_FOUND`、`E_INVALID_STATUS`、`E_CYCLE`、`E_LOCKED`、`E_CONFLICT`、`E_SCOPE`、`E_STORAGE`。
+- 稳定错误码 + 退出码映射：`E_NODE_NOT_FOUND`、`E_INVALID_STATUS`、`E_CYCLE`、`E_LOCKED`、`E_CONFLICT`、`E_SCOPE`、`E_STORAGE`、`E_BUDGET_EXCEEDED`（case 1，§8.5）。
 - 新增 `--format json|jsonl|brief`、`--fields`、`--quiet`，**默认值保持现状**，避免破坏已安装技能与既有文档。
 - 新增 `context` 命令：一次返回 focus + path + siblings + focus decisions + top-N ready（默认 N=3），这是 token 性价比最高的一条。
 - 新增 `next`（等价于 `ready --limit 1 --brief`）与 `ready`。
@@ -218,7 +220,14 @@
 
 **判别式（唯一口径）**：这条信息需要被调度吗？需要 → plan layer；不需要，只用于解释"怎么走到这里"或给下一步供上下文 → trace layer。含糊时按 trace 处理，因为它便宜且可逆。
 
-**为什么不合图**：合图会让 `ready` 遍历机器噪音、让每句随口的对话都变成对规划的修改，并撞上 Further Notes 风险 1（视图膨胀是头号风险）。两张图共用同一套边存储、`E_CYCLE` 与 uid 规则，只用跨图层边（trace → plan 的 `derives-from`、plan → trace 的 `prompted-by`）连接。
+**为什么不合图**：合图会让 `ready` 遍历机器噪音、让每句随口的对话都变成对规划的修改，并撞上 Further Notes 风险 1（视图膨胀是头号风险）。**两张图在概念上分离，在存储上合一**（详见 §8.1.1）：同一 carrier、同一张节点表、同一张边表，只靠 `layer` 字段区分；连接两张图的仍是跨图层边（trace → plan 的 `derives-from`、plan → trace 的 `prompted-by`）。
+
+#### 8.1.1 共享 carrier 与边表（已决策 2026-09-10，zj）
+
+- **共享什么**：uid 生成与不可变规则、`E_CYCLE` 约束、迁移路径、carrier adapter 契约、事件日志。节点集合多一列 / 字段 `layer: plan|trace`；边集合不加列——边的层级由两端节点的 `layer` 推出。
+- **"表"这个词在 P3 之前也成立**：JSON single-file / bundle carrier 上是同一份文件里的同一个 `nodes` 集合与同一个 `edges` 集合，SQLite carrier 落地后是同一张 `nodes` 表与同一张 `edges` 表。共享决策与 carrier 选型无关，先落在 JSON 上照样生效。
+- **为什么共享而不是独立表 / 独立 carrier**：跨图层 `derives-from` 边的参照完整性必须在一处维护。两个 carrier 各自保证自身完整性、却无法保证跨 carrier 引用有效，正是 `remove-decision` 在 bundle 与 single-file 上语义漂移的同一类缺陷（Further Notes 风险 2）。
+- **代价（必须显式承担，不是附带条款）**：所有遍历谓词都要带 `layer == 'plan'`——`ready`、`critical-path`、`impact`、`tree`、md 渲染。共享表把"忘记过滤"的后果从"跨 carrier 同步时才发现"变成"当场把 trace 泄进调度与视图"。因此 `layer` 是节点必填字段（§8.3），且 Testing 对每个遍历命令各有一条"trace 存在时输出不变"的负向用例（Further Notes 风险 8）。
 
 #### 8.2 从 thoughtDAG 移植：三条照搬，一条必须改写
 
@@ -231,15 +240,17 @@
 
 **冲突点**：这条与 Story 20（Agent 不点名也能取活）正面矛盾。全盘接受它等于放弃 roadmap-driven 的核心价值；完全无视它则会得到"Agent 悄悄改规划"。本 spec 的改写版本是**按写权限分层，而不是按参与者一刀切**：
 
-- **追加（append）**：Agent 在 trace layer 完全自主；在 plan layer 只能产出 **proposal**（`promote --propose`），由 Human 接受后成为正式节点（Story 58 / 59）。
+- **追加（append）**：Agent 在 trace layer 完全自主；在 plan layer 只能产出 **proposal**——`promote` 的默认行为就是 proposal，不需要 `--propose` 标志（已决策 2026-09-10，zj），由 Human `promote --accept` 后才成为正式节点（Story 58 / 59、§8.4）。
 - **改写（rewrite）**：改已有 roadmap 节点的语义、`delete`、`supersedes`、再加依赖边——保留给 Human。Agent 遇到"这条路线不成立"只能记 trace + 挂 open question，不能自己改图。
 
 一句话：**Agent 拥有它的过程记录，Human 拥有地图。**
 
 #### 8.3 trace layer 的最小 schema
 
-节点 kind：`turn`（一次 Human-Agent 往来）/`finding`（发现）/ `doubt`（待定分叉）/ `attempt`（一次尝试与其结果）/ `artifact`（产出物指针）。
-共同字段：`uid`、`kind`、`body`、`created_at`、`agent_id`、`device_id`、`session_ref`、（可选）`compressed_from: [uid]`——用于把一条长链压成 higher conclusion，对应 thoughtDAG 的 "merge nodes into a higher conclusion"。
+**不存在第二张表**：plan 节点与 trace 节点写入同一 carrier 的同一张节点表，`layer: plan|trace` 是必填字段（§8.1.1）。差异只有 `layer` 与 `kind`，uid 规则、`E_CYCLE`、迁移路径完全共用；边表同样共用，边的层级由两端节点推出。
+
+节点 kind（trace）：`turn`（一次 Human-Agent 往来）/ `finding`（发现）/ `doubt`（待定分叉）/ `attempt`（一次尝试与其结果）/ `artifact`（产出物指针）。plan 节点的 `kind` 沿用现有语义（可空）。
+共同字段：`layer`、`kind`、`uid`、`body`、`created_at`、`agent_id`、`device_id`、`session_ref`、（可选）`compressed_from: [uid]`——用于把一条长链压成 higher conclusion，对应 thoughtDAG 的 "merge nodes into a higher conclusion"。
 
 边：
 
@@ -252,10 +263,16 @@
 
 `derives-from` / `prompted-by` 是连接两张图的全部接缝，二者都必须是单向且不成环的，否则 loop 会渗进数据结构。
 
+**存量 `node.decisions` 不迁移进 trace layer（已决策 2026-09-10，zj）**：`node.decisions` 继续作为"该节点的结论摘要"服务于 md 与 Human，trace layer 承载完整过程。二者是**摘要与明细**的关系，并存不是重复。若迁移，md 渲染会失去它今天唯一的 decisions 来源，而 trace 又明确不进 md，等于让 Human 净失去这部分视野。连带三条约束：
+
+- `promote` 不回写 `node.decisions`——trace 的 `body` 是过程，promote 只创建 plan 节点与 `derives-from` 边；结论要不要进摘要由 Human 决定（`decide` 命令）。
+- `context --include decisions` 读的仍是 `node.decisions`，不是 trace；读 trace 另有 `--include trace`。
+- 迁移器不做 `decisions → trace` 的批量转换，老 carrier 升级后 `decisions` 数组原样保留。
+
 #### 8.4 命令（最小集）
 
 - `trace add <kind> --parent <uid> [--body ...] [--session-ref ...]`：Agent 可写（append 权限）。
-- `promote <trace_uid> --under <node_uid> --label "..."`：trace → plan。**默认产出 proposal 并挂 open question**；`--accept` 由 Human 执行后才落正式节点，并自动写 `derives-from` 边。
+- `promote <trace_uid> --under <node_uid> --label "..."`：trace → plan。**默认产出 proposal 并挂 open question（已决策 2026-09-10，zj，取保守方案）**；`--accept` 由 Human 执行后才落正式节点，并自动写 `derives-from` 边。接受动作统一走 `promote --accept <trace_uid>`（要接受多条就在同一把锁内串行执行，不新增批量命令）。不采用"默认直接生效 + Human 事后 reject"：那样 Agent 的一次误判会永久改变地图，正是 case 2 要消除的不确定性；而 proposal 让 Human 挑着接受，日常开销并不高。
 - `context <node>`：**替换** Story 9 的 tree-shaped 实现，改为沿 in-edges 收集——默认只带 mainline + 显式 `reference`，可通过 `--include deps|trace|decisions` 增量加宽。这是"给 Agent 更少无关上下文"这一目标的落地，也直接决定 token 成本。
 - `why <node>`：回溯 `derives-from` 链，返回"为什么存在"。
 - `whereami`：focus + mainline path to root + 未闭合分支数。
@@ -265,9 +282,17 @@
 
 P5 之前先补一个比它更基础、成本更低的洞——Problem 9 其实不需要新图，只需要给既有 `mode` 字段长出牙齿：
 
-- `explore` 节点新增 `budget`（例如"最多 3 个子探索"或"最多 2 轮"），超出则不再派生子节点并挂 open question。
+- `explore` 节点新增 `budget`，**单位是结构单位而不是 token 预算（已决策 2026-09-10，zj）**：
+
+  ```json
+  { "max_children": 3, "max_rounds": 2 }
+  ```
+
+  两者都是结构量，任一触顶即拒绝再派生子节点并挂 open question，返回 `E_BUDGET_EXCEEDED`。`max_children` 限制这条探索最多长出几个子节点，`max_rounds` 限制它最多被重访几轮；可只给一个，缺失的子项视为不限。
+  不用 token 当单位的理由：token 不可跨模型比较，也无法在 planning 期预估，而结构单位既能写进规划、又能在执行期机械校验（子节点数与轮次都是 carrier 里已有的计数）。控制 token 成本另有 §2 的 `--fields` / `--format` 与 §8.4 的 edge-driven `context`，不该由 `budget` 承担。
 - `exploit` 节点新增 `exit_criteria`（可检查的完成判据），用于 Story 37 的"done 不是 vibe-based"。
-- explore 的产出经 `promote` 落成子节点，而不是规划人凭空预判。
+- explore 的产出经 `promote` 落成子节点，而不是规划人凭空预判。**case 1 不豁免 §8.4 的 proposal 规则**：探索产出同样是 proposal，Human `--accept` 后才成为子节点。
+  - 连带一个必须明确的计数口径：`max_children` 只计**已被接受的正式子节点**，proposal 不占额度。否则一轮探索里 Agent 先提了 3 条 proposal 就把额度用光，Human 还没审就没了空间——budget 约束的是地图，不是 Agent 的嘴。
 
 注意这不是造新概念：`mode` 字段、`add --mode` CLI 参数、`[X+]`/`[Y+]` 渲染图标均已存在（`roadmap.py:32-37`、`roadmap_cli.py:139`），缺的只是 budget / exit_criteria 与 promote 通道。因此 **case 1 应先于 P5 落地，且不依赖 P5 的任何新结构**。
 
@@ -308,7 +333,9 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 - 租约参数：`claim` 后 `expires_at == claimed_at + 300s`；`heartbeat` 把 `expires_at` 推到 `now + 300s`（幂等，重复调用不累加）；**`expires_at` 未到期时任何 Agent 侧 `steal` 均失败**（断言存在这样的负向用例，不只是"过期能抢"）；`release --force` 成功并落事件日志。
 - 崩溃恢复：持有者静默（不心跳）后，节点在 **TTL + 一个心跳周期 = 360s** 内可被他人接管；断言恢复延迟上界，而不是"最终能恢复"。
 - 视图护栏：render 后 md 主视图行数不超过阈值；`HUMAN_NOTES` 内容跨 render 存活；新字段默认不出现在 md。
-- 执行图（P5）：`promote` 未 `--accept` 时 roadmap 节点数不变且 open question +1，断言的是"没有副作用"而不只是"命令成功"；`promote --accept` 后存在且仅存在一条 `derives-from` 边。`context` 在删除一条 `reference` 边后输出随之变化（对应 thoughtDAG 的 "delete one edge, get a different answer"，证明上下文由边而非由位置决定）。**负向用例：`trace add` 之后 md 主视图行数不变**（否则 case 2 的病会被 P5 重新制造出来）。`explore` 节点超出 `budget` 后追加子节点返回错误码而非静默接受。
+- 执行图（P5）：`promote` 未 `--accept` 时 roadmap 节点数不变且 open question +1，断言的是"没有副作用"而不只是"命令成功"；`promote --accept` 后存在且仅存在一条 `derives-from` 边。`context` 在删除一条 `reference` 边后输出随之变化（对应 thoughtDAG 的 "delete one edge, get a different answer"，证明上下文由边而非由位置决定）。**负向用例：`trace add` 之后 md 主视图行数不变**（否则 case 2 的病会被 P5 重新制造出来）。`explore` 节点超出 `budget` 后追加子节点返回 `E_BUDGET_EXCEEDED` 与对应退出码，而不是静默接受（至少两条：`max_children` 触顶、`max_rounds` 触顶；再加一条负向——只给其中一个子项时，另一个不设限且不报错）。`max_children` 只计已接受的子节点：连续提交满额条 proposal 后仍可继续提交，且 `promote --accept` 到额度上限后下一次接受返回 `E_BUDGET_EXCEEDED`（§8.5）。
+- 共享表与层级过滤（P5）：`trace add` 之后 `ready` / `critical-path` / `tree` 的输出与之前**字节一致**（`layer` 过滤，Story 62）；删除一个已被 `promote` 引用的 trace 节点必须失败（跨图层 `derives-from` 的参照完整性落在同一张表里，因此是同表校验而不是跨 carrier 约定）。
+- `decisions` 不迁移（P5）：`promote --accept` 后目标 plan 节点的 `decisions` 数组条目数不变、源 trace 节点 `body` 不变；老 carrier 升级后 `decisions` 原样保留，且 md 里 decisions 段的渲染结果不变。
 - 上下文确定性（P5）：同一节点在 `mainline` / `reference` 入边顺序不同时，`context` 输出必须字节一致——非确定性输出会让 Agent 无法复现上一次的结论。
 
 ### 既有先例（prior art）
@@ -326,7 +353,7 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 - **`zj-grilling` / `zj-wayfinder` / `zj-to-tickets` 的内部改造**：对外契约保持不变。
 - **性能基准体系重写**：`benchmarks/roadmap_bundle_benchmark.py` 保留，不为本 spec 新增基准设施。
 - **技能分发方式**：源技能在本仓库 `skills/codebase-docs/` 内，不走"删除重装"——那会绕开 PR 审阅与 ZJ-CONTEXT 术语同步。已确立的流程是改源 + 分支 + PR，合并后按 sha256 同步三处已安装副本（`~/.codex` / `~/.workbuddy` / `~/.claude`）。
-- **P5 的执行图实现**：本 spec 只登记方向与边界（分层模型、边语义、写权限分层、最小命令集）。真正的 schema、迁移与 CLI 细节应在对 §8 达成共识后另起一篇执行图 spec，避免在一个已经有 60 条 user story 的文档里继续堆新东西。
+- **P5 的执行图实现**：本 spec 只登记方向与边界（分层模型、边语义、写权限分层、最小命令集）。真正的 schema、迁移与 CLI 细节应在对 §8 达成共识后另起一篇执行图 spec，避免在一个已经有 62 条 user story 的文档里继续堆新东西。**那篇 spec 的输入约束已定三条：共享 carrier / 边表（`layer` 区分）、`promote` 默认 proposal、存量 `decisions` 不迁移。**
 - **trace 的可视化**：把 trace layer 画成图（canvas / HTML / Mermaid）不在本 spec 内。它最容易消耗工作量，也最容易被砍，且对本 spec 目标（导航与上下文供给）不是必需的——`context` / `why` / `whereami` 三个命令已经覆盖导航诉求。
 
 ## Further Notes
@@ -341,14 +368,16 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 6. **租约回收的两难（已由"短 TTL + 心跳"决策化解）**。崩溃恢复延迟与误抢风险是一对矛盾：TTL 越长越不会误抢，但崩溃后节点僵死越久。本 spec 的解法不是加自动抢占，而是**缩短 TTL（300s）+ 心跳续约（60s）**——用续约换掉长 TTL，恢复延迟与双写风险同时下降。风险留给实施阶段的是**参数漂移**：把 TTL 调回 1800s 又不实现心跳 = 节点崩溃后卡死半小时；实现 TTL 300s 却不实现心跳 = 正常长任务每 5 分钟被回收一次。二者都比"两个都做"更糟，所以 §4 要求 `claim` 与 `heartbeat` 同批次交付，Testing 要求对过期前不可抢、心跳幂等、恢复延迟上界各有断言。
 
 7. **P5 治疗的病，P5 自己也携带。** case 2 的症状是"图膨胀后人不知道自己在哪"，而 P5 引入了第二张天生快速增殖的图。若 trace 允许进 md、允许被 `ready` 遍历、或者 trace 节点可以不经人审就变成 roadmap 节点，那么"多记录一层、就多看一张图"会重演 case 2 的老毛病——越记录越迷路。§6 的护栏与 §8.2 的写权限分层因此不是修饰件套，是这个 feature 能否成立的前提。**判断标准很简单：trace 能自由增殖，但 md 的行数不允许随之增长。**
-8. **照搬 thoughtDAG 的第四条原则会废掉 roadmap-driven 的核心价值。** "No autonomous agent redraws your graph" 适用于"画布只服务于一个人的思考"的场景；而 Story 20（Agent 不点名也能取活）恰恰是本技能的价值所在。二者必须靠"append / rewrite 分层"（§8.2）而不是靠"一刀切禁止"来调和。**若实施时被说服改成完全禁写，则本 spec 的 P2 租约、P3 并发整套对象都会失去意义——那应该是一个单独的、更保守的技能，而不是本 roadmap 的演化。**
+8. **共享 carrier / 边表把"忘记过滤 `layer`"从一个远端错误变成一个当场泄漏（§8.1.1）。** 独立表方案下，trace 泄进 `ready` 要等跨 carrier 同步才暴露；共享表下，一个漏写 `layer == 'plan'` 的查询当场就让机器噪音进入调度与 md——而 md 膨胀正是风险 1 的头号风险，两个头号风险会叠在同一个 bug 上。防线只有两条：`layer` 必填，且每个遍历命令各有一条"trace 存在时输出不变"的负向用例。**实施时若发现自己在第五遍手抄 `WHERE layer = 'plan'`，正确的动作是把它收进 carrier adapter 的默认查询，而不是继续抄。**
+
+9. **照搬 thoughtDAG 的第四条原则会废掉 roadmap-driven 的核心价值。** "No autonomous agent redraws your graph" 适用于"画布只服务于一个人的思考"的场景；而 Story 20（Agent 不点名也能取活）恰恰是本技能的价值所在。二者必须靠"append / rewrite 分层"（§8.2）而不是靠"一刀切禁止"来调和。**若实施时被说服改成完全禁写，则本 spec 的 P2 租约、P3 并发整套对象都会失去意义——那应该是一个单独的、更保守的技能，而不是本 roadmap 的演化。**
 
 ### 待决问题（留给 Human）
 
-- **执行图是否应与 plan.layer 共享同一张 SQLite 表**（P5 待定）？建议共享 carrier 与基础上的边表：trace 节点与 plan 节点只差 `kind`，共享 uid 规则、`E_CYCLE` 与迁移路径，差异用 `layer` 字段区分。替代方案是独立表 / 独立 carrier，好处是<｜hy_place▁holder▁no▁813｜>层互不干扰，代价是跨图层 `derives-from` 边要跨 carrier 维护参照完整性——参照完整性跨 carrier 恰恰是本 skill 在 `remove-decision` 上已经翻过一次的车（Further Notes 风险 2）。
-- **`promote` 的默认行为**（P5 待定）：当前写法是默认产出 proposal 由 Human `--accept`（保守）。替代是默认直接生效 + Human 可事后 reject（流畅）。**建议保守**：一旦默认直接生效，Agent 的一次误判就会永久改变地图，而这正是 case 2 想消除的不确定性；且 proposal 模型可以让 Human 批量接受，日常开销并不高。
-- **存量 `decisions` 数组是否迁移进 trace layer**（P5 待定）？建议不迁移：`node.decisions` 继续作为"该节点的结论摘要"服务于 md 与 Human，trace layer 承载完整过程。二者是摘要与明细的关系，与并存不是重复——如果迁移，md 渲染会失去它今天唯一的 decisions 来源，而 P5 又明确不进 md，等于让 Human 失去这部分视野。
-- **`budget` 的单位**（case 1 待定）：建议用**结构单位**（最多派生 N 个子节点 / 最多 N 轮）而不是 token 预算——token 不可跨模型比较、也不可在 planning 期预估，而结构单位既能在 planning 期写下来，也能在执行期机械校验。
+- ~~**执行图是否应与 plan layer 共享同一张表**~~ **已决策 2026-09-10（zj）：共享 carrier 与边表。** 节点表多一列 `layer: plan|trace`，边表不加列（边的层级由两端节点推出）；uid 规则、`E_CYCLE`、迁移路径、adapter 契约全部共用（§8.1.1）。理由：跨图层 `derives-from` 的参照完整性必须在一处维护——两个 carrier 各自完整却无法互相校验，正是风险 2 那类缺陷。代价（遍历谓词必须带 `layer == 'plan'`）与防线见 §8.1.1 与风险 8。
+- ~~**`promote` 的默认行为**~~ **已决策 2026-09-10（zj）：默认 proposal（保守方案）。** 接受动作统一为 `promote --accept <trace_uid>`；要接受多条就在同一把锁内串行，不新增批量命令。拒绝"默认直接生效 + Human 事后 reject"：一旦默认生效，Agent 的一次误判就会永久改变地图，而这正是 case 2 想消除的不确定性；proposal 让 Human 挑着接受，日常开销并不高（§8.4）。
+- ~~**存量 `decisions` 是否迁移进 trace layer**~~ **已决策 2026-09-10（zj）：不迁移。** `node.decisions` 是结论摘要、trace 是过程明细，二者并存不是重复。若迁移，md 渲染会失去它今天唯一的 decisions 来源，而 trace 又明确不进 md，等于让 Human 净失去这部分视野。连带三条约束（`promote` 不回写 decisions、`context --include decisions` 仍读 `node.decisions`、迁移器不做批量转换）见 §8.3。
+- ~~**`budget` 的单位**~~ **已决策 2026-09-10（zj）：结构单位**——`{ "max_children": N, "max_rounds": M }`，任一触顶返回 `E_BUDGET_EXCEEDED` 并挂 open question，可只给一个、缺失的子项视为不限（§8.5）。不用 token 预算：token 不可跨模型比较、也不可在 planning 期预估；结构单位既写得进规划也查得动（子节点数与轮次都是 carrier 已有计数）。控制 token 成本另有 §2 的 `--fields` / `--format` 与 §8.4 的 edge-driven `context`。
 - **多设备 trace 合并是否在本轮处理**（P5/P4 边界待定）？Story 60 只要求 trace 节点诞生时就带 `device_id` / `agent_id` / `session_ref`  provenance，**不要求本轮实现合并**。这是 cheapest 的前置投资：provenance 事后补不回来，合并可以后来做。
 
 - ~~**carrier 选型**~~ **已决策 2026-09-10（zj）：SQLite 先做**（`sqlite3` 属标准库，零新依赖）。事件流不升格为主事实源，它是 P4 跨设备的前提，但在单设备阶段只增加读放大。bundle 继续作为"纯文本可 diff"的导出/归档形态保留。
