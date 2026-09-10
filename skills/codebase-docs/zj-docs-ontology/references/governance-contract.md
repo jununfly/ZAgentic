@@ -32,6 +32,13 @@ and evaluations are evidence surfaces rather than durable documentation pages.
 binds to one page and bounded question. Navigation order is not global truth
 precedence: conflicting normative claims are a Human-review signal.
 
+The binding is what the governance tool checks. One `authority-id` appearing on
+two map entries is `MAP_AUTHORITY_CONFLICT`, reported against the map and
+reflected in a non-zero exit — two pages answering the same bounded question is
+a decision the Human has to make, and a report that exits zero would present it
+as settled. The tool reads the map only; a page's own `authority` front matter
+is `zj-docs-architecture`'s contract to enforce.
+
 ## Migration and lifecycle
 
 Every migration has two stages:

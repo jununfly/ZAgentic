@@ -26,8 +26,9 @@ handler.
 4. **Execute the confirmed scope.** Preserve meaning by default. Moves, rewrites,
    authority merges, and process deletion are separately named actions. Use
    `git mv` for an approved tracked move.
-5. **Validate and report.** Run map/link checks and `/zj-docs-architecture` for
-   the architecture layer. Compose `/zj-domain-modeling`, `/zj-debrief`, and
+5. **Validate and report.** Run map, link, and authority-binding checks and
+   `/zj-docs-architecture` for the architecture layer. One `authority-id` bound
+   to two pages is a non-zero-exit conflict for the Human to settle. Compose `/zj-domain-modeling`, `/zj-debrief`, and
    `/zj-neat-freak` only when the Human's governance request needs their
    specialist work. Report pending durable extraction and deletion proposals.
 
