@@ -12,6 +12,7 @@ from pathlib import Path
 
 POINTER_RE = re.compile(r"(?im)^\s*docs-map:\s*([^\s`]+)\s*$")
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
+AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
 LONG_LIVED = ("methods", "prds", "architecture", "agreements", "designs", "testing", "benchmarks", "references", "zj-adr")
 PROCESS = ("plans", "zj-retros")
 EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "research", "skills-outputs", "test-results"}
@@ -71,18 +72,42 @@ def discover(root: Path) -> tuple[Path | None, str, list[dict[str, str]], list[s
 
 
 def map_links(root: Path, path: Path, reads: list[str]) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Read the selected map and report link drift plus authority conflicts.
+
+    The conflict is detected where the contract puts the binding — on the map,
+    which binds one authority-id to one page — so this never has to open the
+    linked pages. Page-internal `authority` declarations stay with
+    `zj-docs-architecture`.
+    """
     reads.append(relative(root, path))
     text = path.read_text(encoding="utf-8")
     links: list[dict[str, str]] = []
     diagnostics: list[dict[str, str]] = []
-    for value in LINK_RE.findall(text):
-        target = resolve(root, value, path.parent)
-        if target is None:
-            continue
-        target_value = relative(root, target) if target.exists() else value
-        links.append({"target": target_value, "exists": str(target.exists()).lower()})
-        if not target.exists():
-            diagnostics.append({"code": "MAP_LINK_BROKEN", "path": relative(root, path), "message": f"map link does not exist: {value}"})
+    bindings: dict[str, list[str]] = {}
+    for block in re.split(r"(?m)^(?=-\s+)", text):
+        authority = AUTHORITY_RE.search(block)
+        for value in LINK_RE.findall(block):
+            target = resolve(root, value, path.parent)
+            if target is None:
+                continue
+            target_value = relative(root, target) if target.exists() else value
+            links.append({"target": target_value, "exists": str(target.exists()).lower()})
+            if not target.exists():
+                diagnostics.append({"code": "MAP_LINK_BROKEN", "path": relative(root, path), "message": f"map link does not exist: {value}"})
+                continue
+            if authority is None:
+                continue
+            pages = bindings.setdefault(authority.group(1), [])
+            if target_value not in pages:
+                pages.append(target_value)
+    for authority_id in sorted(bindings):
+        pages = bindings[authority_id]
+        if len(pages) > 1:
+            diagnostics.append({
+                "code": "MAP_AUTHORITY_CONFLICT",
+                "path": relative(root, path),
+                "message": f"authority-id {authority_id} is bound to more than one page: {', '.join(pages)}",
+            })
     return links, diagnostics
 
 
