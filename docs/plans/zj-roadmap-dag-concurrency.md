@@ -1,7 +1,7 @@
 # zj-roadmap-driven: DAG 依赖、节点租约与并发执行
 
 > Spec 生成时间：2026-09-09 · 来源会话：zj-roadmap-driven 深度评审（性能 / token / 巧思 / 选型 + AI & Human readiness + Loop/Graph/DAG 多 Agent）
-> 目标技能：`zj-roadmap-driven`（安装版位于用户技能目录，源技能位于 `skills/` bucket 之外；本次只写 spec，不改已安装技能）
+> 目标技能：`zj-roadmap-driven`（源技能在 `skills/codebase-docs/zj-roadmap-driven/`，另有已安装副本；本轮的 P0–P4 修正已在 PR #27 / #28 中于源目录落地并通过 PR 合并）
 > 建议 triage label：`ready-for-agent`
 
 ## Problem Statement
@@ -16,18 +16,25 @@
 6. **Human 的视野在多 Agent 下反而变差。** md 视图里没有 owner、没有待决问题队列、没有阻塞链、没有关键路径——Agent 一多，人先瞎。
 7. **错误不可程序化判断。** 只有文本 stderr + `exit 1`（锁超时才是 2），Agent 无法区分"节点不存在""状态非法""有环""有冲突"，只能靠字符串匹配或整段回贴。
 8. **没有收敛判据。** `exploit` 节点没有 exit criteria，`explore` 节点没有 budget，Loop 没有终止条件。
+9. **规划期就已知"这里有未知"，但没有表达它的地方（case 1）。** `mode: explore|exploit` 是实现了的字段（`roadmap.py:32`、CLI `add --mode`），可它只是一个标记：没有 budget（探索到什么程度就该收），没有 exit_criteria（什么算探索完了），也没有"探索产出 → 落成子节点"的机制。于是规划人在规划期面对一段未知时，要么先假装已知、把 placeholder 硬写成看起来确定的节点（规划失真），要么不写（图上出现一段空白，只能靠记忆与口播维持）。Human 说得出"这块还得 explore"，系统接不住这句话。
+10. **执行期涌现的东西无处安放，图会膨胀到人看不懂（case 2）。** 从首节点出发后，Loop 会不断产出路线性材料：新问题、待定的分叉、"这个深井节点比预想的大得多"、跨子树的新关联依赖。这些东西目前只有三个去处——塞进 `notes`（丢失结构、无法查询）、塞进 `decisions`（节点内嵌数组，无法跨节点共享、无法被别的节点引用）、或者直接 `add` 成 roadmap 节点（把零散发现升格为正式任务，图迅速膨胀）。三者都不对，于是 Human 与 Agent 陷入"图越大越不知道自己在哪、下一步该干什么"的细节困境。
+
+> 上述第 9、10 条来自同一件事：**本 spec 到目前为止的整图模型是静态的**——它假设路线在执行开始前已被规划完备，执行只是把它走完。真实情况是路线一边走一边长。P1 的 DAG 表达"该做什么"，没有表达"我们是如何走到这里、为什么现在是这样"。
 
 ## Solution
 
-保留"树 = Human 主视图、carrier = 事实源、md = 只读派生视图"这条核心不变式，在其上加三层能力：
+保留"树 = Human 主视图、carrier = 事实源、md = 只读派生视图"这条核心不变式，在其上按阶段叠加能力（P0 → P5）：
 
 - **P0 稳定性与经济性**：不可变节点 uid、`context` / `next` 命令、输出投影与紧凑格式、稳定错误码。低风险纯增量，且是后续所有并发的地基（uid 不稳定就去搞租约，租约会挂到复用 id 上）。
 - **P1 依赖层（DAG）**：在树之外加一层正交边（`blocks` / `informs` / `supersedes` / `derives-from`），`blocked` 由边推导，提供 `ready` / `critical-path` / `impact` 查询。**树仍然是人类主视图，边默认不进 md**。
 - **P2 并发租约**：节点级 lease（claim / heartbeat / steal / release）+ 作用域令牌 + `--if-rev` 乐观并发，把排他单位从"整图"降到"节点"。
 - **P3 carrier 演进**：新增 SQLite carrier（stdlib `sqlite3`，零新依赖）作为第三种 Roadmap carrier，用事务解决 lost update、用递归 CTE 算 DAG 就绪集与关键路径；bundle 保留为可 diff 的导出形态。
 - **P4 跨设备**：事件流升格为事实源 + HLC 字段级合并 + OPN/git 同步，各设备物化本地视图。
+- **P5 执行图（Execution Graph）**：把 Human-Agent Loop 本身建模为第二张 DAG（trace layer），处理 Problem 9 / 10。它不是把依赖图重画一遍，而是补上依赖图不承载的另一半信息：这张图是怎么变成现在这样的——每个 roadmap 节点为什么存在、过程中发现了什么、`context` 该沿哪些边给 Agent 供上下文。**树仍然是人类主视图，依赖图默认折叠，trace 图默认完全不进 md。**
 
 同时给 Human 侧补三块：owner 列、待决问题（open question）队列、关键路径；并给 md 定三条护栏，防止视图膨胀毁掉"一眼看懂"这个卖点。
+
+**为什么 P5 是第二张图而不是扩现有 DAG**：plan layer 要稳定（Human 主视图、要被 `ready` 遍历、要人审），trace layer 天生快速增殖且由机器产出。合成一张图会让 `ready` 查询穿过机器噪音、让 md 视图失控（直接撞 Further Notes 风险 1），并让"随口一轮对话"这种日常动作变成修改规划。两张图共用同一套边存储与 `E_CYCLE` 约束，再用跨图层边连接，成本远低于强行合一。
 
 ## User Stories
 
@@ -85,6 +92,21 @@
 41. As a cross-device Agent，I want the event log to be the canonical fact source，so that two devices can work offline and converge later。
 42. As a cross-device Agent，I want field-level last-writer-wins ordered by HLC，so that a merge is deterministic and explainable。
 43. As a Human，I want each device to keep a materialized local view，so that reads stay fast regardless of peer availability。
+
+### 执行图与导航（P5）
+
+49. As an Agent，I want to record a turn / finding / doubt as a **trace node** that is deliberately not a roadmap node，so that discoveries stop being forced into `notes`（结构丢失）or `decisions`（无法跨节点共享）。
+50. As an Agent，I want a trace node to be promotable into a real roadmap node with a `derives-from` edge pointing back，so that an emerged task keeps its provenance and Human can ask "这个节点哪来的"。
+51. As a Human，I want trace nodes to never appear in md by default，so that recording freely does not cost me my one-screen plan view。
+52. As an Agent，I want `context <node>` to be **driven by that node's in-edges** rather than by tree position，so that what lands in my prompt is chosen by relevance instead of by adjacency。
+53. As an Agent，I want a node with several in-edges to have a determinate **mainline**（first edge in）while the others contribute context，so that display order, step ordering and role inheritance are reproducible instead of being recomputed geometrically。
+54. As an Agent，I want `why <node>` to return the causal chain that produced this node，so that I can answer "我们为什么会在这里" without replaying the whole transcript。
+55. As a Human，I want `whereami` to return current focus + mainline path to root + open branches，so that coming back after a day costs one command instead of a re-read。
+56. As an Agent，I want an `explore` node to carry a `budget` and an `exploit` node to carry `exit_criteria`，so that "还存在未知" is expressible at planning time instead of being a gap in the map（Problem 9）。
+57. As an Agent，I want explore output to become the node's children through `promote`，so that the map grows from evidence rather than from guesswork。
+58. As a Human，I want Agents to be able to **append** freely but never to **rewrite** my plan without me，so that autonomy does not quietly become plan drift。
+59. As an Agent，I want my promotions to be reviewable proposals rather than silent mutations of the plan，so that Human can batch-accept what I found while still owning the map。
+60. As a cross-device Agent，I want trace nodes to carry device / agent / session provenance from birth，so that when P4 lands the merge has something deterministic to merge on。
 
 ### 视图与护栏（贯穿）
 
@@ -180,6 +202,85 @@
 - 按 ADR 0002 Rule 3，合并前先更新 `ZJ-CONTEXT.md`：新增 Node lease、Ready set、Blocking edge、Open question 等术语条目。
 - `zj-wayfinder` / `zj-to-tickets` 的对外契约不变：wayfinder 规划 → to-tickets 导出带阻塞边的票 → roadmap 落成节点与边。
 
+### 8. 执行图：第二张 DAG 与上下文供给（P5）
+
+问题 9 / 10 的共同结构是：**路线在执行开始前并不完备，它是 Loop 的沉淀物**。借鉴 `chenxiachan/thoughtDAG` 的思路处理它，但只移植三原则、改写第四条。
+
+#### 8.1 分层：plan layer 与 trace layer 是两张图，不是一张
+
+| | plan layer（现有） | trace layer（P5 新增） |
+|---|---|---|
+| 节点是什么 | roadmap node（一件待做的事） | turn / finding / doubt / decision / attempt / artifact（一次已经发生的事） |
+| 边的语义 | 调度依赖（`blocks` 等） | 上下文继承与因果（`mainline` / `reference` / `derives-from` / `prompted-by`） |
+| 谁产出 | Human 与 planner | Agent 在日常执行中自动追加 |
+| 稳定性 | 要稳定、要人审、要能被 `ready` 遍历 | 天生快速增殖，允许噪音 |
+| md 默认可见 | 是 | **否**（仅当被 plan node 引用时才以摘要出现） |
+
+**判别式（唯一口径）**：这条信息需要被调度吗？需要 → plan layer；不需要，只用于解释"怎么走到这里"或给下一步供上下文 → trace layer。含糊时按 trace 处理，因为它便宜且可逆。
+
+**为什么不合图**：合图会让 `ready` 遍历机器噪音、让每句随口的对话都变成对规划的修改，并撞上 Further Notes 风险 1（视图膨胀是头号风险）。两张图共用同一套边存储、`E_CYCLE` 与 uid 规则，只用跨图层边（trace → plan 的 `derives-from`、plan → trace 的 `prompted-by`）连接。
+
+#### 8.2 从 thoughtDAG 移植：三条照搬，一条必须改写
+
+| thoughtDAG 原则 | 处置 |
+|---|---|
+| **Wires are the context** — 边决定下一步看到什么，而不是装饰或路由 | 照搬。直接落地为 Story 52：`context` 从 tree-shaped 升级为 edge-driven |
+| **The graph is acyclic. You are the loop.** — 数据无环，循环由人的反复迭代构成，不在图内建环 | 照搬。复用现有 `E_CYCLE`；Human-Agent Loop 的"闭环"表现为新增节点，不表现为环 |
+| **first edge in 决定 mainline** — 多父节点挂在它被续接的那个父节点下 | 照搬（Story 53）。给布局、步骤顺序与角色继承一个确定性答案，避免每次几何重算产生不同结果 |
+| **No autonomous agent redraws your graph** | **不能直接移植，必须改写**——见下 |
+
+**冲突点**：这条与 Story 20（Agent 不点名也能取活）正面矛盾。全盘接受它等于放弃 roadmap-driven 的核心价值；完全无视它则会得到"Agent 悄悄改规划"。本 spec 的改写版本是**按写权限分层，而不是按参与者一刀切**：
+
+- **追加（append）**：Agent 在 trace layer 完全自主；在 plan layer 只能产出 **proposal**（`promote --propose`），由 Human 接受后成为正式节点（Story 58 / 59）。
+- **改写（rewrite）**：改已有 roadmap 节点的语义、`delete`、`supersedes`、再加依赖边——保留给 Human。Agent 遇到"这条路线不成立"只能记 trace + 挂 open question，不能自己改图。
+
+一句话：**Agent 拥有它的过程记录，Human 拥有地图。**
+
+#### 8.3 trace layer 的最小 schema
+
+节点 kind：`turn`（一次 Human-Agent 往来）/`finding`（发现）/ `doubt`（待定分叉）/ `attempt`（一次尝试与其结果）/ `artifact`（产出物指针）。
+共同字段：`uid`、`kind`、`body`、`created_at`、`agent_id`、`device_id`、`session_ref`、（可选）`compressed_from: [uid]`——用于把一条长链压成 higher conclusion，对应 thoughtDAG 的 "merge nodes into a higher conclusion"。
+
+边：
+
+| 类型 | 语义 | 跨层 | 允许成环 |
+|---|---|---|---|
+| `mainline` | 第一条入边，决定 mainline parent 与延续关系 | 否（trace 内或 plan 子树内） | 否 |
+| `reference` | 并入上下文，不改变 mainline 归属 | 可 | 是 |
+| `derives-from` | trace → plan，追溯一个 roadmap 节点为什么存在 | **是** | 否 |
+| `prompted-by` | plan → trace，记录这次探索是被哪个节点触发的 | **是** | 否 |
+
+`derives-from` / `prompted-by` 是连接两张图的全部接缝，二者都必须是单向且不成环的，否则 loop 会渗进数据结构。
+
+#### 8.4 命令（最小集）
+
+- `trace add <kind> --parent <uid> [--body ...] [--session-ref ...]`：Agent 可写（append 权限）。
+- `promote <trace_uid> --under <node_uid> --label "..."`：trace → plan。**默认产出 proposal 并挂 open question**；`--accept` 由 Human 执行后才落正式节点，并自动写 `derives-from` 边。
+- `context <node>`：**替换** Story 9 的 tree-shaped 实现，改为沿 in-edges 收集——默认只带 mainline + 显式 `reference`，可通过 `--include deps|trace|decisions` 增量加宽。这是"给 Agent 更少无关上下文"这一目标的落地，也直接决定 token 成本。
+- `why <node>`：回溯 `derives-from` 链，返回"为什么存在"。
+- `whereami`：focus + mainline path to root + 未闭合分支数。
+- `prune <edge_uid>`：删除一条 `reference` 边即把该路径移出上下文，节点保留在图上但不再参与 `context`。对应 thoughtDAG 的 "delete one edge, get a different answer"，也是 case 2 里"发现走偏后不用删历史就能回到干净上下文"的手段。
+
+#### 8.5 case 1：让"这里有未知"在规划期可写
+
+P5 之前先补一个比它更基础、成本更低的洞——Problem 9 其实不需要新图，只需要给既有 `mode` 字段长出牙齿：
+
+- `explore` 节点新增 `budget`（例如"最多 3 个子探索"或"最多 2 轮"），超出则不再派生子节点并挂 open question。
+- `exploit` 节点新增 `exit_criteria`（可检查的完成判据），用于 Story 37 的"done 不是 vibe-based"。
+- explore 的产出经 `promote` 落成子节点，而不是规划人凭空预判。
+
+注意这不是造新概念：`mode` 字段、`add --mode` CLI 参数、`[X+]`/`[Y+]` 渲染图标均已存在（`roadmap.py:32-37`、`roadmap_cli.py:139`），缺的只是 budget / exit_criteria 与 promote 通道。因此 **case 1 应先于 P5 落地，且不依赖 P5 的任何新结构**。
+
+#### 8.6 case 2：膨胀的解法是投影，不是更多图
+
+case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"图不够用"，于是解法变成加更多图——那会加重病情。真正的解法是**从同一 carrier 派生不同的投影**：
+
+- Human 看树（默认）+ 折叠的依赖图（`--deps`）+ 仅三条 ready；trace 永不进 md。
+- Agent 看 edge-driven `context`，拿到的是与该步相关的一组边而不是整棵树。
+- 两者同源，不存在第二份真相——这与 Problem 3（carrier 是事实源、md 是只读派生视图）是同一条不变式。
+
+护栏：任何把 trace 内容加进 md 的提议必须先回答 §6 的第 3 问（"这一行能让 Human 少问一句吗？"）。默认答案是不加。
+
 ## Testing Decisions
 
 ### 测试缝（seams）
@@ -207,6 +308,8 @@
 - 租约参数：`claim` 后 `expires_at == claimed_at + 300s`；`heartbeat` 把 `expires_at` 推到 `now + 300s`（幂等，重复调用不累加）；**`expires_at` 未到期时任何 Agent 侧 `steal` 均失败**（断言存在这样的负向用例，不只是"过期能抢"）；`release --force` 成功并落事件日志。
 - 崩溃恢复：持有者静默（不心跳）后，节点在 **TTL + 一个心跳周期 = 360s** 内可被他人接管；断言恢复延迟上界，而不是"最终能恢复"。
 - 视图护栏：render 后 md 主视图行数不超过阈值；`HUMAN_NOTES` 内容跨 render 存活；新字段默认不出现在 md。
+- 执行图（P5）：`promote` 未 `--accept` 时 roadmap 节点数不变且 open question +1，断言的是"没有副作用"而不只是"命令成功"；`promote --accept` 后存在且仅存在一条 `derives-from` 边。`context` 在删除一条 `reference` 边后输出随之变化（对应 thoughtDAG 的 "delete one edge, get a different answer"，证明上下文由边而非由位置决定）。**负向用例：`trace add` 之后 md 主视图行数不变**（否则 case 2 的病会被 P5 重新制造出来）。`explore` 节点超出 `budget` 后追加子节点返回错误码而非静默接受。
+- 上下文确定性（P5）：同一节点在 `mainline` / `reference` 入边顺序不同时，`context` 输出必须字节一致——非确定性输出会让 Agent 无法复现上一次的结论。
 
 ### 既有先例（prior art）
 
@@ -222,7 +325,9 @@
 - **自动 carrier 迁移**：任何迁移都必须显式命令触发，`recommend-storage` 继续只做只读建议。
 - **`zj-grilling` / `zj-wayfinder` / `zj-to-tickets` 的内部改造**：对外契约保持不变。
 - **性能基准体系重写**：`benchmarks/roadmap_bundle_benchmark.py` 保留，不为本 spec 新增基准设施。
-- **已安装技能文件的修改**：本 spec 不落代码改动；实施走技能的"删除重装"流程。
+- **技能分发方式**：源技能在本仓库 `skills/codebase-docs/` 内，不走"删除重装"——那会绕开 PR 审阅与 ZJ-CONTEXT 术语同步。已确立的流程是改源 + 分支 + PR，合并后按 sha256 同步三处已安装副本（`~/.codex` / `~/.workbuddy` / `~/.claude`）。
+- **P5 的执行图实现**：本 spec 只登记方向与边界（分层模型、边语义、写权限分层、最小命令集）。真正的 schema、迁移与 CLI 细节应在对 §8 达成共识后另起一篇执行图 spec，避免在一个已经有 60 条 user story 的文档里继续堆新东西。
+- **trace 的可视化**：把 trace layer 画成图（canvas / HTML / Mermaid）不在本 spec 内。它最容易消耗工作量，也最容易被砍，且对本 spec 目标（导航与上下文供给）不是必需的——`context` / `why` / `whereami` 三个命令已经覆盖导航诉求。
 
 ## Further Notes
 
@@ -235,7 +340,16 @@
 5. **状态双重来源（已由纯派生决策规避）**。若 `blocked` 落盘，就会与 `pending_deps` 计数器、派生父状态构成三个真相源，并需要一份"重算触发点"清单。实施时若出现"为了渲染方便把 blocked 缓存进 carrier"的冲动，应落本地物化视图而非共享事实源。
 6. **租约回收的两难（已由"短 TTL + 心跳"决策化解）**。崩溃恢复延迟与误抢风险是一对矛盾：TTL 越长越不会误抢，但崩溃后节点僵死越久。本 spec 的解法不是加自动抢占，而是**缩短 TTL（300s）+ 心跳续约（60s）**——用续约换掉长 TTL，恢复延迟与双写风险同时下降。风险留给实施阶段的是**参数漂移**：把 TTL 调回 1800s 又不实现心跳 = 节点崩溃后卡死半小时；实现 TTL 300s 却不实现心跳 = 正常长任务每 5 分钟被回收一次。二者都比"两个都做"更糟，所以 §4 要求 `claim` 与 `heartbeat` 同批次交付，Testing 要求对过期前不可抢、心跳幂等、恢复延迟上界各有断言。
 
+7. **P5 治疗的病，P5 自己也携带。** case 2 的症状是"图膨胀后人不知道自己在哪"，而 P5 引入了第二张天生快速增殖的图。若 trace 允许进 md、允许被 `ready` 遍历、或者 trace 节点可以不经人审就变成 roadmap 节点，那么"多记录一层、就多看一张图"会重演 case 2 的老毛病——越记录越迷路。§6 的护栏与 §8.2 的写权限分层因此不是修饰件套，是这个 feature 能否成立的前提。**判断标准很简单：trace 能自由增殖，但 md 的行数不允许随之增长。**
+8. **照搬 thoughtDAG 的第四条原则会废掉 roadmap-driven 的核心价值。** "No autonomous agent redraws your graph" 适用于"画布只服务于一个人的思考"的场景；而 Story 20（Agent 不点名也能取活）恰恰是本技能的价值所在。二者必须靠"append / rewrite 分层"（§8.2）而不是靠"一刀切禁止"来调和。**若实施时被说服改成完全禁写，则本 spec 的 P2 租约、P3 并发整套对象都会失去意义——那应该是一个单独的、更保守的技能，而不是本 roadmap 的演化。**
+
 ### 待决问题（留给 Human）
+
+- **执行图是否应与 plan.layer 共享同一张 SQLite 表**（P5 待定）？建议共享 carrier 与基础上的边表：trace 节点与 plan 节点只差 `kind`，共享 uid 规则、`E_CYCLE` 与迁移路径，差异用 `layer` 字段区分。替代方案是独立表 / 独立 carrier，好处是<｜hy_place▁holder▁no▁813｜>层互不干扰，代价是跨图层 `derives-from` 边要跨 carrier 维护参照完整性——参照完整性跨 carrier 恰恰是本 skill 在 `remove-decision` 上已经翻过一次的车（Further Notes 风险 2）。
+- **`promote` 的默认行为**（P5 待定）：当前写法是默认产出 proposal 由 Human `--accept`（保守）。替代是默认直接生效 + Human 可事后 reject（流畅）。**建议保守**：一旦默认直接生效，Agent 的一次误判就会永久改变地图，而这正是 case 2 想消除的不确定性；且 proposal 模型可以让 Human 批量接受，日常开销并不高。
+- **存量 `decisions` 数组是否迁移进 trace layer**（P5 待定）？建议不迁移：`node.decisions` 继续作为"该节点的结论摘要"服务于 md 与 Human，trace layer 承载完整过程。二者是摘要与明细的关系，与并存不是重复——如果迁移，md 渲染会失去它今天唯一的 decisions 来源，而 P5 又明确不进 md，等于让 Human 失去这部分视野。
+- **`budget` 的单位**（case 1 待定）：建议用**结构单位**（最多派生 N 个子节点 / 最多 N 轮）而不是 token 预算——token 不可跨模型比较、也不可在 planning 期预估，而结构单位既能在 planning 期写下来，也能在执行期机械校验。
+- **多设备 trace 合并是否在本轮处理**（P5/P4 边界待定）？Story 60 只要求 trace 节点诞生时就带 `device_id` / `agent_id` / `session_ref`  provenance，**不要求本轮实现合并**。这是 cheapest 的前置投资：provenance 事后补不回来，合并可以后来做。
 
 - ~~**carrier 选型**~~ **已决策 2026-09-10（zj）：SQLite 先做**（`sqlite3` 属标准库，零新依赖）。事件流不升格为主事实源，它是 P4 跨设备的前提，但在单设备阶段只增加读放大。bundle 继续作为"纯文本可 diff"的导出/归档形态保留。
 - ~~**`blocked` 是否落盘**~~ **已决策 2026-09-09（zj）：纯派生——读取时计算，永不落盘。** 权威是 `blocks` 边；连带改动见 Implementation Decisions §3（`--status blocked` 移出可设枚举、返回 `E_INVALID_STATUS`）。
@@ -254,5 +368,11 @@
 
 ### 与既有资产的关系
 
-- 本 spec 是 `docs/designs/zj-wayfinder-roadmap-dual-mode.md` 的下游：那篇定义规划与跟踪的接缝，本 spec 只在跟踪侧扩展依赖与并发，接缝不变。
+- 本 spec 是 `docs/designs/zj-wayfinder-roadmap-dual-mode.md` 的下游：那篇定义规划与跟踪的接缝，本 spec 只在跟踪侧扩展依赖与并发，接缝不变。注意该篇谈的 dual mode 是"规划 / 跟踪"两态，与 §8.5 的 `explore` / `exploit` 节点 mode 不是同一组概念——后者是单个节点内的探索性质，前者是工作流阶段。同名不同义，勿混用。
 - 跨设备阶段（P4）与 ZAgenticLoop 的 OPN 消息通道存在复用可能，但本 spec 不预设该通道，保持 carrier 层可替换。
+- P5 的方法来源是 [`chenxiachan/thoughtdag`](https://github.com/chenxiachan/thoughtdag)：它把 LLM/Agent 多轮会话建模为一张**以边为上下文**的可编辑无环图，主张 "The graph is acyclic. You are the loop."。本 spec 借的是它的**方法论**（边决定下一步看到什么、无环数据 + 外部闭环、first-edge-in 定主线、prune 一条边即改变上下文），而不是它的实现形态——它有画布 UI 与多 Harness 会话导入，roadmap-driven 只需要 CLI 与 carrier。二者对象的差别也决定了 §8.2 必须改写它的第四条原则：thoughtDAG 的图服务于一个人的思考，roadmap-driven 的图要服务于多 Agent 的自取活，同时保证地图不被静默改写——这两件事本来就是一对需要分开授权的动作（§8.2）。
+- P5 前置依赖 P0（uid 是 trace 节点与跨图层边的前提）、P1（已有四种边与 `E_CYCLE` 基础设施）、P3（trace 快速增殖，SQLite 才撑得住）。**§8.5 的 case 1（budget / exit_criteria）是例外：它不依赖任何 P5 新结构，可以先行。**
+
+### 落地顺序建议
+
+case 1（§8.5）→ P0 → P1 → P3 → P5。理由是：case 1 补的是既有 `mode` 字段缺失的两个属性，是本节里唯一一段"无需等待任何前置的重构就能见效"的工作；而 P5 依赖 uid、依赖边机制、也依赖 SQLite 承载快速增殖的写入量。把 P5 提前等于在位置型 id 上建第二张图，会重犯风险 3 已经警告过的本末倒置。
