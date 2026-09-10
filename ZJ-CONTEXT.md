@@ -487,9 +487,28 @@ _Avoid_: implicit implementation authorization, node-label permission
 
 **Node**:
 A numbered item in the roadmap tree (`1`, `1-3`, `1-3-5`). Each node has a
-`label`, `status`, `mode`, optional `decisions`, and free-form `notes`. Nodes
+`label`, `status`, `mode`, optional `decisions`, optional `budget`, optional
+`exit_criteria`, a `rounds` counter, and free-form `notes`. Nodes
 auto-aggregate: a parent becomes `completed` only when all its children are.
 _Avoid_: task, ticket, item (within roadmap context)
+
+**Node budget**:
+A structural cap on an `explore` node, stored as `budget: {max_children, max_rounds}`.
+`max_children` limits how many children the node may grow; `max_rounds` limits
+how many times it may be started (a "start" is any transition into `in_progress`,
+counted in the node's `rounds`). Budget is expressed in structural units, never
+in tokens — token counts are not comparable across models and cannot be
+estimated at planning time. Exceeding either cap fails with `E_BUDGET_EXCEEDED`
+(exit code 3) and leaves the roadmap unchanged. A missing sub-key means
+"unlimited" for that dimension; `--clear-budget` removes the cap entirely.
+_Avoid_: token budget, quota, effort estimate
+
+**Exit criteria**:
+Checkable completion conditions recorded on a node's `exit_criteria` array, so
+that "done" is not a vibe. The CLI stores and returns them; it does **not**
+evaluate natural-language criteria — checking a criterion against reality stays
+a Human/Agent act, and an unmet criterion never blocks `update --status completed`.
+_Avoid_: definition of done (as a separate artifact), acceptance test
 
 **Decision**:
 A recorded choice at a node, structured as `{q, answer, note}`. Stored on the

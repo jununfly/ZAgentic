@@ -14,6 +14,37 @@ Use this reference when creating, inspecting, renaming, or updating roadmap node
 | `children` | list | Child node ids |
 | `decisions` | list | Decision records `[{q, answer, note}]` |
 | `notes` | string | Free-form notes |
+| `budget` | dict | Structural cap `{max_children, max_rounds}`; absent or missing sub-key = unlimited |
+| `exit_criteria` | list | Checkable completion conditions (strings) |
+| `rounds` | int | How many times the node has been started (entered `in_progress`) |
+
+## Budget and exit criteria
+
+`mode: explore` says "there is unknown here"; `budget` says how far the
+exploration may go, and `exit_criteria` says when an `exploit` node is done.
+
+- `max_children` — how many children this node may grow. `add` under a node at
+  its cap fails with `E_BUDGET_EXCEEDED` (exit code 3) and changes nothing.
+  Shrinking the cap does not reject children that already exist.
+- `max_rounds` — how many times the node may be **started**. A start is any
+  transition into `in_progress`; the first one writes `rounds: 1`. Reopening a
+  node past its cap fails the same way. A node created by `init` counts as
+  already started.
+- Units are structural, never tokens: token counts are not comparable across
+  models and cannot be estimated while planning. Use `--fields` / `--format`
+  for token economy instead.
+- `exit_criteria` is stored and returned, never evaluated — the CLI cannot judge
+  natural language, and an unmet criterion does not block completion. Treat it
+  as the checklist a Human or Agent reads before ticking `[x]`.
+
+```bash
+python roadmap_cli.py update roadmap.json 1-2 --max-children 3 --max-rounds 2
+python roadmap_cli.py update roadmap.json 1-2 --exit-criteria "三项对比跑完" --exit-criteria "结论写进 decisions"
+python roadmap_cli.py update roadmap.json 1-2 --clear-budget --clear-exit-criteria
+```
+
+Neither `budget` nor `exit_criteria` appears in the Markdown view by default;
+they live in the fact source and in `get` output.
 
 ## Status and mode display
 

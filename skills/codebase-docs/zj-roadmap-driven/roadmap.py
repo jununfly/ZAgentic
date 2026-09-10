@@ -40,6 +40,98 @@ MODE_TAG = {
 DEFAULT_LOCK_TIMEOUT_SECONDS = 10.0
 LOCK_RETRY_INTERVAL_SECONDS = 0.05
 
+# ── 错误码 ──────────────────────────────────────────────
+# case 1 只需要一个码；P0 会把剩余码（E_NODE_NOT_FOUND / E_CYCLE / ...）
+# 补进同一张表，不要另起一套机制。退出码 0=成功 / 1=通用错误 / 2=锁超时。
+
+class RoadmapError(Exception):
+    """带稳定错误码的 roadmap 失败。Agent 应按 code 分支，不要匹配文案。"""
+
+    code = "E_ROADMAP"
+    exit_code = 1
+
+
+class BudgetExceeded(RoadmapError):
+    """explore 节点的结构预算（子节点数 / 开工轮次）已用尽。"""
+
+    code = "E_BUDGET_EXCEEDED"
+    exit_code = 3
+
+
+ERROR_EXIT_CODES = {
+    RoadmapError.code: RoadmapError.exit_code,
+    BudgetExceeded.code: BudgetExceeded.exit_code,
+}
+
+
+def exit_code_for(exc: BaseException) -> int:
+    """把异常映射为进程退出码。"""
+    return ERROR_EXIT_CODES.get(getattr(exc, "code", ""), 1)
+
+
+# ── 结构预算（case 1） ───────────────────────────────────
+# budget 的单位是结构单位（子节点数 / 开工轮次），不是 token：
+# token 不可跨模型比较，也无法在规划期预估（见 docs/plans 的 P5 §8.5）。
+
+def normalize_budget_limit(name: str, value: Any) -> Optional[int]:
+    """校验并归一化一个预算上限。None 表示"不设置"，负数是参数错误。"""
+    if value is None:
+        return None
+    try:
+        limit = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{name} 必须是整数: {value!r}")
+    if limit < 0:
+        raise ValueError(f"{name} 不能为负数: {limit}")
+    return limit
+
+
+def build_budget(max_children: Any, max_rounds: Any) -> dict:
+    """组装 budget 字段。两个子项都可缺省，缺省的那一项表示不限。"""
+    budget: dict = {}
+    children_limit = normalize_budget_limit("max_children", max_children)
+    rounds_limit = normalize_budget_limit("max_rounds", max_rounds)
+    if children_limit is not None:
+        budget["max_children"] = children_limit
+    if rounds_limit is not None:
+        budget["max_rounds"] = rounds_limit
+    return budget
+
+
+def check_child_budget(parent: dict) -> None:
+    """父节点的 max_children 是否已用尽。无 budget 或只设了 max_rounds 时不限。"""
+    limit = (parent.get("budget") or {}).get("max_children")
+    if limit is None:
+        return
+    children = parent.get("children") or []
+    if len(children) >= int(limit):
+        raise BudgetExceeded(
+            f"节点 {parent.get('id')} 的子节点预算已用尽 ({len(children)}/{limit})。"
+            f"提高 --max-children、先收敛现有子节点，或 --clear-budget 解除限制"
+        )
+
+
+def count_round_start(node: dict, new_status: str) -> None:
+    """开工计数 + max_rounds 校验。
+
+    一次"开工"= 从非 in_progress 转入 in_progress。第一次开工记 rounds=1；
+    之后每次重开都记一轮。无 max_rounds 的节点照样计数（记了才能事后决策）。
+    """
+    if new_status != STATUS_IN_PROGRESS or node.get("status") == STATUS_IN_PROGRESS:
+        return
+    limit = (node.get("budget") or {}).get("max_rounds")
+    rounds = node.get("rounds")
+    if rounds is None:
+        # 迁移进来的老节点没有 rounds：此刻正在施工的按已开工一轮计。
+        rounds = 1 if node.get("status") == STATUS_IN_PROGRESS else 0
+    rounds = int(rounds)
+    if limit is not None and rounds >= int(limit):
+        raise BudgetExceeded(
+            f"节点 {node.get('id')} 的轮次预算已用尽 ({rounds}/{limit})。"
+            f"提高 --max-rounds 或 --clear-budget 解除限制"
+        )
+    node["rounds"] = rounds + 1
+
 # ── 节点 ID 生成 ──────────────────────────────────────────
 
 def gen_child_id(parent_id: str, index: int) -> str:
@@ -310,6 +402,9 @@ class Roadmap:
                     "children": [],
                     "decisions": [],
                     "notes": "",
+                    # init 出来的根节点已经在施工，它就是第 1 轮；
+                    # 否则 max_rounds=1 会被解释成"还能再开工一次"。
+                    "rounds": 1,
                 }
             },
             "metadata": {
@@ -323,19 +418,35 @@ class Roadmap:
     # ── 节点 CRUD ──────────────────────────────────────
 
     def add_node(
-        self, parent_id: str, label: str, status: str = STATUS_PENDING, mode: str = MODE_EXPLORE
+        self,
+        parent_id: str,
+        label: str,
+        status: str = STATUS_PENDING,
+        mode: str = MODE_EXPLORE,
+        max_children: Any = None,
+        max_rounds: Any = None,
+        exit_criteria: Optional[list] = None,
     ) -> dict:
-        """在父节点下添加子节点。返回新节点。"""
+        """在父节点下添加子节点。返回新节点。
+
+        max_children / max_rounds 只写进新节点自己的 budget，不影响本次能否添加；
+        能否添加由**父节点**的 max_children 决定。
+        """
         if parent_id not in self.data["nodes"]:
             raise KeyError(f"父节点不存在: {parent_id}")
+
+        parent = self.data["nodes"][parent_id]
+        check_child_budget(parent)
 
         index = next_child_index(self.data, parent_id)
         node_id = gen_child_id(parent_id, index)
 
+        # 先以 pending 落形，让"开工"这件事只走 count_round_start 一条路径，
+        # 否则 add 与 update 会对 rounds 各算一套。
         node = {
             "id": node_id,
             "label": label,
-            "status": status,
+            "status": STATUS_PENDING,
             "mode": mode,
             "parent": parent_id,
             "children": [],
@@ -343,8 +454,17 @@ class Roadmap:
             "notes": "",
         }
 
+        budget = build_budget(max_children, max_rounds)
+        if budget:
+            node["budget"] = budget
+        if exit_criteria:
+            node["exit_criteria"] = list(exit_criteria)
+
+        count_round_start(node, status)
+        node["status"] = status
+
         self.data["nodes"][node_id] = node
-        self.data["nodes"][parent_id]["children"].append(node_id)
+        parent["children"].append(node_id)
 
         self._sync_parent_status(node_id)
 
@@ -357,8 +477,17 @@ class Roadmap:
         status: Optional[str] = None,
         mode: Optional[str] = None,
         notes: Optional[str] = None,
+        max_children: Any = None,
+        max_rounds: Any = None,
+        exit_criteria: Optional[list] = None,
+        clear_budget: bool = False,
+        clear_exit_criteria: bool = False,
     ) -> dict:
-        """更新节点的属性。只更新传入的非 None 字段。"""
+        """更新节点的属性。只更新传入的非 None 字段。
+
+        exit_criteria 是**追加**语义（一条一条加）；清空用 clear_exit_criteria。
+        budget 的两个子项分别覆盖，整体解除用 clear_budget。
+        """
         if node_id not in self.data["nodes"]:
             raise KeyError(f"节点不存在: {node_id}")
 
@@ -368,6 +497,7 @@ class Roadmap:
         if status is not None:
             if status not in (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_BLOCKED):
                 raise ValueError(f"无效状态: {status}")
+            count_round_start(node, status)  # 超限则抛，节点保持原状
             node["status"] = status
         if mode is not None:
             if mode not in (MODE_EXPLORE, MODE_EXPLOIT):
@@ -375,6 +505,20 @@ class Roadmap:
             node["mode"] = mode
         if notes is not None:
             node["notes"] = notes
+
+        if clear_budget:
+            node.pop("budget", None)
+        budget = build_budget(max_children, max_rounds)
+        if budget:
+            node.setdefault("budget", {}).update(budget)
+        elif max_children is not None or max_rounds is not None:
+            # 只允许"设置"，不允许"把某一项改成不限"——那用 clear_budget 后重设。
+            raise ValueError("预算子项只能设置为非负整数")
+
+        if clear_exit_criteria:
+            node["exit_criteria"] = []
+        if exit_criteria:
+            node.setdefault("exit_criteria", []).extend(exit_criteria)
 
         self._sync_parent_status(node_id)
 

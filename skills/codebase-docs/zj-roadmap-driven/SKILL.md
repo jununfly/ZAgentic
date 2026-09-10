@@ -76,6 +76,7 @@ Acceptance/evaluation 路线按以下顺序运行：
 ## Notes
 
 - 单文件模式的 JSON、bundle 模式的 canonical shards 都是事实源。所有数据操作必须通过 CLI，**禁止 Agent 直接 Read/Edit 它们或 md 的路线图 section。**
+- 探索型节点（`mode: explore`）应设**结构预算**：`--max-children N` 限它能长出几个子节点，`--max-rounds N` 限它能被开工几次。触顶时 `add` / 重开以 `E_BUDGET_EXCEEDED`（退出码 3）失败且不落盘——这是"探索无界"的刹车，不是错误。`--exit-criteria "判据"` 记录完成判据（可重复追加），CLI 只存不判，检查由 Human/Agent 对照执行。
 - md section 由 `render` 命令完全重写，手动修改会被覆盖。
 - CLI 写类命令按顺序执行；其余数据模型、命令和锁细节见对应 reference。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建；无 `import` 命令，md 不能反导回 JSON。
