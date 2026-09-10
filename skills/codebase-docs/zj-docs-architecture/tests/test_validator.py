@@ -90,6 +90,19 @@ class PageNamingTest(unittest.TestCase):
             self.assertEqual(set(), codes, fixture)
 
 
+def handbook_repo() -> Path | None:
+    """The nearest ancestor that is both a repo and carries a `docs/` tree.
+
+    A fixed `parents[N]` breaks the moment the skill is copied into
+    `~/.codex/skills/…`, where the same index lands on `$HOME` and the
+    validator dutifully fails on someone's home directory.
+    """
+    for parent in Path(__file__).resolve().parents:
+        if (parent / ".git").exists() and (parent / "docs").is_dir():
+            return parent
+    return None
+
+
 class CommandLineTest(unittest.TestCase):
     """Exit codes live at the CLI seam; the in-process seam cannot see them."""
 
@@ -107,7 +120,9 @@ class CommandLineTest(unittest.TestCase):
     def test_this_repository_stays_green(self) -> None:
         """The real handbook is the control: a naming rule that fires on
         today's pages is too strict to ship."""
-        repo = Path(__file__).resolve().parents[4]
+        repo = handbook_repo()
+        if repo is None:
+            self.skipTest("no repo with a docs/ tree above this skill copy")
         self.assertEqual(0, self.exit_code(str(repo)))
 
 
