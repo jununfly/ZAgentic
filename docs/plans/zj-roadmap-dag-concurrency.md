@@ -64,7 +64,7 @@
 ### 并发与所有权（P2）
 
 25. As an Agent，I want `claim <node> --agent <id> --ttl <sec>` to take a node lease，so that two agents never execute the same node。
-26. As an Agent，I want `heartbeat` to extend my lease，so that a long step is not stolen from me mid-flight。
+26. As an Agent，I want `heartbeat` to extend my lease，so that a long step is not stolen from me mid-flight。**（P2 硬前置，不是可选增强）** 默认 TTL 已定为 300s，没有心跳则任何超过 5 分钟的步骤都会在途中被回收；`claim` 与 `heartbeat` 必须同一批次交付。
 27. As an Agent，I want an expired lease to be stealable，so that a crashed agent does not permanently wedge a node。
 28. As an Agent，I want a fencing token on every lease，so that a zombie agent that wakes up after its lease was stolen cannot write dirty state。
 29. As a parent Agent，I want to pass `--as-agent <id> --scope <node>` to a subagent，so that the subagent physically cannot write outside its assigned subtree。
@@ -143,15 +143,17 @@
   "device_id": "win-rog",
   "fencing_token": 41,
   "claimed_at": "2026-09-09T01:00:00Z",
-  "heartbeat_at": "2026-09-09T01:12:00Z",
-  "expires_at": "2026-09-09T01:30:00Z"
+  "heartbeat_at": "2026-09-09T01:05:00Z",
+  "expires_at": "2026-09-09T01:10:00Z"
 }
 ```
 
-- `claim` / `heartbeat` / `release` / `steal`；**默认 TTL 1800s（已决策 2026-09-10，zj）**；**过期**租约可被 `steal`，并递增 fencing token 使旧持有者后续写入失败。
-  - `steal` 的作用域限定为"租约已过期（含心跳超时）"。TTL 未到期时**不允许**抢占，除非 Human 显式 `release --force`——见待决问题 3。
+（样例按已决策参数：TTL 300s，01:05 的心跳把 `expires_at` 从 01:05 推到 01:10。）
+
+- `claim` / `heartbeat` / `release` / `steal`；**默认 TTL 300s + 心跳周期 60s（已决策 2026-09-10，zj）**；**已过期**租约可被 `steal`，并递增 fencing token 使旧持有者后续写入失败。
+  - **TTL 与心跳是一组参数，必须成对实现**：TTL 300s 单独存在会在 5 分钟后回收仍在正常执行的节点。心跳周期 60s（TTL 的 1/5，可容忍 4 次连续心跳丢失），续约动作幂等：`expires_at = now + TTL`。
+  - `steal` 的作用域限定为"租约已过期（`now > expires_at`）"。**TTL 未到期时 Agent 侧永不抢占（已决策 2026-09-10，zj）**；唯一例外是 Human 显式 `release --force`，且必须写入事件日志。
   - fencing token 与 `steal` 是两件事：token 用于让**已过期或被回收**的旧持有者写入失败（防僵尸写），无论是否支持提前抢占都需要它，不是 steal 的附属品。
-  - TTL 与心跳是一组参数，不能分开定：见待决问题 2。
 - 作用域令牌：`--as-agent <id> --scope <node_uid>`，越界写返回 `E_SCOPE`；subagent 默认无 scope（只读）。
 - 乐观并发：`--if-rev <sha>`（沿用 bundle 已有的 canonical sha256 基础设施），冲突返回 `E_CONFLICT` + 当前 rev，由 Agent 重读重试。
 - 字段级所有权：status / notes 归租约持有者，label / scope 归 planner，decisions 只追加不覆盖。
@@ -202,6 +204,8 @@
 - 错误码：每个码至少一条用例，断言退出码。
 - DAG：`blocks` 成环被拒；`informs` 成环被允许；前驱完成后 `pending_deps` 归零且目标进入 ready；加边 / 删边后 `blocked` 与 `blocked_reason` 在同一次读命令内立即反映，且**断言 carrier 的 `status` 从未被写成 `blocked`**；`--status blocked` 返回 `E_INVALID_STATUS` + 对应退出码。
 - 并发：两进程并发完成兄弟节点 → 父状态最终一致（无 lost update）；租约过期后可 steal；持旧 fencing token 的写入失败；越界写返回 `E_SCOPE`；冲突写返回 `E_CONFLICT`。
+- 租约参数：`claim` 后 `expires_at == claimed_at + 300s`；`heartbeat` 把 `expires_at` 推到 `now + 300s`（幂等，重复调用不累加）；**`expires_at` 未到期时任何 Agent 侧 `steal` 均失败**（断言存在这样的负向用例，不只是"过期能抢"）；`release --force` 成功并落事件日志。
+- 崩溃恢复：持有者静默（不心跳）后，节点在 **TTL + 一个心跳周期 = 360s** 内可被他人接管；断言恢复延迟上界，而不是"最终能恢复"。
 - 视图护栏：render 后 md 主视图行数不超过阈值；`HUMAN_NOTES` 内容跨 render 存活；新字段默认不出现在 md。
 
 ### 既有先例（prior art）
@@ -229,26 +233,24 @@
 3. **并发先于 uid 是本末倒置。** 位置型 id 复用会让租约挂到错误的节点上，这种 bug 静默且难查。P0 的 uid 是 P2 的硬前置。
 4. **术语冲突。** 见 Implementation Decisions §7：Node lease 不得命名为 Work Item。
 5. **状态双重来源（已由纯派生决策规避）**。若 `blocked` 落盘，就会与 `pending_deps` 计数器、派生父状态构成三个真相源，并需要一份"重算触发点"清单。实施时若出现"为了渲染方便把 blocked 缓存进 carrier"的冲动，应落本地物化视图而非共享事实源。
-6. **租约回收的两难**。崩溃恢复延迟与误抢风险是一对矛盾：TTL 越长越不会误抢，但崩溃后节点僵死越久。本 spec 的解法不是加自动抢占，而是**缩短 TTL + 心跳续约**——用续约换掉长 TTL，恢复延迟与双写风险同时下降。任何"为了省事把 TTL 调回 1800s 又不实现心跳"的倾向都会让节点在崩溃后卡死半小时。
+6. **租约回收的两难（已由"短 TTL + 心跳"决策化解）**。崩溃恢复延迟与误抢风险是一对矛盾：TTL 越长越不会误抢，但崩溃后节点僵死越久。本 spec 的解法不是加自动抢占，而是**缩短 TTL（300s）+ 心跳续约（60s）**——用续约换掉长 TTL，恢复延迟与双写风险同时下降。风险留给实施阶段的是**参数漂移**：把 TTL 调回 1800s 又不实现心跳 = 节点崩溃后卡死半小时；实现 TTL 300s 却不实现心跳 = 正常长任务每 5 分钟被回收一次。二者都比"两个都做"更糟，所以 §4 要求 `claim` 与 `heartbeat` 同批次交付，Testing 要求对过期前不可抢、心跳幂等、恢复延迟上界各有断言。
 
 ### 待决问题（留给 Human）
 
 - ~~**carrier 选型**~~ **已决策 2026-09-10（zj）：SQLite 先做**（`sqlite3` 属标准库，零新依赖）。事件流不升格为主事实源，它是 P4 跨设备的前提，但在单设备阶段只增加读放大。bundle 继续作为"纯文本可 diff"的导出/归档形态保留。
 - ~~**`blocked` 是否落盘**~~ **已决策 2026-09-09（zj）：纯派生——读取时计算，永不落盘。** 权威是 `blocks` 边；连带改动见 Implementation Decisions §3（`--status blocked` 移出可设枚举、返回 `E_INVALID_STATUS`）。
-- ~~**默认 TTL**~~ **已决策 2026-09-10（zj）：1800s。** 但 TTL 不能单独定，它与心跳是一组参数，见下一条。
-- **TTL 与心跳的组合（新，待定）**：1800s 这个数值隐含"不依赖心跳续约"或"单节点任务可长达 30 分钟"两种假设之一。两种自洽组合，后果不同：
+- ~~**默认 TTL 与心跳的组合**~~ **已决策 2026-09-10（zj）：组合 B——TTL 300s + 心跳周期 60s。** 原定 1800s 被替换：它隐含"不依赖心跳续约"或"单节点任务可长达 30 分钟"两种假设之一，而 Story 26 已有 `heartbeat`，两者不能共存。备选与后果：
 
   | 组合 | TTL | 心跳 | 长任务被误回收 | 崩溃后恢复延迟 | 双写风险 |
   |---|---|---|---|---|---|
   | A 长 TTL、无心跳 | 1800s | 无 | 不会 | 最长 30 分钟 | 无（TTL 内绝不抢占） |
-  | B 短 TTL + 心跳续约 | 300s | 60s 一次 | 不会（心跳保活） | 最长 5 分钟 | 无（同样不在 TTL 内抢占） |
+  | **B（选定）** 短 TTL + 心跳续约 | **300s** | **60s 一次** | 不会（心跳保活） | 最长 5 分钟 | 无（同样不在 TTL 内抢占） |
 
-  B 靠心跳把恢复延迟从 30 分钟压到 5 分钟，且不引入任何双写风险，代价是每 60s 一次写（JSON carrier 上是整图重写，P3 落地 SQLite 后是单行 UPDATE，可忽略）。**推荐 B**；若选 B，1800s 应降为 300s 并把 `heartbeat` 从 Story 26 提升为 P2 的硬前置。
-- **是否需要"提前抢占"（原"是否需要 `steal`"，待定）**：原问题问法不准确——**"过期后可抢占"本 spec 已经定了要有**（Story 27、§4），没有那个能力崩溃的 agent 会永久占住节点，没有讨论余地。真正待定的是第三种：**TTL 未到期时，能否依据"心跳超时/人工判定持有者已死"强行抢占**。
-  - 有：崩溃恢复快（不用等 TTL），代价是可能误抢仍存活但卡顿的持有者（GC 停顿、休眠、网络抖动），两个 agent 同时写同一节点；fencing token 只能**拒绝旧持有者后续写入**，无法撤销它已合法写入的状态与 notes，新持有者要能处理这些残留。跨设备（P4）时钟与网络不可信时误判率更高。
-  - 无：TTL 内持有者必然唯一，**物理上不可能双写**；代价是崩溃后僵死到 TTL 到期——而这个代价已被上一条的组合 B（短 TTL + 心跳）消解到 5 分钟。
-  - 折中：把提前抢占保留为 **Human 显式动作**（`release --force` 并记录事件），Agent 侧永不自动抢。
-  - **推荐：Agent 侧不做自动提前抢占**（配合组合 B），Human 侧保留 `release --force`。
+  B 靠心跳把恢复延迟从 30 分钟压到 5 分钟，且不引入任何双写风险，代价是每 60s 一次写（JSON carrier 上是整图重写，P3 落地 SQLite 后是单行 UPDATE，可忽略）。连带：`heartbeat` 从 Story 26 提升为 **P2 硬前置**，`claim` 与 `heartbeat` 必须同批次交付。
+- ~~**是否需要"提前抢占"**~~ **已决策 2026-09-10（zj）：Agent 侧完全不做；仅保留 Human 显式 `release --force`。** 原问题问法不准确——**"过期后可抢占"本 spec 已经定了要有**（Story 27、§4），没有那个能力崩溃的 agent 会永久占住节点，没有讨论余地。真正被决策的是第三种：**TTL 未到期时，能否依据"心跳超时/人工判定持有者已死"强行抢占**。
+  - 不要的理由：TTL 内持有者必然唯一，**物理上不可能双写**；而"崩溃恢复慢"这个它想解决的问题已被上一条的组合 B 消解到 5 分钟，收益归零而风险不归零。
+  - 若它要的理由（记录在此，防止后人重新 open 时重复论证）：可能误抢仍存活但卡顿的持有者（GC 停顿、休眠、网络抖动），两个 agent 同时写同一节点；fencing token 只能**拒绝旧持有者后续写入**，无法撤销它已合法写入的状态与 notes，新持有者要能处理这些残留；跨设备（P4）时钟与网络不可信时误判率更高。
+  - Human 侧的 `release --force` 不是"抢占的 Agent 自动化版本"：它是带审计的显式动作，必须写入事件日志，且由使用者承担误判后果。
 
 ### 与既有资产的关系
 
