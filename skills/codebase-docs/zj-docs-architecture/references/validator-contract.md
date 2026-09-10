@@ -54,6 +54,23 @@ invisible:
   naming diagnostic appears — the rule fires on the map claiming the page, not
   on the file existing.
 
+### Overlap with `zj-docs-ontology`
+
+`zj-docs-ontology` governs a repository's whole document map; this validator
+governs the architecture pages in it. Both must select a map first, so
+`MAP_POINTER_BROKEN`, `MAP_AMBIGUOUS`, and `MAP_LINK_BROKEN` exist under the same
+name in both. Run against one repository they are the same condition seen twice,
+not two defects: de-duplicate on `(code, path)` and leave them to
+`zj-docs-ontology`, which owns the whole map. Everything that needs a page's
+contents — `PAGE_*`, `AUTHORITY_*`, `SOURCE_*`, `ADR_*` — is this validator's
+alone.
+
+Authority looks like duplication and is not. `MAP_AUTHORITY_CONFLICT`
+(`zj-docs-ontology`) asks whether the *map* bound one id to two pages;
+`AUTHORITY_ID_DUPLICATE` (here) asks whether two *pages* declared the same id.
+One id can fire both, which is two defects: the map bound it twice and the pages
+declared it twice.
+
 Two seams are under test: `validate()` in-process for diagnostic codes, and the
 command itself for exit codes — including a run against this repository, which
 is the control for "the naming rule is not so strict that today's handbook
