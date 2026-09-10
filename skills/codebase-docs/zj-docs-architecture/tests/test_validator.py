@@ -3,9 +3,12 @@
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -48,6 +51,7 @@ class ArchitectureValidatorTest(unittest.TestCase):
 
 NAMING = "invalid-page-naming"
 STABLE_CONTROL = "docs/architecture/ta-catalog.md"
+EXTERNAL = "valid-external-layout"
 
 
 class PageNamingTest(unittest.TestCase):
@@ -85,9 +89,66 @@ class PageNamingTest(unittest.TestCase):
         self.assertEqual(set(), self.codes_for(STABLE_CONTROL))
 
     def test_adds_no_naming_diagnostics_to_valid_fixtures(self) -> None:
-        for fixture in ("valid-minimal", "valid-multiview", "valid-lazy"):
+        for fixture in ("valid-minimal", "valid-multiview", "valid-lazy", EXTERNAL):
             codes = {item.code for item in self.diagnostics(fixture) if item.code.startswith("PAGE_NAME")}
             self.assertEqual(set(), codes, fixture)
+
+
+class ExternalLayoutTest(unittest.TestCase):
+    """#52 — the validator must survive a repository shaped unlike this one.
+
+    The other valid fixtures all share ZAgentic's layout, so green on them only
+    proves self-consistency. `valid-external-layout` has no `docs/` tree at all,
+    keeps its map at `handbook/map.md`, and nests architecture pages one level
+    deeper. Two things have to hold: the layout produces no diagnostics, and the
+    pages are still genuinely checked — otherwise "no diagnostics" would just
+    mean "nothing was looked at".
+    """
+
+    @contextlib.contextmanager
+    def mutated(self):
+        """A throwaway copy, so a probe never edits the fixture in place."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            shutil.copytree(FIXTURES / EXTERNAL, repo)
+            yield repo
+
+    def codes_in(self, root: Path) -> set[str]:
+        return {item.code for item in VALIDATOR.validate(root)[0]}
+
+    def test_accepts_a_repository_without_a_docs_tree(self) -> None:
+        diagnostics, reads, metadata = VALIDATOR.validate(FIXTURES / EXTERNAL)
+        self.assertEqual([], diagnostics)
+        self.assertEqual("explicit-pointer", metadata["origin"])
+        self.assertEqual("handbook/map.md", metadata["map"])
+        joined = "\n".join(reads)
+        for page in ("ta-billing-engine", "pa-inference-router", "ba-tenant-model"):
+            self.assertIn(page, joined)  # green must not mean "silently skipped"
+
+    def test_unmapped_pages_are_never_read(self) -> None:
+        """An unstable draft name and a date-stamped note are not the
+        validator's business until the map claims them."""
+        _, reads, _ = VALIDATOR.validate(FIXTURES / EXTERNAL)
+        joined = "\n".join(reads)
+        self.assertNotIn("drafts/ta-checkout-v2", joined)
+        self.assertNotIn("notes/meeting-2026-01-02", joined)
+
+    def test_the_layout_is_checked_not_skipped(self) -> None:
+        """Drop a required view section: the contract diagnostic must appear."""
+        with self.mutated() as repo:
+            page = repo / "handbook" / "architecture" / "subsystems" / "ta-billing-engine.md"
+            page.write_text(page.read_text().replace("## Responsibility\nx\n", ""))
+            self.assertIn("PAGE_VIEW_CONTRACT_MISSING", self.codes_in(repo))
+
+    def test_mapping_an_unstable_name_is_what_fails(self) -> None:
+        """The negative control: the draft page is only wrong once the map points at it."""
+        with self.mutated() as repo:
+            map_path = repo / "handbook" / "map.md"
+            map_path.write_text(
+                map_path.read_text()
+                + "- [Checkout draft](architecture/drafts/ta-checkout-v2.md) — authority-id: nimbus.flow.checkout\n"
+            )
+            self.assertIn("PAGE_NAME_VERSION_OR_STATUS", self.codes_in(repo))
 
 
 def handbook_repo() -> Path | None:
@@ -116,6 +177,9 @@ class CommandLineTest(unittest.TestCase):
 
     def test_valid_fixture_exits_zero(self) -> None:
         self.assertEqual(0, self.exit_code(str(FIXTURES / "valid-minimal")))
+
+    def test_external_layout_exits_zero(self) -> None:
+        self.assertEqual(0, self.exit_code(str(FIXTURES / EXTERNAL)))
 
     def test_this_repository_stays_green(self) -> None:
         """The real handbook is the control: a naming rule that fires on
