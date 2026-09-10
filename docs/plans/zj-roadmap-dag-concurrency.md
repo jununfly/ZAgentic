@@ -206,6 +206,8 @@
 
 ### 8. 执行图：第二张 DAG 与上下文供给（P5）
 
+> **本篇只登记方向与边界。** 执行图已另起独立 spec：`docs/plans/zj-roadmap-execution-graph.md`（骨架 #44 → schema #45 → 命令 #46 → 权限与测试 #47）。本节是那篇的上游与权威，本节之外不再重复论证；那篇除引用本节结论外不重述本节正文。
+
 问题 9 / 10 的共同结构是：**路线在执行开始前并不完备，它是 Loop 的沉淀物**。借鉴 `chenxiachan/thoughtDAG` 的思路处理它，但只移植三原则、改写第四条。
 
 #### 8.1 分层：plan layer 与 trace layer 是两张图，不是一张
@@ -366,7 +368,7 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 - **`zj-grilling` / `zj-wayfinder` / `zj-to-tickets` 的内部改造**：对外契约保持不变。
 - **性能基准体系重写**：`benchmarks/roadmap_bundle_benchmark.py` 保留，不为本 spec 新增基准设施。
 - **技能分发方式**：源技能在本仓库 `skills/codebase-docs/` 内，不走"删除重装"——那会绕开 PR 审阅与 ZJ-CONTEXT 术语同步。已确立的流程是改源 + 分支 + PR，合并后按 sha256 同步三处已安装副本（`~/.codex` / `~/.workbuddy` / `~/.claude`）。
-- **P5 的执行图实现**：本 spec 只登记方向与边界（分层模型、边语义、写权限分层、最小命令集）。真正的 schema、迁移与 CLI 细节应在对 §8 达成共识后另起一篇执行图 spec，避免在一个已经有 62 条 user story 的文档里继续堆新东西。**那篇 spec 的输入约束已定三条：共享 carrier / 边表（`layer` 区分）、`promote` 默认 proposal、存量 `decisions` 不迁移。**
+- **P5 的执行图实现**：本 spec 只登记方向与边界（分层模型、边语义、写权限分层、最小命令集）。真正的 schema、迁移与 CLI 细节**已另起一篇** `docs/plans/zj-roadmap-execution-graph.md`，避免在一个已经有 62 条 user story 的文档里继续堆新东西。**那篇 spec 的输入约束已定三条：共享 carrier / 边表（`layer` 区分）、`promote` 默认 proposal、存量 `decisions` 不迁移。**
 - **trace 的可视化**：把 trace layer 画成图（canvas / HTML / Mermaid）不在本 spec 内。它最容易消耗工作量，也最容易被砍，且对本 spec 目标（导航与上下文供给）不是必需的——`context` / `why` / `whereami` 三个命令已经覆盖导航诉求。
 
 ## Further Notes
