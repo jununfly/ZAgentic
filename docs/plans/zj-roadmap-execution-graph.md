@@ -1,6 +1,6 @@
 # zj-roadmap-driven: 执行图（Execution Graph，P5）
 
-> 状态：问题 / 边界 / 已定输入约束 / schema 与迁移 / 命令契约与错误码已定（#44、#45、#46）。写权限 + 测试策略（#47）待补。
+> 状态：#44—#47 全部并入本篇，执行图 spec 完成（待实施）。实施切片见 §4.4。
 > 上游：`docs/plans/zj-roadmap-dag-concurrency.md` §8（方向与边界已在那篇达成共识，本篇不复制其正文，只引用结论）
 > Ticket：#44（骨架）→ #45（schema 与迁移）→ #46（命令契约）→ #47（写权限与测试）
 > 建议 triage label：`ready-for-agent`
@@ -305,6 +305,94 @@ promotion: {
 
 以上每一项在两个 carrier 上各跑一遍。
 
+## §4 写权限分层、Testing 与落地顺序（#47）
+
+### 4.1 权限的载体：今天没有运行时身份（源码实测）
+
+全仓 grep `actor` / `role` / `--as` / `approved` 在 Python 侧**没有任何身份概念**（0 命中，只有锁那边的 `PermissionError` 噪音）。现有约束全部是**文档级**的，写在 `SKILL.md`：
+
+- 第 16 / 78 行：Agent 必须通过 CLI，**禁止直接编辑 carrier 与 md 的路线图 section**。
+- 第 59 行：**禁止并行执行同一 JSON 的写类命令**。
+- 第 85 行：迁移必须显式 `migrate --to bundle`，不自动。
+
+也就是说，**不要假装有一条运行时权限系统在兜底**。可选的三种机制按强度递增：
+
+| 机制 | 强度 | 本轮 |
+|---|---|---|
+| **命令边界**：Agent 允许调用的命令集合由 `SKILL.md` 列出，plan 的晋升命令不在其中 | 弱（靠自觉），但**今天就有**，与现有约束同级 | ✅ 采用 |
+| **状态机强制**：把权限落进数据——plan 节点的新增只能经由 `promotion.state` 从 `proposed` 走到 `accepted`（3.2），且必须写 `decided_by` | 中（可验证：没有 proposal 的节点无法凭空出现） | ✅ 采用 |
+| **显式 actor 参数**（`--actor agent\|human`） | 强，但今天**没有任何身份来源**（无登录、无 token、无 OPN session 绑定），加了只是自报，等于没有 | ❌ 本轮不做 |
+
+本轮取 **1 + 2**，并把它们写进 `SKILL.md` 与契约文档**两处且表述一致**（两份文档对同一规则各说一套是评审必抓缺陷）。待未来有了身份来源再升级到 3——那时是加参数，不是推翻设计。
+
+### 4.2 权限矩阵
+
+关键澄清：**Agent 今天在 plan layer 是有写权限的**（`SKILL.md` 第 59 行明确 Agent 会调用 `add` / `update` / `delete` / `decide` / `render`）。所以不能一刀切说"plan = Human only"——那与现状矛盾。真正的判据是：
+
+> **是否改变地图的拓扑。** 更新状态、记 decision、渲染 = **施工**（Agent 可做）；新增 / 删除 / 移动节点与跨层晋升 = **改图**（需 Human）。
+
+这正是 thoughtDAG 原则 4 的改写落点：不是"禁止 Agent 写图"，而是**按写操作的性质分层**。
+
+| 层 | 动作 | Agent | Human | 依据 |
+|---|---|---|---|---|
+| trace | `trace add` / `prune`（删边） | ✅ 自主 | ✅ | 过程记录，Agent 拥有 |
+| trace→plan | `promote`（默认 proposal） | ✅ | ✅ | 提案不是落地，不占 `max_children` 额度 |
+| trace→plan | `promote --accept` / `--reject` | ❌ | ✅ | **落正式 plan 节点 = 改图** |
+| plan | `add` / `update` / `delete` / `decide` / `render` / `migrate` | ✅（按 Human 给定的图施工） | ✅ | `SKILL.md` 59 |
+| plan | 直接编辑 carrier 或 md section | ❌ | 也不建议 | `SKILL.md` 16 / 58 / 78 |
+| 并发 | 同一 carrier 的写命令并行执行 | ❌ | ❌ | `SKILL.md` 59 |
+
+口诀：**Agent 拥有它的过程记录，Human 拥有地图。**
+
+### 4.3 Testing：缝、规则与用例清单
+
+**缝的选择**：以 **CLI 契约**为主缝（subprocess 调用，断言退出码 + stdout JSON + stderr 的 `E_*` code），carrier API 为辅。理由：CLI 是 Agent 与 Human 唯一的入口，也是唯一有稳定输出契约的地方；只测 carrier API 会漏掉参数解析与退出码映射——PR #34 的 `--exit-criteria` 多值、以及 3.1 提到的裸标志陷阱都只存在于这一层。
+
+现有测试分布：`tests/`（`test_budget.py` 15 项、`test_lock_contention.py` 19 项、`verify_real_plan_corpus.py`）+ 根目录（`test_roadmap.py`、`test_roadmap_bundle.py`、`test_storage_advisor.py`）。trace 相关新增进 `tests/test_trace.py`。
+
+**四条规则**（都是本仓库已经付过学费的）：
+
+1. **两个 carrier 各跑一遍**——PR #34 确立：源目录绿不等于副本绿，同一语义两套实现正是 `remove-decision` 那类漂移。
+2. **负向用例断言 `E_*` code 字符串，不断言错误文案**（3.3）。
+3. **红绿双向**：每条新约束都要有"抽掉实现会红"的证明，不能只有正向断言（PR #27 / #28 / #34 三次实践）。
+4. **字节级不变断言**用于"trace 不泄进视图"这类命题——只有字节级比较能抓住"多了一行结构相同的内容"。
+
+**用例清单**（合并 2.9 与 3.6，并补本节新增）：
+
+- 每个遍历命令：写入一批 trace 后输出与写入前**字节一致**。
+- 迁移：md 输出字节不变；`decisions` 条目数不变。
+- 参照完整性：删除已被 `promote --accept` 引用的 trace → `E_REFERENCED`；删除被 `compressed_from` 引用的节点 → `E_REFERENCED`。
+- `promote --accept` 后：`decisions` 条目数不变（输入约束 3）、plan 节点 +1、`derives-from` 边 +1、md 输出**变化**（这次是预期）。
+- 硬前提：任何把 trace 塞进 `children` 的写入路径 → `E_LAYER_VIOLATION`。
+- `context` 不带 `--include trace` 时输出不含任何 trace 内容（字节级）。
+- 幂等：重复 propose / accept / reject 均退出 0 且节点数不变。
+- 每个新错误码一条用例，断言 code。
+- `--include` 裸用（值为 `true`）→ 报错，不静默接受。
+- 真实仓库 corpus（`verify_real_plan_corpus.py`）纳入：升级与新增 trace 后仍通过，确保**不误报**。
+
+**一条诚实的声明**：命令边界那条（Agent 不调用 `promote --accept`）**今天无法自动化测试**——没有身份概念就没有可断言的对象。它只能靠文档约束 + code review，与现有"禁止直接编辑 carrier"同级。**不要为了让它可测就提前引入 `--actor`**：自报身份不是权限。
+
+### 4.4 落地顺序（切片，每片可单独合并）
+
+大序仍是 **P0 → P1 → P3 → P5**（"为什么不能提前"见下一节）。P5 内部再切四片，每片都能独立合并、独立测试：
+
+| 片 | 内容 | 验收 |
+|---|---|---|
+| **S1** | `layer` 字段 + 迁移 + L1/L2 归口（2.3） | 迁移后 md 输出字节不变；所有遍历命令有"trace 存在时输出不变"的负向用例 |
+| **S2** | `trace add` + provenance（3.3） | trace 可自由追加；plan 侧输出字节不变；trace 不进 `children` |
+| **S3** | `promote` / `--accept` / `--reject` + `promotion` 状态机（3.2） | proposal 不落节点；accept 后才落；`max_children` 只计 accepted |
+| **S4** | `prune` + edge-driven `context --include`（3.3） | 删边即改变上下文；`--include trace` 才可见 trace |
+
+顺序不可换：S2 依赖 S1 的 `layer`，S3 依赖 S2 的 trace 节点与 S1 的边基础设施（P1），S4 依赖 S3 之后的 `derives-from` 才有东西可沿边取。
+
+### 4.5 P5 的完成判据（Definition of Done）
+
+一次通过三条才算完成，缺一条就是没做完：
+
+1. **md 的行数不随 trace 增长**——硬判据，唯一判据。
+2. **Agent 能在不被点名的情况下自主记录**执行过程（`trace add` 无需审批，provenance 自动带上）。
+3. **Human 能挑着接受**：`promote` 产出 proposal，Human `--accept` 后节点才进地图，且能被 `derives-from` 回溯到来源。
+
 ## 方法来源与一处改写
 
 方法论借自 [`chenxiachan/thoughtdag`](https://github.com/chenxiachan/thoughtdag)（把多轮会话建模为以边为上下文的可编辑无环图，"The graph is acyclic. You are the loop."），借的是方法而不是它的画布 UI 与多 Harness 会话导入——本技能只有 CLI 与 carrier。
@@ -325,12 +413,15 @@ promotion: {
 
 case 1 的 budget / exit_criteria 是唯一例外：它不依赖任何 P5 新结构，所以已经先行落地（PR #34）。
 
+**P5 内部的详细切片见 §4.4**（S1 schema 与归口 → S2 trace add → S3 promote → S4 prune/context），本节只解释为什么大序不能提前。
+
 ## 本篇未覆盖（后续 ticket）
 
 #45（schema、迁移与 `layer` 过滤契约）已并入上文 §2。
 #46（命令契约与错误码）已并入上文 §3。
+#47（写权限分层、Testing 与落地顺序）已并入上文 §4。
 
-- **#47**：append / rewrite 权限矩阵、Testing 缝与负向用例清单、详细落地顺序与风险。
+执行图 spec 至此结构完整，剩余工作是实施（按 §4.4 的 S1—S4 切片）。
 
 ## 风险（本篇层面）
 
