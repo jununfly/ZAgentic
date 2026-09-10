@@ -52,8 +52,27 @@ they are not normalised without confirmation.
 | Flow | `architecture-flow` | Trigger, sequence, state/effects, failure or exit behavior, and observable evidence. |
 | Cross-cutting | `architecture-cross-cutting` | One shared rule and every view that consumes it. |
 
-`architecture-map` owns routing only. Prefix technical pages `ta-`; use `ba-`
-or `pa-` when the page instead belongs to business or product architecture.
+`architecture-map` owns routing only.
+
+## Page naming
+
+A page name answers **what the page is about** and nothing else. A name that
+encodes when it was written, which revision it is, or how current it is becomes
+wrong the first time the page is revised — and every link to it goes stale with
+it.
+
+- **Prefix by architecture family**: `ta-` for technical, `ba-` for business,
+  `pa-` for product architecture.
+- **Lowercase and hyphen-separated**: `ta-checkout-flow.md`, never
+  `ta-Checkout_Flow.md` or `ta checkout flow.md`.
+- **No unstable tokens**: dates (`2026-09-10`, `20260910`, a bare year), commit
+  shas, versions (`v2`, `1.0`, a trailing number), or temporary-status words
+  (`draft`, `wip`, `tmp`, `latest`, `final`, `current`, `deprecated`, `copy`, …).
+
+Renaming an existing unstable page is a migration: propose it, do not do it
+silently — the map and every inbound link change with it. The validator reports
+violations as `PAGE_NAME_PREFIX`, `PAGE_NAME_SHAPE`, `PAGE_NAME_DATE`, and
+`PAGE_NAME_VERSION_OR_STATUS`.
 
 ## Source map and authority
 

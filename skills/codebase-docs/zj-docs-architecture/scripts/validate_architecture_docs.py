@@ -33,6 +33,30 @@ VIEW_HEADINGS = {
     "architecture-cross-cutting": {"shared rule", "consumers"},
 }
 PROCESS_HEADINGS = {"status", "progress", "daily log", "execution log"}
+NAME_PREFIXES = ("ta", "ba", "pa")
+NAME_SHAPE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+NAME_DATE_RE = re.compile(r"(?:^|[-.])(?:\d{4}-\d{1,2}-\d{1,2}|\d{4}-\d{2}|\d{8}|(?:19|20)\d{2})(?:[-.]|$)")
+NAME_COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$")
+NAME_VERSION_RE = re.compile(r"^(?:v\d+(?:\.\d+)*|\d+(?:\.\d+)+|r\d+)$")
+NAME_STATUS_TOKENS = {
+    "draft",
+    "wip",
+    "todo",
+    "tmp",
+    "temp",
+    "temporary",
+    "new",
+    "old",
+    "latest",
+    "final",
+    "current",
+    "deprecated",
+    "scratch",
+    "backup",
+    "copy",
+    "obsolete",
+    "stale",
+}
 
 
 @dataclass(frozen=True)
@@ -136,6 +160,39 @@ def section(text: str, title: str) -> str:
     return ""
 
 
+def naming_diagnostics(stem: str) -> list[tuple[str, str]]:
+    """Stability rules for a mapped architecture page's file name.
+
+    A name that encodes *when* a page was written, *which* revision it is, or
+    *how current* it is becomes wrong the first time the page is revised — and
+    every link to it goes stale with it. The name should answer what the page
+    is about and nothing else.
+    """
+    found: list[tuple[str, str]] = []
+    segments = stem.split("-")
+    if len(segments) < 2 or segments[0] not in NAME_PREFIXES:
+        prefixes = ", ".join(f"{prefix}-" for prefix in NAME_PREFIXES)
+        found.append(("PAGE_NAME_PREFIX", f"name must start with one of {prefixes}: {stem}"))
+    if not NAME_SHAPE_RE.match(stem):
+        found.append(("PAGE_NAME_SHAPE", f"name must be lowercase and hyphen-separated: {stem}"))
+    if NAME_DATE_RE.search(stem):
+        found.append(("PAGE_NAME_DATE", f"name must not encode a date: {stem}"))
+    if any(NAME_COMMIT_RE.match(segment) and any(char.isdigit() for char in segment) for segment in segments):
+        found.append(("PAGE_NAME_DATE", f"name must not encode a commit sha: {stem}"))
+    reported_date = any(code == "PAGE_NAME_DATE" for code, _ in found)
+    for index, segment in enumerate(segments):
+        if reported_date:
+            break  # one cause per name; the date is the specific one
+        trailing_number = segment.isdigit() and index == len(segments) - 1
+        if NAME_VERSION_RE.match(segment) or trailing_number:
+            found.append(("PAGE_NAME_VERSION_OR_STATUS", f"name must not encode a version: {stem}"))
+            break
+        if segment in NAME_STATUS_TOKENS:
+            found.append(("PAGE_NAME_VERSION_OR_STATUS", f"name must not encode a temporary status: {stem}"))
+            break
+    return found
+
+
 def map_entries(root: Path, map_path: Path, text: str) -> list[MapEntry]:
     entries: list[MapEntry] = []
     blocks = re.split(r"(?m)^(?=-\s+)", text)
@@ -203,6 +260,8 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
             diagnostics.append(Diagnostic("PAGE_KIND_INVALID", relative, "doc-kind must be an architecture view"))
         if authority not in {"primary", "supporting", "historical", "process", "external"}:
             diagnostics.append(Diagnostic("PAGE_AUTHORITY_INVALID", relative, "authority is missing or invalid"))
+        for code, message in naming_diagnostics(entry.target.stem):
+            diagnostics.append(Diagnostic(code, relative, message))
         page_headings = headings(page_text)
         if authority == "primary":
             authority_id = meta.get("authority-id")
