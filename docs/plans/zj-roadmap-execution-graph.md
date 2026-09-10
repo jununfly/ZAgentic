@@ -68,7 +68,7 @@
 
 ## 已定输入约束（三条，实施时不得重新论证）
 
-### 1. trace 与 plan 共享同一 carrier 与边表
+### 输入约束 1 — trace 与 plan 共享同一 carrier 与边表
 
 节点集合多一个**必填**字段 `layer: plan|trace`；边集合**不加列**——边的层级由两端节点的 `layer` 推出。uid 规则、`E_CYCLE`、迁移路径、carrier adapter 契约、事件日志全部共用。
 
@@ -78,7 +78,7 @@
 
 **共享 carrier 与 carrier 选型无关**——这一点常被误读，单独钉死：JSON single-file / bundle 上是同一份文件里的同一个 `nodes` 集合与同一个 `edges` 集合，SQLite carrier 落地后才是同一张 `nodes` 表与同一张 `edges` 表。也就是说这条约束在 P3 之前照样生效，不因 carrier 选型变化而改变。
 
-### 2. `promote` 默认产出 proposal
+### 输入约束 2 — `promote` 默认产出 proposal
 
 `promote <trace_uid> --under <node_uid> --label "..."` 默认只产出 proposal 并挂 open question；Human 执行 `promote --accept <trace_uid>` 后才落正式节点，并自动写 `derives-from` 边。接受多条就在同一把锁内串行，**不新增批量接受命令**。
 
@@ -86,7 +86,7 @@
 
 连带计数口径：`max_children` 只计**已被接受的正式子节点**，proposal 不占额度。否则一轮探索里 Agent 先提满 N 条 proposal 就把额度用光，Human 还没审就没了空间——budget 约束的是地图，不是 Agent 的嘴。
 
-### 3. 存量 `node.decisions` 不迁移进 trace layer
+### 输入约束 3 — 存量 `node.decisions` 不迁移进 trace layer
 
 `node.decisions` 是结论摘要，trace 是过程明细，二者是**摘要与明细**的关系，并存不是重复。若迁移，md 渲染会失去它今天唯一的 decisions 来源，而 trace 又明确不进 md，等于让 Human 净失去这部分视野。
 
@@ -96,7 +96,7 @@
 - `context --include decisions` 读的仍是 `node.decisions`，不是 trace；读 trace 另有 `--include trace`。
 - 迁移器不做 `decisions → trace` 的批量转换，老 carrier 升级后 `decisions` 数组原样保留。
 
-## Schema、迁移与 `layer` 过滤契约（#45）
+## §2 Schema、迁移与 `layer` 过滤契约（#45）
 
 ### 2.1 三个必须先承认的现状（源码实测，与上游措辞有出入）
 
