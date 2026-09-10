@@ -9,7 +9,7 @@
 `zj-roadmap-driven` 现在是一台"单人手写账本"：它假设只有一个 Agent 在写、只有一棵树在长、只有 Human 在点名派活。这个假设在单会话里成立，一旦进入多 Agent（同设备并行、agent + subagent、跨设备）就会四处漏：
 
 1. **并发写不安全。** 每个写命令都是 `load → 修改 → 整图 save`，锁是整图 mkdir 互斥（10s 超时、无 TTL、无心跳）。两个 Agent 同时完成兄弟节点时，各自基于旧快照计算父状态，后写覆盖前写——经典 lost update。
-2. **只有树，没有依赖。** 父子关系之外无法表达"1-2-3 依赖 1-4-1"这类跨子树依赖。`blocked` 状态存在，但没有任何代码设置它，是个空枚举值。
+2. **只有树，没有依赖。** 父子关系之外无法表达"1-2-3 依赖 1-4-1"这类跨子树依赖。`blocked` 是 `status` 枚举里可以被 `add` / `update` 人工设置的值，但没有任何代码推导它——既无人设置也无推导，实际是一个永不出现的值。
 3. **Agent 不会自己取活。** 没有就绪集概念，Human 不点名就没有下一步；多 Agent 场景下等于人为串行。
 4. **Token 经济性差。** 所有输出一律 `indent=2` 全量 JSON，没有字段投影、没有紧凑格式、没有 quiet；一个决策要跑两次进程（`decide` + `render`）；`tree` 在单文件模式默认深度 10，一次误用就能灌进几千 token。
 5. **节点 id 会复用。** 子节点序号取"最后一个 child + 1"，删掉尾部子节点后新节点拿回旧 id，租约、历史、外部引用（ticket / ADR / 设备间同步）全部会串号。
@@ -53,8 +53,8 @@
 15. As an Agent，I want the CLI to reject a `blocks` edge that would create a cycle with `E_CYCLE`，so that the graph can never become unschedulable。
 16. As an Agent，I want `informs` and `derives-from` edges to be allowed to form cycles，so that context and provenance links are not artificially constrained。
 17. As an Agent，I want `supersedes` to mark the superseded node archived rather than deleted，so that history survives a scope change。
-18. As an Agent，I want `blocked` status to be derived from unfinished `blocks` in-edges rather than set by hand，so that the status never contradicts the graph。
-19. As an Agent，I want `blocked_reason` to list the edge ids that are blocking a node，so that I can explain a stall instead of just reporting it。
+18. As an Agent，I want `blocked` status to be **derived at read time from unfinished `blocks` in-edges and never persisted to the carrier**，so that there is exactly one source of truth (the edges) and no stale value to reconcile。
+19. As an Agent，I want `blocked_reason`（the edge ids blocking a node）to be computed on that same read，so that I can explain a stall instead of just reporting it。
 20. As an Agent，I want a `ready` command returning the topological ready set (pending, no unfinished `blocks`, no active lease)，so that I can pick work without Human pointing at a node。
 21. As an Agent，I want `critical-path` to return the longest unfinished chain，so that I can tell Human what actually blocks completion。
 22. As an Agent，I want `impact <node>` to return the downstream affected set，so that I can warn before a change ripples。
@@ -123,7 +123,12 @@
 | `supersedes` | 取代另一节点，后继标 archived | 否 | 否 |
 | `derives-from` | 来源追溯（ADR、grilling 结论） | 否 | 是 |
 
-- `blocked` 改为**推导状态**：在写事务内由未完成的 `blocks` 入边计算，并写入 `blocked_reason`（边 id 列表）；边被移除或前驱完成时重算。
+- `blocked` / `blocked_reason` 改为**纯派生（读取时计算，永不落盘）**：唯一权威是 `blocks` 边。读命令与 md 渲染在返回时计算二者，carrier 的 `status` 字段不写入 `blocked`。
+  - 连带：`--status blocked` 从 `add` / `update` 的可设枚举中移除，人工设置返回 `E_INVALID_STATUS`。否则"人设 blocked"与"派生 blocked"会互相矛盾，等于又造一个真相源。
+  - 与既有范式一致：父状态已由 `_sync_parent_status()` 派生，本决策不引入第二种状态来源。
+  - 放弃落盘的理由：落盘必须维护一份"重算触发点"清单（加边、删边、前驱完成、`delete`、`supersedes`、carrier 迁移…），漏一个就是静默陈旧——与 `remove-decision` 在两个 carrier 上的语义漂移属同一类缺陷，本仓库已经犯过一次。
+  - 代价可接受：就绪集有 `pending_deps` 计数器（O(1)），`blocked` 只影响单节点读取，读一次的成本远小于读整图 JSON。
+  - 跨设备（P4）若需要离线展示"上次已知 blocked"，落**本地物化视图**，不进共享事实源。
 - 就绪判定：`status == pending` 且 `pending_deps == 0` 且无有效租约。`pending_deps` 是增量计数器，前驱完成时递减，O(1)。
 - 与既有技能链的接缝保持不变：`zj-to-tickets` 导出的 blocking edges 映射为 `blocks` 边，`informs` 留给 wayfinder 的上下文关系。
 
@@ -192,7 +197,7 @@
 - 节点身份：删除尾部子节点后新节点 uid 与显示 id 均不复用；老 roadmap 迁移后 uid 补齐。
 - 输出契约：`--format` / `--fields` / `--quiet` 三种组合的字节级输出；`context` 命令等价于四次旧调用的组合结果。
 - 错误码：每个码至少一条用例，断言退出码。
-- DAG：`blocks` 成环被拒；`informs` 成环被允许；前驱完成后 `pending_deps` 归零且目标进入 ready；`blocked_reason` 随边变化重算。
+- DAG：`blocks` 成环被拒；`informs` 成环被允许；前驱完成后 `pending_deps` 归零且目标进入 ready；加边 / 删边后 `blocked` 与 `blocked_reason` 在同一次读命令内立即反映，且**断言 carrier 的 `status` 从未被写成 `blocked`**；`--status blocked` 返回 `E_INVALID_STATUS` + 对应退出码。
 - 并发：两进程并发完成兄弟节点 → 父状态最终一致（无 lost update）；租约过期后可 steal；持旧 fencing token 的写入失败；越界写返回 `E_SCOPE`；冲突写返回 `E_CONFLICT`。
 - 视图护栏：render 后 md 主视图行数不超过阈值；`HUMAN_NOTES` 内容跨 render 存活；新字段默认不出现在 md。
 
@@ -220,11 +225,12 @@
 2. **两种 carrier 语义漂移。** 现状已有一例：bundle 的 `remove-decision` 是撤回保留历史，单文件模式是真删。加第三种 carrier 前必须先统一语义，否则漂移会三倍放大。
 3. **并发先于 uid 是本末倒置。** 位置型 id 复用会让租约挂到错误的节点上，这种 bug 静默且难查。P0 的 uid 是 P2 的硬前置。
 4. **术语冲突。** 见 Implementation Decisions §7：Node lease 不得命名为 Work Item。
+5. **状态双重来源（已由纯派生决策规避）**。若 `blocked` 落盘，就会与 `pending_deps` 计数器、派生父状态构成三个真相源，并需要一份"重算触发点"清单。实施时若出现"为了渲染方便把 blocked 缓存进 carrier"的冲动，应落本地物化视图而非共享事实源。
 
 ### 待决问题（留给 Human）
 
 - **carrier 选型**：本 spec 选 SQLite（零依赖、事务、递归 CTE）。替代方案是"事件流为主 + 物化快照"，好处是纯文本可 diff、天然适合跨设备，代价是读放大与更复杂的实现。是否接受 SQLite？
-- **`blocked` 是否落盘**：本 spec 选"事务内推导并写入 status + blocked_reason"，好处是与现有状态机兼容；替代方案是"读取时计算、永不落盘"，好处是无陈旧风险。
+- ~~**`blocked` 是否落盘**~~ **已决策 2026-09-09（zj）：纯派生——读取时计算，永不落盘。** 权威是 `blocks` 边；连带改动见 Implementation Decisions §3（`--status blocked` 移出可设枚举、返回 `E_INVALID_STATUS`）。
 - **默认 TTL**：1800s 是否合适，是否需要按 mode 区分（explore 更长）。
 - **是否需要 `steal`**：允许抢占能救活崩掉的租约，也引入误抢风险；是否只在同 device 内允许？
 
