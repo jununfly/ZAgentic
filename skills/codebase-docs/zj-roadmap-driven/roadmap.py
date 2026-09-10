@@ -252,9 +252,11 @@ def _is_lock_contention(lock_dir: str, exc: BaseException) -> bool:
     (this repository's own safe-delete shim, and any sitecustomize doing the
     same) and re-raise EEXIST as PermissionError with `errno` unset. Catching
     only FileExistsError therefore turns ordinary lock contention into an
-    uncaught crash — which is exactly how the lost update in
+    uncaught crash — which is exactly how the write loss described in
     `docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 actually manifests:
-    writers die with exit 1 instead of waiting their turn.
+    writers die with exit 1 instead of waiting their turn. (It is not a
+    classic lost update: the whole command runs under the lock, so nothing is
+    ever overwritten — the write simply never lands.)
 
     Classification order matters, and the last rule is the subtle one:
 
