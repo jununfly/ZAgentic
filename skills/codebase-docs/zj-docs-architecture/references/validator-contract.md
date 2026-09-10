@@ -35,4 +35,7 @@ and the no-read boundary for process/evidence files.
 Two seams are under test: `validate()` in-process for diagnostic codes, and the
 command itself for exit codes — including a run against this repository, which
 is the control for "the naming rule is not so strict that today's handbook
-fails".
+fails". The control locates that repository by walking up for an ancestor that
+has both `.git` and `docs/`; an installed copy under `~/.codex/skills/…` has
+neither, so the control skips there instead of pointing the validator at a home
+directory.
