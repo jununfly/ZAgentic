@@ -13,9 +13,16 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   add     <json_path> <parent_id> "<label>"
               [--status pending|in_progress|completed|blocked]
               [--mode explore|exploit]
+              [--max-children N] [--max-rounds N]
+              [--exit-criteria "判据"]...
 
   update  <json_path> <node_id>
               [--label "..."] [--status ...] [--mode ...] [--notes "..."]
+              [--max-children N] [--max-rounds N]
+              [--exit-criteria "判据"]...
+              [--clear-budget] [--clear-exit-criteria]
+
+  预算触顶（节点长太多子节点 / 被开工太多次）返回 E_BUDGET_EXCEEDED，退出码 3。
 
   delete  <json_path> <node_id>              # 删除节点及所有子节点
 
@@ -64,9 +71,31 @@ from pathlib import Path
 
 # 将自身所在目录加入 path，确保能 import roadmap
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from roadmap import Roadmap, RoadmapLockTimeout, roadmap_file_lock, unlock_roadmap
+from roadmap import (
+    Roadmap,
+    RoadmapError,
+    RoadmapLockTimeout,
+    exit_code_for,
+    roadmap_file_lock,
+    unlock_roadmap,
+)
 from roadmap_bundle import BundleError, RoadmapBundle
 from storage_advisor import recommend_storage
+
+
+# 可以重复出现、每次追加一条值的参数（`--exit-criteria` 可给多条判据）。
+MULTI_VALUE_FLAGS = frozenset({"exit-criteria"})
+
+
+def _store(args: dict, key: str, value: str) -> None:
+    if key in MULTI_VALUE_FLAGS:
+        bucket = args.setdefault(key, [])
+        if not isinstance(bucket, list):
+            bucket = [bucket]
+        bucket.append(value)
+        args[key] = bucket
+    else:
+        args[key] = value
 
 
 def _parse_args(argv: list[str]) -> dict:
@@ -84,20 +113,31 @@ def _parse_args(argv: list[str]) -> dict:
             # Support --key=value as a single token.
             if "=" in stripped:
                 key, _, value = stripped.partition("=")
-                args[key] = value
+                _store(args, key, value)
                 i += 1
                 continue
             key = stripped
             i += 1
             if i < len(argv) and not argv[i].startswith("--"):
-                args[key] = argv[i]
+                _store(args, key, argv[i])
                 i += 1
             else:
-                args[key] = "true"  # flag 类参数
+                _store(args, key, "true")  # flag 类参数
         else:
             args["positional"].append(a)
             i += 1
     return args
+
+
+def _exit_criteria_arg(args: dict) -> list | None:
+    """取出 --exit-criteria；无值标志（`--exit-criteria` 不带文本）视为参数错误。"""
+    raw = args.get("exit-criteria")
+    if raw is None:
+        return None
+    values = raw if isinstance(raw, list) else [raw]
+    if any(v == "true" for v in values):
+        raise ValueError("--exit-criteria 需要给出判据文本")
+    return [v for v in values if v] or None
 
 
 def _print_json(data):
@@ -137,6 +177,9 @@ def cmd_add(args: dict):
         label=args["positional"][2],
         status=args.get("status", "pending"),
         mode=args.get("mode", "explore"),
+        max_children=args.get("max-children"),
+        max_rounds=args.get("max-rounds"),
+        exit_criteria=_exit_criteria_arg(args),
     )
     r.save()
     _print_json(node)
@@ -150,6 +193,11 @@ def cmd_update(args: dict):
         status=args.get("status"),
         mode=args.get("mode"),
         notes=args.get("notes"),
+        max_children=args.get("max-children"),
+        max_rounds=args.get("max-rounds"),
+        exit_criteria=_exit_criteria_arg(args),
+        clear_budget=args.get("clear-budget") == "true",
+        clear_exit_criteria=args.get("clear-exit-criteria") == "true",
     )
     r.save()
     _print_json(node)
@@ -347,6 +395,10 @@ def main():
     except RoadmapLockTimeout as e:
         print(str(e), file=sys.stderr)
         sys.exit(2)
+    except RoadmapError as e:
+        # 稳定错误码在行首，Agent 按 code 分支，不要匹配后半句的人类文案。
+        print(f"Error: {e.code}: {e}", file=sys.stderr)
+        sys.exit(exit_code_for(e))
     except (BundleError, FileNotFoundError, KeyError, ValueError, json.JSONDecodeError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)

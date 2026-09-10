@@ -18,6 +18,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
+# 预算与开工计数是 carrier 无关的语义，复用 roadmap.py 的实现，
+# 避免两个 carrier 对同一个 budget 各算一套（remove-decision 那类漂移）。
+from roadmap import build_budget, check_child_budget, count_round_start
+
 
 BUNDLE_SCHEMA = "zj-roadmap-bundle-manifest/v1"
 CURRENT_SCHEMA = "zj-roadmap-bundle-current/v1"
@@ -359,14 +363,31 @@ class RoadmapBundle:
         node["decisions"] = self._read_decisions_file(node_id)
         return node
 
-    def add_node(self, parent_id: str, label: str, status: str = "pending", mode: str = "explore") -> dict[str, Any]:
+    def add_node(
+        self,
+        parent_id: str,
+        label: str,
+        status: str = "pending",
+        mode: str = "explore",
+        max_children: Any = None,
+        max_rounds: Any = None,
+        exit_criteria: Optional[list] = None,
+    ) -> dict[str, Any]:
         parent = self._read_node_file(parent_id)
         if status not in STATUS_VALUES or mode not in MODE_VALUES:
             raise BundleError("invalid node status or mode")
+        check_child_budget(parent)
         children = parent.setdefault("children", [])
         next_index = int(children[-1].split("-")[-1]) + 1 if children else 1
         node_id = f"{parent_id}-{next_index}"
-        node = {"id": node_id, "label": label, "status": status, "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
+        node = {"id": node_id, "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
+        budget = build_budget(max_children, max_rounds)
+        if budget:
+            node["budget"] = budget
+        if exit_criteria:
+            node["exit_criteria"] = list(exit_criteria)
+        count_round_start(node, status)
+        node["status"] = status
         children.append(node_id)
         self._write_node_file(node_id, node)
         self._write_decisions_file(node_id, [])
@@ -381,7 +402,19 @@ class RoadmapBundle:
         self._commit("node-added", {"nodeId": node_id, "parentId": parent_id}, stats)
         return node
 
-    def update_node(self, node_id: str, label: Optional[str] = None, status: Optional[str] = None, mode: Optional[str] = None, notes: Optional[str] = None) -> dict[str, Any]:
+    def update_node(
+        self,
+        node_id: str,
+        label: Optional[str] = None,
+        status: Optional[str] = None,
+        mode: Optional[str] = None,
+        notes: Optional[str] = None,
+        max_children: Any = None,
+        max_rounds: Any = None,
+        exit_criteria: Optional[list] = None,
+        clear_budget: bool = False,
+        clear_exit_criteria: bool = False,
+    ) -> dict[str, Any]:
         node = self._read_node_file(node_id)
         old_status = node["status"]
         if label is not None:
@@ -389,6 +422,7 @@ class RoadmapBundle:
         if status is not None:
             if status not in STATUS_VALUES:
                 raise BundleError(f"invalid status: {status}")
+            count_round_start(node, status)
             node["status"] = status
         if mode is not None:
             if mode not in MODE_VALUES:
@@ -396,6 +430,19 @@ class RoadmapBundle:
             node["mode"] = mode
         if notes is not None:
             node["notes"] = notes
+
+        if clear_budget:
+            node.pop("budget", None)
+        budget = build_budget(max_children, max_rounds)
+        if budget:
+            node.setdefault("budget", {}).update(budget)
+        elif max_children is not None or max_rounds is not None:
+            raise BundleError("budget values must be non-negative integers")
+
+        if clear_exit_criteria:
+            node["exit_criteria"] = []
+        if exit_criteria:
+            node.setdefault("exit_criteria", []).extend(exit_criteria)
         self._write_node_file(node_id, node)
         stats = self._read_stats()
         if old_status != node["status"]:
@@ -404,7 +451,15 @@ class RoadmapBundle:
             stats["status_counts"][node["status"]] += 1
         self._sync_parent_status(node_id, stats)
         self._refresh_focus()
-        self._commit("node-updated", {"nodeId": node_id, "fields": [key for key, value in (("label", label), ("status", status), ("mode", mode), ("notes", notes)) if value is not None]}, stats)
+        fields = [key for key, value in (("label", label), ("status", status), ("mode", mode), ("notes", notes)) if value is not None]
+        fields += [key for key, value in (("max_children", max_children), ("max_rounds", max_rounds)) if value is not None]
+        if exit_criteria:
+            fields.append("exit_criteria")
+        if clear_budget:
+            fields.append("clear_budget")
+        if clear_exit_criteria:
+            fields.append("clear_exit_criteria")
+        self._commit("node-updated", {"nodeId": node_id, "fields": fields}, stats)
         return node
 
     def _collect_subtree(self, node_id: str) -> list[dict[str, Any]]:

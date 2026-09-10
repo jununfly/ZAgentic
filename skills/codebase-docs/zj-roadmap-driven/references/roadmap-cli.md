@@ -14,8 +14,14 @@ python roadmap_cli.py migrate <json_path> --to bundle [--output <bundle_path>] [
 
 # Node CRUD
 python roadmap_cli.py add <json_path> <parent_id> "<label>" [--status pending] [--mode explore]
+python roadmap_cli.py add <json_path> <parent_id> "<label>" --max-children 3 --max-rounds 2
 python roadmap_cli.py update <json_path> <node_id> --status completed
 python roadmap_cli.py update <json_path> <node_id> --label "新标签" --notes "备注内容"
+
+# Explore budget (structural units) and exit criteria
+python roadmap_cli.py update <json_path> <node_id> --max-children 3 --max-rounds 2
+python roadmap_cli.py update <json_path> <node_id> --exit-criteria "判据文本"   # repeatable
+python roadmap_cli.py update <json_path> <node_id> --clear-budget --clear-exit-criteria
 python roadmap_cli.py delete <json_path> <node_id>
 python roadmap_cli.py get <json_path> <node_id>
 
@@ -54,6 +60,20 @@ decision, and append-only history shards independently readable. `tree`, `get`,
 `focus`, node-scoped `decisions`, and light `render` are lazy/bounded operations.
 `remove-decision` records a decision retraction in bundle mode, preserving the
 original record and its history rather than physically deleting it.
+
+## Exit codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | Generic failure (invalid argument, missing node, bundle error) |
+| 2 | Lock timeout (another writer holds `<roadmap_path>.lock/`) |
+| 3 | `E_BUDGET_EXCEEDED` — an explore node's `max_children` or `max_rounds` cap was hit |
+
+Budget failures print `Error: E_BUDGET_EXCEEDED: <detail>` on stderr. Branch on
+the code, never on the human-readable text after it. The cap is enforced on both
+carriers (single-file JSON and bundle) by the same shared helper, so the two
+never disagree on what counts as a start or a child.
 
 Bundle layout:
 

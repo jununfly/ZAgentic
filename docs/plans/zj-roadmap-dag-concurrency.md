@@ -130,7 +130,7 @@
 
 ### 2. CLI 契约：错误码、输出格式、批量（P0）
 
-- 稳定错误码 + 退出码映射：`E_NODE_NOT_FOUND`、`E_INVALID_STATUS`、`E_CYCLE`、`E_LOCKED`、`E_CONFLICT`、`E_SCOPE`、`E_STORAGE`、`E_BUDGET_EXCEEDED`（case 1，§8.5）。
+- 稳定错误码 + 退出码映射：`E_NODE_NOT_FOUND`、`E_INVALID_STATUS`、`E_CYCLE`、`E_LOCKED`、`E_CONFLICT`、`E_SCOPE`、`E_STORAGE`、`E_BUDGET_EXCEEDED`（case 1，§8.5；**已落地**，退出码 3——这是 P0 错误码表里登记的第一个码）。
 - 新增 `--format json|jsonl|brief`、`--fields`、`--quiet`，**默认值保持现状**，避免破坏已安装技能与既有文档。
 - 新增 `context` 命令：一次返回 focus + path + siblings + focus decisions + top-N ready（默认 N=3），这是 token 性价比最高的一条。
 - 新增 `next`（等价于 `ready --limit 1 --brief`）与 `ready`。
@@ -296,6 +296,19 @@ P5 之前先补一个比它更基础、成本更低的洞——Problem 9 其实�
 
 注意这不是造新概念：`mode` 字段、`add --mode` CLI 参数、`[X+]`/`[Y+]` 渲染图标均已存在（`roadmap.py:32-37`、`roadmap_cli.py:139`），缺的只是 budget / exit_criteria 与 promote 通道。因此 **case 1 应先于 P5 落地，且不依赖 P5 的任何新结构**。
 
+**状态：§8.5 的 budget / exit_criteria 部分已落地**（PR #34，2026-09-10）。实施时把四条口径钉死，否则"文档声称"与"CLI 实际行为"会各说一套：
+
+| 口径 | 实现约定 |
+|---|---|
+| 什么是"开工" | 任何进入 `in_progress` 的转换（`pending` / `completed` → `in_progress`）；第一次写 `rounds: 1`。`init` 出来的根节点已经是 `in_progress`，按**已开工一轮**计——否则 `max_rounds: 1` 会被解释成"还能再开工一次" |
+| 改小预算是否追溯 | **不追溯**。已有 3 个子节点时设 `max_children: 2` 是允许的，只约束之后的新增 |
+| `exit_criteria` 谁判定 | CLI **只存不判**。它无法判定自然语言，且未满足的判据不阻断 `update --status completed`。"done 不是 vibe-based" 靠 Human/Agent 对照这份清单，不靠机器假装能读懂 |
+| 触顶是否挂 open question | **本切片不挂**。只做拒绝 + `E_BUDGET_EXCEEDED`（退出码 3，该码是 P0 错误码表登记的第一个码）。open question 队列是 Story 35 / P2 的能力，届时在此处补挂 |
+
+另外两条实施约束：字段默认不进 md（§6 护栏 2）；两个 carrier（single-file 与 bundle）复用 `roadmap.py` 里同一份 `check_child_budget` / `count_round_start`，不允许各自实现一遍——两类 carrier 对同一语义各算一套，正是 `remove-decision` 翻过一次的车（Further Notes 风险 2）。契约测试在 `tests/test_budget.py`（15 项，两个 carrier 各跑一遍）。
+
+`promote` 通道（explore 产出落成子节点）**不在本切片内**：它依赖 §8.3 的 trace layer 与 §8.4 的 proposal 语义，属 P5。
+
 #### 8.6 case 2：膨胀的解法是投影，不是更多图
 
 case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"图不够用"，于是解法变成加更多图——那会加重病情。真正的解法是**从同一 carrier 派生不同的投影**：
@@ -333,7 +346,7 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 - 租约参数：`claim` 后 `expires_at == claimed_at + 300s`；`heartbeat` 把 `expires_at` 推到 `now + 300s`（幂等，重复调用不累加）；**`expires_at` 未到期时任何 Agent 侧 `steal` 均失败**（断言存在这样的负向用例，不只是"过期能抢"）；`release --force` 成功并落事件日志。
 - 崩溃恢复：持有者静默（不心跳）后，节点在 **TTL + 一个心跳周期 = 360s** 内可被他人接管；断言恢复延迟上界，而不是"最终能恢复"。
 - 视图护栏：render 后 md 主视图行数不超过阈值；`HUMAN_NOTES` 内容跨 render 存活；新字段默认不出现在 md。
-- 执行图（P5）：`promote` 未 `--accept` 时 roadmap 节点数不变且 open question +1，断言的是"没有副作用"而不只是"命令成功"；`promote --accept` 后存在且仅存在一条 `derives-from` 边。`context` 在删除一条 `reference` 边后输出随之变化（对应 thoughtDAG 的 "delete one edge, get a different answer"，证明上下文由边而非由位置决定）。**负向用例：`trace add` 之后 md 主视图行数不变**（否则 case 2 的病会被 P5 重新制造出来）。`explore` 节点超出 `budget` 后追加子节点返回 `E_BUDGET_EXCEEDED` 与对应退出码，而不是静默接受（至少两条：`max_children` 触顶、`max_rounds` 触顶；再加一条负向——只给其中一个子项时，另一个不设限且不报错）。`max_children` 只计已接受的子节点：连续提交满额条 proposal 后仍可继续提交，且 `promote --accept` 到额度上限后下一次接受返回 `E_BUDGET_EXCEEDED`（§8.5）。
+- 执行图（P5）：`promote` 未 `--accept` 时 roadmap 节点数不变且 open question +1，断言的是"没有副作用"而不只是"命令成功"；`promote --accept` 后存在且仅存在一条 `derives-from` 边。`context` 在删除一条 `reference` 边后输出随之变化（对应 thoughtDAG 的 "delete one edge, get a different answer"，证明上下文由边而非由位置决定）。**负向用例：`trace add` 之后 md 主视图行数不变**（否则 case 2 的病会被 P5 重新制造出来）。`explore` 节点超出 `budget` 后追加子节点返回 `E_BUDGET_EXCEEDED` 与对应退出码（已落地：`tests/test_budget.py`，single-file 与 bundle 各跑一遍），而不是静默接受（至少两条：`max_children` 触顶、`max_rounds` 触顶；再加一条负向——只给其中一个子项时，另一个不设限且不报错）。`max_children` 只计已接受的子节点：连续提交满额条 proposal 后仍可继续提交，且 `promote --accept` 到额度上限后下一次接受返回 `E_BUDGET_EXCEEDED`（§8.5）。
 - 共享表与层级过滤（P5）：`trace add` 之后 `ready` / `critical-path` / `tree` 的输出与之前**字节一致**（`layer` 过滤，Story 62）；删除一个已被 `promote` 引用的 trace 节点必须失败（跨图层 `derives-from` 的参照完整性落在同一张表里，因此是同表校验而不是跨 carrier 约定）。
 - `decisions` 不迁移（P5）：`promote --accept` 后目标 plan 节点的 `decisions` 数组条目数不变、源 trace 节点 `body` 不变；老 carrier 升级后 `decisions` 原样保留，且 md 里 decisions 段的渲染结果不变。
 - 上下文确定性（P5）：同一节点在 `mainline` / `reference` 入边顺序不同时，`context` 输出必须字节一致——非确定性输出会让 Agent 无法复现上一次的结论。
@@ -404,4 +417,4 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 
 ### 落地顺序建议
 
-case 1（§8.5）→ P0 → P1 → P3 → P5。理由是：case 1 补的是既有 `mode` 字段缺失的两个属性，是本节里唯一一段"无需等待任何前置的重构就能见效"的工作；而 P5 依赖 uid、依赖边机制、也依赖 SQLite 承载快速增殖的写入量。把 P5 提前等于在位置型 id 上建第二张图，会重犯风险 3 已经警告过的本末倒置。
+case 1（§8.5，**budget / exit_criteria 部分已完成**，PR #34）→ P0 → P1 → P3 → P5。理由是：case 1 补的是既有 `mode` 字段缺失的两个属性，是本节里唯一一段"无需等待任何前置的重构就能见效"的工作；而 P5 依赖 uid、依赖边机制、也依赖 SQLite 承载快速增殖的写入量。把 P5 提前等于在位置型 id 上建第二张图，会重犯风险 3 已经警告过的本末倒置。
