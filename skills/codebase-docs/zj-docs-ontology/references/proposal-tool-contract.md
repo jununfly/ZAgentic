@@ -27,6 +27,13 @@ The fixtures cover greenfield detection, an existing compatible map, map-link
 drift, an unread process file, and one authority-id bound to two pages. The
 report's `mutations` must remain empty in every case.
 
+The conflicting-authority fixture proves the binding layer alone: its map binds
+`payments.requirement` to two pages, and no page declares an `authority` at all.
+That keeps it inside this tool's layer — a page that also declared the id would
+put the sample in `zj-docs-architecture`'s layer too, and a page placed under
+`docs/architecture/` would additionally have to satisfy that skill's page
+contract, since both run against the same repository.
+
 Exit codes live at the CLI seam, so `CommandLineTest` runs the script itself:
 the conflicting-authority fixture must exit non-zero, and the other four must
 keep their previous exit codes (greenfield, existing-map, and read-boundary

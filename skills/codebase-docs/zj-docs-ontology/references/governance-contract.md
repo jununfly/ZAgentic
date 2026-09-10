@@ -30,7 +30,21 @@ and evaluations are evidence surfaces rather than durable documentation pages.
 `fixture-documentation`. `authority` is `primary`, `supporting`, `historical`,
 `process`, or `external`; a primary page has one `authority-id`, which the map
 binds to one page and bounded question. Navigation order is not global truth
-precedence: conflicting normative claims are a Human-review signal.
+precedence: two pages that answer the same question *differently* are a
+Human-review signal, because settling conflicting normative claims needs
+judgment about content. A binding is different in kind — which page the map gave
+an id to is a fact, not a reading — so its conflicts are mechanical.
+
+The two layers have separate owners:
+
+| Layer | Question | Owner | Codes |
+| --- | --- | --- | --- |
+| Binding | Does the map give one id to more than one page? | this skill | `MAP_AUTHORITY_CONFLICT` |
+| Declaration | Do two pages claim the same id, and do map and page agree? | `zj-docs-architecture` | `AUTHORITY_ID_DUPLICATE`, `AUTHORITY_ID_MISSING`, `AUTHORITY_MAP_BINDING` |
+
+Both can fire on one id, and that is two defects rather than one reported twice:
+the map bound it to two pages *and* the pages declared it. Neither tool claims
+the other's layer, and neither suppresses the other.
 
 The binding is what the governance tool checks. One `authority-id` appearing on
 two map entries is `MAP_AUTHORITY_CONFLICT`, reported against the map and
@@ -60,3 +74,19 @@ resolves terminology, `zj-debrief` captures process closeout, and
 `zj-neat-freak` reconciles broader knowledge drift. `zj-repo-init` configures
 tracker/triage entrypoints only after a selected map exists; it never invokes
 this skill.
+
+### What overlaps with `zj-docs-architecture`, and who owns it
+
+Both skills run against the same repository, and both have to select a map
+before they can do anything else. Three codes therefore exist under the same
+name in both: `MAP_POINTER_BROKEN`, `MAP_AMBIGUOUS`, and `MAP_LINK_BROKEN`.
+When the two run together they are one condition seen twice, not two defects —
+de-duplicate on `(code, path)`. They are owned here: this skill governs the
+whole map, while `zj-docs-architecture` re-derives them only to reach the
+architecture pages it is responsible for. Everything that needs a page's
+contents (`PAGE_*`, `AUTHORITY_ID_*`, `SOURCE_*`, `ADR_*`) is its alone.
+
+The duplication is tolerated on purpose. Removing it would mean a shared
+module, and a skill is installed by copying its directory — a cross-skill import
+breaks at install time, while carrying a private copy just moves the same code
+and adds a rule that the two must be kept in step.

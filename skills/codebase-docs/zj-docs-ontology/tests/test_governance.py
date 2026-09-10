@@ -20,6 +20,14 @@ sys.modules[SPEC.name] = TOOL
 SPEC.loader.exec_module(TOOL)
 
 
+def front_matter(page: Path) -> str:
+    """Only the header block: the fixtures carry prose that mentions these
+    fields without declaring them."""
+    text = page.read_text(encoding="utf-8")
+    parts = text.split("---\n", 2)
+    return parts[1] if text.startswith("---") and len(parts) > 2 else ""
+
+
 class GovernanceProposalTest(unittest.TestCase):
     def test_greenfield_is_a_confirmation_bound_proposal(self) -> None:
         payload = TOOL.report(FIXTURES / "greenfield", validate_links=True)
@@ -50,6 +58,11 @@ class AuthorityConflictTest(unittest.TestCase):
     Not a matter of which page happens to come first in the map: two pages
     answering the same bounded question is exactly what the Human has to settle,
     so it is reported rather than silently resolved by navigation order.
+
+    The fixture isolates the *binding* layer from the *declaration* layer. The
+    map binds the id twice and no page declares anything, so this is the only
+    tool that can fire here — see the last test in this class for why that
+    matters.
     """
 
     def payload(self, validate: bool = True):
@@ -64,10 +77,32 @@ class AuthorityConflictTest(unittest.TestCase):
     def test_the_conflict_names_both_pages(self) -> None:
         message = self.conflicts()[0]["message"]
         self.assertIn("docs/prds/payment.md", message)
-        self.assertIn("docs/architecture/payments.md", message)
+        self.assertIn("docs/designs/payments.md", message)
 
     def test_a_link_without_an_authority_binding_is_not_part_of_it(self) -> None:
         self.assertNotIn("docs/prds/refund.md", self.conflicts()[0]["message"])
+
+    def test_the_fixture_stays_inside_the_binding_layer(self) -> None:
+        """Two ways this sample could slip into `zj-docs-architecture`'s layer,
+        where a page's own front matter and its `docs/architecture/` placement
+        are the contract. Either one would make the fixture describe a
+        repository that one tool calls valid and the other calls broken — and
+        both tools run against the same repository, so no such repository
+        exists.
+        """
+        root = FIXTURES / CONFLICT
+        pages = [p for p in (root / "docs").rglob("*.md") if p.name != "team-map.md"]
+        self.assertNotEqual([], pages)
+        self.assertEqual(
+            [],
+            [str(p.relative_to(root)) for p in pages if "architecture" in p.parts],
+            "an architecture page here must satisfy the architecture page contract too",
+        )
+        self.assertEqual(
+            [],
+            [str(p.relative_to(root)) for p in pages if "authority" in front_matter(p)],
+            "a page declaring the id would also fire the declaration-layer check",
+        )
 
     def test_the_report_stays_a_proposal(self) -> None:
         self.assertEqual([], self.payload()["mutations"])
