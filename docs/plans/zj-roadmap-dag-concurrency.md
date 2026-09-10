@@ -8,7 +8,7 @@
 
 `zj-roadmap-driven` 现在是一台"单人手写账本"：它假设只有一个 Agent 在写、只有一棵树在长、只有 Human 在点名派活。这个假设在单会话里成立，一旦进入多 Agent（同设备并行、agent + subagent、跨设备）就会四处漏：
 
-1. **并发写不安全。** 每个写命令都是 `load → 修改 → 整图 save`，锁是整图 mkdir 互斥（10s 超时、无 TTL、无心跳）。两个 Agent 同时完成兄弟节点时，各自基于旧快照计算父状态，后写覆盖前写——经典 lost update。
+1. **并发写不安全——但失败模式不是"后写覆盖前写"。** 整条写命令（`load → 修改 → 整图 save`）跑在整图 mkdir 互斥锁内（`roadmap_cli.py:391`），读-改-写在物理上不会交错，父状态也是每次派生而非快照。所以不存在"两个 writer 各写一半"的窗口，"lost update"这个名字是错的。真实失败是：**拿不到锁的进程直接崩溃退出 1**，那次写入从未落盘——不是被覆盖，是根本没发生。根因在锁的异常分类，已在 PR #27 / #28 修复，归因细节见本节末尾的「归因修正」。
 2. **只有树，没有依赖。** 父子关系之外无法表达"1-2-3 依赖 1-4-1"这类跨子树依赖。`blocked` 是 `status` 枚举里可以被 `add` / `update` 人工设置的值，但没有任何代码推导它——既无人设置也无推导，实际是一个永不出现的值。
 3. **Agent 不会自己取活。** 没有就绪集概念，Human 不点名就没有下一步；多 Agent 场景下等于人为串行。
 4. **Token 经济性差。** 所有输出一律 `indent=2` 全量 JSON，没有字段投影、没有紧凑格式、没有 quiet；一个决策要跑两次进程（`decide` + `render`）；`tree` 在单文件模式默认深度 10，一次误用就能灌进几千 token。
@@ -19,6 +19,23 @@
 9. **规划期就已知"这里有未知"，但没有表达它的地方（case 1）。** `mode: explore|exploit` 是实现了的字段（`roadmap.py:32`、CLI `add --mode`），可它只是一个标记：没有 budget（探索到什么程度就该收），没有 exit_criteria（什么算探索完了），也没有"探索产出 → 落成子节点"的机制。于是规划人在规划期面对一段未知时，要么先假装已知、把 placeholder 硬写成看起来确定的节点（规划失真），要么不写（图上出现一段空白，只能靠记忆与口播维持）。Human 说得出"这块还得 explore"，系统接不住这句话。
 10. **执行期涌现的东西无处安放，图会膨胀到人看不懂（case 2）。** 从首节点出发后，Loop 会不断产出路线性材料：新问题、待定的分叉、"这个深井节点比预想的大得多"、跨子树的新关联依赖。这些东西目前只有三个去处——塞进 `notes`（丢失结构、无法查询）、塞进 `decisions`（节点内嵌数组，无法跨节点共享、无法被别的节点引用）、或者直接 `add` 成 roadmap 节点（把零散发现升格为正式任务，图迅速膨胀）。三者都不对，于是 Human 与 Agent 陷入"图越大越不知道自己在哪、下一步该干什么"的细节困境。
 
+#### 归因修正：Problem #1 不是 lost update（2026-09-10 证实）
+
+写作时把它归因为"两个 Agent 各自基于旧快照计算父状态，后写覆盖前写——经典 lost update"。PR #27 的探针推翻了这个说法，PR #28 修完后重跑确认。
+
+**为什么 lost update 物理上不可能**：整条写命令在整图锁内串行，读-改-写不交错；父状态由 `_sync_parent_status()` 派生，不是快照。
+
+**真实的失败是崩溃，不是覆盖**：`os.mkdir` 被运行时 shim 包装后，目录已存在时会抛 `PermissionError` 且 `errno is None`（不是标准 `FileExistsError`）。旧代码只捕获 `FileExistsError`，等待重试循环从未执行，进程**在碰到 carrier 之前就以 exit 1 死掉**。
+
+| 版本 | 25 writer 并发完成兄弟节点 | 子节点完成数 | 父状态 | 不变式违反 |
+|---|---|---|---|---|
+| PR #27 之前（只认 `FileExistsError`） | 2 × exit 0，23 × **exit 1** | 2/25 | `in_progress` | 23/25 |
+| PR #28 之后（按 errno / 消息 / `errno is None` 分类） | 25 × exit 0 | 25/25 | `completed` | 0/25 |
+
+回归防线是 `tests/test_lock_contention.py`（8 writer × 2 轮 + 串行控制例）：它断言"**没有 writer 因为拿不到锁而 exit 1**"以及"父状态与子节点一致、无残留锁目录"。锁分类一旦退回只认 `FileExistsError`，这些用例必须变红。
+
+**这个修正的直接后果**：P2（租约）与 P3（SQLite）**不能再用"解决 lost update"当动机**——那个动机已经不成立。P3 剩下的四条正当性见 Implementation Decisions §5。
+
 > 上述第 9、10 条来自同一件事：**本 spec 到目前为止的整图模型是静态的**——它假设路线在执行开始前已被规划完备，执行只是把它走完。真实情况是路线一边走一边长。P1 的 DAG 表达"该做什么"，没有表达"我们是如何走到这里、为什么现在是这样"。
 
 ## Solution
@@ -28,7 +45,7 @@
 - **P0 稳定性与经济性**：不可变节点 uid、`context` / `next` 命令、输出投影与紧凑格式、稳定错误码。低风险纯增量，且是后续所有并发的地基（uid 不稳定就去搞租约，租约会挂到复用 id 上）。
 - **P1 依赖层（DAG）**：在树之外加一层正交边（`blocks` / `informs` / `supersedes` / `derives-from`），`blocked` 由边推导，提供 `ready` / `critical-path` / `impact` 查询。**树仍然是人类主视图，边默认不进 md**。
 - **P2 并发租约**：节点级 lease（claim / heartbeat / steal / release）+ 作用域令牌 + `--if-rev` 乐观并发，把排他单位从"整图"降到"节点"。
-- **P3 carrier 演进**：新增 SQLite carrier（stdlib `sqlite3`，零新依赖）作为第三种 Roadmap carrier，用事务解决 lost update、用递归 CTE 算 DAG 就绪集与关键路径；bundle 保留为可 diff 的导出形态。
+- **P3 carrier 演进**：新增 SQLite carrier（stdlib `sqlite3`，零新依赖）作为第三种 Roadmap carrier，用递归 CTE 算 DAG 就绪集与关键路径、用事务承载跨多行的原子更新；bundle 保留为可 diff 的导出形态。**P3 不是为了修 lost update**——那个失败模式已在锁层修掉（Problem #1 的归因修正），它剩下的四条正当性见 Implementation Decisions §5。
 - **P4 跨设备**：事件流升格为事实源 + HLC 字段级合并 + OPN/git 同步，各设备物化本地视图。
 - **P5 执行图（Execution Graph）**：把 Human-Agent Loop 本身建模为第二张 DAG（trace layer），处理 Problem 9 / 10。它不是把依赖图重画一遍，而是补上依赖图不承载的另一半信息：这张图是怎么变成现在这样的——每个 roadmap 节点为什么存在、过程中发现了什么、`context` 该沿哪些边给 Agent 供上下文。**树仍然是人类主视图，依赖图默认折叠，trace 图默认完全不进 md。**
 
@@ -186,7 +203,12 @@
 ### 5. Carrier 演进：SQLite 优先于"自研事件流"（P3）
 
 - 新增第三种 Roadmap carrier（SQLite），与 single-file JSON、Roadmap bundle 并列，由同一套 adapter 契约承载。
-- 选择理由：`sqlite3` 属标准库，**零新依赖**；WAL 支持多读一写；事务一次性解决 lost update；递归 CTE 天然表达 DAG 就绪集、关键路径、影响集；history / decisions / edges / leases 各归一表。
+- 选择理由：`sqlite3` 属标准库，**零新依赖**；WAL 支持多读一写；递归 CTE 天然表达 DAG 就绪集、关键路径、影响集；history / decisions / edges / leases 各归一表。
+- **但"用事务解决 lost update"不再是理由**——那个失败模式已由 PR #27 / #28 在锁层修掉。SQLite 剩下的正当性只有四条，实施与评审时不要拿已不成立的理由来论证它：
+  1. **长事务**：一次写涉及多个对象（父状态派生 + 边 + 事件日志）时，JSON carrier 只能整图重写；SQLite 可以在一个事务里改多行并保持原子。
+  2. **跨设备（P4 的前提）**：字段级 HLC 合并需要按行、按字段的读写粒度，整图反序列化做不到。
+  3. **5000 节点读放大**：`tree` / `impact` 今天要 load 整图再过滤，规模上去后每次读都是全量。
+  4. **DAG 递归查询**：就绪集、关键路径、影响集本质是递归遍历；递归 CTE 一次查询完成，应用层要自己写递归并维护 visited 集合。
 - 决策：先做 SQLite，而不是先把事件流升格为主事实源。事件流是 P4 跨设备的前提，但在单设备阶段它只会增加读放大而没有收益。
 - `recommend-storage` 扩展一个 `consider-sqlite` 建议值；**仍然不自动迁移**，迁移只走显式命令。
 - bundle 保留为"纯文本可 diff"的导出/归档形态，不作为并发主力。
@@ -344,7 +366,7 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 - 输出契约：`--format` / `--fields` / `--quiet` 三种组合的字节级输出；`context` 命令等价于四次旧调用的组合结果。
 - 错误码：每个码至少一条用例，断言退出码。
 - DAG：`blocks` 成环被拒；`informs` 成环被允许；前驱完成后 `pending_deps` 归零且目标进入 ready；加边 / 删边后 `blocked` 与 `blocked_reason` 在同一次读命令内立即反映，且**断言 carrier 的 `status` 从未被写成 `blocked`**；`--status blocked` 返回 `E_INVALID_STATUS` + 对应退出码。
-- 并发：两进程并发完成兄弟节点 → 父状态最终一致（无 lost update）；租约过期后可 steal；持旧 fencing token 的写入失败；越界写返回 `E_SCOPE`；冲突写返回 `E_CONFLICT`。
+- 并发：N 个 writer 并发完成兄弟节点 → **全部退出 0**（2 是合法超时，**1 是崩溃，必须一个都没有**）；无 lost completion、父状态与子节点一致、无残留锁目录；外加一条**串行控制例**——控制例都失败说明并发用例在测别的东西。已落地：`tests/test_lock_contention.py`（8 writer × 2 轮）。这条同时是 Problem #1 归因的回归防线：锁分类退回只认 `FileExistsError` 时它必须红。租约过期后可 steal；持旧 fencing token 的写入失败；越界写返回 `E_SCOPE`；冲突写返回 `E_CONFLICT`。
 - 租约参数：`claim` 后 `expires_at == claimed_at + 300s`；`heartbeat` 把 `expires_at` 推到 `now + 300s`（幂等，重复调用不累加）；**`expires_at` 未到期时任何 Agent 侧 `steal` 均失败**（断言存在这样的负向用例，不只是"过期能抢"）；`release --force` 成功并落事件日志。
 - 崩溃恢复：持有者静默（不心跳）后，节点在 **TTL + 一个心跳周期 = 360s** 内可被他人接管；断言恢复延迟上界，而不是"最终能恢复"。
 - 视图护栏：render 后 md 主视图行数不超过阈值；`HUMAN_NOTES` 内容跨 render 存活；新字段默认不出现在 md。

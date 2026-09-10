@@ -3,12 +3,16 @@
 
 Why this file exists
 --------------------
-`docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 reports a lost update
-when two writers mutate the same carrier. A probe (see the PR that introduced
-this file) reproduced it, and the cause turned out to be neither "no leases"
-nor "no transactions": the roadmap already serialises every write command
-inside a whole-graph lock, and parent status is derived, not snapshotted. What
-was broken is the lock's contended branch.
+`docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 originally reported a
+lost update when two writers mutate the same carrier. A probe (see the PR that
+introduced this file) reproduced it, and the cause turned out to be neither
+"no leases" nor "no transactions": the roadmap already serialises every write
+command inside a whole-graph lock, and parent status is derived, not
+snapshotted. What was broken is the lock's contended branch -- the loser
+crashed with exit 1 before it ever wrote, so the write was missing, not
+overwritten. The spec's attribution has since been corrected (issue #48);
+this file is the regression guard for that correction: it asserts no writer
+exits 1.
 
 `roadmap_file_lock()` acquires the lock with `os.mkdir` and used to catch only
 `FileExistsError`. Any runtime that interposes `os.mkdir` — this repository's
