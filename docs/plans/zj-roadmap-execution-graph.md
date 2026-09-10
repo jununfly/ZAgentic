@@ -1,6 +1,6 @@
 # zj-roadmap-driven: 执行图（Execution Graph，P5）
 
-> 状态：问题 / 边界 / 已定输入约束 / schema 与迁移已定（#44、#45）。命令契约（#46）与写权限 + 测试策略（#47）待补。
+> 状态：问题 / 边界 / 已定输入约束 / schema 与迁移 / 命令契约与错误码已定（#44、#45、#46）。写权限 + 测试策略（#47）待补。
 > 上游：`docs/plans/zj-roadmap-dag-concurrency.md` §8（方向与边界已在那篇达成共识，本篇不复制其正文，只引用结论）
 > Ticket：#44（骨架）→ #45（schema 与迁移）→ #46（命令契约）→ #47（写权限与测试）
 > 建议 triage label：`ready-for-agent`
@@ -176,6 +176,7 @@ trace 节点：
 | `body` | string | 内容 |
 | `agent_id` / `device_id` / `session_ref` | string | provenance，**诞生即写**（事后补不回来） |
 | `compressed_from` | list[uid] | 可选。把一条长链压成 higher conclusion（thoughtDAG 的 merge nodes） |
+| `promotion` | object \| null | 可选。**proposal 的一等状态**，见 3.2（`state: proposed\|accepted\|rejected` + target / label / 谁在何时提议与决定） |
 
 trace 节点**没有** `parent` / `children` / `status`（见 2.4），也没有 `decisions`。
 
@@ -214,6 +215,96 @@ uid 规则与 plan 共用同一个命名空间（P0），trace 与 plan 的 uid 
 
 以上每一项在两个 carrier 上各跑一遍。
 
+## §3 命令契约与错误码（#46）
+
+### 3.1 三个必须先承认的现状（源码实测）
+
+1. **`context` / `promote` / `prune` / 任何 trace 命令今天都不存在。** `roadmap_cli.py` 的 `COMMANDS` 表有 20 个条目，没有一个与 trace 相关。因此本节**全部是新增契约**，不是对现状的描述——读到这里的人不要以为"文档说的命令已经能用"。
+2. **没有 open-question 设施。** 全仓 grep `open_question` / `open-question` / `proposal` / `promote` 在 Python 侧 0 命中（只有 `contextlib` 的噪音）。上游 §8.4 写的是"`promote` 默认产出 proposal **并挂 open question**"，而 open question 属 Story 35 / P2，**今天挂不上去**。
+3. **`MULTI_VALUE_FLAGS` 目前只有 `exit-criteria` 一个成员。** `--include` 要注册进去，且它带一个陷阱：裸标志（`--include` 后面不跟值）会被 `_store` 存成 `["true"]`，静默变成"包含一个叫 true 的 include"。
+
+### 3.2 因此：proposal 必须是 trace 节点上的一等状态（本节最关键的一条）
+
+既然没有 open-question 设施可以挂，**proposal 就不能是"一个待办事项"，而必须是 trace 节点上的字段**：
+
+```
+promotion: {
+  state: "proposed" | "accepted" | "rejected",
+  target: <plan uid>,        # 提议挂到哪个 plan 节点下
+  label:  "...",
+  proposed_by / proposed_at,
+  decided_by  / decided_at   # accept / reject 时写
+}
+```
+
+- `promote`（默认）写 `state: "proposed"`，**退出码 0**——它不是失败，也不是"待重试"，它就是这一轮的预期结果。
+- `promote --accept` 由 Human 执行：改 `state: "accepted"`，落正式 plan 节点，自动写 `derives-from` 边。
+- `promote --reject` 记 `state: "rejected"`，**保留痕迹不物理删除**（与既有 `remove-decision` 同构：撤回是记录，不是擦除）。
+- **P2 的 open-question 设施未来从同一状态读出**，不另建一张待办表——否则会出现"proposal 说已接受、open question 还挂着"的第二类双真相。
+
+连带：§2 的 `max_children` 只计 **已 accepted** 的正式子节点（输入约束 2），`proposed` / `rejected` 都不占额度。
+
+### 3.3 命令契约
+
+命名：`trace <action>`（一个 `COMMANDS` 条目，内部按 positional 分派 add / list / get / prune），而不是 `trace-add` / `trace-get` 各占一条。理由：trace 是一个命令家族，且上游 §8 的写法就是 `trace add`。若实施时更想要与 `remove-decision` 一致的连字符风格，`trace-add` 是纯机械重命名，无语义差别——**这条不值得重新论证**。
+
+| 命令 | 参数 | 行为 | 写在哪层 | 锁 |
+|---|---|---|---|---|
+| `trace add <path> --kind <enum> --body "…"` | `--under <plan uid>`（写 `prompted-by`）、`--from <trace uid>`（写 mainline/reference 边） | 追加 trace 节点，provenance 诞生即写，**无需审批**；不进 `children`（2.4） | trace | 整图锁 |
+| `promote <path> <trace_uid> --under <plan uid> --label "…"` | — | 默认写 `promotion.state="proposed"` | trace（写 promotion 字段） | 整图锁 |
+| `promote <path> <trace_uid> --accept` | — | Human 动作：落 plan 节点 + `derives-from` 边 | **plan** | 整图锁 |
+| `promote <path> <trace_uid> --reject [--reason "…"]` | — | 记 rejected，保留痕迹 | trace | 整图锁 |
+| `prune <path> <trace_uid>` | `--edge <edge_id>` | **删边而不是删节点**（借 thoughtDAG：删一条边即改变上下文）。不带 `--edge` 时默认删该节点的 mainline 入边——从上下文移除，节点仍在 | 边 | 整图锁 |
+| `context <path> <node_uid> --include …` | `decisions` / `trace` / `children`，可重复 | edge-driven 上下文；默认 `layer='plan'`（2.2）；`--include decisions` 读的是 `node.decisions`（输入约束 3） | 只读 | 读锁（若实现无读锁则无） |
+
+参数解析的两条约束：
+
+- `--include` 注册进 `MULTI_VALUE_FLAGS`；**值为 `true`（被当成裸标志）时直接报错**，不要静默接受。
+- 所有输出走 stdout 的 JSON，与既有命令一致；失败输出到 stderr 且**必须包含 `E_*` code 字符串**——Agent 按 code 分支，不按文案匹配（这条沿用 `RoadmapError` 已有的口号）。
+
+### 3.4 错误码与退出码：两个维度，不要一对一
+
+最容易写歪的地方是把每个 `E_*` 都配一个退出码。两者用途不同：
+
+- **错误码（`E_*`）**：细粒度，给 Agent 在代码里分支用。
+- **退出码**：粗粒度，给 shell / 编排用，只区分**重试语义**。现有四个：0 成功、1 通用失败、2 锁超时（可重试）、3 预算触顶（Agent 该收手）。
+
+**规则：新错误码默认映射退出码 1。只有新增"需要不同重试语义"的类别才开新退出码。** 这条是为了防止退出码膨胀——退出码一旦按 `E_*` 一对一扩张，Agent 就要维护一张和错误码等长的表，而它真正需要的只是"要不要重试"。
+
+新增错误码（全部并进 `roadmap.py` 的 `ERROR_EXIT_CODES`，每个一个 `RoadmapError` 子类，**不另起一套机制**——PR #34 已定）：
+
+| code | 触发 | exit |
+|---|---|---|
+| `E_TRACE_NOT_FOUND` | 引用不存在的 trace uid | 1 |
+| `E_INVALID_KIND` | `trace add` 的 kind 不在枚举 | 1 |
+| `E_INVALID_LAYER` | 对 plan 节点用 trace 命令，或反向 | 1 |
+| `E_LAYER_VIOLATION` | 试图把 trace 写进 `children` / 设 `parent`（2.4 的硬前提） | 1 |
+| `E_PROMOTE_TARGET_INVALID` | `--under` 的目标不存在，或不是 plan 节点 | 1 |
+| `E_REFERENCED` | 删除被引用者：已被 `promote --accept` 引用的 trace、或被 `compressed_from` 引用的节点 | 1 |
+| `E_CYCLE` | 复用 P1 的环检测，不另起一套 | 1 |
+
+### 3.5 幂等与并发
+
+- 写操作仍在整图锁内（现有 `roadmap_file_lock` + `ExitStack`），锁超时沿用退出码 2。
+- 幂等表（都是退出码 0，不报错）：
+  - 重复 `promote`（同 target 同 label）→ 返回既有 proposal，不新增。
+  - 对已 `accepted` 再 `--accept` → 不写第二个节点、不写第二条边。
+  - 重复 `--reject` → 不新增痕迹条目。
+- 接受多条 proposal：**在同一把锁内串行执行同一条命令多次**，不新增批量命令（输入约束 2）。
+
+### 3.6 负向用例（#46，每条都要能"抽掉实现就红"）
+
+- `trace add` 之后，所有 plan 遍历命令输出**字节不变**（2.9 的延续）。
+- `promote`（默认）之后：md 输出字节不变、plan 节点数不变。
+- `promote --accept` 之后：plan 节点 +1、`derives-from` 边 +1、md 输出**变化**（这次变化是预期的）。
+- 删除被 `promote --accept` 引用的 trace → `E_REFERENCED`；删除被 `compressed_from` 引用的 trace → `E_REFERENCED`。
+- 任何把 trace 塞进 `children` 的写入路径 → `E_LAYER_VIOLATION`。
+- `context` 不带 `--include trace` 时，输出不含任何 trace 内容（字节级）。
+- 每个新错误码一条用例，**断言 code 字符串而不是错误信息文案**。
+- `--include` 裸用（值为 `true`）→ 报错，不静默接受。
+
+以上每一项在两个 carrier 上各跑一遍。
+
 ## 方法来源与一处改写
 
 方法论借自 [`chenxiachan/thoughtdag`](https://github.com/chenxiachan/thoughtdag)（把多轮会话建模为以边为上下文的可编辑无环图，"The graph is acyclic. You are the loop."），借的是方法而不是它的画布 UI 与多 Harness 会话导入——本技能只有 CLI 与 carrier。
@@ -237,8 +328,8 @@ case 1 的 budget / exit_criteria 是唯一例外：它不依赖任何 P5 新结
 ## 本篇未覆盖（后续 ticket）
 
 #45（schema、迁移与 `layer` 过滤契约）已并入上文 §2。
+#46（命令契约与错误码）已并入上文 §3。
 
-- **#46**：`trace add` / `promote` / `prune` / `context --include` 的参数、输出与错误码；新错误码全部并进现有那一张 `ERROR_EXIT_CODES` 表。
 - **#47**：append / rewrite 权限矩阵、Testing 缝与负向用例清单、详细落地顺序与风险。
 
 ## 风险（本篇层面）
@@ -246,3 +337,4 @@ case 1 的 budget / exit_criteria 是唯一例外：它不依赖任何 P5 新结
 1. **P5 自己携带它要治的病。** 若 trace 允许进 md、允许被 `ready` 遍历、或不经人审就变成 roadmap 节点，"多记录一层就多看一张图"会重演 case 2。硬判据（md 行数不随 trace 增长）是唯一防线。
 2. **共享 carrier 把"忘记过滤 `layer`"从远端错误变成当场泄漏**，且与"视图膨胀"这个头号风险叠加在同一个 bug 上。
 3. **视图膨胀是头号风险。** 本技能的核心卖点是"Human 一眼看懂"。任何向 md 加内容的提议，先回答"这一行能让 Human 少问一句吗？"——默认答案是不加。
+4. **命令面膨胀。** 本节新增 4 个命令（`trace` / `promote` / `prune` / `context`），这是 Human 的长期认知负担。判据：新命令必须能被 **Agent 机械调用**（JSON 输出 + 稳定 `E_*` code），否则不值得进 CLI——给 Agent 用的命令和给 Human 看的视图是两件事，别把后者塞进前者。
