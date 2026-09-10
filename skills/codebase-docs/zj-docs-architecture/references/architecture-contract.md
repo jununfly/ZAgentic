@@ -74,6 +74,35 @@ silently — the map and every inbound link change with it. The validator report
 violations as `PAGE_NAME_PREFIX`, `PAGE_NAME_SHAPE`, `PAGE_NAME_DATE`, and
 `PAGE_NAME_VERSION_OR_STATUS`.
 
+## Maintenance triggers
+
+A handbook change is in scope when any signal below appears. Signals, not
+intent: the question is not "is this architectural" but "did one of these
+change". This section is authoritative for the list; the copy in `SKILL.md`
+must stay item-for-item identical, and `tests/test_docs_consistency.py`
+compares the two.
+
+- **Extension seam** — a new plugin, registry, hook, or callback entry exists, or
+  an existing one changes signature: the handbook must say where outside code
+  attaches and what it has to obey.
+- **Durable owner** — a rule or explanation moves, or now appears on two pages:
+  ownership changed, so the page that lost it becomes a link.
+- **Cross-process contract** — the message, schema, or call convention between
+  two processes changes: every page describing either side has to agree.
+- **Effect policy** — retry, idempotency, write path, or failure compensation
+  changes: a flow page's failure behavior is stale until it is re-checked.
+- **Replay boundary** — what can be replayed, from which point, and against what
+  stored input changes: the flow page's state and evidence claims move with it.
+- **Lifecycle rule** — a state machine, or when something is created, migrated,
+  or destroyed, changes: those transitions are documented behavior, not code
+  detail.
+- **Accepted ADR** — an ADR moves to `accepted` or `superseded`: accepted ADRs
+  may support a claim and proposed ones may not, so a supersession withdraws
+  support from every page citing it.
+- **Source-map target** — a path under `## Source map` moves, is renamed, or is
+  deleted: the validator reports it as `SOURCE_*`, and the claim it supported
+  needs re-checking, not just the link.
+
 ## Source map and authority
 
 Use links or repository-relative inline-code paths under `## Source map` for
