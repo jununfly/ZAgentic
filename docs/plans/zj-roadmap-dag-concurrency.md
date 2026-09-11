@@ -83,7 +83,21 @@
 21. As an Agent，I want `critical-path` to return the longest unfinished chain，so that I can tell Human what actually blocks completion。
 22. As an Agent，I want `impact <node>` to return the downstream affected set，so that I can warn before a change ripples。
 23. As a Human，I want the md view to show a short "阻塞链" list when something is blocked，so that I see why progress stopped without opening the JSON。
-24. As an Agent，I want ready-set computation to be O(1) incremental (a `pending_deps` counter decremented on predecessor completion)，so that a 5,000-node roadmap stays fast。
+24. As an Agent，I want ready-set computation to be O(1) incremental (a `pending_deps` counter decremented on predecessor completion)，so that a 5,000-node roadmap stays fast。**推迟到 P3**——见下方「推迟说明：Story 24」。
+
+#### 推迟说明：Story 24（`pending_deps` 计数器）→ P3
+
+**决议（2026-09-11）：不在 P1 实现，推迟到 P3。**
+
+**张力**：Story 18 把 `blocked` 定成纯派生、永不落盘，理由写得不含糊——落盘就得维护一份"重算触发点"清单（加边、删边、前驱完成、`delete`、`supersedes`、carrier 迁移…），漏一个就是静默陈旧。而 Story 24 要的 `pending_deps` 恰恰是**在前驱完成时递减的落盘计数器**，那份清单一条不少，漏起来一模一样。Further Notes 风险 5 已经把这层关系点破了：`blocked` 一旦落盘，就会与计数器、派生父状态构成三个真相源。
+
+换句话说，这两条 Story 不能无条件下共存：要么承认"重算触发点清单"这笔代价是可以接受的（那就该回到 Story 18 重新论证），要么承认今天做的是过早优化。本决议取后者。
+
+**为什么是过早优化**：5000 节点按 `blocks` 边算一次就绪集是 O(V+E)，毫秒级；roadmap 的写命令今天就要 load 整图，多这一趟读不改变数量级。真到 5000 节点时瓶颈是"每次读都 load 整图 JSON"——那正是 P3（SQLite carrier）四条正当性之一（Implementation Decisions §5 第 3 条），与本 Story 是同一件事，不该重复立项。
+
+**未来若真要做，落点是 P3 的 carrier**：用递归 CTE 一次查询算出就绪集，而不是在今天的派生层加一台需要同步的缓存。计数器是 carrier 的实现细节，不该上升到 Roadmap 的数据模型。
+
+**未改动**：Story 18 的"纯派生、永不落盘"语义保持不变；本次不实现任何计数器。
 
 ### 并发与所有权（P2）
 
@@ -179,9 +193,9 @@
   - 连带：`--status blocked` 从 `add` / `update` 的可设枚举中移除，人工设置返回 `E_INVALID_STATUS`。否则"人设 blocked"与"派生 blocked"会互相矛盾，等于又造一个真相源。
   - 与既有范式一致：父状态已由 `_sync_parent_status()` 派生，本决策不引入第二种状态来源。
   - 放弃落盘的理由：落盘必须维护一份"重算触发点"清单（加边、删边、前驱完成、`delete`、`supersedes`、carrier 迁移…），漏一个就是静默陈旧——与 `remove-decision` 在两个 carrier 上的语义漂移属同一类缺陷，本仓库已经犯过一次。
-  - 代价可接受：就绪集有 `pending_deps` 计数器（O(1)），`blocked` 只影响单节点读取，读一次的成本远小于读整图 JSON。
+  - 代价可接受：没有计数器时，就绪判定与 `blocked` 都按 `blocks` 边实时算一遍，成本 O(V+E)；而 roadmap 的写命令今天就要 load 整图，这条读路径不改变数量级。真需要优化时落点应是 P3 的 carrier（递归 CTE 一次算出就绪集），而不是在派生层加一台要同步的 cache——见「推迟说明：Story 24」（User Stories 节）。
   - 跨设备（P4）若需要离线展示"上次已知 blocked"，落**本地物化视图**，不进共享事实源。
-- 就绪判定：`status == pending` 且 `pending_deps == 0` 且无有效租约。`pending_deps` 是增量计数器，前驱完成时递减，O(1)。
+- 就绪判定：`status == pending` 且**没有未完成的 `blocks` 前驱**且无有效租约。判定按边实时计算（O(V+E)），不依赖任何计数器——见「推迟说明：Story 24」（User Stories 节）。
 - 与既有技能链的接缝保持不变：`zj-to-tickets` 导出的 blocking edges 映射为 `blocks` 边，`informs` 留给 wayfinder 的上下文关系。
 
 ### 4. 并发：节点租约取代整图锁（P2）
@@ -376,7 +390,7 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 - 节点身份：删除尾部子节点后新节点 uid 与显示 id 均不复用；老 roadmap 迁移后 uid 补齐。
 - 输出契约：`--format` / `--fields` / `--quiet` 三种组合的字节级输出；`context` 命令等价于四次旧调用的组合结果。
 - 错误码：每个码至少一条用例，断言退出码。
-- DAG：`blocks` 成环被拒；`informs` 成环被允许；前驱完成后 `pending_deps` 归零且目标进入 ready；加边 / 删边后 `blocked` 与 `blocked_reason` 在同一次读命令内立即反映，且**断言 carrier 的 `status` 从未被写成 `blocked`**；`--status blocked` 返回 `E_INVALID_STATUS` + 对应退出码。
+- DAG：`blocks` 成环被拒；`informs` 成环被允许；前驱全部完成后目标进入 ready（按边实时判定，无计数器）；加边 / 删边后 `blocked` 与 `blocked_reason` 在同一次读命令内立即反映，且**断言 carrier 的 `status` 从未被写成 `blocked`**；`--status blocked` 返回 `E_INVALID_STATUS` + 对应退出码。
 - 并发：N 个 writer 并发完成兄弟节点 → **全部退出 0**（2 是合法超时，**1 是崩溃，必须一个都没有**）；无 lost completion、父状态与子节点一致、无残留锁目录；外加一条**串行控制例**——控制例都失败说明并发用例在测别的东西。已落地：`tests/test_lock_contention.py`（8 writer × 2 轮）。这条同时是 Problem #1 归因的回归防线：锁分类退回只认 `FileExistsError` 时它必须红。租约过期后可 steal；持旧 fencing token 的写入失败；越界写返回 `E_SCOPE`；冲突写返回 `E_CONFLICT`。
 - 租约参数：`claim` 后 `expires_at == claimed_at + 300s`；`heartbeat` 把 `expires_at` 推到 `now + 300s`（幂等，重复调用不累加）；**`expires_at` 未到期时任何 Agent 侧 `steal` 均失败**（断言存在这样的负向用例，不只是"过期能抢"）；`release --force` 成功并落事件日志。
 - 崩溃恢复：持有者静默（不心跳）后，节点在 **TTL + 一个心跳周期 = 360s** 内可被他人接管；断言恢复延迟上界，而不是"最终能恢复"。
@@ -412,7 +426,7 @@ case 2 的症状（"图膨胀后人不知道自己在哪"）容易被误读成"�
 2. **两种 carrier 语义漂移。** 现状已有一例：bundle 的 `remove-decision` 是撤回保留历史，单文件模式是真删。加第三种 carrier 前必须先统一语义，否则漂移会三倍放大。
 3. **并发先于 uid 是本末倒置。** 位置型 id 复用会让租约挂到错误的节点上，这种 bug 静默且难查。P0 的 uid 是 P2 的硬前置。
 4. **术语冲突。** 见 Implementation Decisions §7：Node lease 不得命名为 Work Item。
-5. **状态双重来源（已由纯派生决策规避）**。若 `blocked` 落盘，就会与 `pending_deps` 计数器、派生父状态构成三个真相源，并需要一份"重算触发点"清单。实施时若出现"为了渲染方便把 blocked 缓存进 carrier"的冲动，应落本地物化视图而非共享事实源。
+5. **状态双重来源（已由纯派生决策规避）**。若 `blocked` 落盘，就会与 `pending_deps` 计数器（已推迟到 P3，见 Story 24）、派生父状态构成三个真相源，并需要一份"重算触发点"清单。实施时若出现"为了渲染方便把 blocked 缓存进 carrier"的冲动，应落本地物化视图而非共享事实源。
 6. **租约回收的两难（已由"短 TTL + 心跳"决策化解）**。崩溃恢复延迟与误抢风险是一对矛盾：TTL 越长越不会误抢，但崩溃后节点僵死越久。本 spec 的解法不是加自动抢占，而是**缩短 TTL（300s）+ 心跳续约（60s）**——用续约换掉长 TTL，恢复延迟与双写风险同时下降。风险留给实施阶段的是**参数漂移**：把 TTL 调回 1800s 又不实现心跳 = 节点崩溃后卡死半小时；实现 TTL 300s 却不实现心跳 = 正常长任务每 5 分钟被回收一次。二者都比"两个都做"更糟，所以 §4 要求 `claim` 与 `heartbeat` 同批次交付，Testing 要求对过期前不可抢、心跳幂等、恢复延迟上界各有断言。
 
 7. **P5 治疗的病，P5 自己也携带。** case 2 的症状是"图膨胀后人不知道自己在哪"，而 P5 引入了第二张天生快速增殖的图。若 trace 允许进 md、允许被 `ready` 遍历、或者 trace 节点可以不经人审就变成 roadmap 节点，那么"多记录一层、就多看一张图"会重演 case 2 的老毛病——越记录越迷路。§6 的护栏与 §8.2 的写权限分层因此不是修饰件套，是这个 feature 能否成立的前提。**判断标准很简单：trace 能自由增殖，但 md 的行数不允许随之增长。**
