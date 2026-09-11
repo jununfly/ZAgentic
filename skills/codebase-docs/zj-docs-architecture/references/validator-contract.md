@@ -65,15 +65,35 @@ that writes it, the way a Markdown link does. A map at `handbook/map.md` linking
 
 It was not always one base: until #67, `## Source map` resolved from the
 repository root. That is not Markdown's rule, so it was written the other way
-routinely — and silently, because an upward path resolving outside the
-repository is dropped rather than reported (issue #69). The scan that decided
-this found 86 such entries in this repository's own handbook: a Source map
-section that was never actually checked, invisible behind an exit code of 0.
+routinely — and silently, because an upward path resolves outside the
+repository and was dropped with no diagnostic at all (issue #69). The scan that
+decided this found 86 such entries in this repository's own handbook: a Source
+map section that was never actually checked, invisible behind an exit code of 0.
+A green run could not tell "checked and clean" from "never checked", which is
+why `LinkBaseTest` counts resolved entries rather than trusting the exit code.
 
 Unifying the bases was a breaking change to existing handbooks and fixtures, not
 a cleanup. `LinkBaseTest` pins the shared base by resolving the same target each
 way and asserting which one is in force; see issue #67 before touching either
 `source_paths()` or `map_entries()`.
+
+### Two ways a source-map target is wrong
+
+`SOURCE_TARGET_MISSING` means the path resolves inside the repository and the
+file is not there — the page cites something that was moved or deleted.
+`SOURCE_TARGET_OUTSIDE` means the path resolves *outside* the repository, so it
+cannot mean anything: a page nested three levels deep citing
+`../../../../src/billing/engine.rs` has climbed past its own root.
+
+These are separate codes because the fixes differ: the first is a stale
+reference, the second is a path that was never right. Until #69 the second was
+dropped in silence, so a Source map entry could claim a citation that resolved
+to nothing while the validator reported no defect.
+
+An `http://`, `https://`, `mailto:`, or `#anchor` target is neither: a Source
+map may cite a stable external reference, so those are skipped rather than
+reported. Only a path that tries to name a repository file and misses is a
+defect.
 
 ### Overlap with `zj-docs-ontology`
 

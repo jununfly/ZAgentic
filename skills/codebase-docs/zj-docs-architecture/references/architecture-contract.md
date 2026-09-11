@@ -115,7 +115,8 @@ Markdown link uses: a page at
 `handbook/architecture/subsystems/ta-billing-engine.md` cites
 `../../src/billing/engine.rs`. Repository-root spelling — `src/billing/engine.rs`
 — resolves to a path *under the page* and is reported as
-`SOURCE_TARGET_MISSING`. Map links and Source map entries therefore share one
+`SOURCE_TARGET_MISSING`; a path that climbs past the repository root is reported
+as `SOURCE_TARGET_OUTSIDE`. Map links and Source map entries therefore share one
 base; there is no second rule to learn.
 
 Process pages, plans, retros, raw evaluations, research ledgers, runtime traces,
