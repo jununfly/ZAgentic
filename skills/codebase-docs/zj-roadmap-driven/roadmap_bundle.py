@@ -20,13 +20,24 @@ from typing import Any, Iterable, Optional
 
 # 预算与开工计数是 carrier 无关的语义，复用 roadmap.py 的实现，
 # 避免两个 carrier 对同一个 budget 各算一套（remove-decision 那类漂移）。
-from roadmap import build_budget, check_child_budget, count_round_start
+from roadmap import (
+    EDGE_BLOCKS,
+    EDGE_SUPERSEDES,
+    EDGE_TYPES,
+    CycleError,
+    NodeNotFound,
+    build_budget,
+    check_child_budget,
+    count_round_start,
+)
 
 
 BUNDLE_SCHEMA = "zj-roadmap-bundle-manifest/v1"
 CURRENT_SCHEMA = "zj-roadmap-bundle-current/v1"
 SNAPSHOT_SCHEMA = "zj-roadmap-bundle-snapshot/v1"
 HISTORY_SCHEMA = "zj-roadmap-bundle-history/v1"
+EDGE_SCHEMA = "zj-roadmap-bundle-edge/v1"
+EDGE_INDEX_SCHEMA = "zj-roadmap-bundle-edge-index/v1"
 STATUS_VALUES = {"pending", "in_progress", "completed", "blocked"}
 MODE_VALUES = {"explore", "exploit"}
 NODE_ID_PATTERN = re.compile(r"^[1-9][0-9]*(?:-[1-9][0-9]*)*$")
@@ -104,6 +115,7 @@ class RoadmapBundle:
     def __init__(self, bundle_path: str | Path):
         self.path = Path(bundle_path).expanduser().resolve()
         self.manifest: dict[str, Any] = {}
+        self.last_edge_cascade: dict = {"total": 0, "by_type": {}}
 
     # ---- creation and loading -------------------------------------------------
 
@@ -168,6 +180,11 @@ class RoadmapBundle:
                     raise BundleError(f"legacy roadmap node {node_id} has invalid child reference {child_id}")
         if nodes["1"].get("parent") is not None:
             raise BundleError("legacy roadmap root node '1' must not have a parent")
+        for edge in data.get("edges") or []:
+            if not isinstance(edge, dict) or edge.get("from") not in nodes or edge.get("to") not in nodes:
+                raise BundleError(f"legacy roadmap has an edge with a missing endpoint: {edge}")
+            if edge.get("type") not in EDGE_TYPES:
+                raise BundleError(f"legacy roadmap has an edge of unknown type: {edge}")
 
     def _initialize_layout(self, data: dict[str, Any], snapshot_interval: int) -> None:
         self.path.mkdir(parents=True, exist_ok=True)
@@ -194,6 +211,16 @@ class RoadmapBundle:
             self._write_node_file(node_id, node)
             self._write_decisions_file(node_id, node.get("decisions", []))
             self._set_status_marker(node_id, node["status"], True)
+        # 边跟着一起迁：漏掉它就是静默丢数据，而命令层看起来一切正常。
+        # 没有边时一个目录都不要建——布局必须和没有边的 bundle 完全一致。
+        edges = data.get("edges") or []
+        if edges:
+            self._edges_dir().mkdir(parents=True, exist_ok=True)
+            for edge in edges:
+                self._write_edge_file({key: edge[key] for key in ("id", "from", "to", "type")})
+            self._rebuild_edge_index()
+            # 计数器按现存最大 id 续，不是按条数：删过的 id 不该在迁移后被复用。
+            self.manifest["edgeSequence"] = max(int(str(edge["id"])[1:]) for edge in edges)
         stats = self._calculate_stats(nodes.values())
         atomic_json(self.path / "indexes/stats.json", stats)
         atomic_json(self.path / "indexes/focus.json", {"focus": self._focus_from_nodes(nodes.values())})
@@ -469,12 +496,163 @@ class RoadmapBundle:
             result.extend(self._collect_subtree(child_id))
         return result
 
+    # ── 依赖边（P1 依赖层）──────────────────────────────
+    # 边只存一处：`edges/<id>.json`。节点分片里禁止反向存 edge id——
+    # 那会造出"节点说有这条边、edges/ 里没有"的双写不一致，而事务对它免疫
+    # （你忘了写哪个位置，事务照样提交）。`edges/index.json` 是纯冗余，能从
+    # 目录重扫重建，坏了不丢信息；节点里的 edge id 坏了则无法判断谁对。
+
+    def _edges_dir(self) -> Path:
+        return self.path / "edges"
+
+    def _edge_ids(self) -> list[str]:
+        """按 id 的数字序返回——与 single-file 的插入序一致，两个 carrier 可比对。"""
+        directory = self._edges_dir()
+        if not directory.is_dir():
+            return []
+        return sorted((path.stem for path in directory.glob("e*.json")), key=lambda name: int(name[1:]))
+
+    def _read_edge_file(self, edge_id: str) -> dict[str, Any]:
+        path = self._edges_dir() / f"{edge_id}.json"
+        if not path.is_file():
+            raise KeyError(f"边不存在: {edge_id}")
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise BundleError(f"could not read edge shard {path}: {error}") from error
+        if not isinstance(value, dict):
+            raise BundleError(f"edge shard is not an object: {path}")
+        value = dict(value)
+        value.pop("schema", None)
+        return value
+
+    def _write_edge_file(self, edge: dict[str, Any]) -> None:
+        atomic_json(self._edges_dir() / f"{edge['id']}.json", {"schema": EDGE_SCHEMA, **edge})
+
+    def _rebuild_edge_index(self) -> dict[str, Any]:
+        """从 edges/ 目录重扫索引。目录不存在时不要创建——那会污染布局。"""
+        index: dict[str, Any] = {"schema": EDGE_INDEX_SCHEMA, "from": {}, "to": {}}
+        for edge_id in self._edge_ids():
+            edge = self._read_edge_file(edge_id)
+            index["from"].setdefault(edge["from"], []).append(edge_id)
+            index["to"].setdefault(edge["to"], []).append(edge_id)
+        if self._edges_dir().is_dir():
+            atomic_json(self._edges_dir() / "index.json", index)
+        return index
+
+    def _read_edge_index(self) -> dict[str, Any]:
+        path = self._edges_dir() / "index.json"
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+        return self._rebuild_edge_index()
+
+    def _write_edge_index(self, index: dict[str, Any]) -> None:
+        atomic_json(self._edges_dir() / "index.json", index)
+
+    def add_edge(self, from_id: str, to_id: str, edge_type: str) -> dict[str, Any]:
+        """在两个节点之间记一条边。返回写入的边。"""
+        for endpoint in (from_id, to_id):
+            try:
+                self._read_node_file(endpoint)
+            except KeyError:
+                raise NodeNotFound(f"节点不存在: {endpoint}") from None
+        if edge_type not in EDGE_TYPES:
+            raise ValueError(f"无效的边类型: {edge_type}")
+        if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_id, from_id):
+            raise CycleError(
+                f"{from_id} -blocks-> {to_id} 会让依赖图成环"
+                f"（{to_id} 已经直接或间接阻塞 {from_id}）"
+            )
+        self._edges_dir().mkdir(parents=True, exist_ok=True)
+        sequence = int(self.manifest.get("edgeSequence", 0)) + 1
+        self.manifest["edgeSequence"] = sequence
+        edge = {"id": f"e{sequence}", "from": from_id, "to": to_id, "type": edge_type}
+        self._write_edge_file(edge)
+        index = self._read_edge_index()
+        index.setdefault("from", {}).setdefault(from_id, []).append(edge["id"])
+        index.setdefault("to", {}).setdefault(to_id, []).append(edge["id"])
+        self._write_edge_index(index)
+        if edge_type == EDGE_SUPERSEDES:
+            # 被取代的节点转 archived 但不删除：它的决策与历史仍然可读。
+            # 用标记而不是 status，因为"completed 且 archived"（做完了但被取代）
+            # 是合理组合，塞进 status 会丢掉"完成过"这个信息。
+            node = self._read_node_file(to_id)
+            node["archived"] = True
+            self._write_node_file(to_id, node)
+        self._commit("edge-added", {"edgeId": edge["id"], "from": from_id, "to": to_id, "type": edge_type}, self._read_stats())
+        return edge
+
+    def list_edges(self, node_id: Optional[str] = None) -> list[dict[str, Any]]:
+        """列出全部边；给了 node_id 就只列与它相连的（入边 + 出边）。"""
+        if node_id is None:
+            return [self._read_edge_file(edge_id) for edge_id in self._edge_ids()]
+        index = self._read_edge_index()
+        selected = set(index.get("from", {}).get(node_id, [])) | set(index.get("to", {}).get(node_id, []))
+        return [self._read_edge_file(edge_id) for edge_id in self._edge_ids() if edge_id in selected]
+
+    def remove_edges_touching(self, node_ids: set) -> dict:
+        """删掉所有端点落在 node_ids 里的边。返回 {"total": n, "by_type": {...}}。
+
+        边不能独立于节点存在——节点没了，它的边就没有信息量，留着只会变成
+        悬空边。所以 delete 默认级联，不设 --cascade 之类的开关。
+
+        不写 history：调用方（delete_node）会在自己的 event 里带上条数，
+        一次删除不该产生两条 event。
+        """
+        directory = self._edges_dir()
+        if not directory.is_dir():
+            # 一条边都没有时别碰磁盘：否则会给从未用过边的 bundle 造出
+            # edges/ 目录与空 index，违反"没有边时布局与 P1 之前一致"。
+            return {"total": 0, "by_type": {}}
+        by_type: dict = {}
+        doomed = []
+        for edge_id in self._edge_ids():
+            edge = self._read_edge_file(edge_id)
+            if edge["from"] in node_ids or edge["to"] in node_ids:
+                by_type[edge["type"]] = by_type.get(edge["type"], 0) + 1
+                doomed.append(edge_id)
+        for edge_id in doomed:
+            (directory / f"{edge_id}.json").unlink()
+        if doomed:
+            self._rebuild_edge_index()
+        return {"total": sum(by_type.values()), "by_type": by_type}
+
+    def remove_edge(self, edge_id: str) -> dict[str, Any]:
+        """删掉一条边。返回被删掉的边。"""
+        edge = self._read_edge_file(edge_id)
+        (self._edges_dir() / f"{edge_id}.json").unlink()
+        self._rebuild_edge_index()
+        self._commit("edge-removed", {"edgeId": edge_id}, self._read_stats())
+        return edge
+
+    def _blocks_reachable(self, start: str, target: str) -> bool:
+        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。"""
+        adjacency: dict[str, list[str]] = {}
+        for edge_id in self._edge_ids():
+            edge = self._read_edge_file(edge_id)
+            if edge["type"] == EDGE_BLOCKS:
+                adjacency.setdefault(edge["from"], []).append(edge["to"])
+        seen: set[str] = set()
+        stack = [start]
+        while stack:
+            current = stack.pop()
+            if current == target:
+                return True
+            if current in seen:
+                continue
+            seen.add(current)
+            stack.extend(adjacency.get(current, []))
+        return False
+
     def delete_node(self, node_id: str) -> list[str]:
         if node_id == "1":
             raise BundleError("不能删除根节点")
         node = self._read_node_file(node_id)
         parent = self._read_node_file(node["parent"])
         deleted_nodes = self._collect_subtree(node_id)
+        # 先删边、后删节点：万一中间被打断，剩下的是"边没了、节点还在"这种
+        # 能重做的半态，而不是悬空边。穷人的事务——零成本，且两个 carrier 一致。
+        self.last_edge_cascade = self.remove_edges_touching({item["id"] for item in deleted_nodes})
         parent["children"].remove(node_id)
         self._write_node_file(parent["id"], parent)
         stats = self._read_stats()
@@ -493,7 +671,11 @@ class RoadmapBundle:
         stats["max_depth"] = max((node_depth(path.stem) for path in (self.path / "nodes").glob("*.json")), default=0)
         self._sync_parent_status(parent["id"], stats, include_self=True)
         self._refresh_focus()
-        self._commit("nodes-deleted", {"nodeIds": [item["id"] for item in deleted_nodes]}, stats)
+        payload = {"nodeIds": [item["id"] for item in deleted_nodes]}
+        if self.last_edge_cascade["total"]:
+            # 只在真删了边时带：没有边的 bundle 的 history 必须与 P1 之前逐字节一致。
+            payload["removedEdges"] = self.last_edge_cascade
+        self._commit("nodes-deleted", payload, stats)
         return [item["id"] for item in deleted_nodes]
 
     def add_decision(self, node_id: str, question: str, answer: str, note: str = "") -> dict[str, Any]:
@@ -736,6 +918,15 @@ class RoadmapBundle:
                 decisions = self._read_decisions_file(node_id)
                 if not isinstance(decisions, list):
                     errors.append(f"node {node_id} decisions are not a list")
+            for edge_id in self._edge_ids():
+                try:
+                    edge = self._read_edge_file(edge_id)
+                except (KeyError, BundleError) as error:
+                    errors.append(str(error))
+                    continue
+                for endpoint in ("from", "to"):
+                    if edge.get(endpoint) not in node_ids:
+                        errors.append(f"edge {edge_id} points at missing node {edge.get(endpoint)}")
             expected = self._calculate_stats(nodes)
             expected["total_decisions"] = sum(len(self._read_decisions_file(node["id"])) for node in nodes)
             if stats != expected:

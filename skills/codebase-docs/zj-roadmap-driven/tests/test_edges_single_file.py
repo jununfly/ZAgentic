@@ -11,6 +11,7 @@
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -31,6 +32,10 @@ E_NODE_NOT_FOUND = "E_NODE_NOT_FOUND"
 
 # metadata.updated 每次运行都变，比对前归一掉。
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
+
+# stats 的 status_counts 由 `set` 推导，键顺序跟着 PYTHONHASHSEED 变。
+# 控制例要在两个**不同进程**之间比对输出，不固定种子就会随机失败。
+FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
 
 
 class EdgeContractTest(unittest.TestCase):
@@ -265,12 +270,25 @@ class Slice06EdgeIdStabilityTest(EdgeContractTest):
     只能看到结果，看不到"删掉最后一条之后再建"这个关键顺序。
     """
 
-    def build_api_roadmap(self, filename="api-roadmap.json"):
-        roadmap = Roadmap(str(self.workdir / filename))
+    # bundle carrier 是目录，不能用 .json 后缀（会让人以为是单文件）。
+    api_filename = "api-roadmap.json"
+
+    def new_adapter(self, path):
+        """返回一个尚未 load 的 carrier 适配器。bundle 那边会覆盖它。"""
+        return Roadmap(str(path))
+
+    def build_api_roadmap(self, filename=None):
+        filename = filename or self.api_filename
+        roadmap = self.new_adapter(self.workdir / filename)
         roadmap.init(title="edge id")
         roadmap.add_node("1", "设计")
         roadmap.add_node("1", "实现")
         return roadmap
+
+    def reload_adapter(self, path):
+        adapter = self.new_adapter(path)
+        adapter.load()
+        return adapter
 
     def test_a_removed_id_is_not_reused_when_it_was_the_last_one(self):
         r = self.build_api_roadmap()
@@ -287,8 +305,7 @@ class Slice06EdgeIdStabilityTest(EdgeContractTest):
         r.remove_edge(second["id"])
         r.save()
 
-        reloaded = Roadmap(str(self.workdir / "api-roadmap.json"))
-        reloaded.load()
+        reloaded = self.reload_adapter(self.workdir / self.api_filename)
 
         self.assertEqual(reloaded.add_edge("1-1", "1-2", "blocks")["id"], "e3")
 
@@ -421,6 +438,7 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=False,
+                env=FIXED_ENV,
             )
             text = f"$ {result.returncode}\n{result.stdout}{result.stderr}".replace(
                 str(workdir), "<W>"
@@ -463,6 +481,7 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     check=False,
+                    env=FIXED_ENV,
                 )
             shapes[label] = TIMESTAMP.sub("<T>", (work / "r.json").read_text(encoding="utf-8"))
 
