@@ -213,7 +213,7 @@ def source_paths(root: Path, page_path: Path, text: str) -> Iterable[tuple[str, 
         if value in seen:
             continue
         seen.add(value)
-        yield value, path_from(root, value, root)
+        yield value, path_from(root, value, page_path.parent)
 
 
 def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagnostic], list[str], dict[str, str]]:

@@ -157,39 +157,59 @@ def mutated_fixture(name: str = EXTERNAL):
 
 
 SOURCE_MAP_PAGE = "handbook/architecture/subsystems/ta-billing-engine.md"
+PAGE_RELATIVE = "../../../src/billing/engine.rs"
+ROOT_RELATIVE = "src/billing/engine.rs"
 
 
 class LinkBaseTest(unittest.TestCase):
-    """#67 — the two link bases are pinned, not left to be inferred.
+    """#67 — one base, pinned rather than left to be inferred.
 
-    A map link resolves from the directory holding the map; a `## Source map`
-    path resolves from the repository root. Markdown's own rule is the first of
-    these, so a Source map written by instinct is wrong in one of two ways: an
-    upward path resolves outside the repository and is dropped without a
-    diagnostic, and a downward one resolves to a different file than the page
-    meant.
+    Every relative path in a handbook resolves from the directory holding the
+    file that writes it. Until #67 the `## Source map` was the exception and
+    resolved from the repository root; the exception was invisible, because the
+    entries written Markdown's way — 86 of them in this repository's own
+    handbook — resolved outside the root and were dropped with no diagnostic at
+    all. The section was never checked and the exit code still said 0.
 
-    The asymmetry is known and deliberately not "fixed" here — unifying it in
-    either direction rewrites existing handbooks and fixtures. What is owed
-    instead is that nobody has to rediscover it by reading `path_from()` calls:
-    each base is asserted by resolving the *other* spelling and showing it does
-    not land on the same file.
+    So each test resolves the same target both ways and asserts which spelling
+    lands on the file. Asserting "the fixture is clean" is not enough: that
+    passes under either base.
     """
 
     def codes_in(self, root: Path) -> set[str]:
         return {item.code for item in VALIDATOR.validate(root)[0]}
 
-    def test_source_map_paths_resolve_from_the_root(self) -> None:
-        """The fixture's root-relative spelling is the control: it resolves, so
-        the asymmetry below is about the base and not a broken fixture."""
-        root = FIXTURES / EXTERNAL
+    def test_source_map_paths_resolve_from_the_page(self) -> None:
+        root = (FIXTURES / EXTERNAL).resolve()
         page = root / SOURCE_MAP_PAGE
-        resolved = dict(VALIDATOR.source_paths(root.resolve(), page, page.read_text(encoding="utf-8")))
-        self.assertTrue(resolved["src/billing/engine.rs"].is_file())
+        resolved = dict(VALIDATOR.source_paths(root, page, page.read_text(encoding="utf-8")))
+        self.assertEqual(root / "src" / "billing" / "engine.rs", resolved[PAGE_RELATIVE])
 
-        page_relative = "../../../src/billing/engine.rs"
-        self.assertTrue(VALIDATOR.path_from(root, page_relative, page.parent).is_file())
-        self.assertIsNone(VALIDATOR.path_from(root, page_relative, root))
+    def test_root_relative_spelling_is_what_fails(self) -> None:
+        """The other spelling still resolves — to a path *under the page* — so
+        a Source map written the old way is reported, not silently ignored."""
+        with mutated_fixture() as repo:
+            page = repo / SOURCE_MAP_PAGE
+            page.write_text(page.read_text().replace(PAGE_RELATIVE, ROOT_RELATIVE))
+            self.assertIn("SOURCE_TARGET_MISSING", self.codes_in(repo))
+
+    def test_this_repository_source_maps_are_actually_resolved(self) -> None:
+        """The control that #67 was about. This handbook was green before it
+        too; what was missing is that its Source map entries resolved to files.
+        A green exit code cannot tell those apart, so count the entries."""
+        repo = handbook_repo()
+        if repo is None:
+            self.skipTest("not running inside a handbook repository")
+        unresolved: list[str] = []
+        checked = 0
+        for page in sorted((repo / "docs").rglob("*.md")):
+            text = page.read_text(encoding="utf-8")
+            for value, target in VALIDATOR.source_paths(repo, page, text):
+                checked += 1
+                if target is None or not target.exists():
+                    unresolved.append(f"{page.relative_to(repo).as_posix()}: {value}")
+        self.assertGreater(checked, 0)
+        self.assertEqual([], unresolved)
 
     def test_map_links_resolve_from_the_map(self) -> None:
         with mutated_fixture() as repo:

@@ -20,6 +20,6 @@ x
 ## Observable evidence
 x
 ## Source map
-`src/inference/router.rs`
+`../../src/inference/router.rs`
 ## Related authority
 x

@@ -54,20 +54,26 @@ invisible:
   naming diagnostic appears — the rule fires on the map claiming the page, not
   on the file existing.
 
-### Two link bases
+### One link base
 
-A map link resolves from the directory holding that map — `handbook/map.md`
-linking `architecture/ta-billing-engine.md` means
-`handbook/architecture/ta-billing-engine.md`. A path under a page's
-`## Source map` resolves from the repository root — `src/billing/engine.rs`
-means `<root>/src/billing/engine.rs` even from a page nested three levels deep.
+Every relative path in a handbook resolves from the directory holding the file
+that writes it, the way a Markdown link does. A map at `handbook/map.md` linking
+`architecture/ta-billing-engine.md` means
+`handbook/architecture/ta-billing-engine.md`; a page at
+`handbook/architecture/subsystems/ta-billing-engine.md` citing
+`../../src/billing/engine.rs` means `<root>/src/billing/engine.rs`.
 
-Only the first is Markdown's own rule, so the second is routinely written wrong
-and reads as a bug in the validator. It is not one; it is a base that was
-chosen, and `LinkBaseTest` pins both by rewriting the same target each way in a
-throwaway copy and asserting which base is in force. Unifying them is a breaking
-change to existing handbooks and fixtures, not a cleanup — see issue #67 before
-touching either `source_paths()` or `map_entries()`.
+It was not always one base: until #67, `## Source map` resolved from the
+repository root. That is not Markdown's rule, so it was written the other way
+routinely — and silently, because an upward path resolving outside the
+repository is dropped rather than reported (issue #69). The scan that decided
+this found 86 such entries in this repository's own handbook: a Source map
+section that was never actually checked, invisible behind an exit code of 0.
+
+Unifying the bases was a breaking change to existing handbooks and fixtures, not
+a cleanup. `LinkBaseTest` pins the shared base by resolving the same target each
+way and asserting which one is in force; see issue #67 before touching either
+`source_paths()` or `map_entries()`.
 
 ### Overlap with `zj-docs-ontology`
 

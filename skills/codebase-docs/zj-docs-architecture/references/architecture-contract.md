@@ -110,14 +110,13 @@ code, tests, fixtures, accepted ADRs, or stable external references. Distinguish
 target architecture, implemented behavior, inference, and unknowns in prose.
 An accepted or superseded ADR may support a claim; a proposed ADR cannot.
 
-Those paths resolve from the **repository root**, not from the page: a page at
+Those paths resolve from the **directory holding the page**, the same base a
+Markdown link uses: a page at
 `handbook/architecture/subsystems/ta-billing-engine.md` cites
-`src/billing/engine.rs`, not `../../src/billing/engine.rs`. Map links follow
-Markdown's own rule and resolve from the directory holding the map, so the two
-bases differ — writing a Source map the way a Markdown link is written yields
-`SOURCE_TARGET_MISSING` for a path that is plainly there. The asymmetry is
-known and deliberately left in place: unifying it in either direction rewrites
-existing handbooks and fixtures.
+`../../src/billing/engine.rs`. Repository-root spelling — `src/billing/engine.rs`
+— resolves to a path *under the page* and is reported as
+`SOURCE_TARGET_MISSING`. Map links and Source map entries therefore share one
+base; there is no second rule to learn.
 
 Process pages, plans, retros, raw evaluations, research ledgers, runtime traces,
 and fixture payloads are evidence surfaces or process material, never pages the

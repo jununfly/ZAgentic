@@ -90,7 +90,7 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
   the Human-invoked governance entry point.
 - [zj-docs-architecture](../../skills/codebase-docs/zj-docs-architecture/SKILL.md) —
   the architecture-handbook owner; its
-  `skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py`
+  `../../skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py`
   is Flow 2's stage-6 validator.
 - [zj-domain-modeling](../../skills/codebase-docs/zj-domain-modeling/SKILL.md) —
   glossary and domain-model maintenance.

@@ -16,8 +16,8 @@ x
 x
 ## Source map
 
-- `fixtures/payload.json`
-- `docs/plans/active.md`
+- `../../fixtures/payload.json`
+- `../plans/active.md`
 
 ## Related authority
 x

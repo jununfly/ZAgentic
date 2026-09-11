@@ -16,7 +16,7 @@ x
 x
 ## Source map
 
-- `docs/zj-adr/0001.md`
+- `../zj-adr/0001.md`
 
 ## Related authority
 x

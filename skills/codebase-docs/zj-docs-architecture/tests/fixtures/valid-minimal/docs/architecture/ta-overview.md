@@ -26,7 +26,7 @@ The request handler and the catalog module.
 
 ## Source map
 
-- `src/catalog.py`
+- `../../src/catalog.py`
 
 ## Related authority
 

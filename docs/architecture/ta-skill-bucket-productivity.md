@@ -75,8 +75,8 @@ The bucket covers:
 
 - [Bucket README](../../skills/productivity/README.md) — local index.
 - [ZJ-CONTEXT.md](../../ZJ-CONTEXT.md) — vocabulary consulted by
-  `skills/productivity/zj-to-questionnaire/SKILL.md` and
-  `skills/productivity/zj-grilling/SKILL.md`.
+  `../../skills/productivity/zj-to-questionnaire/SKILL.md` and
+  `../../skills/productivity/zj-grilling/SKILL.md`.
 - [zj-grilling](../../skills/productivity/zj-grilling/SKILL.md) — the
   stress-test interview loop.
 - [zj-handoff](../../skills/productivity/zj-handoff/SKILL.md) —
