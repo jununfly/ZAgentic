@@ -37,6 +37,14 @@ TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 # 控制例要在两个**不同进程**之间比对输出，不固定种子就会随机失败。
 FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
 
+# 调 git 时要剔掉 NODE_OPTIONS：WorkBuddy 的 safe-delete shim 经它注入 Node
+# 子进程，git 清理 stale ref 时会被 shim 把文件移进回收站。
+#
+# POSIX 上这件事是 `env -u NODE_OPTIONS git ...`，但 `env` 是外部可执行文件，
+# Windows 上没有（Git Bash 里的 env 靠 MSYS 提供，CreateProcess 找不到），
+# 所以改成构造一个不含该键的 env 字典传下去——两边都能用，且不依赖 shell。
+GIT_ENV = {k: v for k, v in os.environ.items() if k != "NODE_OPTIONS"}
+
 
 class EdgeContractTest(unittest.TestCase):
     def setUp(self):
@@ -406,6 +414,18 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             probe = probe.parent
         return None
 
+    # 控制例的基线是「P1 边存储落地之前」的那份实现，不是 main 的当前头。
+    #
+    # 用 `main` 是错的：PR #85/#86 一合进 main，main 上的脚本就等于工作树里的
+    # 脚本，控制例变成自己跟自己比，恒真但零信息量——它会在每次"没污染无边
+    # 路径"时通过，也会在真的污染了时照样通过。
+    #
+    # 所以钉死在一个历史 commit 上：a8ee1b9 是 PR #85 的第一父，即 P1 之前
+    # 最后一个 main commit。commit 不可变，这个基线不会 stale；要重新校准，
+    # 就把 P1/P2……的起点 commit 换进来，并在 commit message 里说明理由。
+    BASELINE_REF = "a8ee1b9"
+    BASELINE_FILES = ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py")
+
     def baseline_dir(self):
         repo = self.repo_root()
         if repo is None:
@@ -413,19 +433,47 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         rel = SKILL_DIR.relative_to(repo)
         target = self.root / "baseline"
         target.mkdir(exist_ok=True)
-        for name in ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py"):
+        # git 的路径一律用正斜杠：Path 在 Windows 上拼出的是反斜杠，而
+        # `git show <rev>:<path>` 的 path 部分是按 / 解析的。
+        prefix = rel.as_posix()
+        for name in self.BASELINE_FILES:
             result = subprocess.run(
-                ["env", "-u", "NODE_OPTIONS", "git", "show", f"main:{rel / name}"],
+                ["git", "show", f"{self.BASELINE_REF}:{prefix}/{name}"],
                 cwd=str(repo),
                 text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=False,
+                env=GIT_ENV,
             )
             if result.returncode != 0:
                 self.skipTest(f"取不到基线 {name}: {result.stderr.strip()}")
             (target / name).write_text(result.stdout, encoding="utf-8")
+
+        self.assert_baseline_is_not_the_current_implementation()
         return target
+
+    def assert_baseline_is_not_the_current_implementation(self):
+        """判别力守卫：基线若与当前实现逐字节相同，控制例就是恒真的。
+
+        这不是多虑——用 `main:` 做基线时它就发生过：PR 一合进 main，基线
+        自动变成被改动后的自己，于是「没有边时输出与 P1 之前一致」这条断言
+        在真的被污染时也通过。一个会无条件通过的控制例比没有控制例更危险，
+        因为它给的是假信心。
+        """
+        target = self.root / "baseline"
+        identical = [
+            name
+            for name in self.BASELINE_FILES
+            if (target / name).read_text(encoding="utf-8")
+            == (SKILL_DIR / name).read_text(encoding="utf-8")
+        ]
+        if len(identical) == len(self.BASELINE_FILES):
+            self.fail(
+                f"基线 {self.BASELINE_REF} 与当前实现完全相同，控制例失去判别力。"
+                f"把 BASELINE_REF 指向被测改动之前的那个 commit。"
+            )
+        return identical
 
     def run_sequence(self, cli_dir, workdir):
         workdir.mkdir(parents=True, exist_ok=True)
