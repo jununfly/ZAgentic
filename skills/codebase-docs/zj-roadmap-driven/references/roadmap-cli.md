@@ -82,6 +82,15 @@ with `E_NODE_NOT_FOUND` (exit 1) — dangling edges are never created silently.
 Edge ids are assigned from a monotonic counter (`e1`, `e2`, ...) and are never
 reused after removal, so downstream output can cite them as stable references.
 
+`blocked` is derived from `blocks` edges on read, never stored: `get <node>`
+adds `blocked: true` plus `blocked_reason` (the ids of the `blocks` edges whose
+source node is not `completed`) and omits both when nothing blocks the node.
+Completing the predecessor or removing the edge is visible in the very next read.
+`tree` and the Markdown views render the same node with the `[!]` icon.
+`--status blocked` is refused with `E_INVALID_STATUS` (exit 1) — a Human-written
+`blocked` would be a second source of truth that can disagree with the edges.
+`informs`, `derives-from` and `supersedes` never block.
+
 A `supersedes` edge archives the node it points at: the superseded node stays in
 the graph, keeps its decisions and history readable, and gains `archived: true`.
 That marker is deliberately not a status — "completed, then superseded" is a
@@ -122,10 +131,11 @@ never disagree on what counts as a start or a child.
 |------|-----------|
 | `E_CYCLE` | a `blocks` edge that would close a cycle |
 | `E_NODE_NOT_FOUND` | an edge pointing at a node that does not exist |
+| `E_INVALID_STATUS` | `add` / `update --status blocked` (blocked is derived, not settable) |
 
-Both exit 1 and are only raised by `edge`; pre-existing commands still raise
-`KeyError`/`BundleError` with their original wording, so their output is
-unchanged by P1.
+All three exit 1. `E_CYCLE` and `E_NODE_NOT_FOUND` are only raised by `edge`;
+pre-existing commands still raise `KeyError`/`BundleError` with their original
+wording, so their output is unchanged by P1.
 
 Bundle layout:
 

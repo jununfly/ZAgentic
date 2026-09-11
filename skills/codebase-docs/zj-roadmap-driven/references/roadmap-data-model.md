@@ -8,7 +8,7 @@ Use this reference when creating, inspecting, renaming, or updating roadmap node
 |------|------|---------|
 | `id` | string | Number such as `1`, `1-1`, `1-1-1` |
 | `label` | string | Node name |
-| `status` | string | `pending` / `in_progress` / `completed` / `blocked` |
+| `status` | string | Settable: `pending` / `in_progress` / `completed`. `blocked` is **derived only** — never set, never stored (see below) |
 | `mode` | string | `explore` / `exploit` |
 | `parent` | string\|null | Parent node id; `null` for the root |
 | `children` | list | Child node ids |
@@ -53,7 +53,7 @@ they live in the fact source and in `get` output.
 | `pending` | `[ ]` | Not started |
 | `in_progress` | `[~]` | In progress |
 | `completed` | `[x]` | Completed |
-| `blocked` | `[!]` | Blocked |
+| `blocked` | `[!]` | Blocked — derived on read from `blocks` edges; not a stored status |
 
 | Mode | Tag | Meaning |
 |------|-----|---------|
@@ -61,6 +61,40 @@ they live in the fact source and in `get` output.
 | `exploit` | `[Y+]` | Direction is settled and work is being deepened |
 
 Tree output uses `[status icon][mode tag] id. label`.
+
+## Blocked is derived, never stored
+
+`blocked` and `blocked_reason` are computed **on read** from `blocks` edges —
+the edges are the only source of truth. Nothing writes them into the carrier.
+
+- A node is blocked when a `blocks` edge points at it whose `from` node is not
+  `completed`. `blocked_reason` lists the ids of those edges, so a stalled node
+  can be explained rather than just reported.
+- `get <node>` adds `blocked: true` and `blocked_reason: [...]` to the node it
+  returns. When nothing blocks it, **both fields are absent** — not `false`.
+- The tree and Markdown views render a blocked node with the `[!]` icon, so the
+  Human view and the Agent view cannot disagree. `blocked_reason` stays in `get`:
+  a tree line has no room for an edge-id list, and the Human reading it wants the
+  icon, not the ids.
+- `--status blocked` is refused with `E_INVALID_STATUS` (exit code 1). Letting a
+  Human write `blocked` would create a second source of truth that can disagree
+  with the edges.
+- `informs`, `derives-from` and `supersedes` edges never block.
+
+```bash
+python roadmap_cli.py edge add roadmap.json 1-1 1-2 --type blocks
+python roadmap_cli.py get roadmap.json 1-2     # + "blocked": true, "blocked_reason": ["e1"]
+python roadmap_cli.py update roadmap.json 1-1 --status completed
+python roadmap_cli.py get roadmap.json 1-2     # both fields gone, same read
+python roadmap_cli.py edge remove roadmap.json e1
+python roadmap_cli.py get roadmap.json 1-2     # both fields gone, same read
+```
+
+Deriving instead of storing is a deliberate trade: a stored `blocked` needs a
+list of "when to recompute" triggers (add edge, remove edge, predecessor
+completed, `delete`, `supersedes`, carrier migration…), and missing one is
+silent staleness. Recomputing per read is O(V+E) — the write commands already
+load the whole graph.
 
 ## Node naming
 
