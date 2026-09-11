@@ -110,6 +110,14 @@ code, tests, fixtures, accepted ADRs, or stable external references. Distinguish
 target architecture, implemented behavior, inference, and unknowns in prose.
 An accepted or superseded ADR may support a claim; a proposed ADR cannot.
 
+Those paths resolve from the **directory holding the page**, the same base a
+Markdown link uses: a page at
+`handbook/architecture/subsystems/ta-billing-engine.md` cites
+`../../src/billing/engine.rs`. Repository-root spelling — `src/billing/engine.rs`
+— resolves to a path *under the page* and is reported as
+`SOURCE_TARGET_MISSING`. Map links and Source map entries therefore share one
+base; there is no second rule to learn.
+
 Process pages, plans, retros, raw evaluations, research ledgers, runtime traces,
 and fixture payloads are evidence surfaces or process material, never pages the
 validator reads as handbook content.

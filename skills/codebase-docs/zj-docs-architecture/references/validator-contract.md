@@ -54,6 +54,27 @@ invisible:
   naming diagnostic appears — the rule fires on the map claiming the page, not
   on the file existing.
 
+### One link base
+
+Every relative path in a handbook resolves from the directory holding the file
+that writes it, the way a Markdown link does. A map at `handbook/map.md` linking
+`architecture/ta-billing-engine.md` means
+`handbook/architecture/ta-billing-engine.md`; a page at
+`handbook/architecture/subsystems/ta-billing-engine.md` citing
+`../../src/billing/engine.rs` means `<root>/src/billing/engine.rs`.
+
+It was not always one base: until #67, `## Source map` resolved from the
+repository root. That is not Markdown's rule, so it was written the other way
+routinely — and silently, because an upward path resolving outside the
+repository is dropped rather than reported (issue #69). The scan that decided
+this found 86 such entries in this repository's own handbook: a Source map
+section that was never actually checked, invisible behind an exit code of 0.
+
+Unifying the bases was a breaking change to existing handbooks and fixtures, not
+a cleanup. `LinkBaseTest` pins the shared base by resolving the same target each
+way and asserting which one is in force; see issue #67 before touching either
+`source_paths()` or `map_entries()`.
+
 ### Overlap with `zj-docs-ontology`
 
 `zj-docs-ontology` governs a repository's whole document map; this validator

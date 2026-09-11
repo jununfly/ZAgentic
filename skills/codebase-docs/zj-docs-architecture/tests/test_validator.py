@@ -105,13 +105,9 @@ class ExternalLayoutTest(unittest.TestCase):
     mean "nothing was looked at".
     """
 
-    @contextlib.contextmanager
     def mutated(self):
         """A throwaway copy, so a probe never edits the fixture in place."""
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp) / "repo"
-            shutil.copytree(FIXTURES / EXTERNAL, repo)
-            yield repo
+        return mutated_fixture()
 
     def codes_in(self, root: Path) -> set[str]:
         return {item.code for item in VALIDATOR.validate(root)[0]}
@@ -149,6 +145,82 @@ class ExternalLayoutTest(unittest.TestCase):
                 + "- [Checkout draft](architecture/drafts/ta-checkout-v2.md) — authority-id: nimbus.flow.checkout\n"
             )
             self.assertIn("PAGE_NAME_VERSION_OR_STATUS", self.codes_in(repo))
+
+
+@contextlib.contextmanager
+def mutated_fixture(name: str = EXTERNAL):
+    """A throwaway copy of a fixture, so a probe never edits it in place."""
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        shutil.copytree(FIXTURES / name, repo)
+        yield repo
+
+
+SOURCE_MAP_PAGE = "handbook/architecture/subsystems/ta-billing-engine.md"
+PAGE_RELATIVE = "../../../src/billing/engine.rs"
+ROOT_RELATIVE = "src/billing/engine.rs"
+
+
+class LinkBaseTest(unittest.TestCase):
+    """#67 — one base, pinned rather than left to be inferred.
+
+    Every relative path in a handbook resolves from the directory holding the
+    file that writes it. Until #67 the `## Source map` was the exception and
+    resolved from the repository root; the exception was invisible, because the
+    entries written Markdown's way — 86 of them in this repository's own
+    handbook — resolved outside the root and were dropped with no diagnostic at
+    all. The section was never checked and the exit code still said 0.
+
+    So each test resolves the same target both ways and asserts which spelling
+    lands on the file. Asserting "the fixture is clean" is not enough: that
+    passes under either base.
+    """
+
+    def codes_in(self, root: Path) -> set[str]:
+        return {item.code for item in VALIDATOR.validate(root)[0]}
+
+    def test_source_map_paths_resolve_from_the_page(self) -> None:
+        root = (FIXTURES / EXTERNAL).resolve()
+        page = root / SOURCE_MAP_PAGE
+        resolved = dict(VALIDATOR.source_paths(root, page, page.read_text(encoding="utf-8")))
+        self.assertEqual(root / "src" / "billing" / "engine.rs", resolved[PAGE_RELATIVE])
+
+    def test_root_relative_spelling_is_what_fails(self) -> None:
+        """The other spelling still resolves — to a path *under the page* — so
+        a Source map written the old way is reported, not silently ignored."""
+        with mutated_fixture() as repo:
+            page = repo / SOURCE_MAP_PAGE
+            page.write_text(page.read_text().replace(PAGE_RELATIVE, ROOT_RELATIVE))
+            self.assertIn("SOURCE_TARGET_MISSING", self.codes_in(repo))
+
+    def test_this_repository_source_maps_are_actually_resolved(self) -> None:
+        """The control that #67 was about. This handbook was green before it
+        too; what was missing is that its Source map entries resolved to files.
+        A green exit code cannot tell those apart, so count the entries."""
+        repo = handbook_repo()
+        if repo is None:
+            self.skipTest("not running inside a handbook repository")
+        unresolved: list[str] = []
+        checked = 0
+        for page in sorted((repo / "docs").rglob("*.md")):
+            text = page.read_text(encoding="utf-8")
+            for value, target in VALIDATOR.source_paths(repo, page, text):
+                checked += 1
+                if target is None or not target.exists():
+                    unresolved.append(f"{page.relative_to(repo).as_posix()}: {value}")
+        self.assertGreater(checked, 0)
+        self.assertEqual([], unresolved)
+
+    def test_map_links_resolve_from_the_map(self) -> None:
+        with mutated_fixture() as repo:
+            map_path = repo / "handbook" / "map.md"
+            map_path.write_text(
+                map_path.read_text().replace(
+                    "(architecture/subsystems/ta-billing-engine.md)",
+                    "(handbook/architecture/subsystems/ta-billing-engine.md)",
+                )
+            )
+            self.assertIn("MAP_LINK_BROKEN", self.codes_in(repo))
 
 
 def handbook_repo() -> Path | None:

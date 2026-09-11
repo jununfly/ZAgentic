@@ -114,7 +114,7 @@ recursive public walk.
   that treats both trees uniformly.
 - [zj-edit-article](../../personal/zj-edit-article/SKILL.md) — a personal
   skill carrying a platform sidecar under its own
-  `personal/zj-edit-article/agents` directory, illustrating the tree's
+  `../../personal/zj-edit-article/agents` directory, illustrating the tree's
   internal layout.
 - [zj-obsidian-vault](../../personal/zj-obsidian-vault/SKILL.md) — the
   second personal skill, same layout.
