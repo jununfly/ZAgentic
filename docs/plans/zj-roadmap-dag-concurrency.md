@@ -14,7 +14,7 @@
 4. **Token 经济性差。** 所有输出一律 `indent=2` 全量 JSON，没有字段投影、没有紧凑格式、没有 quiet；一个决策要跑两次进程（`decide` + `render`）；`tree` 在单文件模式默认深度 10，一次误用就能灌进几千 token。
 5. **节点 id 会复用。** 子节点序号取"最后一个 child + 1"，删掉尾部子节点后新节点拿回旧 id，租约、历史、外部引用（ticket / ADR / 设备间同步）全部会串号。
 6. **Human 的视野在多 Agent 下反而变差。** md 视图里没有 owner、没有待决问题队列、没有阻塞链、没有关键路径——Agent 一多，人先瞎。
-7. **错误不可程序化判断。** 只有文本 stderr + `exit 1`（锁超时才是 2），Agent 无法区分"节点不存在""状态非法""有环""有冲突"，只能靠字符串匹配或整段回贴。
+7. **错误码只登记了一个（PR #34 之后的状态）。** 机制已经存在：`RoadmapError` 带 `code` 与 `exit_code`，`ERROR_EXIT_CODES` 做"码 → 退出码"映射，失败输出形如 `Error: E_BUDGET_EXCEEDED: …`——码在行首，Agent 按码分支，不用匹配文案。缺口是**表里目前只有两个条目**：基类 `E_ROADMAP`（→1）与 `E_BUDGET_EXCEEDED`（→3）。P0 的其余码——`E_NODE_NOT_FOUND` / `E_INVALID_STATUS` / `E_CYCLE` / `E_LOCKED` / `E_CONFLICT` / `E_SCOPE` / `E_STORAGE`——尚未补进 `ERROR_EXIT_CODES`，这些失败路径现在都落到基类的 `E_ROADMAP` + 退出码 1，Agent 能程序化区分的只有"预算触顶"一种。退出码现状见 Implementation Decisions §2。
 8. **没有收敛判据。** `exploit` 节点没有 exit criteria，`explore` 节点没有 budget，Loop 没有终止条件。
 9. **规划期就已知"这里有未知"，但没有表达它的地方（case 1）。** `mode: explore|exploit` 是实现了的字段（`roadmap.py:32`、CLI `add --mode`），可它只是一个标记：没有 budget（探索到什么程度就该收），没有 exit_criteria（什么算探索完了），也没有"探索产出 → 落成子节点"的机制。于是规划人在规划期面对一段未知时，要么先假装已知、把 placeholder 硬写成看起来确定的节点（规划失真），要么不写（图上出现一段空白，只能靠记忆与口播维持）。Human 说得出"这块还得 explore"，系统接不住这句话。
 10. **执行期涌现的东西无处安放，图会膨胀到人看不懂（case 2）。** 从首节点出发后，Loop 会不断产出路线性材料：新问题、待定的分叉、"这个深井节点比预想的大得多"、跨子树的新关联依赖。这些东西目前只有三个去处——塞进 `notes`（丢失结构、无法查询）、塞进 `decisions`（节点内嵌数组，无法跨节点共享、无法被别的节点引用）、或者直接 `add` 成 roadmap 节点（把零散发现升格为正式任务，图迅速膨胀）。三者都不对，于是 Human 与 Agent 陷入"图越大越不知道自己在哪、下一步该干什么"的细节困境。
@@ -147,7 +147,18 @@
 
 ### 2. CLI 契约：错误码、输出格式、批量（P0）
 
-- 稳定错误码 + 退出码映射：`E_NODE_NOT_FOUND`、`E_INVALID_STATUS`、`E_CYCLE`、`E_LOCKED`、`E_CONFLICT`、`E_SCOPE`、`E_STORAGE`、`E_BUDGET_EXCEEDED`（case 1，§8.5；**已落地**，退出码 3——这是 P0 错误码表里登记的第一个码）。
+- 稳定错误码 + 退出码映射：`E_NODE_NOT_FOUND`、`E_INVALID_STATUS`、`E_CYCLE`、`E_LOCKED`、`E_CONFLICT`、`E_SCOPE`、`E_STORAGE`、`E_BUDGET_EXCEEDED`。**机制已落地**（PR #34）：`roadmap.py` 有 `RoadmapError` 基类、`ERROR_EXIT_CODES` 表与 `exit_code_for`，P0 的其余码补进**同一张表**，不另起机制。
+
+  当前实际（`ERROR_EXIT_CODES` 的内容，2026-09-11 核对）：
+
+  | 退出码 | 含义 | 从哪来 |
+  | --- | --- | --- |
+  | 0 | 成功 | — |
+  | 1 | 通用失败 | 基类 `E_ROADMAP`；未登记的码走 `exit_code_for` 的兜底；所有非 `RoadmapError` 异常（`BundleError` / `FileNotFoundError` / `ValueError` / JSON 解析失败）也是 1 |
+  | 2 | 锁超时 | `RoadmapLockTimeout`，**在 CLI 里硬编码**（`sys.exit(2)`）——它继承 `TimeoutError` 而非 `RoadmapError`，没有 `code`，`exit_code_for` 只会给它 1，所以它进不了这张表 |
+  | 3 | `E_BUDGET_EXCEEDED` | case 1（§8.5），P0 错误码表里登记的第一个码 |
+
+  表里现在只有 `E_ROADMAP` 与 `E_BUDGET_EXCEEDED` 两条。补其余七个码时，每个码要同时配一条断言退出码的用例（Testing §错误码）——只加码不锁退出码，等于把今天 Problem #7 的缺口再复制一遍。
 - 新增 `--format json|jsonl|brief`、`--fields`、`--quiet`，**默认值保持现状**，避免破坏已安装技能与既有文档。
 - 新增 `context` 命令：一次返回 focus + path + siblings + focus decisions + top-N ready（默认 N=3），这是 token 性价比最高的一条。
 - 新增 `next`（等价于 `ready --limit 1 --brief`）与 `ready`。
