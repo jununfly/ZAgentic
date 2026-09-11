@@ -38,6 +38,10 @@ Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|deri
 依赖是树之外的一层正交边：`blocks` 是硬依赖（不许成环，会返 `E_CYCLE`），
 `informs` / `derives-from` 只是上下文与来源追溯，允许成环。删节点会级联删掉
 触及它的边并报告条数——边不能比它的节点活得久。
+
+两个载体（single-file JSON 与 bundle）对边的行为完全一致，同一套验收跑两遍。
+bundle 把边存在 `edges/<id>.json`，节点分片里不反向存边 id，`migrate --to
+bundle` 会把边一起带走。
 ```
 
 ## Scope gate — before any node write or project edit

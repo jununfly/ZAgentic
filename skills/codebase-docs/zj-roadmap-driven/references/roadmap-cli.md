@@ -118,19 +118,41 @@ the code, never on the human-readable text after it. The cap is enforced on both
 carriers (single-file JSON and bundle) by the same shared helper, so the two
 never disagree on what counts as a start or a child.
 
+| Code | Raised by |
+|------|-----------|
+| `E_CYCLE` | a `blocks` edge that would close a cycle |
+| `E_NODE_NOT_FOUND` | an edge pointing at a node that does not exist |
+
+Both exit 1 and are only raised by `edge`; pre-existing commands still raise
+`KeyError`/`BundleError` with their original wording, so their output is
+unchanged by P1.
+
 Bundle layout:
 
 ```text
 roadmap.bundle/
-├── manifest.json          # small control plane
+├── manifest.json          # small control plane (edgeSequence lives here)
 ├── current.json           # active materialized snapshot pointer
 ├── nodes/                 # one current-state shard per node
 ├── decisions/             # one decision shard per node
+├── edges/                 # one shard per edge + a rebuildable index.json
 ├── history/events.jsonl   # append-only mutation history
 ├── snapshots/             # materialized snapshot metadata
 ├── views/                 # generated Markdown views
 └── indexes/               # disposable derived indexes
 ```
+
+Edges live in exactly one place — `edges/<id>.json`. Node shards never cache an
+edge id: a second copy would allow "the node says this edge exists, `edges/`
+disagrees", and a transaction cannot save you from that (forget one of the two
+writes and the transaction still commits). `edges/index.json` is pure redundancy
+for `from`/`to` lookups and is rebuilt by rescanning the directory if it goes
+missing; the monotonic counter is **not** in it — that one lives in
+`manifest.json` as `edgeSequence`, because a rebuilt counter would reuse ids.
+A bundle that has never had an edge has no `edges/` directory at all.
+
+`migrate --to bundle` carries edges across. Dropping them would be silent data
+loss that looks like success at the command layer.
 
 Markdown is a generated view and is never imported back into roadmap state. The
 old `import` command is intentionally not supported; use `migrate --to bundle`
