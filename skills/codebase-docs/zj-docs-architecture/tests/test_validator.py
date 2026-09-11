@@ -105,13 +105,9 @@ class ExternalLayoutTest(unittest.TestCase):
     mean "nothing was looked at".
     """
 
-    @contextlib.contextmanager
     def mutated(self):
         """A throwaway copy, so a probe never edits the fixture in place."""
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp) / "repo"
-            shutil.copytree(FIXTURES / EXTERNAL, repo)
-            yield repo
+        return mutated_fixture()
 
     def codes_in(self, root: Path) -> set[str]:
         return {item.code for item in VALIDATOR.validate(root)[0]}
@@ -149,6 +145,62 @@ class ExternalLayoutTest(unittest.TestCase):
                 + "- [Checkout draft](architecture/drafts/ta-checkout-v2.md) — authority-id: nimbus.flow.checkout\n"
             )
             self.assertIn("PAGE_NAME_VERSION_OR_STATUS", self.codes_in(repo))
+
+
+@contextlib.contextmanager
+def mutated_fixture(name: str = EXTERNAL):
+    """A throwaway copy of a fixture, so a probe never edits it in place."""
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "repo"
+        shutil.copytree(FIXTURES / name, repo)
+        yield repo
+
+
+SOURCE_MAP_PAGE = "handbook/architecture/subsystems/ta-billing-engine.md"
+
+
+class LinkBaseTest(unittest.TestCase):
+    """#67 — the two link bases are pinned, not left to be inferred.
+
+    A map link resolves from the directory holding the map; a `## Source map`
+    path resolves from the repository root. Markdown's own rule is the first of
+    these, so a Source map written by instinct is wrong in one of two ways: an
+    upward path resolves outside the repository and is dropped without a
+    diagnostic, and a downward one resolves to a different file than the page
+    meant.
+
+    The asymmetry is known and deliberately not "fixed" here — unifying it in
+    either direction rewrites existing handbooks and fixtures. What is owed
+    instead is that nobody has to rediscover it by reading `path_from()` calls:
+    each base is asserted by resolving the *other* spelling and showing it does
+    not land on the same file.
+    """
+
+    def codes_in(self, root: Path) -> set[str]:
+        return {item.code for item in VALIDATOR.validate(root)[0]}
+
+    def test_source_map_paths_resolve_from_the_root(self) -> None:
+        """The fixture's root-relative spelling is the control: it resolves, so
+        the asymmetry below is about the base and not a broken fixture."""
+        root = FIXTURES / EXTERNAL
+        page = root / SOURCE_MAP_PAGE
+        resolved = dict(VALIDATOR.source_paths(root.resolve(), page, page.read_text(encoding="utf-8")))
+        self.assertTrue(resolved["src/billing/engine.rs"].is_file())
+
+        page_relative = "../../../src/billing/engine.rs"
+        self.assertTrue(VALIDATOR.path_from(root, page_relative, page.parent).is_file())
+        self.assertIsNone(VALIDATOR.path_from(root, page_relative, root))
+
+    def test_map_links_resolve_from_the_map(self) -> None:
+        with mutated_fixture() as repo:
+            map_path = repo / "handbook" / "map.md"
+            map_path.write_text(
+                map_path.read_text().replace(
+                    "(architecture/subsystems/ta-billing-engine.md)",
+                    "(handbook/architecture/subsystems/ta-billing-engine.md)",
+                )
+            )
+            self.assertIn("MAP_LINK_BROKEN", self.codes_in(repo))
 
 
 def handbook_repo() -> Path | None:

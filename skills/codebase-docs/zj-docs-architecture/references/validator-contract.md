@@ -54,6 +54,21 @@ invisible:
   naming diagnostic appears — the rule fires on the map claiming the page, not
   on the file existing.
 
+### Two link bases
+
+A map link resolves from the directory holding that map — `handbook/map.md`
+linking `architecture/ta-billing-engine.md` means
+`handbook/architecture/ta-billing-engine.md`. A path under a page's
+`## Source map` resolves from the repository root — `src/billing/engine.rs`
+means `<root>/src/billing/engine.rs` even from a page nested three levels deep.
+
+Only the first is Markdown's own rule, so the second is routinely written wrong
+and reads as a bug in the validator. It is not one; it is a base that was
+chosen, and `LinkBaseTest` pins both by rewriting the same target each way in a
+throwaway copy and asserting which base is in force. Unifying them is a breaking
+change to existing handbooks and fixtures, not a cleanup — see issue #67 before
+touching either `source_paths()` or `map_entries()`.
+
 ### Overlap with `zj-docs-ontology`
 
 `zj-docs-ontology` governs a repository's whole document map; this validator
