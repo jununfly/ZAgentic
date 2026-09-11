@@ -31,6 +31,13 @@ python roadmap_cli.py decisions <json_path> [<node_id>]
 python roadmap_cli.py remove-decision <json_path> <node_id> --index N
 python roadmap_cli.py remove-decision <json_path> <node_id> --question "<问题文本>"
 
+# Dependencies (P1) — edges live outside the tree.
+# Note: `edge` takes the action first and the path second, unlike every other
+# command, because it is a command group (`git remote add` style).
+python roadmap_cli.py edge add <roadmap_path> <from_id> <to_id> --type blocks|informs|supersedes|derives-from
+python roadmap_cli.py edge list <roadmap_path> [--node <node_id>]
+python roadmap_cli.py edge remove <roadmap_path> <edge_id>
+
 # Render and inspect
 python roadmap_cli.py render <roadmap_path>
 python roadmap_cli.py section <roadmap_path> [--max-depth 2] [--max-bytes N]
@@ -60,6 +67,42 @@ decision, and append-only history shards independently readable. `tree`, `get`,
 `focus`, node-scoped `decisions`, and light `render` are lazy/bounded operations.
 `remove-decision` records a decision retraction in bundle mode, preserving the
 original record and its history rather than physically deleting it.
+
+## Edges
+
+Edges are a layer orthogonal to the tree: `blocks` (hard dependency), `informs`
+(context only), `supersedes` (replaces another node), `derives-from` (provenance).
+
+Only `blocks` may not form a cycle — a `blocks` edge that would close one is
+refused with `E_CYCLE` (exit 1) and nothing is written. `informs` and
+`derives-from` cycles are allowed: they carry context, not scheduling. A node
+may not `blocks` itself. Pointing an edge at a node that does not exist fails
+with `E_NODE_NOT_FOUND` (exit 1) — dangling edges are never created silently.
+
+Edge ids are assigned from a monotonic counter (`e1`, `e2`, ...) and are never
+reused after removal, so downstream output can cite them as stable references.
+
+A `supersedes` edge archives the node it points at: the superseded node stays in
+the graph, keeps its decisions and history readable, and gains `archived: true`.
+That marker is deliberately not a status — "completed, then superseded" is a
+legitimate combination, and folding archived into `status` would discard the fact
+that the work was finished. Removing the edge does not undo the marker; clear it
+explicitly if the supersession is retracted.
+
+`delete` cascades to every edge touching the removed subtree, and reports the
+count broken down by type:
+
+```text
+Deleted: ['1-2']
+Removed edges: 2 (blocks 1, informs 1)
+```
+
+There is no `--cascade` opt-in: an edge cannot outlive its nodes. The edges are
+removed **before** the node shards, so an interrupted delete leaves "edges gone,
+node still there" — rerunnable — rather than a dangling edge. When no edge was
+removed the extra line is not printed, so `delete` stays byte-identical to its
+pre-P1 output. A dangling edge that does appear (hand-edited file, or a crash on
+the bundle carrier) is reported by `validate`, not silently scheduled around.
 
 ## Exit codes
 

@@ -33,6 +33,11 @@ Agent 完成一个子任务 → 调用 `update` 打勾 → 调用 `render` 更�
 Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
 Agent 需要选择载体 → 调 `recommend-storage`（只读建议，不自动迁移）
+Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
+
+依赖是树之外的一层正交边：`blocks` 是硬依赖（不许成环，会返 `E_CYCLE`），
+`informs` / `derives-from` 只是上下文与来源追溯，允许成环。删节点会级联删掉
+触及它的边并报告条数——边不能比它的节点活得久。
 ```
 
 ## Scope gate — before any node write or project edit

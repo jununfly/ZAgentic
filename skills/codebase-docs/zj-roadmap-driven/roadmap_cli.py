@@ -25,6 +25,12 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   预算触顶（节点长太多子节点 / 被开工太多次）返回 E_BUDGET_EXCEEDED，退出码 3。
 
   delete  <json_path> <node_id>              # 删除节点及所有子节点
+                                            # 级联删掉触及被删子树的边，并报告条数
+
+  edge    add <json_path> <from> <to> --type blocks|informs|supersedes|derives-from
+                                            # 记一条依赖边；只有 blocks 不许成环
+  edge    list <json_path> [--node <id>]     # 列出边，可按节点过滤入边与出边
+  edge    remove <json_path> <edge_id>       # 删掉一条边
 
   get     <json_path> <node_id>              # 获取节点详情 (JSON)
 
@@ -208,6 +214,39 @@ def cmd_delete(args: dict):
     deleted = r.delete_node(args["positional"][1])
     r.save()
     print(f"Deleted: {deleted}")
+    # 没有边时不追加这一行：delete 的输出必须和 P1 之前逐字节一致。
+    cascade = getattr(r, "last_edge_cascade", None) or {}
+    if cascade.get("total"):
+        breakdown = ", ".join(f"{t} {n}" for t, n in sorted(cascade["by_type"].items()))
+        print(f"Removed edges: {cascade['total']} ({breakdown})")
+
+
+def cmd_edge(args: dict):
+    """`edge <action> <roadmap_path> ...` —— 动作在前，因为这是一组子命令。
+
+    与其他命令"路径永远在第一位"不同：`edge` 带子动作，路径位置固定为
+    第二位（`git remote add` 同款），否则路径位置会随动作漂移。
+    """
+    action = args["positional"][0]
+    r = _load_roadmap(args["positional"][1])
+    if action == "add":
+        edge = r.add_edge(
+            args["positional"][2],
+            args["positional"][3],
+            args.get("type", "blocks"),
+        )
+        r.save()
+        _print_json(edge)
+        return
+    if action == "remove":
+        edge = r.remove_edge(args["positional"][2])
+        r.save()
+        _print_json(edge)
+        return
+    if action == "list":
+        _print_json({"edges": r.list_edges(args.get("node"))})
+        return
+    raise ValueError(f"未知 edge 动作: {action}")
 
 
 def cmd_get(args: dict):
@@ -355,6 +394,7 @@ COMMANDS = {
     "delete": cmd_delete,
     "get": cmd_get,
     "tree": cmd_tree,
+    "edge": cmd_edge,
     "decide": cmd_decide,
     "decisions": cmd_decisions,
     "remove-decision": cmd_remove_decision,
@@ -372,6 +412,24 @@ COMMANDS = {
 }
 
 
+# 写命令走整图锁；`edge` 按子动作区分，因为 `edge list` 是只读。
+LOCK_COMMANDS = frozenset(
+    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link"}
+)
+EDGE_WRITE_ACTIONS = frozenset({"add", "remove"})
+
+
+def _needs_lock(cmd: str, args: dict) -> bool:
+    """是否要为这次调用拿整图锁。
+
+    只读的 `edge list` 不拿锁：为它拿锁会把并发读串行化，还让读命令
+    可能撞上锁超时（退出码 2），那是写命令才该有的失败模式。
+    """
+    if cmd != "edge":
+        return cmd in LOCK_COMMANDS
+    return args["positional"][0] in EDGE_WRITE_ACTIONS
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -385,9 +443,8 @@ def main():
         sys.exit(1)
 
     args = _parse_args(sys.argv[2:])
-    lock_commands = {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link"}
     try:
-        if cmd in lock_commands:
+        if _needs_lock(cmd, args):
             with roadmap_file_lock(args["positional"][0]):
                 COMMANDS[cmd](args)
         else:

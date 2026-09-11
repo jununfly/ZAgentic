@@ -29,6 +29,14 @@ STATUS_ICONS = {
     STATUS_BLOCKED: "[!]",
 }
 
+# ── 依赖边类型（P1 依赖层）────────────────────────────────
+# 四种边共享同一套存储与命令，差别只在语义与成环规则。
+EDGE_BLOCKS = "blocks"
+EDGE_INFORMS = "informs"
+EDGE_SUPERSEDES = "supersedes"
+EDGE_DERIVES_FROM = "derives-from"
+EDGE_TYPES = (EDGE_BLOCKS, EDGE_INFORMS, EDGE_SUPERSEDES, EDGE_DERIVES_FROM)
+
 MODE_EXPLORE = "explore"
 MODE_EXPLOIT = "exploit"
 
@@ -58,9 +66,32 @@ class BudgetExceeded(RoadmapError):
     exit_code = 3
 
 
+class NodeNotFound(RoadmapError):
+    """引用了一个不存在的节点。
+
+    只用于 P1 的边端点校验。既有命令抛的 KeyError 一律不动——改它们会改变
+    那些命令的错误输出，而 P1 的硬验收之一是"没有边时输出与今天完全一致"。
+    """
+
+    code = "E_NODE_NOT_FOUND"
+    exit_code = 1
+
+
+class CycleError(RoadmapError):
+    """一条 blocks 边会让依赖图成环——环上每个节点都在等别人先动。
+
+    只有 blocks 会成环死锁；informs / derives-from 成环是允许的。
+    """
+
+    code = "E_CYCLE"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
+    NodeNotFound.code: NodeNotFound.exit_code,
+    CycleError.code: CycleError.exit_code,
 }
 
 
@@ -366,6 +397,8 @@ class Roadmap:
     def __init__(self, json_path: str):
         self.json_path = os.path.abspath(json_path)
         self.data: dict = {}
+        # 上一次 delete 级联掉多少边；CLI 读完就打印，不参与业务判定。
+        self.last_edge_cascade: dict = {"total": 0, "by_type": {}}
 
     # ── 文件 I/O ───────────────────────────────────────
 
@@ -546,6 +579,10 @@ class Roadmap:
 
         _collect(node_id)
 
+        # 先删边、后删节点（#79 定的写顺序）。中断后的半态因此是"边没了、
+        # 节点还在"——命令重跑一次即可——而不是悬空边那种要人工修的状态。
+        self.last_edge_cascade = self.remove_edges_touching(set(deleted))
+
         # 从父节点的 children 中移除
         parent_id = self.data["nodes"][node_id]["parent"]
         if parent_id and parent_id in self.data["nodes"]:
@@ -558,6 +595,89 @@ class Roadmap:
         self._sync_parent_status(node_id)
 
         return deleted
+
+    # ── 依赖边（P1 依赖层）──────────────────────────────
+
+    def _edge_list(self) -> list:
+        """惰性建立边表：从未加过边的 roadmap，数据形状与 P1 之前完全一致。"""
+        return self.data.setdefault("edges", [])
+
+    def add_edge(self, from_id: str, to_id: str, edge_type: str) -> dict:
+        """在两个节点之间记一条边。返回写入的边。"""
+        for endpoint in (from_id, to_id):
+            if endpoint not in self.data["nodes"]:
+                raise NodeNotFound(f"节点不存在: {endpoint}")
+        if edge_type not in EDGE_TYPES:
+            raise ValueError(f"无效的边类型: {edge_type}")
+        if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_id, from_id):
+            raise CycleError(
+                f"{from_id} -blocks-> {to_id} 会让依赖图成环"
+                f"（{to_id} 已经直接或间接阻塞 {from_id}）"
+            )
+        edges = self._edge_list()
+        seq = int(self.data.get("edge_seq", 0)) + 1
+        self.data["edge_seq"] = seq
+        edge = {"id": f"e{seq}", "from": from_id, "to": to_id, "type": edge_type}
+        edges.append(edge)
+        if edge_type == EDGE_SUPERSEDES:
+            # 被取代的节点转 archived 但不删除：它的决策与历史仍然可读。
+            # 用标记而不是 status，因为"completed 且 archived"（做完了但被取代）
+            # 是合理组合，塞进 status 会丢掉"完成过"这个信息。
+            self.data["nodes"][to_id]["archived"] = True
+        return edge
+
+    def remove_edges_touching(self, node_ids: set) -> dict:
+        """删掉所有端点落在 node_ids 里的边。返回 {"total": n, "by_type": {...}}。
+
+        边不能独立于节点存在——节点没了，它的边就没有信息量，留着只会变成
+        悬空边。所以 delete 默认级联，不设 --cascade 之类的开关。
+        """
+        # 一条边都没有时别碰数据：否则 delete 会给从未用过边的 roadmap
+        # 写入 `edges: []`，违反"没有边时与 P1 之前完全一致"。
+        if not self.data.get("edges"):
+            return {"total": 0, "by_type": {}}
+        by_type: dict = {}
+        kept = []
+        for edge in self._edge_list():
+            if edge["from"] in node_ids or edge["to"] in node_ids:
+                by_type[edge["type"]] = by_type.get(edge["type"], 0) + 1
+            else:
+                kept.append(edge)
+        self.data["edges"] = kept
+        return {"total": sum(by_type.values()), "by_type": by_type}
+
+    def _blocks_reachable(self, start: str, target: str) -> bool:
+        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。"""
+        adjacency: dict = {}
+        for edge in self._edge_list():
+            if edge["type"] == EDGE_BLOCKS:
+                adjacency.setdefault(edge["from"], []).append(edge["to"])
+        seen = set()
+        stack = [start]
+        while stack:
+            current = stack.pop()
+            if current == target:
+                return True
+            if current in seen:
+                continue
+            seen.add(current)
+            stack.extend(adjacency.get(current, []))
+        return False
+
+    def remove_edge(self, edge_id: str) -> dict:
+        """删掉一条边。返回被删掉的边。"""
+        edges = self._edge_list()
+        for index, edge in enumerate(edges):
+            if edge["id"] == edge_id:
+                return edges.pop(index)
+        raise KeyError(f"边不存在: {edge_id}")
+
+    def list_edges(self, node_id: Optional[str] = None) -> list:
+        """列出全部边；给了 node_id 就只列与它相连的（入边 + 出边）。"""
+        edges = self._edge_list()
+        if node_id is None:
+            return list(edges)
+        return [e for e in edges if e["from"] == node_id or e["to"] == node_id]
 
     def get_node(self, node_id: str) -> dict:
         """获取节点。"""
@@ -947,6 +1067,16 @@ class Roadmap:
             # 状态合法性
             if node.get("status") not in (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_BLOCKED):
                 errors.append(f"节点 {nid}: 无效状态 '{node.get('status')}'")
+
+        # 悬空边：端点节点已经不在了。来源只有两种——外部手改文件，或
+        # bundle 上"删节点后、删边前"崩溃留下的半态。它必须被检出，不能
+        # 静默参与调度；修法见 `edge remove`（不需要事务来防，检出即可）。
+        nodes = self.data.get("nodes", {})
+        for edge in self.data.get("edges", []):
+            for key in ("from", "to"):
+                endpoint = edge.get(key)
+                if endpoint not in nodes:
+                    errors.append(f"边 {edge.get('id')}: {key} 端点 {endpoint} 不存在（悬空边）")
 
         return errors
 
