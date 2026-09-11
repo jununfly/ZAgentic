@@ -15,7 +15,7 @@
 5. **节点 id 会复用。** 子节点序号取"最后一个 child + 1"，删掉尾部子节点后新节点拿回旧 id，租约、历史、外部引用（ticket / ADR / 设备间同步）全部会串号。
 6. **Human 的视野在多 Agent 下反而变差。** md 视图里没有 owner、没有待决问题队列、没有阻塞链、没有关键路径——Agent 一多，人先瞎。
 7. **错误码只登记了一个（PR #34 之后的状态）。** 机制已经存在：`RoadmapError` 带 `code` 与 `exit_code`，`ERROR_EXIT_CODES` 做"码 → 退出码"映射，失败输出形如 `Error: E_BUDGET_EXCEEDED: …`——码在行首，Agent 按码分支，不用匹配文案。缺口是**表里目前只有两个条目**：基类 `E_ROADMAP`（→1）与 `E_BUDGET_EXCEEDED`（→3）。P0 的其余码——`E_NODE_NOT_FOUND` / `E_INVALID_STATUS` / `E_CYCLE` / `E_LOCKED` / `E_CONFLICT` / `E_SCOPE` / `E_STORAGE`——尚未补进 `ERROR_EXIT_CODES`，这些失败路径现在都落到基类的 `E_ROADMAP` + 退出码 1，Agent 能程序化区分的只有"预算触顶"一种。退出码现状见 Implementation Decisions §2。
-8. **没有收敛判据。** `exploit` 节点没有 exit criteria，`explore` 节点没有 budget，Loop 没有终止条件。
+8. **只有耗尽终止，没有收敛终止（PR #34 之后的状态）。** 原文三小句逐句核对，两句已经不成立：`explore` 的 budget 已落地且**会判定**（`check_child_budget` / `count_round_start`，触顶报 `E_BUDGET_EXCEEDED`、退出码 3）；`exploit` 的 exit criteria **字段已落地，但只存不判**——自然语言判不了，PR #34 把它定成 "stored and returned, never evaluated" 是刻意的，不是缺口。剩下"Loop 没有终止条件"成立，但更精确的说法是：**今天唯一的停止方式是耗尽终止（budget 撞上限），没有收敛终止（探够了就停）**。收敛要判"这一轮有没有产出新东西"，而 roadmap 今天不承载过程记录——`rounds` 只是计数，没有"这轮发生了什么"的载体——所以判据随 **P5 的 trace layer** 落地（见 `docs/plans/zj-roadmap-execution-graph.md`），不在本 spec 实现。**不要在 P5 之前拿不存在的证据造近似判据**：那会把"暂时没东西可做"误判成"已经收敛"，比没有判据更糟。
 9. **规划期就已知"这里有未知"，但没有表达它的地方（case 1）。** `mode: explore|exploit` 是实现了的字段（`roadmap.py:32`、CLI `add --mode`），可它只是一个标记：没有 budget（探索到什么程度就该收），没有 exit_criteria（什么算探索完了），也没有"探索产出 → 落成子节点"的机制。于是规划人在规划期面对一段未知时，要么先假装已知、把 placeholder 硬写成看起来确定的节点（规划失真），要么不写（图上出现一段空白，只能靠记忆与口播维持）。Human 说得出"这块还得 explore"，系统接不住这句话。
 10. **执行期涌现的东西无处安放，图会膨胀到人看不懂（case 2）。** 从首节点出发后，Loop 会不断产出路线性材料：新问题、待定的分叉、"这个深井节点比预想的大得多"、跨子树的新关联依赖。这些东西目前只有三个去处——塞进 `notes`（丢失结构、无法查询）、塞进 `decisions`（节点内嵌数组，无法跨节点共享、无法被别的节点引用）、或者直接 `add` 成 roadmap 节点（把零散发现升格为正式任务，图迅速膨胀）。三者都不对，于是 Human 与 Agent 陷入"图越大越不知道自己在哪、下一步该干什么"的细节困境。
 
@@ -47,7 +47,7 @@
 - **P2 并发租约**：节点级 lease（claim / heartbeat / steal / release）+ 作用域令牌 + `--if-rev` 乐观并发，把排他单位从"整图"降到"节点"。
 - **P3 carrier 演进**：新增 SQLite carrier（stdlib `sqlite3`，零新依赖）作为第三种 Roadmap carrier，用递归 CTE 算 DAG 就绪集与关键路径、用事务承载跨多行的原子更新；bundle 保留为可 diff 的导出形态。**P3 不是为了修 lost update**——那个失败模式已在锁层修掉（Problem #1 的归因修正），它剩下的四条正当性见 Implementation Decisions §5。
 - **P4 跨设备**：事件流升格为事实源 + HLC 字段级合并 + OPN/git 同步，各设备物化本地视图。
-- **P5 执行图（Execution Graph）**：把 Human-Agent Loop 本身建模为第二张 DAG（trace layer），处理 Problem 9 / 10。它不是把依赖图重画一遍，而是补上依赖图不承载的另一半信息：这张图是怎么变成现在这样的——每个 roadmap 节点为什么存在、过程中发现了什么、`context` 该沿哪些边给 Agent 供上下文。**树仍然是人类主视图，依赖图默认折叠，trace 图默认完全不进 md。**
+- **P5 执行图（Execution Graph）**：把 Human-Agent Loop 本身建模为第二张 DAG（trace layer），处理 Problem 8 / 9 / 10。它不是把依赖图重画一遍，而是补上依赖图不承载的另一半信息：这张图是怎么变成现在这样的——每个 roadmap 节点为什么存在、过程中发现了什么、`context` 该沿哪些边给 Agent 供上下文。**树仍然是人类主视图，依赖图默认折叠，trace 图默认完全不进 md。**
 
 同时给 Human 侧补三块：owner 列、待决问题（open question）队列、关键路径；并给 md 定三条护栏，防止视图膨胀毁掉"一眼看懂"这个卖点。
 
