@@ -159,6 +159,7 @@ def mutated_fixture(name: str = EXTERNAL):
 SOURCE_MAP_PAGE = "handbook/architecture/subsystems/ta-billing-engine.md"
 PAGE_RELATIVE = "../../../src/billing/engine.rs"
 ROOT_RELATIVE = "src/billing/engine.rs"
+ESCAPING = "../../../../../src/billing/engine.rs"
 
 
 class LinkBaseTest(unittest.TestCase):
@@ -210,6 +211,39 @@ class LinkBaseTest(unittest.TestCase):
                     unresolved.append(f"{page.relative_to(repo).as_posix()}: {value}")
         self.assertGreater(checked, 0)
         self.assertEqual([], unresolved)
+
+    def test_a_target_that_escapes_the_repository_is_reported(self) -> None:
+        """#69 — a path climbing past the root cannot mean anything, and it used
+        to be dropped in silence: `path_from` returns None for it and the loop
+        skipped None. The message distinguishes it from a stale path, because
+        the fixes differ — one is "the file moved", the other "this was never
+        right"."""
+        with mutated_fixture() as repo:
+            page = repo / SOURCE_MAP_PAGE
+            page.write_text(page.read_text().replace(PAGE_RELATIVE, ESCAPING))
+            codes = self.codes_in(repo)
+            self.assertIn("SOURCE_TARGET_OUTSIDE", codes)
+            self.assertNotIn("SOURCE_TARGET_MISSING", codes)
+
+    def test_an_external_reference_is_not_an_escape(self) -> None:
+        """A Source map may cite a stable external reference. It also reaches
+        `path_from` as None, so collapsing the two would turn every external
+        citation into a defect."""
+        with mutated_fixture() as repo:
+            page = repo / SOURCE_MAP_PAGE
+            before = page.read_text()
+            after = before.replace(f"`{PAGE_RELATIVE}`", "[spec](https://example.com/spec)")
+            self.assertNotEqual(before, after, "the edit did not apply; this would pass unedited")
+            page.write_text(after)
+            # Guard against the edit being invisible to the parser: an autolink
+            # (`<https://…>`) is not matched by LINK_RE, so a test built on one
+            # would assert "no diagnostics" against a Source map the validator
+            # never read. Prove the entry is seen before asserting it is clean.
+            self.assertIn(
+                "https://example.com/spec",
+                [value for value, _ in VALIDATOR.source_paths(repo.resolve(), page, after)],
+            )
+            self.assertEqual(set(), self.codes_in(repo))
 
     def test_map_links_resolve_from_the_map(self) -> None:
         with mutated_fixture() as repo:

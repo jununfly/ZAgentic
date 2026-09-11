@@ -73,6 +73,13 @@ class MapEntry:
     authority_id: str | None
 
 
+# A Source map may cite a stable external reference, so "path_from() returned
+# None" has two very different meanings: the link is deliberately off-repo, or
+# a relative path wandered out of the repository and means nothing. Only the
+# second is worth reporting.
+EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "#")
+
+
 class Reader:
     def __init__(self) -> None:
         self.paths: list[str] = []
@@ -83,7 +90,7 @@ class Reader:
 
 
 def path_from(root: Path, value: str, base: Path) -> Path | None:
-    if value.startswith(("http://", "https://", "mailto:")) or value.startswith("#"):
+    if value.startswith(EXTERNAL_PREFIXES):
         return None
     value = value.split("#", 1)[0]
     candidate = (base / value).resolve() if not value.startswith("/") else Path(value).resolve()
@@ -286,6 +293,15 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
 
             for raw, source in source_paths(root, entry.target, page_text):
                 if source is None:
+                    if raw.startswith(EXTERNAL_PREFIXES):
+                        continue
+                    diagnostics.append(
+                        Diagnostic(
+                            "SOURCE_TARGET_OUTSIDE",
+                            relative,
+                            f"source-map target resolves outside the repository: {raw}",
+                        )
+                    )
                     continue
                 if not source.exists():
                     diagnostics.append(Diagnostic("SOURCE_TARGET_MISSING", relative, f"source-map target does not exist: {raw}"))
