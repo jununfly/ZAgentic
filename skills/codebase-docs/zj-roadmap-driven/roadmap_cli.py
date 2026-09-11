@@ -11,7 +11,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
               [--storage single|bundle] [--snapshot-interval N]
 
   add     <json_path> <parent_id> "<label>"
-              [--status pending|in_progress|completed|blocked]
+              [--status pending|in_progress|completed]   # blocked 派生，不可设
               [--mode explore|exploit]
               [--max-children N] [--max-rounds N]
               [--exit-criteria "判据"]...
@@ -33,6 +33,8 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   edge    remove <json_path> <edge_id>       # 删掉一条边
 
   get     <json_path> <node_id>              # 获取节点详情 (JSON)
+                                             # 有未完成 blocks 前驱时附带派生字段
+                                             # blocked / blocked_reason（不落盘）
 
   tree    <json_path> [node_id] [--depth N]  # 树形文本视图
 
@@ -251,7 +253,8 @@ def cmd_edge(args: dict):
 
 def cmd_get(args: dict):
     r = _load_roadmap(args["positional"][0])
-    _print_json(r.get_node(args["positional"][1]))
+    # 读视图：派生字段（blocked / blocked_reason）在这里算出，不落盘。
+    _print_json(r.get_node_view(args["positional"][1]))
 
 
 def cmd_tree(args: dict):

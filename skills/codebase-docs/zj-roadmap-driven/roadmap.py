@@ -22,6 +22,10 @@ STATUS_IN_PROGRESS = "in_progress"
 STATUS_COMPLETED = "completed"
 STATUS_BLOCKED = "blocked"
 
+# 可人工设置的 status。`blocked` 不在其中——它只能由 blocks 边派生（#80）：
+# 允许人写，就等于让"人设的 blocked"和"边推导的 blocked"并存，那又是一个真相源。
+SETTABLE_STATUSES = (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED)
+
 STATUS_ICONS = {
     STATUS_PENDING: "[ ]",
     STATUS_IN_PROGRESS: "[~]",
@@ -87,11 +91,22 @@ class CycleError(RoadmapError):
     exit_code = 1
 
 
+class InvalidStatus(RoadmapError):
+    """试图设置一个不可人工设置的 status。
+
+    `blocked` 是读取时由 blocks 边派生的，不是人能写进 carrier 的值。
+    """
+
+    code = "E_INVALID_STATUS"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
     NodeNotFound.code: NodeNotFound.exit_code,
     CycleError.code: CycleError.exit_code,
+    InvalidStatus.code: InvalidStatus.exit_code,
 }
 
 
@@ -469,6 +484,8 @@ class Roadmap:
         """
         if parent_id not in self.data["nodes"]:
             raise KeyError(f"父节点不存在: {parent_id}")
+        if status not in SETTABLE_STATUSES:
+            raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
 
         parent = self.data["nodes"][parent_id]
         check_child_budget(parent)
@@ -530,8 +547,8 @@ class Roadmap:
         if label is not None:
             node["label"] = label
         if status is not None:
-            if status not in (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_BLOCKED):
-                raise ValueError(f"无效状态: {status}")
+            if status not in SETTABLE_STATUSES:
+                raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
             count_round_start(node, status)  # 超限则抛，节点保持原状
             node["status"] = status
         if mode is not None:
@@ -685,6 +702,59 @@ class Roadmap:
             raise KeyError(f"节点不存在: {node_id}")
         return self.data["nodes"][node_id]
 
+    # ── 派生阻塞（#80）─────────────────────────────────
+    # blocked / blocked_reason 只在读视图里出现，永不落盘：唯一权威是 blocks 边。
+    # 落盘就必须维护一份"什么时候该重算"的清单（加边、删边、前驱完成、delete、
+    # supersedes、carrier 迁移…），漏一个就是静默陈旧。
+
+    def blocking_edges(self, node_id: str) -> list:
+        """阻塞 node_id 的 blocks 边 id 列表：即前驱尚未完成的那几条。
+
+        前驱不存在（悬空边）按未完成算：它永远等不到"完成"那天，静默放行等于
+        把一条悬空边当成已满足的依赖。
+        """
+        blockers = []
+        for edge in self.data.get("edges", []):
+            if edge["type"] != EDGE_BLOCKS or edge["to"] != node_id:
+                continue
+            predecessor = self.data["nodes"].get(edge["from"])
+            if predecessor is None or predecessor.get("status") != STATUS_COMPLETED:
+                blockers.append(edge["id"])
+        return blockers
+
+    def blocked_node_ids(self) -> set:
+        """一次算出整张图里被阻塞的节点 id。
+
+        渲染要按整棵树取图标，逐节点问 `blocking_edges` 会退化成 O(V*E)。
+        """
+        blocked = set()
+        for edge in self.data.get("edges", []):
+            if edge["type"] != EDGE_BLOCKS:
+                continue
+            predecessor = self.data["nodes"].get(edge["from"])
+            if predecessor is None or predecessor.get("status") != STATUS_COMPLETED:
+                blocked.add(edge["to"])
+        return blocked
+
+    @staticmethod
+    def _status_icon(node: dict, blocked: set) -> str:
+        """渲染图标：blocked 来自边，不来自 status——status 里永远不该有它。"""
+        if node["id"] in blocked:
+            return STATUS_ICONS[STATUS_BLOCKED]
+        return STATUS_ICONS.get(node.get("status"), "[?]")
+
+    def get_node_view(self, node_id: str) -> dict:
+        """读视图：节点本体 + 派生的 blocked / blocked_reason。
+
+        没被阻塞时两个字段**都不出现**——"消失"比 `blocked: false` 更难被误读，
+        也让"没有边时输出与派生之前逐字节一致"这条控制例成立。
+        """
+        node = self.get_node(node_id)
+        blockers = self.blocking_edges(node_id)
+        if not blockers:
+            return node
+        return {**node, "blocked": True, "blocked_reason": blockers}
+
     # ── 决策 ───────────────────────────────────────────
 
     def add_decision(self, node_id: str, question: str, answer: str, note: str = "") -> dict:
@@ -732,6 +802,7 @@ class Roadmap:
             return f"(节点 {root_id} 不存在)"
 
         lines = []
+        blocked = self.blocked_node_ids()
 
         def _render(nid: str, prefix: str, is_last: bool, depth: int):
             if depth > max_depth:
@@ -740,7 +811,7 @@ class Roadmap:
             if not node:
                 return
 
-            icon = STATUS_ICONS.get(node["status"], "[?]")
+            icon = self._status_icon(node, blocked)
             mode_tag = MODE_TAG.get(node.get("mode"), "")
             connector = "└── " if is_last else "├── "
             line = f"{prefix}{connector}{icon}{mode_tag} {nid}. {node['label']}"
@@ -754,7 +825,7 @@ class Roadmap:
 
         if root_id in self.data["nodes"]:
             root = self.data["nodes"][root_id]
-            icon = STATUS_ICONS.get(root["status"], "[?]")
+            icon = self._status_icon(root, blocked)
             mode_tag = MODE_TAG.get(root.get("mode"), "")
             lines.append(f"{icon}{mode_tag} {root_id}. {root['label']}")
             children = root.get("children", [])
@@ -927,12 +998,13 @@ class Roadmap:
         lines = []
         root = self.data["nodes"][root_id]
         children = root.get("children", [])
+        blocked = self.blocked_node_ids()
 
         def _render(nid: str, prefix: str, is_last: bool, depth: int):
             node = self.data["nodes"].get(nid)
             if not node:
                 return
-            icon = STATUS_ICONS.get(node["status"], "[?]")
+            icon = self._status_icon(node, blocked)
             mode_tag = MODE_TAG.get(node.get("mode"), "")
             connector = "└── " if is_last else "├── "
             lines.append(f"{prefix}{connector}{icon}{mode_tag} {nid}. {node['label']}")
