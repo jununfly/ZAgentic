@@ -76,6 +76,14 @@ class SchedulingTestBase(unittest.TestCase):
         out = self.run_cli("ready", self.roadmap).stdout
         return [m.group(1) for m in (NODE_ID.match(line) for line in out.splitlines()) if m]
 
+    def critical_path_ids(self):
+        out = self.run_cli("critical-path", self.roadmap).stdout
+        return [m.group(1) for m in (NODE_ID.match(line) for line in out.splitlines()) if m]
+
+    def impact_ids(self, node_id):
+        out = self.run_cli("impact", self.roadmap, node_id).stdout
+        return [m.group(1) for m in (NODE_ID.match(line) for line in out.splitlines()) if m]
+
     def pending_ids_from_carrier(self):
         """控制例的对照真相：carrier 里 status == pending 的节点 id。"""
         data = json.loads((self.workdir / "roadmap.json").read_text(encoding="utf-8"))
@@ -140,6 +148,92 @@ class Slice02ReadyControl(SchedulingTestBase):
         result = self.run_cli("ready", self.roadmap)
         self.assertEqual(0, result.returncode)
         self.assertEqual([], [i for i in self.ready_ids()])
+
+
+class Slice03CriticalPath(SchedulingTestBase):
+    """Slice 03 —— critical-path：依赖图里最长的未完工链（#81, Story #21）。
+
+    边界与 ready / impact 一致：**只沿 blocks 边走**。
+    """
+
+    def build_three_siblings(self):
+        self.init_map()
+        self.add_node("1", "甲")
+        self.add_node("1", "乙")
+        self.add_node("1", "丙")
+        # 1-1 blocks 1-2 blocks 1-3：一条长度为 3 的未完工链。
+        self.add_edge("1-1", "1-2")
+        self.add_edge("1-2", "1-3")
+
+    def test_linear_chain_is_the_critical_path(self):
+        self.build_three_siblings()
+        self.assertEqual(["1-1", "1-2", "1-3"], self.critical_path_ids())
+
+    def test_completed_predecessor_drops_out_of_chain(self):
+        """已完成节点不阻塞完成，链经过它也不贡献长度（核心语义）。"""
+        self.build_three_siblings()
+        self.complete("1-1")
+        # 1-1 已完工，不在"未完工"子图；链退化为 1-2 -> 1-3。
+        self.assertEqual(["1-2", "1-3"], self.critical_path_ids())
+
+    def test_longer_branch_wins_over_shorter(self):
+        """1-1 同时 blocks 1-2（->1-3）与 1-4：长链胜出。"""
+        self.build_three_siblings()
+        self.add_node("1", "丁")           # 1-4
+        self.add_edge("1-1", "1-4")        # 短链 1-1 -> 1-4（长 2）
+        self.assertEqual(["1-1", "1-2", "1-3"], self.critical_path_ids())
+
+    def test_all_completed_yields_no_chain(self):
+        self.build_three_siblings()
+        self.complete("1-1")
+        self.complete("1-2")
+        self.complete("1-3")
+        self.assertEqual([], self.critical_path_ids())
+
+
+class Slice04Impact(SchedulingTestBase):
+    """Slice 04 —— impact：改 node_id 会波及的下游节点（#81, Story #22）。
+
+    边界与 ready / critical-path 一致：**只沿 blocks 边顺流**。
+    """
+
+    def build_dag(self):
+        self.init_map()
+        self.add_node("1", "甲")  # 1-1
+        self.add_node("1", "乙")  # 1-2
+        self.add_node("1", "丙")  # 1-3
+        self.add_node("1", "丁")  # 1-4
+        self.add_edge("1-1", "1-2")   # 甲 blocks 乙
+        self.add_edge("1-2", "1-3")   # 乙 blocks 丙
+        self.add_edge("1-1", "1-4")   # 甲 also blocks 丁
+
+    def test_impact_returns_all_blocks_descendants(self):
+        self.build_dag()
+        # 改 1-1 波及 1-2 / 1-3 / 1-4（不含自身），按 id 排序。
+        self.assertEqual(["1-2", "1-3", "1-4"], self.impact_ids("1-1"))
+
+    def test_impact_excludes_self(self):
+        self.build_dag()
+        self.assertEqual(["1-3"], self.impact_ids("1-2"))
+
+    def test_impact_empty_for_leaf(self):
+        self.build_dag()
+        self.assertEqual([], self.impact_ids("1-3"))
+
+    def test_soft_edge_does_not_propagate_impact(self):
+        """`informs` 是上下文关系，不进影响集（与阻塞语义同一条边界）。"""
+        self.init_map()
+        self.add_node("1", "甲")  # 1-1
+        self.add_node("1", "乙")  # 1-2
+        self.add_edge("1-1", "1-2", "informs")
+        self.assertEqual([], self.impact_ids("1-1"))
+
+    def test_impact_unknown_node_reports_node_not_found(self):
+        """负向控制例：引用不存在的节点必须报 E_NODE_NOT_FOUND + 退出码 1。"""
+        self.build_dag()
+        result = self.run_cli("impact", self.roadmap, "9-9", check=False)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("E_NODE_NOT_FOUND", result.stderr)
 
 
 if __name__ == "__main__":

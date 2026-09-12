@@ -564,16 +564,41 @@ their output before the chain existed.
 _Avoid_: dependency graph (it is not the graph, it is a summary of what is stuck), `--deps` (Story 45 allowed "collapsed section **or** `--deps`"; the collapsed form shipped)
 
 **Ready set**:
-The nodes that can start now — status `pending` and absent from the
-**Derived blocked** set. It is the first consumer of the blocked derivation, so
-the two can never disagree: both are recomputed from the `blocks` edges on every
-call. `in_progress` is excluded because somebody already started it, and soft
-edges (`informs`, `derives-from`, `supersedes`) cannot delay a node because only
-`blocks` edges feed **Derived blocked**. Sorted by node id — the set answers
-"what next", and an order that floats with insertion order would give two
-answers for the same graph. An empty set prints `No ready nodes.`: silence is
-indistinguishable from the command never running.
-_Avoid_: pending list (pending is only half the rule), available work, next tasks (it is a claim query, not a schedule)
+The work-claiming set of a roadmap: nodes whose `status` is `pending` **and**
+that have no `blocks` predecessor with `status != completed`. Computed on read
+from `blocks` edges (the same source as **Derived blocked**), sorted by id; it is
+a query, not a stored field, so finishing a predecessor moves a node into the set
+in the very next read. `in_progress` is excluded on purpose — the set answers
+"what can I start next", not "what is not blocked" — so it is a work-claiming
+query, not a status filter. Returned by `ready`; empty → `No ready nodes.`
+(rc 0). The lease clause in the spec's readiness rule (Story 20) is P2's work and
+is not yet implemented; today it is vacuously true and left as one explicit
+branch, not a flag.
+_Avoid_: pending set (it is not "all pending nodes"), next node (it returns a set, not one pick), startable
+
+**Critical path**:
+The single longest unfinished chain along `blocks` edges, returned by
+`critical-path`. "Unfinished" = `status != completed`; a completed node neither
+blocks nor contributes length, and is dropped from the induced subgraph before the
+longest-chain search, so finishing a predecessor shortens the path in the next
+read. The result is one chain (ids, predecessor→successor); ties among equal-length
+chains break by the smallest start id so two reads always agree. Derived on read,
+never stored. Empty graph or everything completed → `[]` (printed as
+`No unfinished chain.`, rc 0). See **Ready set** for the shared `blocks`-only
+boundary.
+_Avoid_: longest path in the tree, critical task (it is a chain of ids, not one node)
+
+**Impact**:
+The downstream reach of a node along `blocks` edges, returned by `impact <node>`:
+every node reachable from `<node>` through `blocks` edges, excluding `<node>`
+itself, sorted by id. It is the "if I change this, what must I re-check" view;
+completed downstream nodes are included on purpose, because a finished successor
+that depends on a changed predecessor is exactly the rework risk worth surfacing.
+`informs` / `derives-from` / `supersedes` edges carry context or provenance, not
+scheduling, so they never appear in an impact set. A leaf → `[]` (printed as
+`No downstream impact.`, rc 0); a `<node>` that does not exist → `E_NODE_NOT_FOUND`
+(exit 1). Derived on read, never stored, same `blocks`-only boundary as **Ready set**.
+_Avoid_: blast radius (colloquial), affected nodes (too vague about excluding self)
 
 ### Issue / Triage
 

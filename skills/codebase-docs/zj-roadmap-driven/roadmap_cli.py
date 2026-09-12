@@ -69,6 +69,12 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   siblings <json_path> <node_id>             # 获取兄弟节点
 
   focus   <json_path>                        # 获取当前施工点
+
+  critical-path <json_path>                  # 关键路径：依赖图里最长的未完工链（#81）
+                                            # 只读、不拿锁
+
+  impact  <json_path> <node_id>             # 影响集：改 node_id 会波及的下游节点（#81）
+                                            # 只读、不拿锁
 """
 
 import sys
@@ -282,6 +288,37 @@ def cmd_ready(args: dict):
         print(f"{node['id']}. {node['label']} {status_icon(node)}")
 
 
+def cmd_critical_path(args: dict):
+    """关键路径（#81, Story #21）：依赖图里最长的未完工链。
+
+    只读查询，不拿整图锁（与 `ready` 同款：为它拿锁会把并发读串行化，
+    还可能撞上锁超时——那是写命令才该有的失败模式）。
+    """
+    r = _load_roadmap(args["positional"][0])
+    path = r.critical_path()
+    if not path:
+        print("No unfinished chain.")
+        return
+    for nid in path:
+        node = r.get_node(nid)
+        print(f"{nid}. {node['label']} {status_icon(node)}")
+
+
+def cmd_impact(args: dict):
+    """影响集（#81, Story #22）：改 node_id 会波及的下游节点（不含自身）。
+
+    只读查询，不拿整图锁（与 `ready` / `critical-path` 同款）。
+    """
+    r = _load_roadmap(args["positional"][0])
+    affected = r.impact(args["positional"][1])
+    if not affected:
+        print("No downstream impact.")
+        return
+    for nid in affected:
+        node = r.get_node(nid)
+        print(f"{nid}. {node['label']} {status_icon(node)}")
+
+
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
     d = r.add_decision(
@@ -415,6 +452,8 @@ COMMANDS = {
     "get": cmd_get,
     "tree": cmd_tree,
     "ready": cmd_ready,
+    "critical-path": cmd_critical_path,
+    "impact": cmd_impact,
     "edge": cmd_edge,
     "decide": cmd_decide,
     "decisions": cmd_decisions,

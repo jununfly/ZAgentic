@@ -183,6 +183,98 @@ def ready_node_list(nodes, blocked: set) -> list:
     )
 
 
+def critical_path(nodes, edges) -> list:
+    """关键路径（#81, Story #21）：依赖图里最长的未完工链。
+
+    只沿 `blocks` 边走（与 ready / impact 同一边界）。"未完工" = status != completed：
+    已完成节点不阻挡任何东西，链经过它也不贡献长度。返回**一条**链（id 列表，
+    从前驱到后继），不是所有节点；同长时取最小 id，保证两次读给出同一个答案。
+
+    空图或全完工 → 返回 []。
+    """
+    node_by_id = {n["id"]: n for n in nodes}
+    # 只在未完工节点诱导出的子图上算：已完成节点不阻塞完成。
+    active = {nid for nid, n in node_by_id.items() if n.get("status") != STATUS_COMPLETED}
+    if not active:
+        return []
+
+    # blocks 邻接（两端都 active，且非自环）；同时数入度用于拓扑序。
+    adj: dict = {nid: [] for nid in active}
+    indeg = {nid: 0 for nid in active}
+    for edge in edges:
+        if edge.get("type") != EDGE_BLOCKS:
+            continue
+        a, b = edge.get("from"), edge.get("to")
+        if a in active and b in active and a != b:
+            adj[a].append(b)
+            indeg[b] += 1
+
+    # Kahn 拓扑序。DP 正确性不依赖顺序，但用有序队列出确定的 topo 序更省心。
+    ready = sorted(nid for nid in active if indeg[nid] == 0)
+    topo: list = []
+    while ready:
+        u = ready.pop(0)
+        topo.append(u)
+        for v in sorted(adj[u]):
+            indeg[v] -= 1
+            if indeg[v] == 0:
+                ready.append(v)
+                ready.sort()
+
+    # DP：以 u 结尾的最长链长度 + 前驱（同长取较小 id，保证确定性）。
+    best_len = {nid: 1 for nid in active}
+    best_prev = {nid: None for nid in active}
+    for u in topo:
+        for v in adj[u]:
+            cand = best_len[u] + 1
+            if cand > best_len[v]:
+                best_len[v] = cand
+                best_prev[v] = u
+            elif cand == best_len[v] and (best_prev[v] is None or u < best_prev[v]):
+                best_prev[v] = u
+
+    end = min(
+        (nid for nid in active if best_len[nid] == max(best_len.values())),
+        key=lambda nid: nid,
+    )
+    path: list = []
+    cur = end
+    while cur is not None:
+        path.append(cur)
+        cur = best_prev[cur]
+    path.reverse()
+    return path
+
+
+def impact_node_ids(node_id: str, nodes, edges) -> list:
+    """影响集（#81, Story #22）：改 node_id 会波及的下游节点。
+
+    只沿 `blocks` 边顺流（与 ready / critical-path 同一边界）：`a blocks b` 意味着
+    "改 a 会波及 b"。返回受影响节点的 id 列表（不含自身），按 id 排序保证确定性。
+    """
+    node_by_id = {n["id"]: n for n in nodes}
+    if node_id not in node_by_id:
+        raise NodeNotFound(f"节点不存在: {node_id}")
+
+    adj: dict = {}
+    for edge in edges:
+        if edge.get("type") == EDGE_BLOCKS:
+            adj.setdefault(edge.get("from"), []).append(edge.get("to"))
+
+    seen: set = set()
+    stack = [node_id]
+    result: list = []
+    while stack:
+        cur = stack.pop()
+        for v in adj.get(cur, []):
+            if v in seen:
+                continue
+            seen.add(v)
+            result.append(v)
+            stack.append(v)
+    return sorted(result)
+
+
 def status_icon(node: dict) -> str:
     """节点的 status 图标。认不出的 status 给 `[?]`。
 
@@ -917,6 +1009,14 @@ class Roadmap:
         `blocked` 改成派生要消灭的东西。
         """
         return ready_node_list(self.data["nodes"].values(), self.blocked_node_ids())
+
+    def critical_path(self) -> list:
+        """关键路径（#81）：依赖图里最长的未完工链。"""
+        return critical_path(self.data["nodes"].values(), self.data.get("edges", []))
+
+    def impact(self, node_id: str) -> list:
+        """影响集（#81）：改 node_id 会波及的下游节点（不含自身）。"""
+        return impact_node_ids(node_id, self.data["nodes"].values(), self.data.get("edges", []))
 
     # ── 决策 ───────────────────────────────────────────
 
