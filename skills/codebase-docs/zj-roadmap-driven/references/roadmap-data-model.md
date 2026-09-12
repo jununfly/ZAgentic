@@ -141,6 +141,36 @@ completed, `delete`, `supersedes`, carrier migration…), and missing one is
 silent staleness. Recomputing per read is O(V+E) — the write commands already
 load the whole graph.
 
+## The ready set
+
+`ready` is the first consumer of the derived `blocked` set: a node is ready when
+its status is `pending` and it is **not** in `blocked`. Both halves are
+recomputed from the graph on every call, so the ready set is never stored and
+can never disagree with the edges.
+
+```
+ready = { n | n.status == pending and n ∉ blocked }
+```
+
+Two consequences worth naming:
+
+- **`in_progress` is not ready.** A node somebody already started is not "what
+  can start now"; `ready` is a work-claiming query, not a status filter.
+- **Soft edges cannot make a node unready.** Only `blocks` edges feed `blocked`,
+  so `informs` / `derives-from` / `supersedes` never delay anything.
+
+The list is sorted by node id. The order is not decoration: the set answers
+"what next", and an order that floats with dict insertion order would give two
+different answers for the same graph.
+
+The spec's readiness rule also includes "holds no active lease". Leases are P2
+and do not exist yet, so that term is vacuously true today. It is deliberately
+not encoded as a parameter or a hardcoded `True` — when leases land, this is the
+one place that changes.
+
+An empty set is reported as `No ready nodes.`; see
+[CLI reference](roadmap-cli.md) for the command surface.
+
 ## Node naming
 
 Node names must be **self-explainable**: the name alone should say what will be done. Use the parent as context for the complete scope.

@@ -50,6 +50,9 @@ python roadmap_cli.py focus <json_path>
 python roadmap_cli.py validate <json_path>
 python roadmap_cli.py stats <json_path>
 python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
+
+# Scheduling query (read-only, derived — never stored)
+python roadmap_cli.py ready <roadmap_path>
 ```
 
 `render` writes the lightweight Markdown view (tree depth=2, current focus, and one level of the focus subtree). `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
@@ -60,6 +63,30 @@ canonical and view bytes, and bundle shard/history sizes. It returns
 writing indexes, migrating the roadmap, or editing Markdown. `--measure` adds
 local bounded-tree and full-section timings; timing thresholds are advisory and
 machine-dependent.
+
+`ready` answers "what can start now": every node that is `pending` **and** has no
+unfinished `blocks` predecessor. One line per node, sorted by id, with the
+current status icon:
+
+```
+1-1. 设计 [ ]
+1-4. 文档 [ ]
+```
+
+An empty set prints `No ready nodes.` rather than nothing — a silent empty
+output is indistinguishable from "the command never ran". `ready` is read-only
+and takes **no lock**: locking it would serialise concurrent reads and could
+surface a lock timeout (exit code 2), which is a write-command failure mode.
+
+Like `blocked`, the ready set is recomputed per call from the `blocks` edges, so
+completing a predecessor (or removing an edge) changes the answer on the very
+next call. Only `blocks` edges count — `informs`, `derives-from` and
+`supersedes` never make a node unready. A node whose predecessor no longer
+exists still counts as blocked: a dangling hard dependency is a fact to fix,
+not a fact to quietly ignore.
+
+Both carriers answer identically for the same graph; the query is verified
+byte-for-byte across single-file JSON and bundle.
 
 The CLI selects storage from the path: an existing directory with `manifest.json`
 is a roadmap bundle; a file is legacy single-file JSON. Bundle mode keeps node,

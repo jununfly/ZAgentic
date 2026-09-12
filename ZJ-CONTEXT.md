@@ -563,6 +563,18 @@ reports the true total), and with nothing blocked both views are byte-identical 
 their output before the chain existed.
 _Avoid_: dependency graph (it is not the graph, it is a summary of what is stuck), `--deps` (Story 45 allowed "collapsed section **or** `--deps`"; the collapsed form shipped)
 
+**Ready set**:
+The nodes that can start now — status `pending` and absent from the
+**Derived blocked** set. It is the first consumer of the blocked derivation, so
+the two can never disagree: both are recomputed from the `blocks` edges on every
+call. `in_progress` is excluded because somebody already started it, and soft
+edges (`informs`, `derives-from`, `supersedes`) cannot delay a node because only
+`blocks` edges feed **Derived blocked**. Sorted by node id — the set answers
+"what next", and an order that floats with insertion order would give two
+answers for the same graph. An empty set prints `No ready nodes.`: silence is
+indistinguishable from the command never running.
+_Avoid_: pending list (pending is only half the rule), available work, next tasks (it is a claim query, not a schedule)
+
 ### Issue / Triage
 
 **Issue tracker**:
