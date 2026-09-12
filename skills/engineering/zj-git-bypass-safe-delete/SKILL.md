@@ -393,9 +393,34 @@ Write-Host "OK $branch = $C"
 
 开 PR：`gh pr create -F <body文件>`（正文走文件避 PowerShell 拆参），`$env:GH_PAGER="cat"` 防 `--no-pager` 放错位。
 
+### Symptom H — bash 的 `rm` 仍解析到 `safe-bin/rm`（永久修复没覆盖，exit 127，文件没删）
+
+跑 `rm -f <file>` 得到：
+
+```
+C:\...\cli\vendor\shim\safe-bin/rm: line 13: dirname: command not found
+C:\...\cli\vendor\shim\safe-bin/rm: line 13: cd: null directory
+C:\...\cli\vendor\shim\safe-bin/rm: line 15: /safe-delete-common.sh: No such file or directory
+C:\...\cli\vendor\shim\safe-bin/rm: line 17: safe_delete_main: command not found
+```
+
+退出码 **127**，**文件没被删**。坑点：如果它写在 `&&` 链里，链会在此短路——后面的命令一条都不会跑，但你可能误以为它们跑了（2026-09-12 实测：`rm -f ... && echo cleaned && git ...` 只留下 127，`cleaned` 和 git 都没执行）。
+
+**根因**：Bash 工具的 `PATH` 把 `safe-bin/` 排在前面，`rm` 直接解析到 `safe-bin/rm` 这个**独立入口脚本**。而 `disable-safe-delete.ps1` 打的是另外 4 个文件（`node-language-shim.cjs` / `sitecustomize.py` / `safe-bin/safe-delete-bash-env.sh` / `shell-runtime-bash-env.sh`），**不含 `safe-bin/rm` 本身**——它有自己那套 `dirname` 引导，跟被修好的 `shell-runtime-bash-env.sh` 是两回事。所以**打完永久修复，`rm` 照样坏**。同目录的 `unlink` / `rmdir` 等 PATH 层 shim 同理。
+
+**Fix —— 删文件一律走原生 .NET，不用 bash `rm`**：
+
+```powershell
+[System.IO.File]::Delete("D:\path\to\file.txt")   # 单文件；不走 bash，最稳
+```
+
+- 要保留副本 / 删目录：用 `mv <target> <backup>/`（shim 不 wrap `mv`，见上文「Related hazard」），比硬删安全。
+- 删完必须验证：`Test-Path <path>` 应为 `False`；别把删除塞进 `&&` 链，单独一条跑。
+- 同一环境下 Bash 运行时还可能缺 `head` / `which` / `dirname`，`ls ... | head` 会**静默丢输出**——要看结果就整条命令不接管道，或写进文件后用 Read 读回。
+
 ### Prevention
 
-Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Four checkpoints, each right after the command that can trigger it:
+Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Five checkpoints, each right after the command that can trigger it:
 
 | After | Check | Bad sign |
 | --- | --- | --- |
@@ -403,8 +428,9 @@ Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTION
 | `git checkout` / `git switch` | `git status --short` | any ` D` → Symptom D2 |
 | `git checkout -b` / `git commit` / `git push` | `git rev-parse --abbrev-ref HEAD` + `git log --oneline -1` | "does not have any commits yet" → Symptom F, hand-write the ref before running anything else |
 | `git fetch` / `git push` | `git ls-remote origin <branch>` (not local refs) | local ref disagrees → Symptom E |
+| `rm <path>`（bash） | `Test-Path <path>` | 文件还在 + exit 127 → Symptom H，改用 `[IO.File]::Delete` |
 
-If you must do one of those by hand, expect to hit one of the seven symptoms above and apply the corresponding fix.
+If you must do one of those by hand, expect to hit one of the eight symptoms above and apply the corresponding fix.
 
 ## 环境坑：Mechanism ② —— 沙箱把 `.git` 从 git 子进程视图里藏起来（易与机制一混淆）
 
