@@ -551,6 +551,18 @@ one is silent staleness — the same defect class as the `remove-decision` drift
 between carriers.
 _Avoid_: blocked status (as a stored value), blocked flag, dependency check (as a separate artifact)
 
+**Blocked chain**:
+A short section that appears in both Markdown views **only when something is
+blocked**, naming which node is held up by which edges. A tree line can carry the
+`[!]` icon but not the explanation, so the chain answers the question the icon
+raises — without the Human opening JSON and counting edges. `render` (written into
+the linked md file) collapses it into a `<details>` so the DAG stays out of the
+line of sight; `section` prints it plainly under `### 阻塞链` because that output
+is piped and grepped. Entries are capped (the rest are counted, and the summary
+reports the true total), and with nothing blocked both views are byte-identical to
+their output before the chain existed.
+_Avoid_: dependency graph (it is not the graph, it is a summary of what is stuck), `--deps` (Story 45 allowed "collapsed section **or** `--deps`"; the collapsed form shipped)
+
 ### Issue / Triage
 
 **Issue tracker**:

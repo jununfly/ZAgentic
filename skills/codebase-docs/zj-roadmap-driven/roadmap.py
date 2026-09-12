@@ -49,6 +49,13 @@ MODE_TAG = {
     MODE_EXPLOIT: "[Y+]",
 }
 
+BLOCKED_CHAIN_LIMIT = 5
+"""md 阻塞链的节点上限。
+
+Human 主视图里树才是主体：一条几十节点的链会把树顶出视线，所以只列前几条，
+其余用一行说明丢了多少。这是"不把整张边图倒进 md"那条验收的落地。
+"""
+
 DEFAULT_LOCK_TIMEOUT_SECONDS = 10.0
 LOCK_RETRY_INTERVAL_SECONDS = 0.05
 
@@ -149,17 +156,113 @@ def assert_settable_status(status: str) -> None:
         raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
 
 
+def status_icon(node: dict) -> str:
+    """节点的 status 图标。认不出的 status 给 `[?]`。
+
+    不认识的值不能落成 `[ ]`：那是替 Human 断言"还没开工"。
+    """
+    return STATUS_ICONS.get(node.get("status"), "[?]")
+
+
 def tree_line(node: dict, prefix: str, last: bool, depth: int, blocked: set) -> str:
     """渲染一行树；blocked 图标来自边，不来自 status——status 里永远不该有它。
 
     渲染是给 Human 看的唯一视图。它跟 `get` 打架（一个说被挡、一个说没开工）
     比任何内部实现差异都贵，所以行格式两个 carrier 共用一份。
     """
-    icon = (STATUS_ICONS[STATUS_BLOCKED] if node["id"] in blocked
-            else STATUS_ICONS.get(node.get("status"), "[?]"))
+    icon = STATUS_ICONS[STATUS_BLOCKED] if node["id"] in blocked else status_icon(node)
     mode_tag = MODE_TAG.get(node.get("mode"), "")
     connector = "" if depth == 0 else ("└── " if last else "├── ")
     return f"{prefix}{connector}{icon}{mode_tag} {node['id']}. {node['label']}"
+
+
+# ── md 阻塞链（#82）──────────────────────────────────────
+# 同一份数据在两个 md 出口上取不同的折叠取舍，但**条目内容、取舍规则、上限**
+# 必须两边一致，所以写在模块层，两个 carrier 只负责喂各自的边与节点。
+
+
+def edge_sort_key(edge_id: str):
+    """边 id 按计数器数值排序，不按字面序（否则 e10 会排在 e2 前面）。"""
+    try:
+        return (0, int(edge_id[1:]))
+    except ValueError:
+        return (1, edge_id)
+
+
+def blocked_chain_lines(edges, resolve_node) -> list:
+    """md 阻塞链的条目：每个被阻塞节点一条，说清它被哪几条边挡住。
+
+    每条都给出边 id 和派出它的前驱（连同前驱当前图标）——少了前驱，Human 只
+    知道"被某条边挡住"，还得回头去数 JSON 才能知道该去推谁完工。
+
+    `resolve_node` 返回 None 表示节点不存在：两个 carrier 找节点的方式不同
+    （一个是 dict 取，一个是读分片），这里只依赖"能不能找到"这一个约定。
+    """
+    blockers: dict = {}
+    for edge in edges:
+        predecessor = resolve_node(edge["from"])
+        if not is_blocking(edge, predecessor):
+            continue
+        blockers.setdefault(edge["to"], []).append((edge["id"], predecessor))
+
+    lines = []
+    for to_id in sorted(blockers):
+        node = resolve_node(to_id)
+        label = node["label"] if node else "?"
+        parts = []
+        for edge_id, predecessor in sorted(blockers[to_id], key=lambda pair: edge_sort_key(pair[0])):
+            if predecessor is None:
+                parts.append(edge_id)
+            else:
+                parts.append(
+                    f"{edge_id}: {predecessor['id']}. {predecessor['label']} "
+                    f"{status_icon(predecessor)}"
+                )
+        lines.append(f"- {to_id}. {label} ← {', '.join(parts)}")
+    return lines
+
+
+def cap_chain(lines: list) -> list:
+    """截断到 BLOCKED_CHAIN_LIMIT 条，丢掉的部分用一行写明。
+
+    不截断的话，一张几十条边的图会把整棵树顶出视线，而树正是这条链要保护的
+    东西。丢掉的部分必须写明，否则 Human 会以为看到的是全景。
+    """
+    if len(lines) <= BLOCKED_CHAIN_LIMIT:
+        return lines
+    omitted = len(lines) - BLOCKED_CHAIN_LIMIT
+    return [
+        *lines[:BLOCKED_CHAIN_LIMIT],
+        f"- ... 另有 {omitted} 个节点被阻塞未列出",
+    ]
+
+
+def _chain_block(lines: list, opening: str, closing: str) -> str:
+    """两个 md 出口共用的拼装。
+
+    空链一律不成块——这正是"没有东西被阻塞时 md 与改动前逐字节一致"那条硬验收
+    的全部内容，所以它只能住在一处：让每个出口各自记得判断一次，等于把它变成
+    一条谁都可以顺手漏掉的约定。
+    """
+    if not lines:
+        return ""
+    return opening + "\n".join(cap_chain(lines)) + closing
+
+
+def render_chain_plain(lines: list) -> str:
+    """导出视图（`section`）里的阻塞链：非折叠，能一路 grep 到底。"""
+    return _chain_block(lines, "\n### 阻塞链\n\n", "\n")
+
+
+def render_chain_collapsed(lines: list) -> str:
+    """Human 主视图里的阻塞链：折叠成一行摘要，展开才看到条目。
+
+    摘要报的是真实总数：那才是 Human 要知道的事实，列出了几条只是排版。
+    """
+    summary = f"阻塞链：{len(lines)} 个节点被阻塞"
+    return _chain_block(
+        lines, f"\n<details><summary>{summary}</summary>\n\n", "\n\n</details>\n"
+    )
 
 
 # ── 结构预算（case 1） ───────────────────────────────────
@@ -909,6 +1012,10 @@ class Roadmap:
 
     # ── Markdown 渲染 ──────────────────────────────────
 
+    def _blocked_chain_lines(self) -> list:
+        """本 carrier 的阻塞链条目：喂的是自己的边与节点，取舍规则共用。"""
+        return blocked_chain_lines(self.data.get("edges", []), self.data["nodes"].get)
+
     def render_full_section(
         self,
         all_nodes: bool = False,
@@ -951,6 +1058,10 @@ class Roadmap:
 {tree_text}
 <!-- ROADMAP_TREE_END -->
 """
+        # 树之后立刻给出"为什么没进展"——Human 的视线顺序是先扫树看见 `[!]`，
+        # 再需要一个不用翻 JSON 的答案。
+        section += render_chain_plain(self._blocked_chain_lines())
+
         if decision_lines:
             section += f"\n### 决策历史\n\n{decision_lines}\n"
 
@@ -988,12 +1099,14 @@ class Roadmap:
             if focus_subtree:
                 focus_detail += f"\n**当前子树：**\n{focus_subtree}\n"
 
+        # 空链时这里得到空串：下面那个模板因此在无阻塞时与 #82 之前逐字节相同。
+        chain = render_chain_collapsed(self._blocked_chain_lines())
         section = f"""<!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
 > 数据文件: `{os.path.basename(self.json_path)}` | 最后更新: {now}
 
-{tree_text}
+{tree_text}{chain}
 """
         if focus_detail:
             section += focus_detail

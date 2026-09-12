@@ -45,6 +45,13 @@ Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|deri
 Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status blocked` 被拒并返
 回 `E_INVALID_STATUS`（退出码 1）——人写的 blocked 会与边推导出的 blocked 打架。
 
+树的一行只装得下一个图标，装不下"被谁挡住"。所以当**有东西被阻塞**时，md 两个
+视图都多出一小节阻塞链，每条说清哪个节点被哪几条边挡住（含边 id 与前驱）：
+`render` 写进关联 md 文件时把它折进 `<details>`（依赖图不占视线），`section`
+把它打平成 `### 阻塞链`（那是给管道用的）。最多列 5 个节点，其余写明数量不静默
+丢掉。**没有任何东西被阻塞时，两个视图的输出一个字节都不变**——这条有控制例守着，
+不是"应该差不多"。
+
 两个载体（single-file JSON 与 bundle）对边的行为完全一致，同一套验收跑两遍。
 bundle 把边存在 `edges/<id>.json`，节点分片里不反向存边 id，`migrate --to
 bundle` 会把边一起带走。

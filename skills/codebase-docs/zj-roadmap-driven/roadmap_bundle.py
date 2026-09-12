@@ -27,11 +27,15 @@ from roadmap import (
     CycleError,
     NodeNotFound,
     assert_settable_status,
+    blocked_chain_lines,
     blocked_view,
     build_budget,
     check_child_budget,
     count_round_start,
+    edge_sort_key,
     is_blocking,
+    render_chain_collapsed,
+    render_chain_plain,
     tree_line,
 )
 
@@ -404,7 +408,7 @@ class RoadmapBundle:
             edge = self._read_edge_file(edge_id)
             if is_blocking(edge, self._predecessor_or_none(edge["from"])):
                 blockers.append(edge_id)
-        return sorted(blockers, key=lambda edge_id: int(edge_id[1:]))
+        return sorted(blockers, key=edge_sort_key)
 
     def blocked_node_ids(self) -> set[str]:
         """一次算出整张图里被阻塞的节点 id（渲染按整棵树取图标）。"""
@@ -836,9 +840,23 @@ class RoadmapBundle:
             walk(self._read_node_file(child_id), "", index == len(root.get("children", [])) - 1, 1)
         return "\n".join(lines)
 
+    def _blocked_chain_lines(self) -> list[str]:
+        """本 carrier 的阻塞链条目：喂的是自己的边与节点，取舍规则共用。
+
+        源喂的是 `edges/` 目录本身，不是它的索引——索引可以整份丢掉。逐个边文件
+        读比读索引贵，但索引是另一份可失效的副本：挂在它上面就等于让派生值依赖
+        派生值。
+        """
+        return blocked_chain_lines(
+            (self._read_edge_file(edge_id) for edge_id in self._edge_ids()),
+            self._predecessor_or_none,
+        )
+
     def render_light_section(self) -> str:
         focus_id = self.get_current_focus()
-        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2)}\n"
+        # 空链时这里得到空串：下面的模板因此在无阻塞时与 #82 之前逐字节相同。
+        chain = render_chain_collapsed(self._blocked_chain_lines())
+        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2)}{chain}\n"
         if focus_id:
             focus = self._read_node_file(focus_id)
             section += f"\n### 当前施工：{focus_id}. {focus['label']}\n"
@@ -854,7 +872,11 @@ class RoadmapBundle:
 
     def render_full_section(self, all_nodes: bool = False, max_depth: int = 2, max_bytes: Optional[int] = None) -> str:
         depth = 100000 if all_nodes else max_depth
-        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth)}\n"
+        # 换行归谁要想清楚：模板里那个 `\n` 是"树的收尾"，链自带自己的开头换行。
+        # 拼错一个，两个 carrier 的 md 就差一整个空行——diff 里最容易被肉眼放过
+        # 的那类不一致，也正是上面那条字节比对要抓的。
+        plain_chain = render_chain_plain(self._blocked_chain_lines())
+        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth)}\n{plain_chain}"
         if all_nodes:
             decisions = self.get_decisions()
             if decisions:
