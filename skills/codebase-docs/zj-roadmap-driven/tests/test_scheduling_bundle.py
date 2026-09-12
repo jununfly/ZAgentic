@@ -65,6 +65,14 @@ class Slice02ReadyControlBundleTest(BundleStorageMixin, sf.Slice02ReadyControl):
     """同 Slice02：没边时 `ready` 必须退化为 pending 语义。"""
 
 
+class Slice03CriticalPathBundleTest(BundleStorageMixin, sf.Slice03CriticalPath):
+    """同 Slice03：关键路径（#81）。"""
+
+
+class Slice04ImpactBundleTest(BundleStorageMixin, sf.Slice04Impact):
+    """同 Slice04：影响集（#81）。"""
+
+
 class Slice03BundleOwnFailureModesTest(BundleStorageMixin, sf.SchedulingTestBase):
     """bundle 自己的一动即错点：目录不存在 / 索引失效 / 权威源。"""
 

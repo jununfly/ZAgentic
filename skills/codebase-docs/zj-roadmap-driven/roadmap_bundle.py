@@ -35,6 +35,8 @@ from roadmap import (
     edge_sort_key,
     is_blocking,
     ready_node_list,
+    critical_path,
+    impact_node_ids,
     render_chain_collapsed,
     render_chain_plain,
     tree_line,
@@ -433,6 +435,14 @@ class RoadmapBundle:
     def ready_nodes(self) -> list[dict[str, Any]]:
         """就绪集（#81）：与 single-file 同一份判定，见 `is_ready`。"""
         return ready_node_list(self._all_nodes(), self.blocked_node_ids())
+
+    def critical_path(self) -> list[str]:
+        """关键路径（#81）：与 single-file 同一份判定。"""
+        return critical_path(self._all_nodes(), self.list_edges())
+
+    def impact(self, node_id: str) -> list[str]:
+        """影响集（#81）：与 single-file 同一份判定（不含自身）。"""
+        return impact_node_ids(node_id, self._all_nodes(), self.list_edges())
 
     def _all_nodes(self) -> list[dict[str, Any]]:
         """整张图的节点：nodes/ 目录才是权威，状态索引可能失效。"""

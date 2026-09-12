@@ -51,8 +51,10 @@ python roadmap_cli.py validate <json_path>
 python roadmap_cli.py stats <json_path>
 python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
 
-# Scheduling query (read-only, derived — never stored)
+# Scheduling query (read-only, derived) — see "## Scheduling query" below
 python roadmap_cli.py ready <roadmap_path>
+python roadmap_cli.py critical-path <roadmap_path>
+python roadmap_cli.py impact <roadmap_path> <node_id>
 ```
 
 `render` writes the lightweight Markdown view (tree depth=2, current focus, and one level of the focus subtree). `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
@@ -64,36 +66,53 @@ writing indexes, migrating the roadmap, or editing Markdown. `--measure` adds
 local bounded-tree and full-section timings; timing thresholds are advisory and
 machine-dependent.
 
-`ready` answers "what can start now": every node that is `pending` **and** has no
-unfinished `blocks` predecessor. One line per node, sorted by id, with the
-current status icon:
-
-```
-1-1. 设计 [ ]
-1-4. 文档 [ ]
-```
-
-An empty set prints `No ready nodes.` rather than nothing — a silent empty
-output is indistinguishable from "the command never ran". `ready` is read-only
-and takes **no lock**: locking it would serialise concurrent reads and could
-surface a lock timeout (exit code 2), which is a write-command failure mode.
-
-Like `blocked`, the ready set is recomputed per call from the `blocks` edges, so
-completing a predecessor (or removing an edge) changes the answer on the very
-next call. Only `blocks` edges count — `informs`, `derives-from` and
-`supersedes` never make a node unready. A node whose predecessor no longer
-exists still counts as blocked: a dangling hard dependency is a fact to fix,
-not a fact to quietly ignore.
-
-Both carriers answer identically for the same graph; the query is verified
-byte-for-byte across single-file JSON and bundle.
-
 The CLI selects storage from the path: an existing directory with `manifest.json`
 is a roadmap bundle; a file is legacy single-file JSON. Bundle mode keeps node,
 decision, and append-only history shards independently readable. `tree`, `get`,
 `focus`, node-scoped `decisions`, and light `render` are lazy/bounded operations.
 `remove-decision` records a decision retraction in bundle mode, preserving the
 original record and its history rather than physically deleting it.
+
+## Scheduling query (read-only, derived)
+
+Three read-only queries answer "what can I start next / what is the longest
+outstanding chain / what does a change ripple into". All three are derived
+**on read** from `blocks` edges only — never stored, never counters (Story 24
+is deferred to P3). They share one module-level function in `roadmap.py`; both
+carriers feed it their own data, so the two carriers print byte-identical
+output. None of them takes the whole-graph lock: taking it would serialize
+concurrent reads and could trip the lock-timeout exit code 2, which is a
+writer's failure mode, not a reader's.
+
+```bash
+python roadmap_cli.py ready <roadmap_path>
+python roadmap_cli.py critical-path <roadmap_path>
+python roadmap_cli.py impact <roadmap_path> <node_id>
+```
+
+- **`ready`** — the work-claiming set: nodes that are `pending` **and** have no
+  unfinished `blocks` predecessor. Sorted by id. `in_progress` is *not* ready:
+  this is "what can be started", not a status filter. A hanging predecessor (its
+  node gone but the edge lingers) still counts as blocking.
+  - Empty → `No ready nodes.` (exit 0).
+- **`critical-path`** — the single longest unfinished chain along `blocks` edges.
+  "Unfinished" = `status != completed`; a completed node neither blocks nor
+  contributes length. Returns **one** chain (ids, predecessor→successor); ties
+  break by the smallest start id, so two reads always agree. Empty graph or
+  everything completed → `[]`.
+  - Empty → `No unfinished chain.` (exit 0).
+- **`impact`** — every downstream node reachable from `<node_id>` along `blocks`
+  edges (a change to a ripples to b). Excludes `<node_id>` itself; sorted by id.
+  `informs` / `derives-from` / `supersedes` do not propagate — only `blocks`
+  carries scheduling. A leaf has no downstream impact.
+  - Empty → `No downstream impact.` (exit 0).
+  - `<node_id>` does not exist → `E_NODE_NOT_FOUND` on stderr, exit 1.
+
+All three print `{id}. {label} {status_icon}` per line, so the Human can tell
+finished from unfinished in the impact set at a glance. The lease clause in the
+spec's readiness rule (Story 20) is P2's work and is not yet implemented; today
+the "no valid lease" branch is vacuously true and is intentionally not a flag or
+a hardcoded `True` — when leases land, only that one clause changes.
 
 ## Edges
 

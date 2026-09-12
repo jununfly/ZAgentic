@@ -141,35 +141,33 @@ completed, `delete`, `supersedes`, carrier migration…), and missing one is
 silent staleness. Recomputing per read is O(V+E) — the write commands already
 load the whole graph.
 
-## The ready set
+## Scheduling query (read-only, derived)
 
-`ready` is the first consumer of the derived `blocked` set: a node is ready when
-its status is `pending` and it is **not** in `blocked`. Both halves are
-recomputed from the graph on every call, so the ready set is never stored and
-can never disagree with the edges.
+The three scheduling queries (`ready`, `critical-path`, `impact`) are computed
+from `blocks` edges on every read — no counters, no stored fields (Story 24 is
+deferred to P3; a counter would be a second source of truth next to the edges,
+exactly the thing the derived-`blocked` decision set out to kill).
 
-```
-ready = { n | n.status == pending and n ∉ blocked }
-```
+- `ready(node)` = `status == pending` **and** no `blocks` predecessor with
+  `status != completed`. It is a work-claiming query, so `in_progress` is
+  excluded even though it is technically "unblocked" — the set answers "what can
+  I start next", not "what is not blocked".
+- `critical_path` walks only `blocks` edges among nodes with `status !=
+  completed` and returns the single longest chain. A completed node is dropped
+  from the induced subgraph first, so finishing a predecessor shortens the chain
+  in the very next read. Ties (equal-length chains) break by the smallest start
+  id to keep the output deterministic across reads.
+- `impact(node)` follows `blocks` edges downstream from `node` and returns every
+  reachable node except `node` itself, sorted by id. It is the "if I change this,
+  what must I re-check" view; completed downstream nodes are included on purpose —
+  a finished successor that depends on a changed predecessor is exactly the rework
+  risk worth surfacing. `informs` / `derives-from` / `supersedes` edges do not
+  carry scheduling, so they never appear in an impact set.
 
-Two consequences worth naming:
-
-- **`in_progress` is not ready.** A node somebody already started is not "what
-  can start now"; `ready` is a work-claiming query, not a status filter.
-- **Soft edges cannot make a node unready.** Only `blocks` edges feed `blocked`,
-  so `informs` / `derives-from` / `supersedes` never delay anything.
-
-The list is sorted by node id. The order is not decoration: the set answers
-"what next", and an order that floats with dict insertion order would give two
-different answers for the same graph.
-
-The spec's readiness rule also includes "holds no active lease". Leases are P2
-and do not exist yet, so that term is vacuously true today. It is deliberately
-not encoded as a parameter or a hardcoded `True` — when leases land, this is the
-one place that changes.
-
-An empty set is reported as `No ready nodes.`; see
-[CLI reference](roadmap-cli.md) for the command surface.
+In every query, "unfinished" means `status != completed` and "blocks" means the
+`blocks` edge type — the same boundary `blocked` uses. The lease clause in the
+spec's readiness rule (Story 20) is P2's work and is not implemented yet; it is
+left as one explicit branch, not a flag, so adding it later touches one place.
 
 ## Node naming
 
