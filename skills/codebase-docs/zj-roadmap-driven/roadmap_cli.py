@@ -85,6 +85,7 @@ from roadmap import (
     RoadmapLockTimeout,
     exit_code_for,
     roadmap_file_lock,
+    status_icon,
     unlock_roadmap,
 )
 from roadmap_bundle import BundleError, RoadmapBundle
@@ -265,6 +266,22 @@ def cmd_tree(args: dict):
     print(r.get_tree(root, depth))
 
 
+def cmd_ready(args: dict):
+    """就绪集（#81）：pending 且没有未完成的 blocks 前驱。
+
+    只读查询，不拿整图锁——为它拿锁会把并发读串行化，还可能撞上锁超时（退出码
+    2），那是写命令才该有的失败模式。
+    """
+    r = _load_roadmap(args["positional"][0])
+    nodes = r.ready_nodes()
+    if not nodes:
+        # 空集要说出来：静默的空输出无法与"命令没跑"区分。
+        print("No ready nodes.")
+        return
+    for node in nodes:
+        print(f"{node['id']}. {node['label']} {status_icon(node)}")
+
+
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
     d = r.add_decision(
@@ -397,6 +414,7 @@ COMMANDS = {
     "delete": cmd_delete,
     "get": cmd_get,
     "tree": cmd_tree,
+    "ready": cmd_ready,
     "edge": cmd_edge,
     "decide": cmd_decide,
     "decisions": cmd_decisions,
