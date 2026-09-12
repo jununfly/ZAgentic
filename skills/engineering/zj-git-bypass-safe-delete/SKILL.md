@@ -1,7 +1,20 @@
 ---
 name: zj-git-bypass-safe-delete
-description: Diagnose and recover from WorkBuddy's safe-delete shim corrupting git repositories on Windows Git Bash. Use when `git status` shows all files as A, `git diff` fails with missing tree, `refs/heads/branch-name` is gone, or `git fetch`/`git stash`/`git commit` left .git in a broken state. Also use proactively before any `rm -rf` in WorkBuddy shell — the shim can actually delete under Git Bash.
+description: >-
+  Diagnose and recover from WorkBuddy's safe-delete shim corrupting git repositories
+  on Windows. Use when `git status` shows all files as A, `git diff` fails with missing
+  tree, `refs/heads/branch-name` is gone, or git operations leave .git broken. Also use
+  proactively before any `rm -rf` in a WorkBuddy shell — the shim can actually delete.
+  SCOPE: Windows + WorkBuddy only. On macOS/Linux the shim defaults to off — do not load.
+applies_to:
+  os: [windows]
+  env: [workbuddy]
 ---
+
+> **Scope — Windows + WorkBuddy only.** This skill patches WorkBuddy's *forced*
+> safe-delete interception, which exists **only on Windows**. On macOS/Linux the shim
+> defaults to off, so there is nothing to fix and the skill should not load. The bundled
+> `scripts/disable-safe-delete.ps1` self-skips with an explanatory message off-Windows.
 
 # Root cause & permanent fix (READ THIS FIRST)
 
@@ -15,13 +28,16 @@ When git's Node/Python helpers (or bash `rm`) try to delete `.git` internals (re
 
 **Why whack-a-mole kept failing.** There is *no user-facing setting* to disable this on Windows — `dataSecurity.safeDeleteRuntimeEnabled` exists only in the shim source, never as a persisted user setting. WorkBuddy forces `CODEBUDDY_SAFE_DELETE_ENABLED="1"` on every child process (overriding any env var you set), and the bash layer ignores that variable entirely (it keys off `CODEBUDDY_SAFE_DELETE_BIN_DIR`). macOS is unaffected because `safeDeleteRuntimeEnabled` defaults to `false` there — that is exactly why the same WorkBuddy never corrupts git on a MacBook.
 
-**Permanent fix (recommended).** Neutralize the shim at the source so Windows behaves like macOS. Run once, and re-run after every WorkBuddy update:
+**Permanent fix (recommended).** Neutralize the shim at the source so Windows behaves like macOS. The fix script ships *inside this skill* (`scripts/disable-safe-delete.ps1`) and is itself gated to Windows + WorkBuddy — it resolves the WorkBuddy install path from the environment, so it is portable across machines (no hardcoded usernames or install paths). Run it once, and re-run after every WorkBuddy update:
 
 ```powershell
-& "$env:USERPROFILE\bin\disable-safe-delete.ps1"
+# The script lives in this skill's scripts/ dir. After the skill is installed it is at:
+#   $env:USERPROFILE\.workbuddy\skills\zj-git-bypass-safe-delete\scripts\disable-safe-delete.ps1
+$script = Join-Path $env:USERPROFILE ".workbuddy\skills\zj-git-bypass-safe-delete\scripts\disable-safe-delete.ps1"
+& $script
 ```
 
-It patches 4 files under `…\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\`:
+It patches 4 files under `<WorkBuddy install>\resources\app.asar.unpacked\cli\vendor\shim\` (resolved automatically from `%LOCALAPPDATA%\Programs\WorkBuddy`, or `$env:WORKBUDDY_HOME` if you set it):
 
 1. `node-language-shim.cjs` → `const safeDeleteEnabled = false;` (Node layer off)
 2. `sitecustomize.py` → `_SAFE_DELETE_ENABLED = False` (Python layer off)
@@ -139,8 +155,8 @@ If you genuinely need a destructive delete, do it from a non-WorkBuddy process (
 
 ## When NOT to use this skill
 
+- **You're not on Windows + WorkBuddy.** The safe-delete interception only exists on Windows under WorkBuddy. On macOS/Linux the shim defaults to off — there is nothing to fix; use `git` directly. (The bundled `disable-safe-delete.ps1` self-skips with an explanatory message off-Windows.)
 - The git error is **not** a refs/lock corruption (e.g. merge conflict, bad refspec). Use `zj-diagnosing-bugs` for those.
-- You're on macOS or Linux — the shim works correctly there. Use `git` directly.
 - The repo is genuinely corrupted at the object level (missing blobs in `objects/`). Recovery is impossible without `git fsck` + remote re-fetch.
 
 ## When in doubt — decision tree
@@ -435,3 +451,4 @@ git init /tmp/scratch && cd /tmp/scratch && git status   # 若正常 → git 本
 
 - `scripts/diagnose.sh` — read-only inspection of `.git/` state
 - `scripts/recover-refs.sh` — recreate loose refs from reflog
+- `scripts/disable-safe-delete.ps1` — **permanent fix**: neutralizes the 3-layer safe-delete shim at the source. Windows + WorkBuddy only (self-skips elsewhere); resolves the WorkBuddy install path from the environment. Re-run after every WorkBuddy update.
