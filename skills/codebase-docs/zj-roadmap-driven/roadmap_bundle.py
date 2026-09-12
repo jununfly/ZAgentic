@@ -24,14 +24,15 @@ from roadmap import (
     EDGE_BLOCKS,
     EDGE_SUPERSEDES,
     EDGE_TYPES,
-    STATUS_COMPLETED,
-    SETTABLE_STATUSES,
     CycleError,
-    InvalidStatus,
     NodeNotFound,
+    assert_settable_status,
+    blocked_view,
     build_budget,
     check_child_budget,
     count_round_start,
+    is_blocking,
+    tree_line,
 )
 
 
@@ -401,15 +402,7 @@ class RoadmapBundle:
         blockers: list[str] = []
         for edge_id in index.get("to", {}).get(node_id, []):
             edge = self._read_edge_file(edge_id)
-            if edge["type"] != EDGE_BLOCKS:
-                continue
-            try:
-                predecessor = self._read_node_file(edge["from"])
-            except KeyError:
-                # 悬空边按未完成算：它永远等不到"完成"那天。
-                blockers.append(edge_id)
-                continue
-            if predecessor.get("status") != STATUS_COMPLETED:
+            if is_blocking(edge, self._predecessor_or_none(edge["from"])):
                 blockers.append(edge_id)
         return sorted(blockers, key=lambda edge_id: int(edge_id[1:]))
 
@@ -418,23 +411,19 @@ class RoadmapBundle:
         blocked: set[str] = set()
         for edge_id in self._edge_ids():
             edge = self._read_edge_file(edge_id)
-            if edge["type"] != EDGE_BLOCKS:
-                continue
-            try:
-                predecessor = self._read_node_file(edge["from"])
-            except KeyError:
-                blocked.add(edge["to"])
-                continue
-            if predecessor.get("status") != STATUS_COMPLETED:
+            if is_blocking(edge, self._predecessor_or_none(edge["from"])):
                 blocked.add(edge["to"])
         return blocked
 
+    def _predecessor_or_none(self, node_id: str) -> Optional[dict[str, Any]]:
+        """读前驱节点；悬空边（前驱不存在）返回 None —— 按未完成算。"""
+        try:
+            return self._read_node_file(node_id)
+        except KeyError:
+            return None
+
     def get_node_view(self, node_id: str) -> dict[str, Any]:
-        node = self.get_node(node_id)
-        blockers = self.blocking_edges(node_id)
-        if not blockers:
-            return node
-        return {**node, "blocked": True, "blocked_reason": blockers}
+        return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
 
     def add_node(
         self,
@@ -447,8 +436,7 @@ class RoadmapBundle:
         exit_criteria: Optional[list] = None,
     ) -> dict[str, Any]:
         parent = self._read_node_file(parent_id)
-        if status not in SETTABLE_STATUSES:
-            raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
+        assert_settable_status(status)
         if mode not in MODE_VALUES:
             raise BundleError("invalid node mode")
         check_child_budget(parent)
@@ -495,8 +483,7 @@ class RoadmapBundle:
         if label is not None:
             node["label"] = label
         if status is not None:
-            if status not in SETTABLE_STATUSES:
-                raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
+            assert_settable_status(status)
             count_round_start(node, status)
             node["status"] = status
         if mode is not None:
@@ -792,12 +779,12 @@ class RoadmapBundle:
     def get_tree(self, root_id: str = "1", max_depth: int = 2) -> str:
         root = self._read_node_file(root_id)
         blocked = self.blocked_node_ids()
-        lines = [self._tree_line(root, "", True, 0, blocked)]
+        lines = [tree_line(root, "", True, 0, blocked)]
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
             if depth > max_depth:
                 return
-            lines.append(self._tree_line(node, prefix, last, depth, blocked))
+            lines.append(tree_line(node, prefix, last, depth, blocked))
             if depth >= max_depth:
                 return
             children = node.get("children", [])
@@ -810,21 +797,6 @@ class RoadmapBundle:
             child_last = index == len(root.get("children", [])) - 1
             walk(child, "", child_last, 1)
         return "\n".join(lines)
-
-    @staticmethod
-    def _tree_line(
-        node: dict[str, Any],
-        prefix: str,
-        last: bool,
-        depth: int,
-        blocked: Optional[set[str]] = None,
-    ) -> str:
-        icons = {"pending": "[ ]", "in_progress": "[~]", "completed": "[x]", "blocked": "[!]"}
-        modes = {"explore": "[X+]", "exploit": "[Y+]"}
-        connector = "" if depth == 0 else ("└── " if last else "├── ")
-        # blocked 派生自边，不读 status——status 里永远不该有它（#80）。
-        icon = "[!]" if node["id"] in (blocked or frozenset()) else icons.get(node.get("status"), "[?]")
-        return f"{prefix}{connector}{icon}{modes.get(node.get('mode'), '')} {node['id']}. {node['label']}"
 
     def get_path(self, node_id: str) -> list[str]:
         path: list[str] = []
@@ -850,8 +822,7 @@ class RoadmapBundle:
         blocked = self.blocked_node_ids()
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
-            connector = "└── " if last else "├── "
-            lines.append(self._tree_line(node, prefix, last, depth, blocked))
+            lines.append(tree_line(node, prefix, last, depth, blocked))
             children = node.get("children", [])
             child_prefix = prefix + ("    " if last else "│   ")
             if depth >= max_depth:
