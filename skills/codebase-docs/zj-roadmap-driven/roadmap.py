@@ -156,6 +156,33 @@ def assert_settable_status(status: str) -> None:
         raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
 
 
+# ── 调度查询（#81）──────────────────────────────────────
+# ready / critical-path / impact 三个查询共用同一条边界：**只沿 blocks 走**。
+# informs / derives-from 是上下文与来源关系，改它们不影响任何东西的调度，
+# 让它们参与调度等于把"谁和谁有关"当成"谁等谁"。
+
+
+def is_ready(node: dict, blocked: set) -> bool:
+    """就绪 = pending 且没有未完成的 blocks 前驱。
+
+    spec §3 的判定还有"无有效租约"一项，但租约是 P2，今天还没有这一层，
+    所以它恒真——这里既不写死 True 假装实现了，也不为不存在的东西留参数。
+    """
+    return node.get("status") == STATUS_PENDING and node["id"] not in blocked
+
+
+def ready_node_list(nodes, blocked: set) -> list:
+    """就绪集，按 id 排序。
+
+    排序不是装饰：就绪集回答的是"下一步干什么"，顺序若跟着 dict 插入顺序
+    浮动，同一张图两次读会给出两个答案。
+    """
+    return sorted(
+        (node for node in nodes if is_ready(node, blocked)),
+        key=lambda node: node["id"],
+    )
+
+
 def status_icon(node: dict) -> str:
     """节点的 status 图标。认不出的 status 给 `[?]`。
 
@@ -879,6 +906,17 @@ class Roadmap:
     def get_node_view(self, node_id: str) -> dict:
         """读视图：节点本体 + 派生的 blocked / blocked_reason。"""
         return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
+
+    # ── 调度查询（#81）─────────────────────────────────
+
+    def ready_nodes(self) -> list:
+        """就绪集：pending 且没有未完成的 blocks 前驱。
+
+        按边实时算一遍（O(V+E)），不落 `pending_deps` 计数器——Story 24 已决议
+        推迟到 P3：计数器一旦落盘就得维护"什么时候重算"的清单，那正是
+        `blocked` 改成派生要消灭的东西。
+        """
+        return ready_node_list(self.data["nodes"].values(), self.blocked_node_ids())
 
     # ── 决策 ───────────────────────────────────────────
 

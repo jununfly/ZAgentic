@@ -34,6 +34,7 @@ from roadmap import (
     count_round_start,
     edge_sort_key,
     is_blocking,
+    ready_node_list,
     render_chain_collapsed,
     render_chain_plain,
     tree_line,
@@ -428,6 +429,17 @@ class RoadmapBundle:
 
     def get_node_view(self, node_id: str) -> dict[str, Any]:
         return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
+
+    def ready_nodes(self) -> list[dict[str, Any]]:
+        """就绪集（#81）：与 single-file 同一份判定，见 `is_ready`。"""
+        return ready_node_list(self._all_nodes(), self.blocked_node_ids())
+
+    def _all_nodes(self) -> list[dict[str, Any]]:
+        """整张图的节点：nodes/ 目录才是权威，状态索引可能失效。"""
+        return [
+            self._read_node_file(path.stem)
+            for path in sorted((self.path / "nodes").glob("*.json"))
+        ]
 
     def add_node(
         self,
