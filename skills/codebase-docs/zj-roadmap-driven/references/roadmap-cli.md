@@ -87,6 +87,14 @@ adds `blocked: true` plus `blocked_reason` (the ids of the `blocks` edges whose
 source node is not `completed`) and omits both when nothing blocks the node.
 Completing the predecessor or removing the edge is visible in the very next read.
 `tree` and the Markdown views render the same node with the `[!]` icon.
+
+When something is blocked, the Markdown views add a short **blocked chain** section
+listing who is holding what up. `render` (the view written into the linked md file)
+puts it inside a collapsed `<details>` so the DAG stays out of your line of sight;
+`section` prints it plainly under a `### 阻塞链` heading, because that output goes
+to pipes and greps. At most 5 nodes are listed and the rest are counted, not
+silently dropped. With nothing blocked, both views are byte-identical to their
+pre-chain output. See `roadmap-data-model.md` for the full reasoning.
 `--status blocked` is refused with `E_INVALID_STATUS` (exit 1) — a Human-written
 `blocked` would be a second source of truth that can disagree with the edges.
 `informs`, `derives-from` and `supersedes` never block.

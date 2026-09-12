@@ -90,6 +90,51 @@ python roadmap_cli.py edge remove roadmap.json e1
 python roadmap_cli.py get roadmap.json 1-2     # both fields gone, same read
 ```
 
+## The blocked chain in Markdown
+
+The tree stays the Human's main view and edges do not enter it by default. But a
+tree line can only carry an icon, so it cannot answer "who is holding this up".
+When **anything is blocked**, both Markdown views gain a short section that does:
+
+```markdown
+<!-- `render` — the Human's md file: collapsed, one line of sight -->
+<details><summary>阻塞链：2 个节点被阻塞</summary>
+
+- 1-2. 实现 ← e1: 1-1. 设计 [ ]
+- 1-3. 上线 ← e2: 1-1. 设计 [ ], e3: 1-2. 实现 [ ]
+
+</details>
+
+<!-- `section` — explicit export: plain, greppable -->
+### 阻塞链
+
+- 1-2. 实现 ← e1: 1-1. 设计 [ ]
+```
+
+Both lists are the same data rendered twice. The difference is deliberate:
+
+| View | Form | Why |
+|------|------|-----|
+| `render` (written into the linked md file) | collapsed `<details>` | dependency info is there when wanted and out of the way when it isn't — you should not have to read a DAG to see progress |
+| `section` (stdout) | plain `### 阻塞链` | it is consumed by pipes and greps; HTML there is noise |
+
+There is no `--deps` flag. Story 45 asked for "a collapsed section **or** a
+separate `--deps` output"; the collapsed form is the one that shipped, and
+`section --all` is the non-collapsed answer to the same question.
+
+At most 5 blocked nodes are listed (sorted by id, `BLOCKED_CHAIN_LIMIT`); anything
+beyond that is folded into a final line that says how many were dropped, and the
+summary reports the **true total**, not the number shown. A summary that quietly
+under-reports is worse than no summary.
+
+Every entry names the blocked node, the edge ids holding it up, and each of those
+predecessors with its current icon — omitting the predecessor would send the
+Human back to counting JSON to find out who to chase.
+
+**When nothing is blocked, neither view changes by a single byte.** That is a hard
+acceptance criterion, not a hope; a control case renders the same roadmap with the
+pre-P1 implementation (`git show a8ee1b9:...`) and compares bytes.
+
 Deriving instead of storing is a deliberate trade: a stored `blocked` needs a
 list of "when to recompute" triggers (add edge, remove edge, predecessor
 completed, `delete`, `supersedes`, carrier migration…), and missing one is
