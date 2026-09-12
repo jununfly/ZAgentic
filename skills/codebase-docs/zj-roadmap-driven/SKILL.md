@@ -34,6 +34,7 @@ Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
 Agent 需要选择载体 → 调 `recommend-storage`（只读建议，不自动迁移）
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
+Agent 需要取活 → 调 `ready`（只读，列出"现在能开工"的节点）
 
 依赖是树之外的一层正交边：`blocks` 是硬依赖（不许成环，会返 `E_CYCLE`），
 `informs` / `derives-from` 只是上下文与来源追溯，允许成环。删节点会级联删掉
@@ -55,6 +56,12 @@ Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status 
 两个载体（single-file JSON 与 bundle）对边的行为完全一致，同一套验收跑两遍。
 bundle 把边存在 `edges/<id>.json`，节点分片里不反向存边 id，`migrate --to
 bundle` 会把边一起带走。
+
+`ready` 是上面这套派生语义的第一个消费者：**status 为 pending 且不在 blocked
+集里**的节点。它回答"下一步干什么"，所以 `in_progress` 不算（已经有人在做），
+软边（`informs` / `derives-from` / `supersedes`）也挡不住任何节点。按 id 排序
+——顺序若跟着插入序浮动，同一张图会给出两个答案。空集打印 `No ready nodes.`，
+不是静默空输出。和 `blocked` 一样每次读取时重算，不落盘。
 ```
 
 ## Scope gate — before any node write or project edit
