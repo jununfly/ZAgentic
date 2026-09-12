@@ -228,6 +228,18 @@ git ls-remote origin refs/heads/<branch-name>
 
 用 `[IO.File]::WriteAllText`（无 BOM）而不是 `>` / `Out-File` —— 后者在 PS 5.1 会写出 UTF-16/BOM，git 读不出 sha。
 
+**陷阱：一条命令链里连着做两个 commit。** ref 是在 `git commit` **进程结束前**被吞的，所以第二个 commit 会看到 unborn HEAD，落成 **root-commit**——整个 index 被当成新增（实测 "506 files changed, 464715 insertions(+)"），而且它跟分支历史完全断开。防御两步：
+
+```powershell
+# 每个 commit 之前先把 ref 写回已知 sha
+[IO.File]::WriteAllText("$PWD\.git\refs\heads\feat\<branch>", $knownSha)
+git commit -F msg
+# 提交后先验证父提交再推，不对就别推
+git rev-parse "$newSha^"    # 必须等于 $knownSha，否则是 root-commit
+```
+
+更稳的做法：**一次调用只做一个 commit，做完立刻 push**，不要攒两个再一起推。
+
 若 push 报 `SANDBOX EXECUTION REJECTED BY USER`，**不要照字面理解成"用户点了拒绝"**：那是沙箱对 `~/.ssh/*` 通配规则的自动拦截（Blocked paths 里列的是 OpenSSH 依次尝试的全部默认密钥名，机器上大多不存在）。请用户放开权限后重试一次即可，不是凭据问题。
 
 ### Prevention
