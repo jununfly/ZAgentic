@@ -221,11 +221,21 @@ echo -n "<correct-sha>" > .git/refs/remotes/origin/main
 ```
 Then verify in a *separate* invocation (`git log --oneline origin/main -2`). If a git command runs in the same chain, the freshly written ref dir can be trashed again.
 
-### Symptom F — 本地分支 ref（嵌套目录）在 commit 之后立刻消失，分支变 unborn
+### Symptom F — 本地分支 ref（嵌套目录）被吞，分支变 unborn
 
-You commit on a newly created branch (e.g. `feat/80-derived-blocked`); git prints `[feat/80-derived-blocked <sha>] ...` and exits 0. The very next command — even inside the same invocation — says `fatal: your current branch 'feat/80-derived-blocked' does not have any commits yet`, and `git status --short` lists **the whole tree as `A`** (index intact, HEAD empty). Inspection: `.git/refs/heads/` still holds the old branches, but the `feat/` directory is gone.
+Typical trigger: you commit on a newly created branch (e.g. `feat/80-derived-blocked`); git prints `[feat/80-derived-blocked <sha>] ...` and exits 0. The very next command — even inside the same invocation — says `fatal: your current branch 'feat/80-derived-blocked' does not have any commits yet`, and `git status --short` lists **the whole tree as `A`** (index intact, HEAD empty). Inspection: `.git/refs/heads/` still holds the old branches, but the `feat/` directory is gone.
 
-Symptom E's sibling — same swallowing, but on `refs/heads/**` and triggered by `commit`, not `fetch`. **The commit object is safe**: `.git/logs/HEAD` still carries the `old new ... commit: <subject>` line, and `git cat-file -t <sha>` says `commit`.
+Symptom E's sibling — same swallowing, but on `refs/heads/**`. **The commit object is safe**: `.git/logs/HEAD` still carries the `old new ... commit: <subject>` line, and `git cat-file -t <sha>` says `commit`.
+
+**触发点不止 `commit`。** 实测 `git checkout -b <branch>` 与 `git push` 之后 ref 同样消失，症状完全一致（HEAD unborn、`status` 全 `A`）。后果是：
+
+- 新建分支之后、跑下一条 git 命令之前，得先把 ref 写回去。嵌套目录要自己建 —— git 不会因为你要写文件就替你造出 `refs/heads/docs/`：
+  ```powershell
+  [IO.Directory]::CreateDirectory("$PWD\.git\refs\heads\docs") | Out-Null
+  [IO.File]::WriteAllText("$PWD\.git\refs\heads\docs\<branch-name>", $sha)
+  ```
+- `git push` 之后如果还要继续在这个分支上提交 / 再推，push 完**再写一次** ref。
+- 反过来，`gh pr create` 与 `git ls-remote` 走的是远端，**本地 ref 被吞也不受影响**。ref 丢了又急着开 PR，这是最快的出路。
 
 **Push recipe that survives it** — never let the push depend on resolving a local ref; push the raw sha:
 
@@ -241,7 +251,9 @@ git push origin "${sha}:refs/heads/<branch-name>"
 git ls-remote origin refs/heads/<branch-name>
 ```
 
-用 `[IO.File]::WriteAllText`（无 BOM）而不是 `>` / `Out-File` —— 后者在 PS 5.1 会写出 UTF-16/BOM，git 读不出 sha。
+用 `[IO.File]::WriteAllText`（无 BOM）而不是 `>` / `Out-File` —— 后者在 PS 5.1 会写出 UTF-16/BOM，git 读不出 sha。写的时候**带上结尾 `\n`**，否则 `git fsck` 会一直报 `refMissingNewline`。
+
+第 2 步写回去的那份通常活不过第 3 步的 push（push 自己也吞）。这就是为什么校验必须走第 4 步的 `ls-remote` 而不是 `git log`：本地 ref 在这条链里根本不是可靠的读回通道。
 
 **陷阱：一条命令链里连着做两个 commit。** ref 是在 `git commit` **进程结束前**被吞的，所以第二个 commit 会看到 unborn HEAD，落成 **root-commit**——整个 index 被当成新增（实测 "506 files changed, 464715 insertions(+)"），而且它跟分支历史完全断开。防御两步：
 
@@ -259,7 +271,16 @@ git rev-parse "$newSha^"    # 必须等于 $knownSha，否则是 root-commit
 
 ### Prevention
 
-Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification: `ls` the parent tree + `git status --short` after every `git rm` **and every `git checkout`**, and `git ls-remote` (not local refs) as ground truth after every `fetch`/`push`. If you must do one of those by hand, expect to hit one of the seven symptoms above and apply the corresponding fix.
+Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Four checkpoints, each right after the command that can trigger it:
+
+| After | Check | Bad sign |
+| --- | --- | --- |
+| `git rm` | `ls` the parent tree + `git status --short` | unexpected ` D` → Symptom D |
+| `git checkout` / `git switch` | `git status --short` | any ` D` → Symptom D2 |
+| `git checkout -b` / `git commit` / `git push` | `git rev-parse --abbrev-ref HEAD` + `git log --oneline -1` | "does not have any commits yet" → Symptom F, hand-write the ref before running anything else |
+| `git fetch` / `git push` | `git ls-remote origin <branch>` (not local refs) | local ref disagrees → Symptom E |
+
+If you must do one of those by hand, expect to hit one of the seven symptoms above and apply the corresponding fix.
 
 ## Files
 
