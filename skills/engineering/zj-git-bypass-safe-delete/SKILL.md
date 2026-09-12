@@ -5,9 +5,21 @@ description: Diagnose and recover from WorkBuddy's safe-delete shim corrupting g
 
 # Bypass WorkBuddy Safe-Delete for Git
 
-WorkBuddy's safe-delete shim (`genie-safe-delete.cjs`, injected via `NODE_OPTIONS=--require=...`) intercepts `fs.unlinkSync` / `fs.rmSync` / `fs.rmdirSync` and routes deletes to the OS trash. On Windows Git Bash, `uname -s` returns `MINGW64_NT-10.0` — which the shim's `case MINGW*` does **not** match, so it falls through to `trash_linux` whose EXDEV fallback actually runs `REAL_RM -rf "$p"`. Net effect: `rm -rf` is destructive on this host, and git's internal Node helpers silently lose `.git/refs/*` / `index.lock` / `FETCH_HEAD`.
+WorkBuddy's safe-delete shim (`genie-safe-delete.cjs`, injected via `NODE_OPTIONS=--require=...`) intercepts `fs.unlinkSync` / `fs.rmSync` / `fs.rmdirSync` and routes deletes to the OS trash. On Windows Git Bash, `uname -s` returns a `MINGW*` value (e.g. `MINGW64_NT-10.0`) — which the shim's `case MINGW*` does **not** match, so it falls through to `trash_linux` whose EXDEV fallback actually runs `REAL_RM -rf "$p"`. Net effect: `rm -rf` is destructive on this host, and git's internal Node helpers silently lose `.git/refs/*` / `index.lock` / `FETCH_HEAD`.
 
 This skill makes both the **symptom** (broken git) and the **root cause** (`rm -rf` is destructive) safe to handle.
+
+## Bypass wrapper (the key idea)
+
+The shim only loads because `NODE_OPTIONS` is set for the git process. The fix is to run git with `NODE_OPTIONS` stripped:
+
+```bash
+env -u NODE_OPTIONS git <args>        # one-off
+```
+
+For repeated use, wrap that in a small script (a "git bypass wrapper") that unsets `NODE_OPTIONS` and execs git. Such a wrapper can live anywhere on `PATH` (per-project or in your home bin). Throughout this skill, "the bypass wrapper" means *any* wrapper that produces `env -u NODE_OPTIONS git ...`. Plain `git` (with the shim loaded) is unsafe on this host.
+
+> Note: `git` may invoke Node helpers internally. `env -u NODE_OPTIONS` only affects the *immediate* process. If a helper still breaks, run with `GIT_TRACE=1` to see what gets spawned, and report it — the bypass path may need widening.
 
 ## Quick start
 
@@ -55,27 +67,25 @@ git status --short     # confirm files show M/A/D, not "all A"
 
 ### 3. Prevent future breakage
 
-Use the in-repo bypass script `scripts/zj-git` instead of plain `git`. It lives in this repo (cross-platform: Windows Git Bash + macOS/Linux) and strips `NODE_OPTIONS` before exec.
+Use the bypass wrapper (see "Bypass wrapper" above) instead of plain `git` for every git operation.
 
 ```bash
-./scripts/zj-git --version            # verify it works
-./scripts/zj-git fetch                # use instead of `git fetch`
-./scripts/zj-git commit -m "..."      # use instead of `git commit`
+env -u NODE_OPTIONS git --version       # verify it works
+env -u NODE_OPTIONS git fetch           # use instead of plain `git fetch`
+env -u NODE_OPTIONS git commit -m "..." # use instead of plain `git commit`
 ```
 
-If you want a global `git` replacement, alias it in your shell rc:
+If you want a permanent replacement, wrap it in a shell function / alias pointing at your bypass wrapper:
 
 ```bash
-# bash
-alias git="$PWD/scripts/zj-git"
+# bash — point <wrapper> at your bypass script on PATH
+alias git="<wrapper>"
 ```
 
 ```powershell
 # PowerShell
-function git { & "$PWD\scripts\zj-git" @args }
+function git { & <wrapper> @args }
 ```
-
-> Note: `git` may invoke Node helpers internally. `env -u NODE_OPTIONS` only affects the *immediate* process. If a helper still breaks, run with `GIT_TRACE=1` to see what gets spawned, and report it — the bypass path may need widening.
 
 ### 4. Never `rm -rf` in WorkBuddy shell
 
@@ -106,7 +116,7 @@ If you don't know whether the corruption is shim-caused or something else, walk 
    - Any RED line? (refs missing / HEAD unresolvable / FETCH_HEAD empty) → shim-corrupted, go to step 3.
    - All green?                          → not shim corruption. Use `zj-diagnosing-bugs`.
 
-3. `git reflog` (plain `git`, NOT zj-git) — is `.git/logs/HEAD` non-empty?
+3. `git reflog` (plain `git`, NOT the bypass wrapper) — is `.git/logs/HEAD` non-empty?
    - Empty  → unrecoverable. `rm -rf .git && git init && git remote add origin <url> && git fetch && git reset --hard origin/main`. Re-clone may be faster.
    - Non-empty → recoverable. Go to step 4.
 
@@ -115,7 +125,7 @@ If you don't know whether the corruption is shim-caused or something else, walk 
    - `git status --short` shows real M/A/D (not "all A")
    - Still broken?  →  re-run with explicit `<commit>` from `git reflog`.
 
-5. Prevention: use `~/bin/zj-git` going forward. See step 3 in the main workflow above.
+5. Prevention: use the bypass wrapper going forward. See step 3 in the main workflow above.
 ```
 
 **Time budget**: most shim-corrupted repos recover in under 30 seconds (diagnose + one recover-refs call). If you've spent more than 2 minutes, stop and re-read the tree — you're probably on the wrong branch.
@@ -126,7 +136,7 @@ The three symptoms above (refs missing, `all A` status, broken commit/fetch) are
 
 ### Symptom A — `git fetch` reports success but the local ref doesn't move
 
-You run `git fetch origin main` (or via `zj-git`), the command exits 0, you see `From github.com:... * branch main -> FETCH_HEAD`. But `git rev-parse origin/main` still points to the old commit, and `git status -sb` says `## main...origin/main [ahead N]` even though the remote is actually caught up.
+You run `git fetch origin main` (or via the bypass wrapper), the command exits 0, you see `From <remote> * branch main -> FETCH_HEAD`. But `git rev-parse origin/main` still points to the old commit, and `git status -sb` says `## main...origin/main [ahead N]` even though the remote is actually caught up.
 
 **Root cause**: the shim's `fs.unlinkSync` wrapper intercepts the loose-ref rewrite that follows a successful fetch. The fetch itself completes, but the ref file write is routed to the trash. So Git's in-memory state advances, but the on-disk ref is left stale.
 
@@ -140,8 +150,8 @@ git rev-parse origin/main            # what your local ref says (stale?)
 **Fix** (in order — stop at the first that works):
 
 1. `git pack-refs --all` — forces loose refs to be merged into `packed-refs`, which the shim doesn't touch.
-2. `git update-ref refs/remotes/origin/main <correct-sha>` — directly writes the ref. **Use `zj-git update-ref`, not plain `git`**, because `update-ref` internally unlinks the old ref file (which the shim would route to trash).
-3. Manual fix from outside the shim (no WorkBuddy process): create a loose ref by writing directly to `.git/refs/remotes/origin/main`. From inside WorkBuddy Bash, use `mv` from `/tmp/` rather than `printf >` to dodge the shim:
+2. Write the ref directly with the bypass wrapper, never plain `git update-ref` — `update-ref` internally unlinks the old ref file (which the shim would route to trash).
+3. Manual fix from outside the shim (no WorkBuddy process): create a loose ref by writing directly to `.git/refs/remotes/origin/main`. From inside WorkBuddy Bash, use `mv` from a temp dir rather than `printf >` to dodge the shim:
    ```bash
    echo "<correct-sha>" > /tmp/origin-main-new
    mkdir -p .git/refs/remotes/origin
@@ -179,11 +189,11 @@ This bypasses the `-F` path entirely. The shim doesn't intercept stdin reads.
 
 ### Symptom D — `git rm <path>` trashes the path's entire ancestor tree (worktree loss)
 
-You run `git rm docs/plans/some-file.json` (even with `env -u NODE_OPTIONS`), it prints `rm 'docs/plans/some-file.json'` and exits 0 — but the **whole ancestor directory tree** (`docs/` including subdirs you never touched) lands in the Recycle Bin. `git status` shows unstaged ` D` for files you never modified; `ls docs/` returns ENOENT.
+You run `git rm <dir>/<file>` (even with `env -u NODE_OPTIONS`), it prints `rm '<dir>/<file>'` and exits 0 — but the **whole ancestor directory tree** (the parent dir including subdirs you never touched) lands in the Recycle Bin. `git status` shows unstaged ` D` for files you never modified; `ls <dir>/` returns ENOENT.
 
 **Root cause**: git's directory pruning after unlink gets routed through the shim's trash path, and the trash operation is applied to ancestor dirs that are *not* actually empty — the shim recursively trashes live content. `env -u NODE_OPTIONS` does **not** prevent this (it happens below the node-injection layer).
 
-**Evidence** (2026-08-15 incident): `$Recycle.Bin/<SID>/` metadata files (`$I*`, UTF-16LE) listed three same-minute items: `...ZAgentic\docs`, `...ZAgentic\docs\plans`, `...ZAgentic\docs\plans\roadmap-khazix-wave.json`. The `$R*` counterpart dir contained `designs/`, `zj-adr/`, `zj-retros/` — untouched content.
+**Evidence**: the OS Recycle Bin contains same-minute entries for the path you `git rm`'d and each of its ancestor directories, including content you never touched.
 
 **Fix**:
 ```bash
@@ -195,7 +205,7 @@ Untracked new files lost this way must be rewritten from elsewhere (context, bac
 
 ### Symptom D2 — `git checkout <branch>` 之后工作树整片文件消失（status 一片 ` D`）
 
-You run `git checkout main` (or any branch switch), it prints `Switched to branch 'main'` and exits 0 — then `git status --short` lists **dozens/hundreds of ` D`** entries for files you never touched (whole skill directories, tests, fixtures). The files are in `HEAD` (`git ls-tree HEAD <path>` returns a blob) but absent from disk (`Test-Path` false).
+You run `git checkout <branch>` (or any branch switch), it prints `Switched to branch '<branch>'` and exits 0 — then `git status --short` lists **dozens/hundreds of ` D`** entries for files you never touched (whole directories). The files are in `HEAD` (`git ls-tree HEAD <path>` returns a blob) but absent from disk (`Test-Path` false).
 
 Same family as Symptom D — the shim's trash path swallows worktree trees during checkout — but the trigger is a branch switch, not `git rm`, and the scale is the whole diff between the two branches rather than one path. **Nothing is lost**: the objects are intact, only the worktree files were moved.
 
@@ -210,7 +220,7 @@ Untracked files would be gone for real — check `git status --short` for non-` 
 
 ### Symptom E — `.git/refs/remotes/origin/` vanishes right after `fetch` / `update-ref`
 
-`git fetch` prints `e41b9e6..91fd3aa main -> origin/main` (success), but `git log origin/main` still resolves to the **old** commit and `git status -sb` says `[ahead N]`. Inspection: `.git/refs/remotes/origin/` doesn't exist; git is falling back to stale `packed-refs`. Worse, `git update-ref refs/remotes/origin/main <sha>` can write the loose ref and have the directory vanish **within the same command chain**.
+`git fetch` prints `<old>..<new> main -> origin/main` (success), but `git log origin/main` still resolves to the **old** commit and `git status -sb` says `[ahead N]`. Inspection: `.git/refs/remotes/origin/` doesn't exist; git is falling back to stale `packed-refs`. Worse, `git update-ref refs/remotes/origin/main <sha>` can write the loose ref and have the directory vanish **within the same command chain**.
 
 **Ground truth**: `git ls-remote origin main` — trust this over local refs after any fetch/push.
 
@@ -223,16 +233,16 @@ Then verify in a *separate* invocation (`git log --oneline origin/main -2`). If 
 
 ### Symptom F — 本地分支 ref（嵌套目录）被吞，分支变 unborn
 
-Typical trigger: you commit on a newly created branch (e.g. `feat/80-derived-blocked`); git prints `[feat/80-derived-blocked <sha>] ...` and exits 0. The very next command — even inside the same invocation — says `fatal: your current branch 'feat/80-derived-blocked' does not have any commits yet`, and `git status --short` lists **the whole tree as `A`** (index intact, HEAD empty). Inspection: `.git/refs/heads/` still holds the old branches, but the `feat/` directory is gone.
+Typical trigger: you commit on a newly created branch (e.g. `<dir>/<branch>`); git prints `[<dir>/<branch> <sha>] ...` and exits 0. The very next command — even inside the same invocation — says `fatal: your current branch '<dir>/<branch>' does not have any commits yet`, and `git status --short` lists **the whole tree as `A`** (index intact, HEAD empty). Inspection: `.git/refs/heads/` still holds the old branches, but the `<dir>/` directory is gone.
 
 Symptom E's sibling — same swallowing, but on `refs/heads/**`. **The commit object is safe**: `.git/logs/HEAD` still carries the `old new ... commit: <subject>` line, and `git cat-file -t <sha>` says `commit`.
 
 **触发点不止 `commit`。** 实测 `git checkout -b <branch>` 与 `git push` 之后 ref 同样消失，症状完全一致（HEAD unborn、`status` 全 `A`）。后果是：
 
-- 新建分支之后、跑下一条 git 命令之前，得先把 ref 写回去。嵌套目录要自己建 —— git 不会因为你要写文件就替你造出 `refs/heads/docs/`：
+- 新建分支之后、跑下一条 git 命令之前，得先把 ref 写回去。嵌套目录要自己建 —— git 不会因为你要写文件就替你造出 `refs/heads/<dir>/`：
   ```powershell
-  [IO.Directory]::CreateDirectory("$PWD\.git\refs\heads\docs") | Out-Null
-  [IO.File]::WriteAllText("$PWD\.git\refs\heads\docs\<branch-name>", $sha)
+  [IO.Directory]::CreateDirectory("$PWD\.git\refs\heads\<dir>") | Out-Null
+  [IO.File]::WriteAllText("$PWD\.git\refs\heads\<dir>\<branch-name>", $sha)
   ```
 - `git push` 之后如果还要继续在这个分支上提交 / 再推，push 完**再写一次** ref。
 - 反过来，`gh pr create` 与 `git ls-remote` 走的是远端，**本地 ref 被吞也不受影响**。ref 丢了又急着开 PR，这是最快的出路。
@@ -243,8 +253,8 @@ Symptom E's sibling — same swallowing, but on `refs/heads/**`. **The commit ob
 # 1) ref 丢了但 reflog 在：从最后一行取第二个字段 = 新 commit 的 sha
 $sha = ((Get-Content .git\logs\HEAD -Tail 1) -split "\s+")[1]
 # 2) 手写回本地 ref（只为让后续 git 命令正常；同样可能被吞，所以不依赖它）
-[IO.Directory]::CreateDirectory("$PWD\.git\refs\heads\feat") | Out-Null
-[IO.File]::WriteAllText("$PWD\.git\refs\heads\feat\<branch-name>", $sha)
+[IO.Directory]::CreateDirectory("$PWD\.git\refs\heads\<dir>") | Out-Null
+[IO.File]::WriteAllText("$PWD\.git\refs\heads\<dir>\<branch-name>", $sha)
 # 3) 用 sha 推，完全不解析本地 ref
 git push origin "${sha}:refs/heads/<branch-name>"
 # 4) 用远端当真相校验，不要信本地 ref
@@ -255,11 +265,11 @@ git ls-remote origin refs/heads/<branch-name>
 
 第 2 步写回去的那份通常活不过第 3 步的 push（push 自己也吞）。这就是为什么校验必须走第 4 步的 `ls-remote` 而不是 `git log`：本地 ref 在这条链里根本不是可靠的读回通道。
 
-**陷阱：一条命令链里连着做两个 commit。** ref 是在 `git commit` **进程结束前**被吞的，所以第二个 commit 会看到 unborn HEAD，落成 **root-commit**——整个 index 被当成新增（实测 "506 files changed, 464715 insertions(+)"），而且它跟分支历史完全断开。防御两步：
+**陷阱：一条命令链里连着做两个 commit。** ref 是在 `git commit` **进程结束前**被吞的，所以第二个 commit 会看到 unborn HEAD，落成 **root-commit**——整个 index 被当成新增（实测出现过把整库当成一次新增提交、与分支历史完全断开的情况），而且它跟分支历史完全断开。防御两步：
 
 ```powershell
 # 每个 commit 之前先把 ref 写回已知 sha
-[IO.File]::WriteAllText("$PWD\.git\refs\heads\feat\<branch>", $knownSha)
+[IO.File]::WriteAllText("$PWD\.git\refs\heads\<dir>\<branch>", $knownSha)
 git commit -F msg
 # 提交后先验证父提交再推，不对就别推
 git rev-parse "$newSha^"    # 必须等于 $knownSha，否则是 root-commit
@@ -267,11 +277,69 @@ git rev-parse "$newSha^"    # 必须等于 $knownSha，否则是 root-commit
 
 更稳的做法：**一次调用只做一个 commit，做完立刻 push**，不要攒两个再一起推。
 
-若 push 报 `SANDBOX EXECUTION REJECTED BY USER`，**不要照字面理解成"用户点了拒绝"**：那是沙箱对 `~/.ssh/*` 通配规则的自动拦截（Blocked paths 里列的是 OpenSSH 依次尝试的全部默认密钥名，机器上大多不存在）。请用户放开权限后重试一次即可，不是凭据问题。
+若 push 报 `SANDBOX EXECUTION REJECTED BY USER`，**不要照字面理解成"用户点了拒绝"**：那是沙箱对默认密钥路径（`~/.ssh/*`）通配规则的自动拦截（Blocked paths 里列的是 SSH 依次尝试的全部默认密钥名，机器上大多不存在）。请用户放开权限后重试一次即可，不是凭据问题。
+
+### Symptom G — 未提交改动落新分支：`commit-tree` 造提交 + 显式 sha 直推（完整脚本）
+
+场景：工作树有一组干净的未提交改动，要推到远端一个新分支开 PR。但 `git commit` 会在进程结束前吞掉新分支 ref（Symptom F）→ 第二个 commit 落成 **root-commit**（整库被当成一次新增、与历史断开）；`git checkout -b` 也会吞 `refs/heads/<dir>/` 目录。结论：**这一组操作里一次都不要调 `git commit` / `git checkout -b`**。
+
+改用 `git write-tree` + `git commit-tree` 造提交对象，再 `git push origin "<sha>:refs/heads/<branch>"` 把 sha 直接写到远端分支 ref，全程用 `git ls-remote` 当真相。**提交对象 / 树对象都不碰 ref 文件，所以根本不触发吞 ref**。
+
+完整 PowerShell 脚本（复制即用；把 `<repo-root>` / `<branch>` / 暂存目录 / 提交说明换成你的）：
+
+```powershell
+$ErrorActionPreference = "Stop"
+# 0) 在仓库根
+Set-Location <repo-root>
+
+# 1) 真父提交：远端目标分支的真相（不信本地 origin/<branch>，Symptom E 假 ahead）
+$P = (& git ls-remote origin main) -split '\s+' | Select-Object -First 1
+if (-not ($P -match '^[0-9a-f]{40}$')) { throw "ls-remote 没拿到干净 sha: '$P'" }
+
+# 2) 只暂存本 PR 触及的目录（不要 git add -A，避免夹带其他脏文件）
+& git add <paths-you-touched>
+
+# 3) 写树 + commit-tree 造提交对象（绕开 git commit 的吞 ref）
+$T = (& git write-tree).Trim()
+$branch = "<branch>"
+$msgFile = ".workbuddy\pr-commit-msg.txt"
+$msg = "feat: <your one-line subject>`n`n<optional body / closes #N>"
+[System.IO.File]::WriteAllText($msgFile, $msg, [System.Text.UTF8Encoding]::new($false))  # 无 BOM，否则 git 读不出
+$C = (& git commit-tree $T -p $P -F $msgFile).Trim()
+if (-not ($C -match '^[0-9a-f]{40}$')) { throw "commit-tree 没返回干净 sha: '$C'" }
+
+# 4) push 前校验父链：C^ 必须等于 P，否则是 root-commit，绝不推
+$parentOfC = (& git rev-parse "$C^").Trim()
+if ($parentOfC -ne $P) { throw "父链不符：C^=$parentOfC P=$P，未推送" }
+
+# 5) 显式 sha 直推远端分支 ref（不解析本地 ref，避开 checkout -b 吞 ref）
+& git push origin "$C`:refs/heads/$branch"
+if ($LASTEXITCODE -ne 0) { throw "push 失败" }
+
+# 6) ls-remote 复核：远端分支 sha == C（不靠本地 rev-parse，本地 ref 在这条链不可靠）
+$remoteSha = (& git ls-remote origin "refs/heads/$branch") -split '\s+' | Select-Object -First 1
+if ($remoteSha -ne $C) { throw "远端 sha 不符：got $remoteSha want $C" }
+Write-Host "OK $branch = $C"
+
+# 7) 可选：本地也建同名 ref 便于后续（可能再被吞，所以不依赖它）
+& git update-ref "refs/heads/$branch" $C
+```
+
+为什么安全（逐行对应）：
+
+- 第 1 步 `ls-remote` 取真父，不信任本地 `origin/main`（Symptom E 假 ahead）。
+- 第 3 步 `commit-tree` 造的是**提交对象**，`write-tree` 造的是**树对象**——两者都不碰任何 ref 文件，所以不被吞。
+- 第 4 步 push 前用 `rev-parse "<C>^"` 校验父链，root-commit 直接中止（Symptom F 的连锁坑）。
+- 第 5 步 `push origin "<C>:refs/heads/<branch>"` 把 sha 直接写到远端分支 ref，**完全不创建 / 解析本地 branch ref**，所以 `checkout -b` 的吞 ref 路径根本没被触发。
+- 第 6 步用 `ls-remote` 复核，因为本地 ref 在这条链里不可靠（Symptom F/E 验证表）。
+
+与 Symptom F 第 3 步 push recipe 的关系：F 那条假定你**已经有** commit sha（从 reflog 取）；本段覆盖你**只有未提交工作树**、要先 `write-tree`+`commit-tree` 造出 sha 的情形。两者都靠「显式 sha 直推 + ls-remote 复核」，可叠加。
+
+开 PR：`gh pr create -F <body文件>`（正文走文件避 PowerShell 拆参），`$env:GH_PAGER="cat"` 防 `--no-pager` 放错位。
 
 ### Prevention
 
-Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Four checkpoints, each right after the command that can trigger it:
+Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Four checkpoints, each right after the command that can trigger it:
 
 | After | Check | Bad sign |
 | --- | --- | --- |
