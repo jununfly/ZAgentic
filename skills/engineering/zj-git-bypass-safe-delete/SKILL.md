@@ -350,6 +350,47 @@ Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTION
 
 If you must do one of those by hand, expect to hit one of the seven symptoms above and apply the corresponding fix.
 
+## 环境坑：Mechanism ② —— 沙箱把 `.git` 从 git 子进程视图里藏起来（易与机制一混淆）
+
+前面的 Symptom A–G 都是 **机制一：safe-delete shim**——`.git` 内部件（refs 目录、松散对象）被 shim 路由进回收站，物理内容缺失。这里要记的是**机制二**，完全不同的另一类故障。
+
+### 现象
+
+在 WorkBuddy（agent）会话里跑 `git` 子进程，一律 `fatal: not a git repository`，连 `git rev-parse --git-dir`、`git --git-dir=<绝对路径>` 都报这个；但 **PowerShell cmdlets（`Get-ChildItem` / `Get-Content`）或文件管理器能看到 `.git` 且 HEAD / objects / index / packed-refs 全在**——即 `.git` 物理没坏，是 git 子进程被沙箱蒙了眼。
+
+### 触发与生命周期
+
+实测在 cleanup 阶段跑了 `git checkout -f <branch>` / `git reset --hard` 之后出现。这是**会话级沙箱状态**，跨多次 PowerShell 调用持续，**本会话内不可恢复**（重开 agent 会话 / 重启 WorkBuddy 才重置）。注意 Bash 运行时可能同时损坏（`dirname: command not found`，连 `cd` 都失败），两类故障会叠加。
+
+### 与机制一的关键区别（拿不准时先读这段）
+
+| | 机制一：shim 移走内部件 | 机制二：沙箱藏 `.git` |
+| --- | --- | --- |
+| `.git` 物理内容 | **确实缺失**（refs 目录 / 松散对象被删到回收站） | **完好**，文件管理器 / cmdlets 看得全 |
+| `git init` 新建的干净仓库 | 完全正常 | 视沙箱范围——若沙箱只蒙本仓库则正常，若会话级则同失败 |
+| 失败范围 | 只有受损的那个仓库失败 | git 子进程在本会话**所有仓库**都看不到 `.git` |
+| 恢复 | 重建 refs / `git fetch` 补齐（见下） | 重开 agent 会话 / 用无沙箱的终端 |
+| 根因 | shim 的 `fs.unlinkSync` 路由 | 沙箱对 `git` 子进程的文件系统视图过滤 |
+
+**快速判别**（拿不准时跑）：
+
+```bash
+git init /tmp/scratch && cd /tmp/scratch && git status   # 若正常 → git 本身没坏
+# 回到原仓库仍 not a git repository：
+#   - 只有这个仓库失败 → 机制一（查 .git/refs、objects/ 有没有缺）
+#   - git 在本会话所有仓库都失败、且 cmdlets 能看到 .git → 机制二
+```
+
+### 应对
+
+- **机制二下，agent 会话内不要对本地仓库跑任何 `git`**；把提交 / 同步留给用户在无 WorkBuddy 沙箱的终端执行（普通 PowerShell、文件资源管理器地址栏起 `powershell`、或 Win+R → `powershell`）。
+- 本地仓库同步（main 快进、pack-refs 修正等）照常走既定配方，但必须**在 agent 会话之外**做。
+- **规避复现**：agent 会话内绝不对本地仓库跑 `checkout -f` / `reset --hard`；改用 `git update-ref` + `git pack-refs --all --prune`（改 ref、不动工作树）与 `git checkout -f <sha> -- .`（checkout 提交对象而非分支，不移动 HEAD）来同步与恢复。
+
+### 实测教训（2026-09-12）
+
+本次某仓库的 `not a git repository` **一开始误诊为机制二**，最后在用户真独立终端查明是**机制一**：`.git/refs` 目录缺失 + `main` tip 的松散对象被移走。`git init` 在用户终端正常、唯独本仓库失败——这符合机制一而非机制二。**教训：`not a git repository` 但 `.git` 物理可见时，先查 `.git` 内部结构（refs / objects 是否被 shim 移走），别急于归咎沙箱。** 机制二罕见且只能靠重开会话解决；机制一才是日常主因，且可恢复。
+
 ## Files
 
 - `scripts/diagnose.sh` — read-only inspection of `.git/` state
