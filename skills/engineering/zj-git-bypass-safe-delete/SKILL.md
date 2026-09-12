@@ -206,9 +206,45 @@ echo -n "<correct-sha>" > .git/refs/remotes/origin/main
 ```
 Then verify in a *separate* invocation (`git log --oneline origin/main -2`). If a git command runs in the same chain, the freshly written ref dir can be trashed again.
 
+### Symptom F — 本地分支 ref（嵌套目录）在 commit 之后立刻消失，分支变 unborn
+
+You commit on a newly created branch (e.g. `feat/80-derived-blocked`); git prints `[feat/80-derived-blocked <sha>] ...` and exits 0. The very next command — even inside the same invocation — says `fatal: your current branch 'feat/80-derived-blocked' does not have any commits yet`, and `git status --short` lists **the whole tree as `A`** (index intact, HEAD empty). Inspection: `.git/refs/heads/` still holds the old branches, but the `feat/` directory is gone.
+
+Symptom E's sibling — same swallowing, but on `refs/heads/**` and triggered by `commit`, not `fetch`. **The commit object is safe**: `.git/logs/HEAD` still carries the `old new ... commit: <subject>` line, and `git cat-file -t <sha>` says `commit`.
+
+**Push recipe that survives it** — never let the push depend on resolving a local ref; push the raw sha:
+
+```powershell
+# 1) ref 丢了但 reflog 在：从最后一行取第二个字段 = 新 commit 的 sha
+$sha = ((Get-Content .git\logs\HEAD -Tail 1) -split "\s+")[1]
+# 2) 手写回本地 ref（只为让后续 git 命令正常；同样可能被吞，所以不依赖它）
+[IO.Directory]::CreateDirectory("$PWD\.git\refs\heads\feat") | Out-Null
+[IO.File]::WriteAllText("$PWD\.git\refs\heads\feat\<branch-name>", $sha)
+# 3) 用 sha 推，完全不解析本地 ref
+git push origin "${sha}:refs/heads/<branch-name>"
+# 4) 用远端当真相校验，不要信本地 ref
+git ls-remote origin refs/heads/<branch-name>
+```
+
+用 `[IO.File]::WriteAllText`（无 BOM）而不是 `>` / `Out-File` —— 后者在 PS 5.1 会写出 UTF-16/BOM，git 读不出 sha。
+
+**陷阱：一条命令链里连着做两个 commit。** ref 是在 `git commit` **进程结束前**被吞的，所以第二个 commit 会看到 unborn HEAD，落成 **root-commit**——整个 index 被当成新增（实测 "506 files changed, 464715 insertions(+)"），而且它跟分支历史完全断开。防御两步：
+
+```powershell
+# 每个 commit 之前先把 ref 写回已知 sha
+[IO.File]::WriteAllText("$PWD\.git\refs\heads\feat\<branch>", $knownSha)
+git commit -F msg
+# 提交后先验证父提交再推，不对就别推
+git rev-parse "$newSha^"    # 必须等于 $knownSha，否则是 root-commit
+```
+
+更稳的做法：**一次调用只做一个 commit，做完立刻 push**，不要攒两个再一起推。
+
+若 push 报 `SANDBOX EXECUTION REJECTED BY USER`，**不要照字面理解成"用户点了拒绝"**：那是沙箱对 `~/.ssh/*` 通配规则的自动拦截（Blocked paths 里列的是 OpenSSH 依次尝试的全部默认密钥名，机器上大多不存在）。请用户放开权限后重试一次即可，不是凭据问题。
+
 ### Prevention
 
-Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/E are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification: `ls` the parent tree + `git status --short` after every `git rm`, and `git ls-remote` (not local refs) as ground truth after every `fetch`/`push`. If you must do one of those by hand, expect to hit one of the five symptoms above and apply the corresponding fix.
+Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification: `ls` the parent tree + `git status --short` after every `git rm`, and `git ls-remote` (not local refs) as ground truth after every `fetch`/`push`. If you must do one of those by hand, expect to hit one of the six symptoms above and apply the corresponding fix.
 
 ## Files
 

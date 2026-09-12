@@ -529,10 +529,27 @@ cover, the spec must declare, and the commit message must call out. Seams are
 _Avoid_: boundary, interface, contract (in this specific engineering sense)
 
 **Status**:
-One of `pending` / `in_progress` / `completed` / `blocked`. The state machine
-on every node. Status cascades upward: a parent's status is derived from its
-children's until manually overridden by an explicit decision.
+One of `pending` / `in_progress` / `completed` — the settable states on every
+node. Status cascades upward: a parent's status is derived from its children's
+until manually overridden by an explicit decision. `blocked` is **not** a
+settable status; it is derived — see **Derived blocked**.
 _Avoid_: state, phase, stage
+
+**Derived blocked**:
+`blocked` plus its `blocked_reason`, computed **on read** from `blocks` edges and
+never written to the carrier. A node is blocked when a `blocks` edge points at it
+whose source node is not `completed`; `blocked_reason` lists those edge ids, so a
+stall can be explained instead of only reported. Both fields are absent when
+nothing blocks the node, and they disappear in the same read once the
+predecessors complete or the edges go away. The tree and Markdown views render
+the same node with the `[!]` icon, so the Human view and the Agent view cannot
+disagree about the same fact. `--status blocked` is refused with
+`E_INVALID_STATUS` (exit 1). The reason it is derived and not stored: a stored
+value needs a list of "when to recompute" triggers (add edge, remove edge,
+predecessor completed, `delete`, `supersedes`, carrier migration), and missing
+one is silent staleness — the same defect class as the `remove-decision` drift
+between carriers.
+_Avoid_: blocked status (as a stored value), blocked flag, dependency check (as a separate artifact)
 
 ### Issue / Triage
 

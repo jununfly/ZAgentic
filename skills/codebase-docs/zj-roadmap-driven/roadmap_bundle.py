@@ -26,9 +26,13 @@ from roadmap import (
     EDGE_TYPES,
     CycleError,
     NodeNotFound,
+    assert_settable_status,
+    blocked_view,
     build_budget,
     check_child_budget,
     count_round_start,
+    is_blocking,
+    tree_line,
 )
 
 
@@ -390,6 +394,37 @@ class RoadmapBundle:
         node["decisions"] = self._read_decisions_file(node_id)
         return node
 
+    # ── 派生阻塞（#80）─────────────────────────────────
+    # 与 single-file 同一套语义：读视图里算，carrier 的 status 不写 blocked。
+
+    def blocking_edges(self, node_id: str) -> list[str]:
+        index = self._read_edge_index()
+        blockers: list[str] = []
+        for edge_id in index.get("to", {}).get(node_id, []):
+            edge = self._read_edge_file(edge_id)
+            if is_blocking(edge, self._predecessor_or_none(edge["from"])):
+                blockers.append(edge_id)
+        return sorted(blockers, key=lambda edge_id: int(edge_id[1:]))
+
+    def blocked_node_ids(self) -> set[str]:
+        """一次算出整张图里被阻塞的节点 id（渲染按整棵树取图标）。"""
+        blocked: set[str] = set()
+        for edge_id in self._edge_ids():
+            edge = self._read_edge_file(edge_id)
+            if is_blocking(edge, self._predecessor_or_none(edge["from"])):
+                blocked.add(edge["to"])
+        return blocked
+
+    def _predecessor_or_none(self, node_id: str) -> Optional[dict[str, Any]]:
+        """读前驱节点；悬空边（前驱不存在）返回 None —— 按未完成算。"""
+        try:
+            return self._read_node_file(node_id)
+        except KeyError:
+            return None
+
+    def get_node_view(self, node_id: str) -> dict[str, Any]:
+        return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
+
     def add_node(
         self,
         parent_id: str,
@@ -401,8 +436,9 @@ class RoadmapBundle:
         exit_criteria: Optional[list] = None,
     ) -> dict[str, Any]:
         parent = self._read_node_file(parent_id)
-        if status not in STATUS_VALUES or mode not in MODE_VALUES:
-            raise BundleError("invalid node status or mode")
+        assert_settable_status(status)
+        if mode not in MODE_VALUES:
+            raise BundleError("invalid node mode")
         check_child_budget(parent)
         children = parent.setdefault("children", [])
         next_index = int(children[-1].split("-")[-1]) + 1 if children else 1
@@ -447,8 +483,7 @@ class RoadmapBundle:
         if label is not None:
             node["label"] = label
         if status is not None:
-            if status not in STATUS_VALUES:
-                raise BundleError(f"invalid status: {status}")
+            assert_settable_status(status)
             count_round_start(node, status)
             node["status"] = status
         if mode is not None:
@@ -568,10 +603,11 @@ class RoadmapBundle:
         self.manifest["edgeSequence"] = sequence
         edge = {"id": f"e{sequence}", "from": from_id, "to": to_id, "type": edge_type}
         self._write_edge_file(edge)
-        index = self._read_edge_index()
-        index.setdefault("from", {}).setdefault(from_id, []).append(edge["id"])
-        index.setdefault("to", {}).setdefault(to_id, []).append(edge["id"])
-        self._write_edge_index(index)
+        # 整表重建，不追加：追加会重复登记刚写进去的这条边——读索引时若索引
+        # 不存在会按目录重建，那份重建结果已经含它了。`list_edges` 用 set 去重
+        # 所以看不见，派生字段（#80 的 blocked_reason）直接照抄索引就会报两遍。
+        # 索引是纯冗余，重建的成本换"索引与目录不可能不一致"是划算的。
+        self._rebuild_edge_index()
         if edge_type == EDGE_SUPERSEDES:
             # 被取代的节点转 archived 但不删除：它的决策与历史仍然可读。
             # 用标记而不是 status，因为"completed 且 archived"（做完了但被取代）
@@ -742,12 +778,13 @@ class RoadmapBundle:
 
     def get_tree(self, root_id: str = "1", max_depth: int = 2) -> str:
         root = self._read_node_file(root_id)
-        lines = [self._tree_line(root, "", True, 0)]
+        blocked = self.blocked_node_ids()
+        lines = [tree_line(root, "", True, 0, blocked)]
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
             if depth > max_depth:
                 return
-            lines.append(self._tree_line(node, prefix, last, depth))
+            lines.append(tree_line(node, prefix, last, depth, blocked))
             if depth >= max_depth:
                 return
             children = node.get("children", [])
@@ -760,13 +797,6 @@ class RoadmapBundle:
             child_last = index == len(root.get("children", [])) - 1
             walk(child, "", child_last, 1)
         return "\n".join(lines)
-
-    @staticmethod
-    def _tree_line(node: dict[str, Any], prefix: str, last: bool, depth: int) -> str:
-        icons = {"pending": "[ ]", "in_progress": "[~]", "completed": "[x]", "blocked": "[!]"}
-        modes = {"explore": "[X+]", "exploit": "[Y+]"}
-        connector = "" if depth == 0 else ("└── " if last else "├── ")
-        return f"{prefix}{connector}{icons.get(node.get('status'), '[?]')}{modes.get(node.get('mode'), '')} {node['id']}. {node['label']}"
 
     def get_path(self, node_id: str) -> list[str]:
         path: list[str] = []
@@ -789,10 +819,10 @@ class RoadmapBundle:
     def get_focus_subtree(self, root_id: str, max_depth: int = 1) -> str:
         root = self._read_node_file(root_id)
         lines: list[str] = []
+        blocked = self.blocked_node_ids()
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
-            connector = "└── " if last else "├── "
-            lines.append(self._tree_line(node, prefix, last, depth))
+            lines.append(tree_line(node, prefix, last, depth, blocked))
             children = node.get("children", [])
             child_prefix = prefix + ("    " if last else "│   ")
             if depth >= max_depth:
