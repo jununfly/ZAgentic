@@ -193,6 +193,21 @@ Untracked new files lost this way must be rewritten from elsewhere (context, bac
 
 **Prevention**: after **any** `git rm`, immediately `ls` the parent tree and `git status --short`. If files show unexpected ` D`, restore before doing anything else. For single-file removals inside shared dirs, `git rm --cached` + `mv` to a backup dir is the shim-proof route.
 
+### Symptom D2 — `git checkout <branch>` 之后工作树整片文件消失（status 一片 ` D`）
+
+You run `git checkout main` (or any branch switch), it prints `Switched to branch 'main'` and exits 0 — then `git status --short` lists **dozens/hundreds of ` D`** entries for files you never touched (whole skill directories, tests, fixtures). The files are in `HEAD` (`git ls-tree HEAD <path>` returns a blob) but absent from disk (`Test-Path` false).
+
+Same family as Symptom D — the shim's trash path swallows worktree trees during checkout — but the trigger is a branch switch, not `git rm`, and the scale is the whole diff between the two branches rather than one path. **Nothing is lost**: the objects are intact, only the worktree files were moved.
+
+**Fix** (one invocation, before anything else):
+```bash
+git restore .              # 救回全部 tracked 文件；status 应回到 0 条
+git fsck --no-dangling     # 顺手确认仓库没被弄坏
+```
+Untracked files would be gone for real — check `git status --short` for non-` D` entries before restoring, and recover those from the Recycle Bin by name.
+
+**Prevention**: after **any** `git checkout` / `git switch`, immediately run `git status --short` and expect zero entries. If it shows ` D` you did not create, restore first and investigate second — running more git commands on a half-trashed worktree compounds it.
+
 ### Symptom E — `.git/refs/remotes/origin/` vanishes right after `fetch` / `update-ref`
 
 `git fetch` prints `e41b9e6..91fd3aa main -> origin/main` (success), but `git log origin/main` still resolves to the **old** commit and `git status -sb` says `[ahead N]`. Inspection: `.git/refs/remotes/origin/` doesn't exist; git is falling back to stale `packed-refs`. Worse, `git update-ref refs/remotes/origin/main <sha>` can write the loose ref and have the directory vanish **within the same command chain**.
@@ -244,7 +259,7 @@ git rev-parse "$newSha^"    # 必须等于 $knownSha，否则是 root-commit
 
 ### Prevention
 
-Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification: `ls` the parent tree + `git status --short` after every `git rm`, and `git ls-remote` (not local refs) as ground truth after every `fetch`/`push`. If you must do one of those by hand, expect to hit one of the six symptoms above and apply the corresponding fix.
+Symptoms A/B/C disappear when you use `scripts/zj-git` (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification: `ls` the parent tree + `git status --short` after every `git rm` **and every `git checkout`**, and `git ls-remote` (not local refs) as ground truth after every `fetch`/`push`. If you must do one of those by hand, expect to hit one of the seven symptoms above and apply the corresponding fix.
 
 ## Files
 
