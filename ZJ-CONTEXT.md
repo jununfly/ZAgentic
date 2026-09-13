@@ -15,6 +15,14 @@ own `README.md` listing its skills with a one-line description. See `AGENTS.md`
 for the bucket policy.
 _Avoid_: category, folder, group
 
+**Installed-copy drift**:
+已装副本漂移。`~/.workbuddy/skills/<name>/`（扁平安装桶）里的副本与仓库源码
+`skills/<bucket>/<name>/` 长期不同步的状态。更新只能走「删-重装」——scanner
+启动即扫并内存缓存、无 fs.watch，所以改了源码不重装就不会生效；而跳过重装时
+WorkBuddy **不报错**，技能照常出现在发现列表里，漂移因此是静默的。判据：对比
+已装 `SKILL.md` 的字节数与 `scripts/` 清单。
+_Avoid_: sync, update, refresh（这些暗示存在增量机制，实际没有）
+
 ### Codebase documentation
 
 **Codebase docs**:
@@ -698,3 +706,10 @@ _Avoid_: useful in principle, fills a gap, nice to have
 - A↔B relationship (this repo vs. any source skills collection) is
   intentionally **not defined** as a domain term here. It is a property of
   individual merge waves, not of the glossary.
+
+## Retros
+
+🔄 判断 push 是否成功一律用 `git ls-remote`，不信客户端退出码 — docs/zj-retros/2026-09-12-retro.md#1650
+🔄 Bash coreutils 可能整体不在 PATH（`ls`/`head`/`which` 缺失）→ 文件操作改 Python，删文件走 `[System.IO.File]::Delete` — docs/zj-retros/2026-09-12-retro.md#2315
+- 补文档前先 grep 本地确认基线，别假设已合并 PR 的文档一定在本地 — docs/zj-retros/2026-09-12-retro.md#1650
+- 更新 / 重装 skill 前先探测已装副本（SKILL.md 字节数 + `scripts/` 清单），防已装副本漂移 — docs/zj-retros/2026-09-12-retro.md#2315
