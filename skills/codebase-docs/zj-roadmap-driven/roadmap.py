@@ -9,6 +9,7 @@ zj-roadmap-driven — 路线图核心数据模型
 import errno
 import json
 import os
+import secrets
 import shutil
 import tempfile
 import time
@@ -458,15 +459,73 @@ def gen_child_id(parent_id: str, index: int) -> str:
     return f"{parent_id}-{index}"
 
 
-def next_child_index(roadmap: dict, parent_id: str) -> int:
-    """计算父节点下下一个子节点的序号。"""
-    parent = roadmap["nodes"].get(parent_id)
-    if not parent or not parent["children"]:
+def next_child_index(parent: Optional[dict]) -> int:
+    """父节点下下一个子节点的序号 —— **单调递增，删除后不回收**。
+
+    老实现取 `children[-1]` 再 +1：删掉尾部子节点后新建的节点会拿回刚删掉的
+    那个 id（Problem #5）。外部引用（租约、ticket、ADR、跨设备同步）于是全部
+    串号，而且这种 bug 是静默的——没有报错，只是引用悄悄指向了别的节点。
+
+    序号水位记在父节点的 `childSequence` 上（由 `note_child_removal` 抬高），
+    并且是**惰性物化**的：没删过子节点的父节点根本不会有这个字段。这样存量
+    roadmap 的字节不变，不会撞 `Slice08` 那条"无边路径不被污染"的控制例。
+
+    两个 carrier 必须共用这一份：`next_child_index` 曾经在 bundle 里被各写了
+    一遍（`int(children[-1].split("-")[-1]) + 1`），`remove-decision` 在两个
+    carrier 上语义漂移是本仓库已经付过学费的一类缺陷，不得重演。
+    """
+    if not parent:
         return 1
-    # 从最后一个 child id 提取序号
-    last = parent["children"][-1]
-    parts = last.split("-")
-    return int(parts[-1]) + 1
+    children = parent.get("children") or []
+    base = int(str(children[-1]).split("-")[-1]) + 1 if children else 1
+    high_water = int(parent.get("childSequence") or 0) + 1
+    return max(base, high_water)
+
+
+# ── 节点 uid（P0 地基）────────────────────────────────────
+
+def new_uid() -> str:
+    """生成一个不可变的节点 uid —— 时序唯一、永不复用、零新依赖。
+
+    形状 `<毫秒-hex>-<随机>`：前段按字典序即时间序（同一进程内递增、跨进程按
+    时间大致有序），后段保证同一毫秒内不撞。spec 允许"ULID 或等价的时序唯一串"，
+    这里不做 Crockford base32，因为那只是编码差异，不带来语义收益，却要多写
+    一段容易写错的位运算。
+
+    **不要拿它当时钟用**：前段是生成时刻，不是业务时间。
+    """
+    return f"{int(time.time() * 1000):012x}-{secrets.token_hex(5)}"
+
+
+def ensure_uid(node: dict) -> bool:
+    """给缺 uid 的节点补一个；已有则不动（uid 生成后只读）。
+
+    返回是否补过，调用方据此判断是否需要升级 schema。**已有节点绝不重新生成**——
+    uid 的整个价值就在于它不随时间变化，重新生成等于静默换掉外部引用。
+    """
+    if node.get("uid"):
+        return False
+    node["uid"] = new_uid()
+    return True
+
+
+def ensure_uids(nodes) -> int:
+    """给一批节点补齐 uid（`dict` 的 values 或 list 都吃）。返回补了几条。"""
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    return sum(1 for node in items if ensure_uid(node))
+
+
+def note_child_removal(parent: dict, child_id: str) -> None:
+    """子节点被移除后抬高父节点的序号水位，使该序号不再被复用。
+
+    只抬高不降低：水位是"这个父节点曾经用到过几号"，不是当前子节点数。
+    """
+    try:
+        index = int(str(child_id).split("-")[-1])
+    except ValueError:
+        return
+    if index > int(parent.get("childSequence") or 0):
+        parent["childSequence"] = index
 
 
 def node_depth(node_id: str) -> int:
@@ -695,9 +754,16 @@ class Roadmap:
         return self.data
 
     def save(self) -> str:
-        """保存路线图数据到 JSON 文件，自动更新 metadata.updated。"""
+        """保存路线图数据到 JSON 文件，自动更新 metadata.updated。
+
+        顺带做 **uid 迁移（写入时升级，不自动迁移）**：存量节点在这里补齐 uid。
+        放在唯一写入点而不是 `load()` 里，是为了让"读"保持无副作用——只读命令
+        （`ready` / `critical-path` / `impact`）不拿整图锁，在 load 里写文件
+        既无锁保护，并发时还会给同一节点生成两个不同 uid。
+        """
         self.data.setdefault("metadata", {})
         self.data["metadata"]["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ensure_uids(self.data.get("nodes", {}))
         content = json.dumps(self.data, ensure_ascii=False, indent=2)
         atomic_write_text(self.json_path, content)
         return self.json_path
@@ -714,6 +780,7 @@ class Roadmap:
             "nodes": {
                 "1": {
                     "id": "1",
+                    "uid": new_uid(),
                     "label": title,
                     "status": STATUS_IN_PROGRESS,
                     "mode": MODE_EXPLORE,
@@ -758,13 +825,14 @@ class Roadmap:
         parent = self.data["nodes"][parent_id]
         check_child_budget(parent)
 
-        index = next_child_index(self.data, parent_id)
+        index = next_child_index(parent)
         node_id = gen_child_id(parent_id, index)
 
         # 先以 pending 落形，让"开工"这件事只走 count_round_start 一条路径，
         # 否则 add 与 update 会对 rounds 各算一套。
         node = {
             "id": node_id,
+            "uid": new_uid(),
             "label": label,
             "status": STATUS_PENDING,
             "mode": mode,
@@ -871,6 +939,8 @@ class Roadmap:
         parent_id = self.data["nodes"][node_id]["parent"]
         if parent_id and parent_id in self.data["nodes"]:
             self.data["nodes"][parent_id]["children"].remove(node_id)
+            # 抬高水位：被删掉的序号不再发第二次（Problem #5）。
+            note_child_removal(self.data["nodes"][parent_id], node_id)
 
         # 删除节点
         for nid in deleted:

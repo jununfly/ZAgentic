@@ -34,6 +34,14 @@ from roadmap import (
     count_round_start,
     edge_sort_key,
     is_blocking,
+    # 序号与 uid 是 carrier 无关的语义，复用 roadmap.py 的实现，避免两个
+    # carrier 对同一件事各算一套（remove-decision 那类漂移）。
+    next_child_index,
+    note_child_removal,
+    # uid 同理：生成与迁移规则必须两个 carrier 共用一份。
+    ensure_uid,
+    ensure_uids,
+    new_uid,
     ready_node_list,
     critical_path,
     impact_node_ids,
@@ -259,6 +267,10 @@ class RoadmapBundle:
         return str(self.path)
 
     def _write_node_file(self, node_id: str, node: dict[str, Any]) -> None:
+        # 写入时补 uid：老 bundle 的分片在这里被逐片升级。放在写侧而不是
+        # `_read_node_file` 里，理由与 Roadmap.save 相同——读命令无锁，
+        # 在读里写文件并发时可能给同一节点生成两个不同 uid。
+        ensure_uid(node)
         stored = {key: value for key, value in node.items() if key != "decisions"}
         atomic_json(self.path / "nodes" / f"{safe_node_id(node_id)}.json", stored)
 
@@ -467,9 +479,9 @@ class RoadmapBundle:
             raise BundleError("invalid node mode")
         check_child_budget(parent)
         children = parent.setdefault("children", [])
-        next_index = int(children[-1].split("-")[-1]) + 1 if children else 1
+        next_index = next_child_index(parent)
         node_id = f"{parent_id}-{next_index}"
-        node = {"id": node_id, "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
+        node = {"id": node_id, "uid": new_uid(), "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
         budget = build_budget(max_children, max_rounds)
         if budget:
             node["budget"] = budget
@@ -716,6 +728,8 @@ class RoadmapBundle:
         # 能重做的半态，而不是悬空边。穷人的事务——零成本，且两个 carrier 一致。
         self.last_edge_cascade = self.remove_edges_touching({item["id"] for item in deleted_nodes})
         parent["children"].remove(node_id)
+        # 抬高水位：被删掉的序号不再发第二次（Problem #5）。
+        note_child_removal(parent, node_id)
         self._write_node_file(parent["id"], parent)
         stats = self._read_stats()
         for deleted in deleted_nodes:

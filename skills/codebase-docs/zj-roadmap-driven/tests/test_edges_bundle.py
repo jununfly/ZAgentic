@@ -156,9 +156,6 @@ class Slice08BundleBaselineTest(sf.Slice08NoEdgeBaselineTest):
 
         self.assertEqual(after, before)
 
-    def test_a_roadmap_that_never_had_edges_has_the_same_json_bytes(self):
-        self.skipTest("bundle 不是一个 json 文件；布局由 test_a_bundle_that_never_had_edges_has_the_same_layout 覆盖")
-
     def test_a_bundle_that_never_had_edges_has_the_same_layout(self):
         baseline = self.baseline_dir()
         current = self.root / "current"
@@ -188,18 +185,20 @@ class Slice08BundleBaselineTest(sf.Slice08NoEdgeBaselineTest):
 
     @staticmethod
     def bundle_snapshot(root: Path) -> str:
+        """目录**结构**快照：只列条目，不比文件内容。
+
+        比内容是决策 B 之前的老做法，它会把"节点分片里多了一个 `uid` 字段"
+        误判成"污染了无边路径"。这里真正要守住的是**结构**——凭空多出来的
+        `edges/` 目录、`index.json` 才是边泄漏进无边路径的证据（空目录只有列
+        条目才看得见，只数文件会漏）。内容层面的承诺交给继承来的 md 断言
+        （`test_the_human_view_is_byte_identical_without_edges`）承担。
+        """
         # 目录也要列：凭空多出来的 `edges/` 是空目录，只数文件的话看不见。
         entries = sorted(
             str(path.relative_to(root)) + ("/" if path.is_dir() else "")
             for path in root.rglob("*")
         )
-        parts = ["\n".join(entries)]
-        for relative in entries:
-            if relative.endswith("/"):
-                continue
-            text = (root / relative).read_text(encoding="utf-8")
-            parts.append(f"--- {relative}\n{TIMESTAMP.sub('<T>', text)}")
-        return "\n".join(parts)
+        return "\n".join(entries)
 
 
 class Slice11CrashHalfStateTest(BundleStorageMixin, sf.EdgeContractTest):
