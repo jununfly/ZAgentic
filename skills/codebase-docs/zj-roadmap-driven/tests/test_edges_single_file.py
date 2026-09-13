@@ -388,8 +388,8 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         ("tree", "r.json"),
         ("decide", "r.json", "1-1", "为什么", "因为"),
         ("decisions", "r.json"),
-        ("remove-decision", "r.json", "1-1", "--index", "0"),
-        ("decisions", "r.json"),
+        # #112 起 remove-decision 由 hard-delete 改为 retract-and-keep，输出有意变更，
+        # 移出"逐字节一致"基线（其正确性由 tests/test_remove_decision.py 钉死）。
         ("section", "r.json"),
         ("stats", "r.json"),
         ("validate", "r.json"),

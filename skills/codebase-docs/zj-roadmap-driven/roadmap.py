@@ -7,6 +7,7 @@ zj-roadmap-driven — 路线图核心数据模型
 """
 
 import errno
+import hashlib
 import json
 import os
 import re
@@ -44,6 +45,14 @@ EDGE_DERIVES_FROM = "derives-from"
 EDGE_TYPES = (EDGE_BLOCKS, EDGE_INFORMS, EDGE_SUPERSEDES, EDGE_DERIVES_FROM)
 
 MODE_EXPLORE = "explore"
+
+
+def canonical_json(value: Any) -> bytes:
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def sha256(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
 MODE_EXPLOIT = "exploit"
 
 MODE_TAG = {
@@ -1332,23 +1341,35 @@ class Roadmap:
 
     def remove_decision(self, node_id: str, index: Optional[int] = None,
                         question: Optional[str] = None) -> int:
-        """删除节点决策。按 index 或按 question 精确匹配删除，返回删除条数。
+        """撤回节点决策（保留原记录，附加 retracted 标记）。
 
-        用于清理重复决策或撤销误记。index 与 question 都未提供时报错；
-        两者都提供时优先 index。
+        与 bundle carrier 语义一致：原决策保留，新增一条 retracted:True 记录
+        （含 retracts = sha256(canonical_json(原决策)) 供溯源），不物理删除。
+        用于撤销误记或清理重复决策，同时保留审计轨迹。
+        index 与 question 都未提供时报错；两者都提供时优先 index。
         """
         node = self.get_node(node_id)
         decisions = node["decisions"]
+        selected: list[dict] = []
         if index is not None:
             if not (0 <= index < len(decisions)):
                 raise IndexError(f"决策索引越界: {index} (共 {len(decisions)} 条)")
-            removed = [decisions.pop(index)]
-            return len(removed)
-        if question is not None:
-            before = len(decisions)
-            node["decisions"] = [d for d in decisions if d.get("q") != question]
-            return before - len(node["decisions"])
-        raise ValueError("remove_decision 需提供 index 或 question 之一")
+            selected = [decisions[index]] if not decisions[index].get("retracted") else []
+        elif question is not None:
+            selected = [d for d in decisions if d.get("q") == question and not d.get("retracted")]
+        else:
+            raise ValueError("remove_decision 需提供 index 或 question 之一")
+        if not selected:
+            return 0
+        for decision in selected:
+            decisions.append({
+                "q": decision.get("q", ""),
+                "answer": "",
+                "note": f"retracted: {decision.get('note', '')}".rstrip(),
+                "retracted": True,
+                "retracts": sha256(canonical_json(decision)),
+            })
+        return len(selected)
 
     def get_decisions(self, node_id: Optional[str] = None) -> list:
         """获取决策记录。无 node_id 则返回全部。"""
