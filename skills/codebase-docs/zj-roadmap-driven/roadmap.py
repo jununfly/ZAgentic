@@ -19,6 +19,65 @@ from datetime import datetime
 from contextlib import contextmanager
 from typing import Optional, Any
 
+# 租约策略（P2）：claim/heartbeat/steal/release/fencing 的纯函数，两个 carrier 共用，
+# 避免 single-file 与 bundle 对"一次 claim 意味着什么"各算一套（remove-decision 翻过一次的车）。
+# ── 节点租约策略（P2 核心，两个 carrier 共用） ───────────────────────
+# 纯函数：给定租约 dict 与时钟，决定下一次租约长什么样。存储（字节落哪儿）是
+# carrier 的职责，所以两个 carrier 对"一次 claim/heartbeat/steal 意味着什么"
+# 只有一份真相——只能 differ 在落盘位置。时钟注入 `now` 让契约测试确定化。
+# 已决参数（docs/plans/zj-roadmap-dag-concurrency.md §4，2026-09-10 zj）：
+# TTL 300s + 心跳 60s 成对实现；都不引入提前抢占。
+LEASE_TTL_SECONDS = 300
+LEASE_HEARTBEAT_SECONDS = 60
+
+
+def is_expired(lease: dict, now: float) -> bool:
+    """True when the lease's wall-clock deadline has passed."""
+    return now > float(lease["expires_at"])
+
+
+def new_lease(node_uid: str, agent_id: str, device_id: str, ttl: float, now: float) -> dict:
+    """First claim of a node: fencing token starts at 1."""
+    return {
+        "node_uid": node_uid,
+        "agent_id": agent_id,
+        "device_id": device_id or "",
+        "fencing_token": 1,
+        "claimed_at": now,
+        "heartbeat_at": now,
+        "expires_at": now + ttl,
+        "ttl": ttl,
+    }
+
+
+def apply_heartbeat(lease: dict, now: float) -> dict:
+    """Idempotent renewal: expires_at = now + ttl, never accumulates."""
+    ttl = float(lease.get("ttl") or LEASE_TTL_SECONDS)
+    renewed = dict(lease)
+    renewed["heartbeat_at"] = now
+    renewed["expires_at"] = now + ttl
+    return renewed
+
+
+def apply_steal(lease, node_uid: str, agent_id: str, device_id: str, now: float) -> dict:
+    """Take over an *expired* lease: fencing token increments so the old holder's
+    subsequent writes fail. Stealing an unleased node is a first claim (token 1).
+    """
+    if lease:
+        ttl = float(lease.get("ttl") or LEASE_TTL_SECONDS)
+        return {
+            "node_uid": lease["node_uid"],
+            "agent_id": agent_id,
+            "device_id": device_id or "",
+            "fencing_token": int(lease["fencing_token"]) + 1,
+            "claimed_at": now,
+            "heartbeat_at": now,
+            "expires_at": now + ttl,
+            "ttl": ttl,
+        }
+    return new_lease(node_uid, agent_id, device_id, LEASE_TTL_SECONDS, now)
+
+
 # ── 状态常量 ──────────────────────────────────────────────
 STATUS_PENDING = "pending"
 STATUS_IN_PROGRESS = "in_progress"
@@ -109,6 +168,29 @@ class CycleError(RoadmapError):
     exit_code = 1
 
 
+class LeaseHeld(RoadmapError):
+    """节点已被有效租约占据，当前调用方无权拿/抢/释放/改写它。
+
+    触发场景：claim 一个未过期的节点、steal 未过期的租约、非持有者
+    release、持过期/错误 fencing token 的僵尸写。Agent 应按 code 分支，
+    不要匹配文案——租约冲突本就该被重试而不是硬闯。
+    """
+
+    code = "E_LEASE_HELD"
+    exit_code = 1
+
+
+class ConflictError(RoadmapError):
+    """`--if-rev` 乐观并发冲突：调用方基于的旧 rev 已不是当前 rev。
+
+    调用方应重读当前 rev（stderr 会带当前 rev）后重试，而不是覆盖别人
+    已落盘的工作。退出码与 E_LEASE_HELD 同为 1——两者都是"稍后重试"。
+    """
+
+    code = "E_CONFLICT"
+    exit_code = 1
+
+
 class InvalidStatus(RoadmapError):
     """试图设置一个不可人工设置的 status。
 
@@ -124,8 +206,13 @@ ERROR_EXIT_CODES = {
     BudgetExceeded.code: BudgetExceeded.exit_code,
     NodeNotFound.code: NodeNotFound.exit_code,
     CycleError.code: CycleError.exit_code,
+    LeaseHeld.code: LeaseHeld.exit_code,
+    ConflictError.code: ConflictError.exit_code,
     InvalidStatus.code: InvalidStatus.exit_code,
 }
+
+
+
 
 
 def exit_code_for(exc: BaseException) -> int:
@@ -1380,6 +1467,114 @@ class Roadmap:
             for d in node["decisions"]:
                 result.append({"node_id": nid, "node_label": node["label"], **d})
         return result
+
+    # ── 节点租约（P2 核心） ──────────────────────────────
+    # 租约状态存在独立侧车文件 <json>.leases.json，不进 roadmap 主 JSON——
+    # 否则每次心跳都会改写主文件、污染 --if-rev 的 rev。策略（claim/heartbeat/
+    # steal/release/fencing）由 lease.py 统一提供，这里只管落盘，保证两个
+    # carrier 对"一次 claim 意味着什么"只有一份真相。
+
+    def _lease_store_path(self) -> str:
+        return self.json_path + ".leases.json"
+
+    def _read_lease_store(self) -> dict:
+        try:
+            with open(self._lease_store_path(), "r", encoding="utf-8") as f:
+                store = json.load(f)
+            if not isinstance(store, dict):
+                return {"leases": {}, "events": []}
+            store.setdefault("leases", {})
+            store.setdefault("events", [])
+            return store
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {"leases": {}, "events": []}
+
+    def _write_lease_store(self, store: dict) -> None:
+        atomic_write_text(self._lease_store_path(), json.dumps(store, ensure_ascii=False, indent=2))
+
+    def get_lease(self, node_uid: str) -> Optional[dict]:
+        """返回该节点的当前租约 dict，无租约时返回 None。"""
+        return self._read_lease_store()["leases"].get(node_uid)
+
+    def claim_lease(self, node_uid: str, agent_id: str, ttl: float = LEASE_TTL_SECONDS,
+                    device_id: str = "", now: Optional[float] = None) -> dict:
+        self.get_node(node_uid)  # 节点必须存在，否则 KeyError（沿用既有错误输出）
+        now = time.time() if now is None else now
+        store = self._read_lease_store()
+        existing = store["leases"].get(node_uid)
+        if existing is not None and not is_expired(existing, now):
+            raise LeaseHeld(f"node {node_uid} already leased by {existing['agent_id']} "
+                            f"(fencing {existing['fencing_token']}, expires {existing['expires_at']})")
+        lease = new_lease(node_uid, agent_id, device_id, ttl, now)
+        store["leases"][node_uid] = lease
+        store["events"].append({"operation": "lease-claimed", "node_uid": node_uid,
+                                 "agent_id": agent_id, "fencing_token": lease["fencing_token"], "at": now})
+        self._write_lease_store(store)
+        return lease
+
+    def heartbeat_lease(self, node_uid: str, agent_id: str, now: Optional[float] = None) -> dict:
+        now = time.time() if now is None else now
+        store = self._read_lease_store()
+        lease = store["leases"].get(node_uid)
+        if lease is None:
+            raise LeaseHeld(f"node {node_uid} has no active lease to heartbeat")
+        if is_expired(lease, now):
+            raise LeaseHeld(f"node {node_uid} lease expired at {lease['expires_at']}; steal instead")
+        if lease["agent_id"] != agent_id:
+            raise LeaseHeld(f"node {node_uid} leased by {lease['agent_id']}, not {agent_id}")
+        renewed = apply_heartbeat(lease, now)
+        store["leases"][node_uid] = renewed
+        self._write_lease_store(store)
+        return renewed
+
+    def steal_lease(self, node_uid: str, agent_id: str, device_id: str = "",
+                   now: Optional[float] = None) -> dict:
+        now = time.time() if now is None else now
+        store = self._read_lease_store()
+        existing = store["leases"].get(node_uid)
+        if existing is not None and not is_expired(existing, now):
+            raise LeaseHeld(f"node {node_uid} lease not expired (expires {existing['expires_at']}); "
+                            f"cannot steal before TTL")
+        lease = apply_steal(existing, node_uid, agent_id, device_id, now)
+        store["leases"][node_uid] = lease
+        store["events"].append({"operation": "lease-stolen", "node_uid": node_uid,
+                                 "agent_id": agent_id, "fencing_token": lease["fencing_token"], "at": now})
+        self._write_lease_store(store)
+        return lease
+
+    def release_lease(self, node_uid: str, agent_id: str, force: bool = False,
+                      now: Optional[float] = None) -> None:
+        now = time.time() if now is None else now
+        store = self._read_lease_store()
+        lease = store["leases"].get(node_uid)
+        if lease is None:
+            return  # 幂等：没有租约也算释放成功
+        if not force:
+            if is_expired(lease, now):
+                raise LeaseHeld(f"node {node_uid} lease expired; use steal, not release")
+            if lease["agent_id"] != agent_id:
+                raise LeaseHeld(f"node {node_uid} leased by {lease['agent_id']}, not {agent_id}")
+        store["leases"].pop(node_uid, None)
+        store["events"].append({"operation": "lease-released", "node_uid": node_uid,
+                                 "agent_id": agent_id, "force": force, "at": now})
+        self._write_lease_store(store)
+
+    def current_revision(self) -> str:
+        """canonical sha256 of the semantic state, for `--if-rev` optimistic concurrency.
+
+        Volatile `metadata.updated`/`created` are excluded so a no-op save does
+        not invalidate an in-flight rev; leases live in a sidecar and are not
+        part of the roadmap rev either.
+        """
+        nodes = {nid: node for nid, node in self.data.get("nodes", {}).items()}
+        rev_data = {
+            "nodes": nodes,
+            "edges": self.data.get("edges", []),
+            "metadata": {k: v for k, v in self.data.get("metadata", {}).items()
+                         if k not in ("updated", "created")},
+            "version": self.data.get("version"),
+        }
+        return sha256(canonical_json(rev_data))
 
     # ── 树遍历 ─────────────────────────────────────────
 
