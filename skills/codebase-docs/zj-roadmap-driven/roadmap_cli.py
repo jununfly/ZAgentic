@@ -31,6 +31,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
                                             # 记一条依赖边；只有 blocks 不许成环
   edge    list <json_path> [--node <id>]     # 列出边，可按节点过滤入边与出边
   edge    remove <json_path> <edge_id>       # 删掉一条边
+  edge    migrate <json_path>                # 存量显示 id 边一次性转成 uid（#106 S4）
 
   get     <json_path> <node_id>              # 获取节点详情 (JSON)
                                              # 有未完成 blocks 前驱时附带派生字段
@@ -330,6 +331,12 @@ def cmd_edge(args: dict):
         else:
             _print_json({"edges": rows})
         return
+    if action == "migrate":
+        n = r.migrate_edges()
+        if n:
+            r.save()
+        print(f"Migrated {n} edge endpoint(s) to uid.")
+        return
     raise ValueError(f"未知 edge 动作: {action}")
 
 
@@ -620,7 +627,7 @@ COMMANDS = {
 LOCK_COMMANDS = frozenset(
     {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link"}
 )
-EDGE_WRITE_ACTIONS = frozenset({"add", "remove"})
+EDGE_WRITE_ACTIONS = frozenset({"add", "remove", "migrate"})
 
 
 def _needs_lock(cmd: str, args: dict) -> bool:

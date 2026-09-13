@@ -126,8 +126,10 @@ class Slice09IndexIsRedundantTest(BundleStorageMixin, sf.BlockedContractTest):
         self.add_edge("1-2", "1-3", "blocks")
 
         index = json.loads((self.roadmap / "edges" / "index.json").read_text(encoding="utf-8"))
+        # 索引是边的纯冗余镜像（#106 S4 后端点存 uid），键空间也是 uid。
+        uid_13 = json.loads((self.roadmap / "nodes" / "1-3.json").read_text(encoding="utf-8"))["uid"]
 
-        self.assertEqual(index["to"]["1-3"], ["e1", "e2"])
+        self.assertEqual(index["to"][uid_13], ["e1", "e2"])
 
     def test_unblocking_still_works_without_the_index(self):
         self.init_roadmap()
