@@ -557,6 +557,51 @@ def resolve_node(ref: str, nodes) -> str:
     return ref
 
 
+def node_context(node_id: str, nodes, edges) -> dict:
+    """节点来龙去脉（#104 S5）。
+
+    - upstream：所有 blocks 祖先（沿 blocks 边反向可达，不含自身）
+    - downstream：所有 blocks 后代（沿 blocks 边正向可达，不含自身）
+    - blocked_by：直接未完成 blocks 前驱（阻塞链）
+
+    `nodes` 接受 dict（single-file）或 list（bundle）；`edges` 是边字典列表。
+    结果稳定（id 排序），便于两 carrier 比对与测试。
+    """
+    by_id = {n["id"]: n for n in nodes} if not isinstance(nodes, dict) else nodes
+
+    pred: dict = {}
+    succ: dict = {}
+    for e in edges or []:
+        if e.get("type") == EDGE_BLOCKS:
+            pred.setdefault(e["to"], []).append(e["from"])
+            succ.setdefault(e["from"], []).append(e["to"])
+
+    def _bfs(start: str, adj: dict) -> set:
+        seen = set()
+        stack = list(adj.get(start, []))
+        while stack:
+            cur = stack.pop()
+            if cur in seen:
+                continue
+            seen.add(cur)
+            stack.extend(adj.get(cur, []))
+        return seen
+
+    upstream = _bfs(node_id, pred)
+    downstream = _bfs(node_id, succ)
+    blocked_by = [
+        f for f in pred.get(node_id, [])
+        if is_blocking({"type": EDGE_BLOCKS, "from": f, "to": node_id}, by_id.get(f))
+    ]
+    return {
+        "id": node_id,
+        "label": by_id[node_id]["label"],
+        "upstream": sorted(upstream),
+        "downstream": sorted(downstream),
+        "blocked_by": sorted(blocked_by),
+    }
+
+
 def note_child_removal(parent: dict, child_id: str) -> None:
     """子节点被移除后抬高父节点的序号水位，使该序号不再被复用。
 
@@ -1078,6 +1123,21 @@ class Roadmap:
     def resolve_node(self, ref: str) -> str:
         """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。"""
         return resolve_node(ref, self.data["nodes"])
+
+    # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
+
+    def context(self, node_id: str) -> dict:
+        """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。"""
+        if node_id not in self.data["nodes"]:
+            raise KeyError(f"节点不存在: {node_id}")
+        return node_context(node_id, self.data["nodes"], self.data.get("edges", []))
+
+    def next_nodes(self) -> list:
+        """就绪优先建议：关键路径上的就绪节点优先，其余按 id 排序。"""
+        ready = self.ready_nodes()
+        cp = set(self.critical_path())
+        ready.sort(key=lambda n: (n["id"] not in cp, n["id"]))
+        return ready
 
     def get_node(self, node_id: str) -> dict:
         """获取节点。"""

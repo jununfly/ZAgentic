@@ -159,6 +159,76 @@ def _print_json(data):
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+def _fmt_args(args: dict):
+    """从命令行参数抽取输出格式控制；三者都没给时返回 None（= 现状不变）。"""
+    fmt = args.get("format")
+    fields = args.get("fields")
+    quiet = args.get("quiet") == "true"
+    if fmt is None and fields is None and not quiet:
+        return None
+    return {"fmt": fmt, "fields": fields, "quiet": quiet}
+
+
+def _project(data, fields):
+    """按逗号分隔的字段名投影。`fields` 为空则原样返回。"""
+    if not fields:
+        return data
+    keys = [k.strip() for k in fields.split(",") if k.strip()]
+    if isinstance(data, list):
+        return [{k: item.get(k) for k in keys if k in item} for item in data]
+    return {k: data.get(k) for k in keys if k in data}
+
+
+def _render_table(rows: list, md: bool):
+    """把 list-of-dicts 渲染成文本表或 Markdown 表。空时给占位。"""
+    if not rows:
+        print("(empty)")
+        return
+    cols = list(rows[0].keys())
+    str_rows = [[str(item.get(c, "")) for c in cols] for item in rows]
+    if md:
+        lines = ["| " + " | ".join(cols) + " |",
+                 "| " + " | ".join("---" for _ in cols) + " |"]
+        lines += ["| " + " | ".join(sr) + " |" for sr in str_rows]
+        print("\n".join(lines))
+        return
+    widths = [max([len(c)] + [len(sr[i]) for sr in str_rows]) for i, c in enumerate(cols)]
+    fmt_row = lambda cells: "  ".join(cells[i].ljust(widths[i]) for i in range(len(cols)))
+    lines = [fmt_row(cols), fmt_row(["-" * w for w in widths])]
+    lines += [fmt_row(sr) for sr in str_rows]
+    print("\n".join(lines))
+
+
+def _emit(data, fmt=None, fields=None, quiet=False):
+    """统一输出发射器（#104 S5）。
+
+    - fmt ∈ {json, md, table}，默认 json
+    - fields：逗号投影键（对 list 每行 / 单 dict 投影）
+    - quiet：只打每项 id（一行一个）
+
+    调用方只在 `--format`/`--fields`/`--quiet` 任一显式出现时走本函数，
+    否则逐字节保持现状（见 `_fmt_args`）；因此默认行为完全向后兼容。
+    """
+    fmt = fmt or "json"
+    if fmt not in ("json", "md", "table"):
+        raise ValueError(f"--format 仅支持 json/md/table，收到: {fmt}")
+    if quiet:
+        rows = data if isinstance(data, list) else [data]
+        for item in rows:
+            print(item.get("id", ""))
+        return
+    projected = _project(data, fields)
+    if fmt == "json":
+        _print_json(projected)
+        return
+    rows = (
+        [{"key": k, "value": v} for k, v in projected.items()]
+        if isinstance(projected, dict)
+        else projected
+    )
+    _render_table(rows, md=(fmt == "md"))
+
+
 def _load_roadmap(path: str):
     """Select storage by the path shape, then load one command-facing adapter."""
     roadmap = RoadmapBundle(path) if Path(path).is_dir() else Roadmap(path)
@@ -253,7 +323,12 @@ def cmd_edge(args: dict):
         _print_json(edge)
         return
     if action == "list":
-        _print_json({"edges": r.list_edges(args.get("node"))})
+        rows = r.list_edges(args.get("node"))
+        fa = _fmt_args(args)
+        if fa:
+            _emit(rows, **fa)
+        else:
+            _print_json({"edges": rows})
         return
     raise ValueError(f"未知 edge 动作: {action}")
 
@@ -262,7 +337,12 @@ def cmd_get(args: dict):
     r = _load_roadmap(args["positional"][0])
     # 读视图：派生字段（blocked / blocked_reason）在这里算出，不落盘。
     # 用户可用显示 id 或 uid 引用节点（#105 S3）。
-    _print_json(r.get_node_view(r.resolve_node(args["positional"][1])))
+    data = r.get_node_view(r.resolve_node(args["positional"][1]))
+    fa = _fmt_args(args)
+    if fa:
+        _emit(data, **fa)
+    else:
+        _print_json(data)
 
 
 def cmd_tree(args: dict):
@@ -281,6 +361,10 @@ def cmd_ready(args: dict):
     """
     r = _load_roadmap(args["positional"][0])
     nodes = r.ready_nodes()
+    fa = _fmt_args(args)
+    if fa:
+        _emit([{"id": n["id"], "label": n["label"], "status": n["status"]} for n in nodes], **fa)
+        return
     if not nodes:
         # 空集要说出来：静默的空输出无法与"命令没跑"区分。
         print("No ready nodes.")
@@ -297,6 +381,11 @@ def cmd_critical_path(args: dict):
     """
     r = _load_roadmap(args["positional"][0])
     path = r.critical_path()
+    fa = _fmt_args(args)
+    if fa:
+        rows = [{"id": nid, "label": r.get_node(nid)["label"], "status": r.get_node(nid)["status"]} for nid in path]
+        _emit(rows, **fa)
+        return
     if not path:
         print("No unfinished chain.")
         return
@@ -312,6 +401,11 @@ def cmd_impact(args: dict):
     """
     r = _load_roadmap(args["positional"][0])
     affected = r.impact(r.resolve_node(args["positional"][1]))
+    fa = _fmt_args(args)
+    if fa:
+        rows = [{"id": nid, "label": r.get_node(nid)["label"], "status": r.get_node(nid)["status"]} for nid in affected]
+        _emit(rows, **fa)
+        return
     if not affected:
         print("No downstream impact.")
         return
@@ -335,7 +429,12 @@ def cmd_decide(args: dict):
 def cmd_decisions(args: dict):
     r = _load_roadmap(args["positional"][0])
     node_id = r.resolve_node(args["positional"][1]) if len(args["positional"]) > 1 else None
-    _print_json(r.get_decisions(node_id))
+    data = r.get_decisions(node_id)
+    fa = _fmt_args(args)
+    if fa:
+        _emit(data, **fa)
+    else:
+        _print_json(data)
 
 
 def cmd_remove_decision(args: dict):
@@ -375,7 +474,12 @@ def cmd_link(args: dict):
 
 def cmd_stats(args: dict):
     r = _load_roadmap(args["positional"][0])
-    _print_json(r.stats())
+    data = r.stats()
+    fa = _fmt_args(args)
+    if fa:
+        _emit(data, **fa)
+    else:
+        _print_json(data)
 
 
 def cmd_recommend_storage(args: dict):
@@ -397,6 +501,11 @@ def cmd_validate(args: dict):
 def cmd_path(args: dict):
     r = _load_roadmap(args["positional"][0])
     path_ids = r.get_path(r.resolve_node(args["positional"][1]))
+    fa = _fmt_args(args)
+    if fa:
+        rows = [{"id": pid, "label": r.get_node(pid)["label"], "status": r.get_node(pid)["status"]} for pid in path_ids]
+        _emit(rows, **fa)
+        return
     for pid in path_ids:
         node = r.get_node(pid)
         print(f"  {pid}. {node['label']}")
@@ -405,6 +514,11 @@ def cmd_path(args: dict):
 def cmd_siblings(args: dict):
     r = _load_roadmap(args["positional"][0])
     sibs = r.get_siblings(r.resolve_node(args["positional"][1]))
+    fa = _fmt_args(args)
+    if fa:
+        rows = [{"id": sid, "label": r.get_node(sid)["label"], "status": r.get_node(sid)["status"]} for sid in sibs]
+        _emit(rows, **fa)
+        return
     if sibs:
         for sid in sibs:
             node = r.get_node(sid)
@@ -418,7 +532,12 @@ def cmd_focus(args: dict):
     focus_id = r.get_current_focus()
     if focus_id:
         node = r.get_node(focus_id)
-        _print_json({"focus": focus_id, "label": node["label"], "status": node["status"]})
+        data = {"focus": focus_id, "label": node["label"], "status": node["status"]}
+        fa = _fmt_args(args)
+        if fa:
+            _emit(data, **fa)
+        else:
+            _print_json(data)
     else:
         print("(no in-progress leaf node)")
 
@@ -441,6 +560,28 @@ def cmd_migrate(args: dict):
             stack.enter_context(roadmap_file_lock(lock_path))
         bundle = RoadmapBundle.migrate_from_legacy(source, output, interval)
     print(f"Migrated: {source} -> {bundle.path}")
+
+
+def cmd_context(args: dict):
+    """来龙去脉（#104 S5）：上游（依赖谁）/下游（谁依赖我）/阻塞链。"""
+    r = _load_roadmap(args["positional"][0])
+    data = r.context(r.resolve_node(args["positional"][1]))
+    fa = _fmt_args(args)
+    if fa:
+        _emit(data, **fa)
+    else:
+        _print_json(data)
+
+
+def cmd_next(args: dict):
+    """就绪优先建议（#104 S5）：建议接下来开工的就绪节点。"""
+    r = _load_roadmap(args["positional"][0])
+    data = r.next_nodes()
+    fa = _fmt_args(args)
+    if fa:
+        _emit(data, **fa)
+    else:
+        _print_json(data)
 
 
 # ── 命令路由 ──────────────────────────────────────────────
@@ -470,6 +611,8 @@ COMMANDS = {
     "siblings": cmd_siblings,
     "focus": cmd_focus,
     "migrate": cmd_migrate,
+    "context": cmd_context,
+    "next": cmd_next,
 }
 
 
