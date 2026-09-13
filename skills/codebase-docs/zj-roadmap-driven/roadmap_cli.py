@@ -32,6 +32,18 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   edge    list <json_path> [--node <id>]     # 列出边，可按节点过滤入边与出边
   edge    remove <json_path> <edge_id>       # 删掉一条边
 
+  lease   claim  <json_path> <node_uid> --agent <id> [--ttl 300] [--device <id>]
+                                            # 拿节点租约（默认 TTL 300s，fencing=1）
+  lease   heartbeat <json_path> <node_uid> --agent <id>
+                                            # 续约：expires_at = now + ttl，幂等
+  lease   steal <json_path> <node_uid> --agent <id> [--device <id>]
+                                            # 仅过期后可抢，fencing 递增使旧持有者写失败
+  lease   release <json_path> <node_uid> --agent <id> [--force]
+                                            # 释放；--force 为 Human 显式抢回，落事件日志
+
+  写命令可带 --if-rev <sha> 乐观并发（冲突返 E_CONFLICT）与
+  --as-agent <id> [--token <n>] 租约守卫（被他人持有且 token 旧则返 E_LEASE_HELD）。
+
   get     <json_path> <node_id>              # 获取节点详情 (JSON)
 
   tree    <json_path> [node_id] [--depth N]  # 树形文本视图
@@ -81,12 +93,16 @@ from roadmap import (
     Roadmap,
     RoadmapError,
     RoadmapLockTimeout,
+    LeaseHeld,
+    ConflictError,
     exit_code_for,
     roadmap_file_lock,
     unlock_roadmap,
 )
 from roadmap_bundle import BundleError, RoadmapBundle
 from storage_advisor import recommend_storage
+from roadmap import LEASE_TTL_SECONDS, is_expired
+import time
 
 
 # 可以重复出现、每次追加一条值的参数（`--exit-criteria` 可给多条判据）。
@@ -178,6 +194,7 @@ def cmd_init(args: dict):
 
 def cmd_add(args: dict):
     r = _load_roadmap(args["positional"][0])
+    _enforce_write_guard(r, args["positional"][1], args)
     node = r.add_node(
         parent_id=args["positional"][1],
         label=args["positional"][2],
@@ -193,6 +210,7 @@ def cmd_add(args: dict):
 
 def cmd_update(args: dict):
     r = _load_roadmap(args["positional"][0])
+    _enforce_write_guard(r, args["positional"][1], args)
     node = r.update_node(
         node_id=args["positional"][1],
         label=args.get("label"),
@@ -211,6 +229,7 @@ def cmd_update(args: dict):
 
 def cmd_delete(args: dict):
     r = _load_roadmap(args["positional"][0])
+    _enforce_write_guard(r, args["positional"][1], args)
     deleted = r.delete_node(args["positional"][1])
     r.save()
     print(f"Deleted: {deleted}")
@@ -249,6 +268,55 @@ def cmd_edge(args: dict):
     raise ValueError(f"未知 edge 动作: {action}")
 
 
+def _enforce_write_guard(r, node_id: str, args: dict) -> None:
+    """写前守卫：--if-rev 乐观并发 + 租约 fencing。
+
+    - `--if-rev <sha>`：当前 rev 与提供的不一致 → E_CONFLICT（调用方重读重试）。
+    - 节点有有效租约时，调用方必须出示匹配 --as-agent / --token，否则 E_LEASE_HELD
+      （僵尸写被拒）。两者退出码都是 1（都该"稍后重试"）。
+    """
+    if args.get("if-rev") is not None:
+        current = r.current_revision()
+        if current != str(args["if-rev"]):
+            raise ConflictError(f"revision conflict: have {current}, expected {args['if-rev']}")
+    lease = r.get_lease(node_id)
+    if lease and not is_expired(lease, time.time()):
+        agent = args.get("as-agent")
+        token = args.get("token")
+        if agent is None or agent != lease["agent_id"] or (token is not None and int(token) < int(lease["fencing_token"])):
+            raise LeaseHeld(
+                f"node {node_id} leased by {lease['agent_id']} (fencing {lease['fencing_token']}); "
+                f"present --as-agent/--token or wait for TTL"
+            )
+
+
+def cmd_lease(args: dict):
+    """`lease <action> <json_path> <node_uid> ...` —— 动作在前（git remote 同款）。"""
+    action = args["positional"][0]
+    r = _load_roadmap(args["positional"][1])
+    node_uid = args["positional"][2]
+    if action == "claim":
+        lease = r.claim_lease(
+            node_uid,
+            agent_id=args.get("agent") or "",
+            ttl=int(args.get("ttl", LEASE_TTL_SECONDS)),
+            device_id=args.get("device", ""),
+        )
+        _print_json(lease)
+        return
+    if action == "heartbeat":
+        _print_json(r.heartbeat_lease(node_uid, agent_id=args.get("agent") or ""))
+        return
+    if action == "steal":
+        _print_json(r.steal_lease(node_uid, agent_id=args.get("agent") or "", device_id=args.get("device", "")))
+        return
+    if action == "release":
+        r.release_lease(node_uid, agent_id=args.get("agent") or "", force=args.get("force") == "true")
+        print(f"Released: {node_uid}")
+        return
+    raise ValueError(f"未知 lease 动作: {action}")
+
+
 def cmd_get(args: dict):
     r = _load_roadmap(args["positional"][0])
     _print_json(r.get_node(args["positional"][1]))
@@ -264,6 +332,7 @@ def cmd_tree(args: dict):
 
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
+    _enforce_write_guard(r, args["positional"][1], args)
     d = r.add_decision(
         node_id=args["positional"][1],
         question=args["positional"][2],
@@ -283,6 +352,7 @@ def cmd_decisions(args: dict):
 def cmd_remove_decision(args: dict):
     r = _load_roadmap(args["positional"][0])
     node_id = args["positional"][1]
+    _enforce_write_guard(r, node_id, args)
     index = int(args["index"]) if args.get("index") is not None else None
     question = args.get("question")
     removed = r.remove_decision(node_id, index=index, question=question)
@@ -395,6 +465,7 @@ COMMANDS = {
     "get": cmd_get,
     "tree": cmd_tree,
     "edge": cmd_edge,
+    "lease": cmd_lease,
     "decide": cmd_decide,
     "decisions": cmd_decisions,
     "remove-decision": cmd_remove_decision,
@@ -414,7 +485,7 @@ COMMANDS = {
 
 # 写命令走整图锁；`edge` 按子动作区分，因为 `edge list` 是只读。
 LOCK_COMMANDS = frozenset(
-    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link"}
+    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease"}
 )
 EDGE_WRITE_ACTIONS = frozenset({"add", "remove"})
 
@@ -428,6 +499,19 @@ def _needs_lock(cmd: str, args: dict) -> bool:
     if cmd != "edge":
         return cmd in LOCK_COMMANDS
     return args["positional"][0] in EDGE_WRITE_ACTIONS
+
+
+def _lock_path(cmd: str, args: dict) -> str:
+    """整图锁的 key：roadmap 路径。
+
+    `lease`/`edge` 把子动作放在位置参数最前（git remote 同款），路径在
+    `positional[1]`；其余命令路径在 `positional[0]`。锁必须落在 roadmap 路径上
+    （生成 `<roadmap>.lock/`），不能落在动作名上，否则所有 roadmap 的
+    `lease claim` 会抢同一个 `claim.lock` 而互相阻塞。
+    """
+    if cmd in ("lease", "edge"):
+        return args["positional"][1]
+    return args["positional"][0]
 
 
 def main():
@@ -445,7 +529,7 @@ def main():
     args = _parse_args(sys.argv[2:])
     try:
         if _needs_lock(cmd, args):
-            with roadmap_file_lock(args["positional"][0]):
+            with roadmap_file_lock(_lock_path(cmd, args)):
                 COMMANDS[cmd](args)
         else:
             COMMANDS[cmd](args)

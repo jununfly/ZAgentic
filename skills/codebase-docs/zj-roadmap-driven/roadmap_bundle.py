@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable, Optional
@@ -21,6 +22,10 @@ from typing import Any, Iterable, Optional
 # 预算与开工计数是 carrier 无关的语义，复用 roadmap.py 的实现，
 # 避免两个 carrier 对同一个 budget 各算一套（remove-decision 那类漂移）。
 from roadmap import build_budget, check_child_budget, count_round_start
+# 租约策略（P2）与 single-file 共用，保证两个 carrier 对 claim/heartbeat/steal/
+# release/fencing 只有一份语义真相；这里只负责把租约落进 leases/ 分片。
+from roadmap import (LEASE_TTL_SECONDS, is_expired, new_lease, apply_heartbeat, apply_steal)
+from roadmap import LeaseHeld
 
 
 BUNDLE_SCHEMA = "zj-roadmap-bundle-manifest/v1"
@@ -538,6 +543,138 @@ class RoadmapBundle:
             node = self._read_node_file(current_id)
             result.extend({"node_id": current_id, "node_label": node["label"], **decision} for decision in self._read_decisions_file(current_id))
         return result
+
+    # ── 节点租约（P2 核心） ──────────────────────────────
+    # 租约分片放在 leases/<node_uid>.json，与 nodes/decisions/ 平级。策略由
+    # lease.py 统一提供；心跳频（60s）只改分片、进 history 会刷屏，故不记事件，
+    # 其余动作（claim/steal/release）都落 history/events.jsonl（release --force
+    # 必须可审计）。
+
+    def _lease_path(self, node_uid: str) -> Path:
+        return self.path / "leases" / f"{safe_node_id(node_uid)}.json"
+
+    def _read_lease_file(self, node_uid: str) -> Optional[dict[str, Any]]:
+        path = self._lease_path(node_uid)
+        if not path.is_file():
+            return None
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise BundleError(f"could not read lease shard {path}: {error}") from error
+        return value if isinstance(value, dict) else None
+
+    def _write_lease_file(self, node_uid: str, lease: dict[str, Any]) -> None:
+        atomic_json(self._lease_path(node_uid), lease)
+
+    def _delete_lease_file(self, node_uid: str) -> None:
+        try:
+            self._lease_path(node_uid).unlink()
+        except FileNotFoundError:
+            pass
+
+    def _commit_event(self, operation: str, payload: dict[str, Any]) -> None:
+        """轻量事件提交：只追加 history + 推进 current/manifest，不动 stats。
+
+        租约动作的 stats 不变（租约不是节点/决策），无需重算 indexes/stats；
+        claim/steal/release 仍要进 history 以满足 release --force 的可审计要求。
+        """
+        sequence = int(self.manifest.get("historySequence", 0)) + 1
+        event = {"schema": HISTORY_SCHEMA, "sequence": sequence, "operation": operation,
+                 "payload": payload, "at": now_text()}
+        append_jsonl(self.path / "history/events.jsonl", event)
+        current = self.manifest.get("currentSnapshot", "snapshots/snapshot-000000.json")
+        atomic_json(self.path / "current.json", self._current_document(sequence, self._read_stats(), current))
+        self.manifest["historySequence"] = sequence
+        self.manifest["updated"] = now_text()
+        atomic_json(self.path / "manifest.json", self.manifest)
+
+    def get_lease(self, node_uid: str) -> Optional[dict[str, Any]]:
+        return self._read_lease_file(node_uid)
+
+    def claim_lease(self, node_uid: str, agent_id: str, ttl: float = LEASE_TTL_SECONDS,
+                    device_id: str = "", now: Optional[float] = None) -> dict:
+        self._read_node_file(node_uid)  # 节点必须存在，否则 BundleError
+        now = time.time() if now is None else now
+        existing = self._read_lease_file(node_uid)
+        if existing is not None and not is_expired(existing, now):
+            raise LeaseHeld(f"node {node_uid} already leased by {existing['agent_id']} "
+                            f"(fencing {existing['fencing_token']}, expires {existing['expires_at']})")
+        lease = new_lease(node_uid, agent_id, device_id, ttl, now)
+        self._write_lease_file(node_uid, lease)
+        self._commit_event("lease-claimed", {"nodeId": node_uid, "agentId": agent_id,
+                                              "fencingToken": lease["fencing_token"]})
+        return lease
+
+    def heartbeat_lease(self, node_uid: str, agent_id: str, now: Optional[float] = None) -> dict:
+        now = time.time() if now is None else now
+        lease = self._read_lease_file(node_uid)
+        if lease is None:
+            raise LeaseHeld(f"node {node_uid} has no active lease to heartbeat")
+        if is_expired(lease, now):
+            raise LeaseHeld(f"node {node_uid} lease expired at {lease['expires_at']}; steal instead")
+        if lease["agent_id"] != agent_id:
+            raise LeaseHeld(f"node {node_uid} leased by {lease['agent_id']}, not {agent_id}")
+        renewed = apply_heartbeat(lease, now)
+        self._write_lease_file(node_uid, renewed)  # 心跳频密，不记 history 事件
+        return renewed
+
+    def steal_lease(self, node_uid: str, agent_id: str, device_id: str = "",
+                   now: Optional[float] = None) -> dict:
+        now = time.time() if now is None else now
+        existing = self._read_lease_file(node_uid)
+        if existing is not None and not is_expired(existing, now):
+            raise LeaseHeld(f"node {node_uid} lease not expired (expires {existing['expires_at']}); "
+                            f"cannot steal before TTL")
+        lease = apply_steal(existing, node_uid, agent_id, device_id, now)
+        self._write_lease_file(node_uid, lease)
+        self._commit_event("lease-stolen", {"nodeId": node_uid, "agentId": agent_id,
+                                             "fencingToken": lease["fencing_token"]})
+        return lease
+
+    def release_lease(self, node_uid: str, agent_id: str, force: bool = False,
+                      now: Optional[float] = None) -> None:
+        now = time.time() if now is None else now
+        lease = self._read_lease_file(node_uid)
+        if lease is None:
+            return  # 幂等
+        if not force:
+            if is_expired(lease, now):
+                raise LeaseHeld(f"node {node_uid} lease expired; use steal, not release")
+            if lease["agent_id"] != agent_id:
+                raise LeaseHeld(f"node {node_uid} leased by {lease['agent_id']}, not {agent_id}")
+        self._delete_lease_file(node_uid)
+        self._commit_event("lease-released", {"nodeId": node_uid, "agentId": agent_id, "force": force})
+
+    def materialize(self) -> dict[str, Any]:
+        """重建与 single-file 同形的 canonical 数据，供 current_revision 哈希。
+
+        不含 volatile 的 metadata.updated/created，心跳/租约都不进这份视图，
+        所以 --if-rev 的 rev 只随 roadmap 语义变化。
+        """
+        nodes: dict[str, Any] = {}
+        for path in sorted((self.path / "nodes").glob("*.json"), key=lambda item: item.stem):
+            node = self._read_node_file(path.stem)
+            stored = {key: value for key, value in node.items() if key != "decisions"}
+            stored["decisions"] = self._read_decisions_file(path.stem)
+            nodes[path.stem] = stored
+        edges: list[dict[str, Any]] = []
+        edges_dir = self.path / "edges"
+        if edges_dir.is_dir():
+            index_path = edges_dir / "index.json"
+            if index_path.is_file():
+                try:
+                    index = json.loads(index_path.read_text(encoding="utf-8"))
+                    edges = index.get("edges", []) if isinstance(index, dict) else []
+                except (OSError, json.JSONDecodeError):
+                    edges = []
+        metadata = {k: v for k, v in self.manifest.get("metadata", {}).items()
+                    if k not in ("updated", "created")}
+        return {"nodes": nodes, "edges": edges, "metadata": metadata,
+                "version": self.manifest.get("roadmapVersion", 1)}
+
+    def current_revision(self) -> str:
+        from roadmap import canonical_json, sha256_bytes
+        return sha256_bytes(canonical_json(self.materialize()))
 
     def _sync_parent_status(self, node_id: str, stats: dict[str, Any], include_self: bool = False) -> None:
         current = self._read_node_file(node_id)
