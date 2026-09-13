@@ -203,7 +203,7 @@ def cmd_add(args: dict):
 def cmd_update(args: dict):
     r = _load_roadmap(args["positional"][0])
     node = r.update_node(
-        node_id=args["positional"][1],
+        node_id=r.resolve_node(args["positional"][1]),
         label=args.get("label"),
         status=args.get("status"),
         mode=args.get("mode"),
@@ -220,7 +220,7 @@ def cmd_update(args: dict):
 
 def cmd_delete(args: dict):
     r = _load_roadmap(args["positional"][0])
-    deleted = r.delete_node(args["positional"][1])
+    deleted = r.delete_node(r.resolve_node(args["positional"][1]))
     r.save()
     print(f"Deleted: {deleted}")
     # 没有边时不追加这一行：delete 的输出必须和 P1 之前逐字节一致。
@@ -240,8 +240,8 @@ def cmd_edge(args: dict):
     r = _load_roadmap(args["positional"][1])
     if action == "add":
         edge = r.add_edge(
-            args["positional"][2],
-            args["positional"][3],
+            r.resolve_node(args["positional"][2]),
+            r.resolve_node(args["positional"][3]),
             args.get("type", "blocks"),
         )
         r.save()
@@ -261,12 +261,13 @@ def cmd_edge(args: dict):
 def cmd_get(args: dict):
     r = _load_roadmap(args["positional"][0])
     # 读视图：派生字段（blocked / blocked_reason）在这里算出，不落盘。
-    _print_json(r.get_node_view(args["positional"][1]))
+    # 用户可用显示 id 或 uid 引用节点（#105 S3）。
+    _print_json(r.get_node_view(r.resolve_node(args["positional"][1])))
 
 
 def cmd_tree(args: dict):
     r = _load_roadmap(args["positional"][0])
-    root = args["positional"][1] if len(args["positional"]) > 1 else "1"
+    root = r.resolve_node(args["positional"][1]) if len(args["positional"]) > 1 else "1"
     default_depth = 2 if getattr(r, "is_bundle", False) else 10
     depth = int(args.get("depth", default_depth))
     print(r.get_tree(root, depth))
@@ -310,7 +311,7 @@ def cmd_impact(args: dict):
     只读查询，不拿整图锁（与 `ready` / `critical-path` 同款）。
     """
     r = _load_roadmap(args["positional"][0])
-    affected = r.impact(args["positional"][1])
+    affected = r.impact(r.resolve_node(args["positional"][1]))
     if not affected:
         print("No downstream impact.")
         return
@@ -322,7 +323,7 @@ def cmd_impact(args: dict):
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
     d = r.add_decision(
-        node_id=args["positional"][1],
+        node_id=r.resolve_node(args["positional"][1]),
         question=args["positional"][2],
         answer=args["positional"][3],
         note=args["positional"][4] if len(args["positional"]) > 4 else "",
@@ -333,13 +334,13 @@ def cmd_decide(args: dict):
 
 def cmd_decisions(args: dict):
     r = _load_roadmap(args["positional"][0])
-    node_id = args["positional"][1] if len(args["positional"]) > 1 else None
+    node_id = r.resolve_node(args["positional"][1]) if len(args["positional"]) > 1 else None
     _print_json(r.get_decisions(node_id))
 
 
 def cmd_remove_decision(args: dict):
     r = _load_roadmap(args["positional"][0])
-    node_id = args["positional"][1]
+    node_id = r.resolve_node(args["positional"][1])
     index = int(args["index"]) if args.get("index") is not None else None
     question = args.get("question")
     removed = r.remove_decision(node_id, index=index, question=question)
@@ -395,7 +396,7 @@ def cmd_validate(args: dict):
 
 def cmd_path(args: dict):
     r = _load_roadmap(args["positional"][0])
-    path_ids = r.get_path(args["positional"][1])
+    path_ids = r.get_path(r.resolve_node(args["positional"][1]))
     for pid in path_ids:
         node = r.get_node(pid)
         print(f"  {pid}. {node['label']}")
@@ -403,7 +404,7 @@ def cmd_path(args: dict):
 
 def cmd_siblings(args: dict):
     r = _load_roadmap(args["positional"][0])
-    sibs = r.get_siblings(args["positional"][1])
+    sibs = r.get_siblings(r.resolve_node(args["positional"][1]))
     if sibs:
         for sid in sibs:
             node = r.get_node(sid)
