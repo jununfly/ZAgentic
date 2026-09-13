@@ -11,6 +11,7 @@
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -31,6 +32,26 @@ E_NODE_NOT_FOUND = "E_NODE_NOT_FOUND"
 
 # metadata.updated 每次运行都变，比对前归一掉。
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
+
+# `uid` 是 P0 给节点加的新字段，会合法地出现在 `add` / `get` 这些回显节点的
+# 命令输出里。控制例守的是 Human 视野与命令语义，不守"节点有几个字段"——
+# 所以比对前把 uid 那一行剥掉，其余内容一个字节都不丢。
+#
+# 为什么不是"跳过 `add` / `get` 这两条命令"：那会连带丢掉它们覆盖的大量行为
+# （节点形状、错误码、字段顺序）。只剥一行能同时保住两边。
+UID_LINE = re.compile(r'^\s*"uid":\s*"[^"]*",?\n', re.MULTILINE)
+
+# stats 的 status_counts 由 `set` 推导，键顺序跟着 PYTHONHASHSEED 变。
+# 控制例要在两个**不同进程**之间比对输出，不固定种子就会随机失败。
+FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
+
+# 调 git 时要剔掉 NODE_OPTIONS：WorkBuddy 的 safe-delete shim 经它注入 Node
+# 子进程，git 清理 stale ref 时会被 shim 把文件移进回收站。
+#
+# POSIX 上这件事是 `env -u NODE_OPTIONS git ...`，但 `env` 是外部可执行文件，
+# Windows 上没有（Git Bash 里的 env 靠 MSYS 提供，CreateProcess 找不到），
+# 所以改成构造一个不含该键的 env 字典传下去——两边都能用，且不依赖 shell。
+GIT_ENV = {k: v for k, v in os.environ.items() if k != "NODE_OPTIONS"}
 
 
 class EdgeContractTest(unittest.TestCase):
@@ -265,12 +286,25 @@ class Slice06EdgeIdStabilityTest(EdgeContractTest):
     只能看到结果，看不到"删掉最后一条之后再建"这个关键顺序。
     """
 
-    def build_api_roadmap(self, filename="api-roadmap.json"):
-        roadmap = Roadmap(str(self.workdir / filename))
+    # bundle carrier 是目录，不能用 .json 后缀（会让人以为是单文件）。
+    api_filename = "api-roadmap.json"
+
+    def new_adapter(self, path):
+        """返回一个尚未 load 的 carrier 适配器。bundle 那边会覆盖它。"""
+        return Roadmap(str(path))
+
+    def build_api_roadmap(self, filename=None):
+        filename = filename or self.api_filename
+        roadmap = self.new_adapter(self.workdir / filename)
         roadmap.init(title="edge id")
         roadmap.add_node("1", "设计")
         roadmap.add_node("1", "实现")
         return roadmap
+
+    def reload_adapter(self, path):
+        adapter = self.new_adapter(path)
+        adapter.load()
+        return adapter
 
     def test_a_removed_id_is_not_reused_when_it_was_the_last_one(self):
         r = self.build_api_roadmap()
@@ -287,8 +321,7 @@ class Slice06EdgeIdStabilityTest(EdgeContractTest):
         r.remove_edge(second["id"])
         r.save()
 
-        reloaded = Roadmap(str(self.workdir / "api-roadmap.json"))
-        reloaded.load()
+        reloaded = self.reload_adapter(self.workdir / self.api_filename)
 
         self.assertEqual(reloaded.add_edge("1-1", "1-2", "blocks")["id"], "e3")
 
@@ -355,8 +388,8 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         ("tree", "r.json"),
         ("decide", "r.json", "1-1", "为什么", "因为"),
         ("decisions", "r.json"),
-        ("remove-decision", "r.json", "1-1", "--index", "0"),
-        ("decisions", "r.json"),
+        # #112 起 remove-decision 由 hard-delete 改为 retract-and-keep，输出有意变更，
+        # 移出"逐字节一致"基线（其正确性由 tests/test_remove_decision.py 钉死）。
         ("section", "r.json"),
         ("stats", "r.json"),
         ("validate", "r.json"),
@@ -389,6 +422,18 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             probe = probe.parent
         return None
 
+    # 控制例的基线是「P1 边存储落地之前」的那份实现，不是 main 的当前头。
+    #
+    # 用 `main` 是错的：PR #85/#86 一合进 main，main 上的脚本就等于工作树里的
+    # 脚本，控制例变成自己跟自己比，恒真但零信息量——它会在每次"没污染无边
+    # 路径"时通过，也会在真的污染了时照样通过。
+    #
+    # 所以钉死在一个历史 commit 上：a8ee1b9 是 PR #85 的第一父，即 P1 之前
+    # 最后一个 main commit。commit 不可变，这个基线不会 stale；要重新校准，
+    # 就把 P1/P2……的起点 commit 换进来，并在 commit message 里说明理由。
+    BASELINE_REF = "a8ee1b9"
+    BASELINE_FILES = ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py")
+
     def baseline_dir(self):
         repo = self.repo_root()
         if repo is None:
@@ -396,19 +441,47 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         rel = SKILL_DIR.relative_to(repo)
         target = self.root / "baseline"
         target.mkdir(exist_ok=True)
-        for name in ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py"):
+        # git 的路径一律用正斜杠：Path 在 Windows 上拼出的是反斜杠，而
+        # `git show <rev>:<path>` 的 path 部分是按 / 解析的。
+        prefix = rel.as_posix()
+        for name in self.BASELINE_FILES:
             result = subprocess.run(
-                ["env", "-u", "NODE_OPTIONS", "git", "show", f"main:{rel / name}"],
+                ["git", "show", f"{self.BASELINE_REF}:{prefix}/{name}"],
                 cwd=str(repo),
                 text=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=False,
+                env=GIT_ENV,
             )
             if result.returncode != 0:
                 self.skipTest(f"取不到基线 {name}: {result.stderr.strip()}")
             (target / name).write_text(result.stdout, encoding="utf-8")
+
+        self.assert_baseline_is_not_the_current_implementation()
         return target
+
+    def assert_baseline_is_not_the_current_implementation(self):
+        """判别力守卫：基线若与当前实现逐字节相同，控制例就是恒真的。
+
+        这不是多虑——用 `main:` 做基线时它就发生过：PR 一合进 main，基线
+        自动变成被改动后的自己，于是「没有边时输出与 P1 之前一致」这条断言
+        在真的被污染时也通过。一个会无条件通过的控制例比没有控制例更危险，
+        因为它给的是假信心。
+        """
+        target = self.root / "baseline"
+        identical = [
+            name
+            for name in self.BASELINE_FILES
+            if (target / name).read_text(encoding="utf-8")
+            == (SKILL_DIR / name).read_text(encoding="utf-8")
+        ]
+        if len(identical) == len(self.BASELINE_FILES):
+            self.fail(
+                f"基线 {self.BASELINE_REF} 与当前实现完全相同，控制例失去判别力。"
+                f"把 BASELINE_REF 指向被测改动之前的那个 commit。"
+            )
+        return identical
 
     def run_sequence(self, cli_dir, workdir):
         workdir.mkdir(parents=True, exist_ok=True)
@@ -421,11 +494,12 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=False,
+                env=FIXED_ENV,
             )
             text = f"$ {result.returncode}\n{result.stdout}{result.stderr}".replace(
                 str(workdir), "<W>"
             )
-            output.append(TIMESTAMP.sub("<T>", text))
+            output.append(TIMESTAMP.sub("<T>", UID_LINE.sub("", text)))
         return "\n".join(output)
 
     def test_existing_commands_are_byte_identical_without_edges(self):
@@ -442,7 +516,39 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
 
         self.assertEqual(after, before)
 
-    def test_a_roadmap_that_never_had_edges_has_the_same_json_bytes(self):
+    def md_section_bytes(self, cli_dir, workdir) -> str:
+        """跑同一串命令，返回 `section` 的 md 字节。
+
+        控制例的承诺面是 **Human 视野（md）**，不是 carrier 字节。carrier 里多
+        一个字段（P0 的 `uid`、S1 的单调计数器）从来不是对外承诺，md 才是
+        （Story 11/12、§6 护栏 2）——见 issue #99 的决策 B。
+
+        反向说明：不要把这个 helper 退化回"比 r.json 字节"。那样每加一个
+        carrier 字段都要重设 BASELINE_REF，而重设基线等于让控制例自己跟自己
+        比（见 `assert_baseline_is_not_the_current_implementation` 的注释）。
+        """
+        workdir.mkdir(parents=True, exist_ok=True)
+        md = ""
+        for command in self.SEQUENCE:
+            result = subprocess.run(
+                [sys.executable, str(Path(cli_dir) / "roadmap_cli.py"), *command],
+                cwd=str(workdir),
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                env=FIXED_ENV,
+            )
+            if command[0] == "section":
+                md = result.stdout
+        return TIMESTAMP.sub("<T>", md)
+
+    def test_the_human_view_is_byte_identical_without_edges(self):
+        """没有边时，Human 视野（md section）与 P1 之前逐字节一致。
+
+        替代原先的 `...same_json_bytes`：那条比的是 carrier JSON，会把"往节点
+        里加了字段"误判成"污染了无边路径"。决策 B 把它换成 md。
+        """
         baseline = self.baseline_dir()
         current = self.root / "current"
         current.mkdir(exist_ok=True)
@@ -451,22 +557,10 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
                 (SKILL_DIR / name).read_text(encoding="utf-8"), encoding="utf-8"
             )
 
-        shapes = {}
-        for label, cli_dir in (("before", baseline), ("after", current)):
-            work = self.root / f"j-{label}"
-            work.mkdir(exist_ok=True)
-            for command in self.SEQUENCE:
-                subprocess.run(
-                    [sys.executable, str(Path(cli_dir) / "roadmap_cli.py"), *command],
-                    cwd=str(work),
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-            shapes[label] = TIMESTAMP.sub("<T>", (work / "r.json").read_text(encoding="utf-8"))
+        before = self.md_section_bytes(baseline, self.root / "m1")
+        after = self.md_section_bytes(current, self.root / "m2")
 
-        self.assertEqual(shapes["after"], shapes["before"])
+        self.assertEqual(after, before)
 
 
 class Slice09DanglingEdgeTest(EdgeContractTest):

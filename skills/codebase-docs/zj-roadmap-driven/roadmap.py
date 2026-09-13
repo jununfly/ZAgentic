@@ -7,8 +7,11 @@ zj-roadmap-driven — 路线图核心数据模型
 """
 
 import errno
+import hashlib
 import json
 import os
+import re
+import secrets
 import shutil
 import tempfile
 import time
@@ -81,6 +84,10 @@ STATUS_IN_PROGRESS = "in_progress"
 STATUS_COMPLETED = "completed"
 STATUS_BLOCKED = "blocked"
 
+# 可人工设置的 status。`blocked` 不在其中——它只能由 blocks 边派生（#80）：
+# 允许人写，就等于让"人设的 blocked"和"边推导的 blocked"并存，那又是一个真相源。
+SETTABLE_STATUSES = (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED)
+
 STATUS_ICONS = {
     STATUS_PENDING: "[ ]",
     STATUS_IN_PROGRESS: "[~]",
@@ -97,12 +104,27 @@ EDGE_DERIVES_FROM = "derives-from"
 EDGE_TYPES = (EDGE_BLOCKS, EDGE_INFORMS, EDGE_SUPERSEDES, EDGE_DERIVES_FROM)
 
 MODE_EXPLORE = "explore"
+
+
+def canonical_json(value: Any) -> bytes:
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def sha256(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
 MODE_EXPLOIT = "exploit"
 
 MODE_TAG = {
     MODE_EXPLORE: "[X+]",
     MODE_EXPLOIT: "[Y+]",
 }
+
+BLOCKED_CHAIN_LIMIT = 5
+"""md 阻塞链的节点上限。
+
+Human 主视图里树才是主体：一条几十节点的链会把树顶出视线，所以只列前几条，
+其余用一行说明丢了多少。这是"不把整张边图倒进 md"那条验收的落地。
+"""
 
 DEFAULT_LOCK_TIMEOUT_SECONDS = 10.0
 LOCK_RETRY_INTERVAL_SECONDS = 0.05
@@ -169,6 +191,16 @@ class ConflictError(RoadmapError):
     exit_code = 1
 
 
+class InvalidStatus(RoadmapError):
+    """试图设置一个不可人工设置的 status。
+
+    `blocked` 是读取时由 blocks 边派生的，不是人能写进 carrier 的值。
+    """
+
+    code = "E_INVALID_STATUS"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
@@ -176,23 +208,278 @@ ERROR_EXIT_CODES = {
     CycleError.code: CycleError.exit_code,
     LeaseHeld.code: LeaseHeld.exit_code,
     ConflictError.code: ConflictError.exit_code,
+    InvalidStatus.code: InvalidStatus.exit_code,
 }
 
 
-def canonical_json(value: Any) -> bytes:
-    """与 bundle carrier 共用的 canonical 序列化，用于 rev / 撤回指纹。"""
-    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
-
-def sha256_bytes(value: bytes) -> str:
-    import hashlib
-
-    return hashlib.sha256(value).hexdigest()
 
 
 def exit_code_for(exc: BaseException) -> int:
     """把异常映射为进程退出码。"""
     return ERROR_EXIT_CODES.get(getattr(exc, "code", ""), 1)
+
+
+# ── 派生阻塞的共享语义（#80）────────────────────────────
+# 两个 carrier 共用下面四个函数，跟 budget 复用同一套实现的理由相同
+# （见 roadmap_bundle 的导入注释）：#80 的验收之一是"两种载体行为一致"，
+# 规则写两遍就有机会各自漂移——而漂移在这里是静默的，因为两边各自都对。
+
+
+def is_blocking(edge: dict, predecessor: Optional[dict]) -> bool:
+    """这条边是否挡住了它的 to 端。
+
+    只有 blocks 会挡。前驱不存在（悬空边）按未完成算：它永远等不到"完成"
+    那天，静默放行等于把一条悬空边当成已满足的依赖。
+    """
+    if edge["type"] != EDGE_BLOCKS:
+        return False
+    return predecessor is None or predecessor.get("status") != STATUS_COMPLETED
+
+
+def blocked_view(node: dict, blockers: list) -> dict:
+    """把派生的 blocked / blocked_reason 贴到节点副本上。
+
+    没被阻塞时一字不加——"消失"比 `blocked: false` 更难被误读，也让
+    "没有边时输出与派生之前逐字节一致"这条控制例成立。
+    """
+    if not blockers:
+        return node
+    return {**node, "blocked": True, "blocked_reason": blockers}
+
+
+def assert_settable_status(status: str) -> None:
+    """校验一个待写入的 status：blocked 只能派生，不能人设。"""
+    if status not in SETTABLE_STATUSES:
+        raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
+
+
+# ── 调度查询（#81）──────────────────────────────────────
+# ready / critical-path / impact 三个查询共用同一条边界：**只沿 blocks 走**。
+# informs / derives-from 是上下文与来源关系，改它们不影响任何东西的调度，
+# 让它们参与调度等于把"谁和谁有关"当成"谁等谁"。
+
+
+def is_ready(node: dict, blocked: set) -> bool:
+    """就绪 = pending 且没有未完成的 blocks 前驱。
+
+    spec §3 的判定还有"无有效租约"一项，但租约是 P2，今天还没有这一层，
+    所以它恒真——这里既不写死 True 假装实现了，也不为不存在的东西留参数。
+    """
+    return node.get("status") == STATUS_PENDING and node["id"] not in blocked
+
+
+def ready_node_list(nodes, blocked: set) -> list:
+    """就绪集，按 id 排序。
+
+    排序不是装饰：就绪集回答的是"下一步干什么"，顺序若跟着 dict 插入顺序
+    浮动，同一张图两次读会给出两个答案。
+    """
+    return sorted(
+        (node for node in nodes if is_ready(node, blocked)),
+        key=lambda node: node["id"],
+    )
+
+
+def critical_path(nodes, edges) -> list:
+    """关键路径（#81, Story #21）：依赖图里最长的未完工链。
+
+    只沿 `blocks` 边走（与 ready / impact 同一边界）。"未完工" = status != completed：
+    已完成节点不阻挡任何东西，链经过它也不贡献长度。返回**一条**链（id 列表，
+    从前驱到后继），不是所有节点；同长时取最小 id，保证两次读给出同一个答案。
+
+    空图或全完工 → 返回 []。
+    """
+    node_by_id = {n["id"]: n for n in nodes}
+    # 只在未完工节点诱导出的子图上算：已完成节点不阻塞完成。
+    active = {nid for nid, n in node_by_id.items() if n.get("status") != STATUS_COMPLETED}
+    if not active:
+        return []
+
+    # blocks 邻接（两端都 active，且非自环）；同时数入度用于拓扑序。
+    adj: dict = {nid: [] for nid in active}
+    indeg = {nid: 0 for nid in active}
+    for edge in edges:
+        if edge.get("type") != EDGE_BLOCKS:
+            continue
+        a, b = edge.get("from"), edge.get("to")
+        if a in active and b in active and a != b:
+            adj[a].append(b)
+            indeg[b] += 1
+
+    # Kahn 拓扑序。DP 正确性不依赖顺序，但用有序队列出确定的 topo 序更省心。
+    ready = sorted(nid for nid in active if indeg[nid] == 0)
+    topo: list = []
+    while ready:
+        u = ready.pop(0)
+        topo.append(u)
+        for v in sorted(adj[u]):
+            indeg[v] -= 1
+            if indeg[v] == 0:
+                ready.append(v)
+                ready.sort()
+
+    # DP：以 u 结尾的最长链长度 + 前驱（同长取较小 id，保证确定性）。
+    best_len = {nid: 1 for nid in active}
+    best_prev = {nid: None for nid in active}
+    for u in topo:
+        for v in adj[u]:
+            cand = best_len[u] + 1
+            if cand > best_len[v]:
+                best_len[v] = cand
+                best_prev[v] = u
+            elif cand == best_len[v] and (best_prev[v] is None or u < best_prev[v]):
+                best_prev[v] = u
+
+    end = min(
+        (nid for nid in active if best_len[nid] == max(best_len.values())),
+        key=lambda nid: nid,
+    )
+    path: list = []
+    cur = end
+    while cur is not None:
+        path.append(cur)
+        cur = best_prev[cur]
+    path.reverse()
+    return path
+
+
+def impact_node_ids(node_id: str, nodes, edges) -> list:
+    """影响集（#81, Story #22）：改 node_id 会波及的下游节点。
+
+    只沿 `blocks` 边顺流（与 ready / critical-path 同一边界）：`a blocks b` 意味着
+    "改 a 会波及 b"。返回受影响节点的 id 列表（不含自身），按 id 排序保证确定性。
+    """
+    node_by_id = {n["id"]: n for n in nodes}
+    if node_id not in node_by_id:
+        raise NodeNotFound(f"节点不存在: {node_id}")
+
+    adj: dict = {}
+    for edge in edges:
+        if edge.get("type") == EDGE_BLOCKS:
+            adj.setdefault(edge.get("from"), []).append(edge.get("to"))
+
+    seen: set = set()
+    stack = [node_id]
+    result: list = []
+    while stack:
+        cur = stack.pop()
+        for v in adj.get(cur, []):
+            if v in seen:
+                continue
+            seen.add(v)
+            result.append(v)
+            stack.append(v)
+    return sorted(result)
+
+
+def status_icon(node: dict) -> str:
+    """节点的 status 图标。认不出的 status 给 `[?]`。
+
+    不认识的值不能落成 `[ ]`：那是替 Human 断言"还没开工"。
+    """
+    return STATUS_ICONS.get(node.get("status"), "[?]")
+
+
+def tree_line(node: dict, prefix: str, last: bool, depth: int, blocked: set) -> str:
+    """渲染一行树；blocked 图标来自边，不来自 status——status 里永远不该有它。
+
+    渲染是给 Human 看的唯一视图。它跟 `get` 打架（一个说被挡、一个说没开工）
+    比任何内部实现差异都贵，所以行格式两个 carrier 共用一份。
+    """
+    icon = STATUS_ICONS[STATUS_BLOCKED] if node["id"] in blocked else status_icon(node)
+    mode_tag = MODE_TAG.get(node.get("mode"), "")
+    connector = "" if depth == 0 else ("└── " if last else "├── ")
+    return f"{prefix}{connector}{icon}{mode_tag} {node['id']}. {node['label']}"
+
+
+# ── md 阻塞链（#82）──────────────────────────────────────
+# 同一份数据在两个 md 出口上取不同的折叠取舍，但**条目内容、取舍规则、上限**
+# 必须两边一致，所以写在模块层，两个 carrier 只负责喂各自的边与节点。
+
+
+def edge_sort_key(edge_id: str):
+    """边 id 按计数器数值排序，不按字面序（否则 e10 会排在 e2 前面）。"""
+    try:
+        return (0, int(edge_id[1:]))
+    except ValueError:
+        return (1, edge_id)
+
+
+def blocked_chain_lines(edges, resolve_node) -> list:
+    """md 阻塞链的条目：每个被阻塞节点一条，说清它被哪几条边挡住。
+
+    每条都给出边 id 和派出它的前驱（连同前驱当前图标）——少了前驱，Human 只
+    知道"被某条边挡住"，还得回头去数 JSON 才能知道该去推谁完工。
+
+    `resolve_node` 返回 None 表示节点不存在：两个 carrier 找节点的方式不同
+    （一个是 dict 取，一个是读分片），这里只依赖"能不能找到"这一个约定。
+    """
+    blockers: dict = {}
+    for edge in edges:
+        predecessor = resolve_node(edge["from"])
+        if not is_blocking(edge, predecessor):
+            continue
+        blockers.setdefault(edge["to"], []).append((edge["id"], predecessor))
+
+    lines = []
+    for to_id in sorted(blockers):
+        node = resolve_node(to_id)
+        label = node["label"] if node else "?"
+        parts = []
+        for edge_id, predecessor in sorted(blockers[to_id], key=lambda pair: edge_sort_key(pair[0])):
+            if predecessor is None:
+                parts.append(edge_id)
+            else:
+                parts.append(
+                    f"{edge_id}: {predecessor['id']}. {predecessor['label']} "
+                    f"{status_icon(predecessor)}"
+                )
+        lines.append(f"- {to_id}. {label} ← {', '.join(parts)}")
+    return lines
+
+
+def cap_chain(lines: list) -> list:
+    """截断到 BLOCKED_CHAIN_LIMIT 条，丢掉的部分用一行写明。
+
+    不截断的话，一张几十条边的图会把整棵树顶出视线，而树正是这条链要保护的
+    东西。丢掉的部分必须写明，否则 Human 会以为看到的是全景。
+    """
+    if len(lines) <= BLOCKED_CHAIN_LIMIT:
+        return lines
+    omitted = len(lines) - BLOCKED_CHAIN_LIMIT
+    return [
+        *lines[:BLOCKED_CHAIN_LIMIT],
+        f"- ... 另有 {omitted} 个节点被阻塞未列出",
+    ]
+
+
+def _chain_block(lines: list, opening: str, closing: str) -> str:
+    """两个 md 出口共用的拼装。
+
+    空链一律不成块——这正是"没有东西被阻塞时 md 与改动前逐字节一致"那条硬验收
+    的全部内容，所以它只能住在一处：让每个出口各自记得判断一次，等于把它变成
+    一条谁都可以顺手漏掉的约定。
+    """
+    if not lines:
+        return ""
+    return opening + "\n".join(cap_chain(lines)) + closing
+
+
+def render_chain_plain(lines: list) -> str:
+    """导出视图（`section`）里的阻塞链：非折叠，能一路 grep 到底。"""
+    return _chain_block(lines, "\n### 阻塞链\n\n", "\n")
+
+
+def render_chain_collapsed(lines: list) -> str:
+    """Human 主视图里的阻塞链：折叠成一行摘要，展开才看到条目。
+
+    摘要报的是真实总数：那才是 Human 要知道的事实，列出了几条只是排版。
+    """
+    summary = f"阻塞链：{len(lines)} 个节点被阻塞"
+    return _chain_block(
+        lines, f"\n<details><summary>{summary}</summary>\n\n", "\n\n</details>\n"
+    )
 
 
 # ── 结构预算（case 1） ───────────────────────────────────
@@ -269,15 +556,222 @@ def gen_child_id(parent_id: str, index: int) -> str:
     return f"{parent_id}-{index}"
 
 
-def next_child_index(roadmap: dict, parent_id: str) -> int:
-    """计算父节点下下一个子节点的序号。"""
-    parent = roadmap["nodes"].get(parent_id)
-    if not parent or not parent["children"]:
+def next_child_index(parent: Optional[dict]) -> int:
+    """父节点下下一个子节点的序号 —— **单调递增，删除后不回收**。
+
+    老实现取 `children[-1]` 再 +1：删掉尾部子节点后新建的节点会拿回刚删掉的
+    那个 id（Problem #5）。外部引用（租约、ticket、ADR、跨设备同步）于是全部
+    串号，而且这种 bug 是静默的——没有报错，只是引用悄悄指向了别的节点。
+
+    序号水位记在父节点的 `childSequence` 上（由 `note_child_removal` 抬高），
+    并且是**惰性物化**的：没删过子节点的父节点根本不会有这个字段。这样存量
+    roadmap 的字节不变，不会撞 `Slice08` 那条"无边路径不被污染"的控制例。
+
+    两个 carrier 必须共用这一份：`next_child_index` 曾经在 bundle 里被各写了
+    一遍（`int(children[-1].split("-")[-1]) + 1`），`remove-decision` 在两个
+    carrier 上语义漂移是本仓库已经付过学费的一类缺陷，不得重演。
+    """
+    if not parent:
         return 1
-    # 从最后一个 child id 提取序号
-    last = parent["children"][-1]
-    parts = last.split("-")
-    return int(parts[-1]) + 1
+    children = parent.get("children") or []
+    base = int(str(children[-1]).split("-")[-1]) + 1 if children else 1
+    high_water = int(parent.get("childSequence") or 0) + 1
+    return max(base, high_water)
+
+
+# ── 节点 uid（P0 地基）────────────────────────────────────
+
+def new_uid() -> str:
+    """生成一个不可变的节点 uid —— 时序唯一、永不复用、零新依赖。
+
+    形状 `<毫秒-hex>-<随机>`：前段按字典序即时间序（同一进程内递增、跨进程按
+    时间大致有序），后段保证同一毫秒内不撞。spec 允许"ULID 或等价的时序唯一串"，
+    这里不做 Crockford base32，因为那只是编码差异，不带来语义收益，却要多写
+    一段容易写错的位运算。
+
+    **不要拿它当时钟用**：前段是生成时刻，不是业务时间。
+    """
+    return f"{int(time.time() * 1000):012x}-{secrets.token_hex(5)}"
+
+
+def ensure_uid(node: dict) -> bool:
+    """给缺 uid 的节点补一个；已有则不动（uid 生成后只读）。
+
+    返回是否补过，调用方据此判断是否需要升级 schema。**已有节点绝不重新生成**——
+    uid 的整个价值就在于它不随时间变化，重新生成等于静默换掉外部引用。
+    """
+    if node.get("uid"):
+        return False
+    node["uid"] = new_uid()
+    return True
+
+
+def ensure_uids(nodes) -> int:
+    """给一批节点补齐 uid（`dict` 的 values 或 list 都吃）。返回补了几条。"""
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    return sum(1 for node in items if ensure_uid(node))
+
+
+# ── 节点引用解析（#105 S3）────────────────────────────────
+# 用户既可以用显示 id（1-3-1）也可以用 uid 引用节点；命令层统一经 resolve_node
+# 把任意一种翻成显示 id，再交给各 carrier 方法（它们只认显示 id）。
+# 解析规则：
+#   1. 显示 id 直查 nodes（single-file 是 dict 键）→ 命中即返回，O(1)。
+#   2. 形如 uid 的字符串 → 扫一遍 nodes 找 uid 命中 → 返回其显示 id。
+#   3. uid 形状但不匹配任何节点 → 抛 NodeNotFound（清晰报错，不静默误命中）。
+#   4. 非 uid 形状（如错的显示 id）→ 原样返回，交给 get_node 抛既有 KeyError
+#      （保持 #99 明令保留的历史错误文案不变）。
+# 命名空间天然不重叠：uid 含 hex 字母 a-f，显示 id 只有数字与 -，无法误命中。
+
+UID_RE = re.compile(r"^[0-9a-f]{12}-[0-9a-f]{10}$")
+
+
+def looks_like_uid(ref: str) -> bool:
+    """这个字符串是否像是 new_uid() 产出的 uid。
+
+    必须跟 new_uid() 的形状保持一致：`<12 hex>-<10 hex>`。改 new_uid 时这里要同步。
+    """
+    return bool(UID_RE.match(ref))
+
+
+def resolve_node(ref: str, nodes) -> str:
+    """把"显示 id 或 uid"统一解析成显示 id。
+
+    `nodes` 接受 dict（single-file，键为显示 id）或 list（bundle，节点字典列表）。
+    返回解析后的显示 id；uid 形状但不匹配时抛 NodeNotFound。
+    """
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    # 显示 id 直查（仅 single-file 有 dict 键；bundle 走下面的 uid 段）。
+    if isinstance(nodes, dict) and ref in nodes:
+        return ref
+    if looks_like_uid(ref):
+        for node in items:
+            if node.get("uid") == ref:
+                return node["id"]
+        raise NodeNotFound(f"节点不存在（uid 不匹配任何节点）: {ref}")
+    # 非 uid 形状：原样返回，错误语义留给调用方 get_node。
+    return ref
+
+
+def node_context(node_id: str, nodes, edges) -> dict:
+    """节点来龙去脉（#104 S5）。
+
+    - upstream：所有 blocks 祖先（沿 blocks 边反向可达，不含自身）
+    - downstream：所有 blocks 后代（沿 blocks 边正向可达，不含自身）
+    - blocked_by：直接未完成 blocks 前驱（阻塞链）
+
+    `nodes` 接受 dict（single-file）或 list（bundle）；`edges` 是边字典列表。
+    结果稳定（id 排序），便于两 carrier 比对与测试。
+    """
+    by_id = {n["id"]: n for n in nodes} if not isinstance(nodes, dict) else nodes
+
+    pred: dict = {}
+    succ: dict = {}
+    for e in edges or []:
+        if e.get("type") == EDGE_BLOCKS:
+            pred.setdefault(e["to"], []).append(e["from"])
+            succ.setdefault(e["from"], []).append(e["to"])
+
+    def _bfs(start: str, adj: dict) -> set:
+        seen = set()
+        stack = list(adj.get(start, []))
+        while stack:
+            cur = stack.pop()
+            if cur in seen:
+                continue
+            seen.add(cur)
+            stack.extend(adj.get(cur, []))
+        return seen
+
+    upstream = _bfs(node_id, pred)
+    downstream = _bfs(node_id, succ)
+    blocked_by = [
+        f for f in pred.get(node_id, [])
+        if is_blocking({"type": EDGE_BLOCKS, "from": f, "to": node_id}, by_id.get(f))
+    ]
+    return {
+        "id": node_id,
+        "label": by_id[node_id]["label"],
+        "upstream": sorted(upstream),
+        "downstream": sorted(downstream),
+        "blocked_by": sorted(blocked_by),
+    }
+
+
+# ── 边 uid（#106 S4） ───────────────────────────────────────
+# 边是跨系统引用，按 §1 一律用 uid 存储（from/to 存 uid，不再存显示 id）。
+# 但所有读视图（edge list / 派生阻塞 / 关键路径 / 影响集 / 血缘 / 校验）对 Human
+# 仍给显示 id——所以这里集中放"uid↔显示 id"的翻译，避免两个 carrier 各翻一遍漂移。
+#
+# 设计要点：
+# - 落盘形状是唯一真相：from/to == uid。控制例（test_edges_*）钉的是"返回/列表
+#   给 Human 的是显示 id"，不钉落盘字节——落盘 uid 正是 #106 的验收。
+# - 同一份翻译函数兼容"uid 边"与"存量显示 id 边"两种形状：迁移前没跑 `edge migrate`
+#   的存量 roadmap 端点仍是显示 id，翻译时查不到 uid 就原样保留，于是老数据不会被
+#   静默误翻。
+
+
+def endpoint_to_uid(endpoint: str, nodes) -> str:
+    """把边端点的"显示 id 或 uid"统一翻成 uid。
+
+    - 已是 uid：确认对应节点存在后原样返回（不抛错——端点来自存储，uid 失配
+      按悬空边交给上层校验，而不是在这里假装解析成功）。
+    - 显示 id：查节点取它的 uid；找不到抛 NodeNotFound。
+    """
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    if looks_like_uid(endpoint):
+        for node in items:
+            if node.get("uid") == endpoint:
+                return endpoint
+        raise NodeNotFound(f"节点不存在（uid 不匹配任何节点）: {endpoint}")
+    if isinstance(nodes, dict) and endpoint in nodes:
+        return nodes[endpoint].get("uid")
+    for node in items:
+        if node.get("id") == endpoint:
+            return node.get("uid")
+    raise NodeNotFound(f"节点不存在: {endpoint}")
+
+
+def edge_endpoints_as_display(edge: dict, nodes) -> dict:
+    """返回一份 from/to 已翻成显示 id 的边副本（不改原边）。
+
+    存量显示 id 边（迁移前）的端点不是 uid，`uid_map` 查不到就原样保留，
+    于是同一个函数同时兼容"uid 边"与"显示 id 边"两种存储形状。
+    """
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    uid_map = {n["uid"]: n["id"] for n in items if n.get("uid")}
+    f = uid_map.get(edge.get("from"), edge.get("from"))
+    t = uid_map.get(edge.get("to"), edge.get("to"))
+    return {**edge, "from": f, "to": t}
+
+
+def migrate_edge_endpoints_to_uid(edges: list, nodes) -> int:
+    """把 edges 里仍是显示 id 的端点就地翻译成 uid。返回改了几条。
+
+    已是 uid 的端点不动——所以迁移幂等，对已经是 uid 的存量边返回 0。
+    """
+    changed = 0
+    for edge in edges:
+        new_f = endpoint_to_uid(edge.get("from"), nodes)
+        new_t = endpoint_to_uid(edge.get("to"), nodes)
+        if new_f != edge.get("from") or new_t != edge.get("to"):
+            edge["from"] = new_f
+            edge["to"] = new_t
+            changed += 1
+    return changed
+
+
+def note_child_removal(parent: dict, child_id: str) -> None:
+    """子节点被移除后抬高父节点的序号水位，使该序号不再被复用。
+
+    只抬高不降低：水位是"这个父节点曾经用到过几号"，不是当前子节点数。
+    """
+    try:
+        index = int(str(child_id).split("-")[-1])
+    except ValueError:
+        return
+    if index > int(parent.get("childSequence") or 0):
+        parent["childSequence"] = index
 
 
 def node_depth(node_id: str) -> int:
@@ -506,9 +1000,16 @@ class Roadmap:
         return self.data
 
     def save(self) -> str:
-        """保存路线图数据到 JSON 文件，自动更新 metadata.updated。"""
+        """保存路线图数据到 JSON 文件，自动更新 metadata.updated。
+
+        顺带做 **uid 迁移（写入时升级，不自动迁移）**：存量节点在这里补齐 uid。
+        放在唯一写入点而不是 `load()` 里，是为了让"读"保持无副作用——只读命令
+        （`ready` / `critical-path` / `impact`）不拿整图锁，在 load 里写文件
+        既无锁保护，并发时还会给同一节点生成两个不同 uid。
+        """
         self.data.setdefault("metadata", {})
         self.data["metadata"]["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ensure_uids(self.data.get("nodes", {}))
         content = json.dumps(self.data, ensure_ascii=False, indent=2)
         atomic_write_text(self.json_path, content)
         return self.json_path
@@ -525,6 +1026,7 @@ class Roadmap:
             "nodes": {
                 "1": {
                     "id": "1",
+                    "uid": new_uid(),
                     "label": title,
                     "status": STATUS_IN_PROGRESS,
                     "mode": MODE_EXPLORE,
@@ -564,17 +1066,19 @@ class Roadmap:
         """
         if parent_id not in self.data["nodes"]:
             raise KeyError(f"父节点不存在: {parent_id}")
+        assert_settable_status(status)
 
         parent = self.data["nodes"][parent_id]
         check_child_budget(parent)
 
-        index = next_child_index(self.data, parent_id)
+        index = next_child_index(parent)
         node_id = gen_child_id(parent_id, index)
 
         # 先以 pending 落形，让"开工"这件事只走 count_round_start 一条路径，
         # 否则 add 与 update 会对 rounds 各算一套。
         node = {
             "id": node_id,
+            "uid": new_uid(),
             "label": label,
             "status": STATUS_PENDING,
             "mode": mode,
@@ -625,8 +1129,7 @@ class Roadmap:
         if label is not None:
             node["label"] = label
         if status is not None:
-            if status not in (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_BLOCKED):
-                raise ValueError(f"无效状态: {status}")
+            assert_settable_status(status)
             count_round_start(node, status)  # 超限则抛，节点保持原状
             node["status"] = status
         if mode is not None:
@@ -682,6 +1185,8 @@ class Roadmap:
         parent_id = self.data["nodes"][node_id]["parent"]
         if parent_id and parent_id in self.data["nodes"]:
             self.data["nodes"][parent_id]["children"].remove(node_id)
+            # 抬高水位：被删掉的序号不再发第二次（Problem #5）。
+            note_child_removal(self.data["nodes"][parent_id], node_id)
 
         # 删除节点
         for nid in deleted:
@@ -698,13 +1203,21 @@ class Roadmap:
         return self.data.setdefault("edges", [])
 
     def add_edge(self, from_id: str, to_id: str, edge_type: str) -> dict:
-        """在两个节点之间记一条边。返回写入的边。"""
-        for endpoint in (from_id, to_id):
-            if endpoint not in self.data["nodes"]:
-                raise NodeNotFound(f"节点不存在: {endpoint}")
+        """在两个节点之间记一条边。返回写出的边（端点翻回显示 id，保持旧契约）。
+
+        端点接受显示 id 或 uid（复用 resolve_node）；落盘一律存 uid（#106 S4）。
+        """
+        from_display = self.resolve_node(from_id)
+        to_display = self.resolve_node(to_id)
+        if from_display not in self.data["nodes"]:
+            raise NodeNotFound(f"节点不存在: {from_id}")
+        if to_display not in self.data["nodes"]:
+            raise NodeNotFound(f"节点不存在: {to_id}")
         if edge_type not in EDGE_TYPES:
             raise ValueError(f"无效的边类型: {edge_type}")
-        if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_id, from_id):
+        from_uid = self.data["nodes"][from_display]["uid"]
+        to_uid = self.data["nodes"][to_display]["uid"]
+        if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_uid, from_uid):
             raise CycleError(
                 f"{from_id} -blocks-> {to_id} 会让依赖图成环"
                 f"（{to_id} 已经直接或间接阻塞 {from_id}）"
@@ -712,29 +1225,34 @@ class Roadmap:
         edges = self._edge_list()
         seq = int(self.data.get("edge_seq", 0)) + 1
         self.data["edge_seq"] = seq
-        edge = {"id": f"e{seq}", "from": from_id, "to": to_id, "type": edge_type}
+        edge = {"id": f"e{seq}", "from": from_uid, "to": to_uid, "type": edge_type}
         edges.append(edge)
         if edge_type == EDGE_SUPERSEDES:
             # 被取代的节点转 archived 但不删除：它的决策与历史仍然可读。
             # 用标记而不是 status，因为"completed 且 archived"（做完了但被取代）
             # 是合理组合，塞进 status 会丢掉"完成过"这个信息。
-            self.data["nodes"][to_id]["archived"] = True
-        return edge
+            self.data["nodes"][to_display]["archived"] = True
+        # 返回显示 id 副本：控制例钉的是"返回给 Human 的是显示 id"，不钉落盘字节。
+        return edge_endpoints_as_display(edge, self.data["nodes"])
 
     def remove_edges_touching(self, node_ids: set) -> dict:
         """删掉所有端点落在 node_ids 里的边。返回 {"total": n, "by_type": {...}}。
 
         边不能独立于节点存在——节点没了，它的边就没有信息量，留着只会变成
         悬空边。所以 delete 默认级联，不设 --cascade 之类的开关。
+
+        端点落盘是 uid：比较前翻回显示 id（node_ids 是显示 id 集合）。
         """
         # 一条边都没有时别碰数据：否则 delete 会给从未用过边的 roadmap
         # 写入 `edges: []`，违反"没有边时与 P1 之前完全一致"。
         if not self.data.get("edges"):
             return {"total": 0, "by_type": {}}
+        nodes = self.data["nodes"]
         by_type: dict = {}
         kept = []
         for edge in self._edge_list():
-            if edge["from"] in node_ids or edge["to"] in node_ids:
+            de = edge_endpoints_as_display(edge, nodes)
+            if de["from"] in node_ids or de["to"] in node_ids:
                 by_type[edge["type"]] = by_type.get(edge["type"], 0) + 1
             else:
                 kept.append(edge)
@@ -742,11 +1260,21 @@ class Roadmap:
         return {"total": sum(by_type.values()), "by_type": by_type}
 
     def _blocks_reachable(self, start: str, target: str) -> bool:
-        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。"""
+        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。
+
+        边端点统一翻成 uid 再建邻接表：存量显示 id 边（迁移前）与 uid 边（迁移后 /
+        新加）在 uid 空间里一致，环检测才与存储形状无关、始终正确（验收 #4）。
+        """
         adjacency: dict = {}
+        nodes = self.data["nodes"]
         for edge in self._edge_list():
             if edge["type"] == EDGE_BLOCKS:
-                adjacency.setdefault(edge["from"], []).append(edge["to"])
+                try:
+                    f = endpoint_to_uid(edge["from"], nodes)
+                    t = endpoint_to_uid(edge["to"], nodes)
+                except NodeNotFound:
+                    continue
+                adjacency.setdefault(f, []).append(t)
         seen = set()
         stack = [start]
         while stack:
@@ -760,25 +1288,134 @@ class Roadmap:
         return False
 
     def remove_edge(self, edge_id: str) -> dict:
-        """删掉一条边。返回被删掉的边。"""
+        """删掉一条边。返回被删掉的边（端点翻回显示 id，保持旧契约）。"""
         edges = self._edge_list()
         for index, edge in enumerate(edges):
             if edge["id"] == edge_id:
-                return edges.pop(index)
+                removed = edges.pop(index)
+                return edge_endpoints_as_display(removed, self.data["nodes"])
         raise KeyError(f"边不存在: {edge_id}")
 
     def list_edges(self, node_id: Optional[str] = None) -> list:
-        """列出全部边；给了 node_id 就只列与它相连的（入边 + 出边）。"""
+        """列出全部边；给了 node_id 就只列与它相连的（入边 + 出边）。
+
+        端点翻回显示 id：控制例钉的是"列给 Human 的是显示 id"，不钉落盘字节。
+        """
         edges = self._edge_list()
+        disp = [edge_endpoints_as_display(e, self.data["nodes"]) for e in edges]
         if node_id is None:
-            return list(edges)
-        return [e for e in edges if e["from"] == node_id or e["to"] == node_id]
+            return disp
+        return [d for d in disp if d["from"] == node_id or d["to"] == node_id]
+
+    def migrate_edges(self) -> int:
+        """把存量显示 id 边一次性转成 uid（#106 S4 的显式迁移命令）。
+
+        直接改 `data["edges"]` 原地；改了几条由 `save()` 落盘。已是 uid 的边不动，
+        所以幂等——重跑不会制造写入噪声。
+        """
+        return migrate_edge_endpoints_to_uid(self.data.get("edges") or [], self.data["nodes"])
+
+    def resolve_node(self, ref: str) -> str:
+        """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。"""
+        return resolve_node(ref, self.data["nodes"])
+
+    # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
+
+    def context(self, node_id: str) -> dict:
+        """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。
+
+        端点落盘是 uid：喂给 node_context 前翻回显示 id。
+        """
+        if node_id not in self.data["nodes"]:
+            raise KeyError(f"节点不存在: {node_id}")
+        return node_context(
+            node_id,
+            self.data["nodes"],
+            [edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])],
+        )
+
+    def next_nodes(self) -> list:
+        """就绪优先建议：关键路径上的就绪节点优先，其余按 id 排序。"""
+        ready = self.ready_nodes()
+        cp = set(self.critical_path())
+        ready.sort(key=lambda n: (n["id"] not in cp, n["id"]))
+        return ready
 
     def get_node(self, node_id: str) -> dict:
         """获取节点。"""
         if node_id not in self.data["nodes"]:
             raise KeyError(f"节点不存在: {node_id}")
         return self.data["nodes"][node_id]
+
+    # ── 派生阻塞（#80）─────────────────────────────────
+    # blocked / blocked_reason 只在读视图里出现，永不落盘：唯一权威是 blocks 边。
+    # 落盘就必须维护一份"什么时候该重算"的清单（加边、删边、前驱完成、delete、
+    # supersedes、carrier 迁移…），漏一个就是静默陈旧。
+
+    def blocking_edges(self, node_id: str) -> list:
+        """阻塞 node_id 的 blocks 边 id 列表：即前驱尚未完成的那几条。
+
+        端点落盘是 uid：比较前把每条边翻回显示 id（node_id 是显示 id）。
+        """
+        blockers = []
+        nodes = self.data["nodes"]
+        for edge in self.data.get("edges", []):
+            de = edge_endpoints_as_display(edge, nodes)
+            if de["to"] != node_id:
+                continue
+            if is_blocking(de, nodes.get(de["from"])):
+                blockers.append(edge["id"])
+        return blockers
+
+    def blocked_node_ids(self) -> set:
+        """一次算出整张图里被阻塞的节点 id（显示 id 集合）。
+
+        渲染要按整棵树取图标，逐节点问 `blocking_edges` 会退化成 O(V*E)。
+        端点落盘是 uid：比较前每条边翻回显示 id。
+        """
+        blocked = set()
+        nodes = self.data["nodes"]
+        for edge in self.data.get("edges", []):
+            de = edge_endpoints_as_display(edge, nodes)
+            if is_blocking(de, nodes.get(de["from"])):
+                blocked.add(de["to"])
+        return blocked
+
+    def get_node_view(self, node_id: str) -> dict:
+        """读视图：节点本体 + 派生的 blocked / blocked_reason。"""
+        return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
+
+    # ── 调度查询（#81）─────────────────────────────────
+
+    def ready_nodes(self) -> list:
+        """就绪集：pending 且没有未完成的 blocks 前驱。
+
+        按边实时算一遍（O(V+E)），不落 `pending_deps` 计数器——Story 24 已决议
+        推迟到 P3：计数器一旦落盘就得维护"什么时候重算"的清单，那正是
+        `blocked` 改成派生要消灭的东西。
+        """
+        return ready_node_list(self.data["nodes"].values(), self.blocked_node_ids())
+
+    def critical_path(self) -> list:
+        """关键路径（#81）：依赖图里最长的未完工链。
+
+        端点落盘是 uid：喂给模块级 critical_path 前翻回显示 id，使其输出显示 id。
+        """
+        return critical_path(
+            self.data["nodes"].values(),
+            [edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])],
+        )
+
+    def impact(self, node_id: str) -> list:
+        """影响集（#81）：改 node_id 会波及的下游节点（不含自身）。
+
+        端点落盘是 uid：喂给模块级 impact_node_ids 前翻回显示 id。
+        """
+        return impact_node_ids(
+            node_id,
+            self.data["nodes"].values(),
+            [edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])],
+        )
 
     # ── 决策 ───────────────────────────────────────────
 
@@ -791,23 +1428,35 @@ class Roadmap:
 
     def remove_decision(self, node_id: str, index: Optional[int] = None,
                         question: Optional[str] = None) -> int:
-        """删除节点决策。按 index 或按 question 精确匹配删除，返回删除条数。
+        """撤回节点决策（保留原记录，附加 retracted 标记）。
 
-        用于清理重复决策或撤销误记。index 与 question 都未提供时报错；
-        两者都提供时优先 index。
+        与 bundle carrier 语义一致：原决策保留，新增一条 retracted:True 记录
+        （含 retracts = sha256(canonical_json(原决策)) 供溯源），不物理删除。
+        用于撤销误记或清理重复决策，同时保留审计轨迹。
+        index 与 question 都未提供时报错；两者都提供时优先 index。
         """
         node = self.get_node(node_id)
         decisions = node["decisions"]
+        selected: list[dict] = []
         if index is not None:
             if not (0 <= index < len(decisions)):
                 raise IndexError(f"决策索引越界: {index} (共 {len(decisions)} 条)")
-            removed = [decisions.pop(index)]
-            return len(removed)
-        if question is not None:
-            before = len(decisions)
-            node["decisions"] = [d for d in decisions if d.get("q") != question]
-            return before - len(node["decisions"])
-        raise ValueError("remove_decision 需提供 index 或 question 之一")
+            selected = [decisions[index]] if not decisions[index].get("retracted") else []
+        elif question is not None:
+            selected = [d for d in decisions if d.get("q") == question and not d.get("retracted")]
+        else:
+            raise ValueError("remove_decision 需提供 index 或 question 之一")
+        if not selected:
+            return 0
+        for decision in selected:
+            decisions.append({
+                "q": decision.get("q", ""),
+                "answer": "",
+                "note": f"retracted: {decision.get('note', '')}".rstrip(),
+                "retracted": True,
+                "retracts": sha256(canonical_json(decision)),
+            })
+        return len(selected)
 
     def get_decisions(self, node_id: Optional[str] = None) -> list:
         """获取决策记录。无 node_id 则返回全部。"""
@@ -925,7 +1574,7 @@ class Roadmap:
                          if k not in ("updated", "created")},
             "version": self.data.get("version"),
         }
-        return sha256_bytes(canonical_json(rev_data))
+        return sha256(canonical_json(rev_data))
 
     # ── 树遍历 ─────────────────────────────────────────
 
@@ -934,7 +1583,10 @@ class Roadmap:
         if root_id not in self.data["nodes"]:
             return f"(节点 {root_id} 不存在)"
 
-        lines = []
+        blocked = self.blocked_node_ids()
+        root = self.data["nodes"][root_id]
+        # 根不带 connector，也不给子节点垫缩进——所以根单独走一行。
+        lines = [tree_line(root, "", True, 0, blocked)]
 
         def _render(nid: str, prefix: str, is_last: bool, depth: int):
             if depth > max_depth:
@@ -942,28 +1594,16 @@ class Roadmap:
             node = self.data["nodes"].get(nid)
             if not node:
                 return
-
-            icon = STATUS_ICONS.get(node["status"], "[?]")
-            mode_tag = MODE_TAG.get(node.get("mode"), "")
-            connector = "└── " if is_last else "├── "
-            line = f"{prefix}{connector}{icon}{mode_tag} {nid}. {node['label']}"
-            lines.append(line)
+            lines.append(tree_line(node, prefix, is_last, depth, blocked))
 
             children = node.get("children", [])
             for i, cid in enumerate(children):
-                child_is_last = (i == len(children) - 1)
                 child_prefix = prefix + ("    " if is_last else "│   ")
-                _render(cid, child_prefix, child_is_last, depth + 1)
+                _render(cid, child_prefix, i == len(children) - 1, depth + 1)
 
-        if root_id in self.data["nodes"]:
-            root = self.data["nodes"][root_id]
-            icon = STATUS_ICONS.get(root["status"], "[?]")
-            mode_tag = MODE_TAG.get(root.get("mode"), "")
-            lines.append(f"{icon}{mode_tag} {root_id}. {root['label']}")
-            children = root.get("children", [])
-            for i, cid in enumerate(children):
-                child_is_last = (i == len(children) - 1)
-                _render(cid, "", child_is_last, 1)
+        children = root.get("children", [])
+        for i, cid in enumerate(children):
+            _render(cid, "", i == len(children) - 1, 1)
 
         return "\n".join(lines)
 
@@ -1029,6 +1669,16 @@ class Roadmap:
 
     # ── Markdown 渲染 ──────────────────────────────────
 
+    def _blocked_chain_lines(self) -> list:
+        """本 carrier 的阻塞链条目：喂的是自己的边与节点，取舍规则共用。
+
+        端点落盘是 uid：喂给 blocked_chain_lines 前每条边翻回显示 id。
+        """
+        return blocked_chain_lines(
+            (edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])),
+            self.data["nodes"].get,
+        )
+
     def render_full_section(
         self,
         all_nodes: bool = False,
@@ -1071,6 +1721,10 @@ class Roadmap:
 {tree_text}
 <!-- ROADMAP_TREE_END -->
 """
+        # 树之后立刻给出"为什么没进展"——Human 的视线顺序是先扫树看见 `[!]`，
+        # 再需要一个不用翻 JSON 的答案。
+        section += render_chain_plain(self._blocked_chain_lines())
+
         if decision_lines:
             section += f"\n### 决策历史\n\n{decision_lines}\n"
 
@@ -1108,12 +1762,14 @@ class Roadmap:
             if focus_subtree:
                 focus_detail += f"\n**当前子树：**\n{focus_subtree}\n"
 
+        # 空链时这里得到空串：下面那个模板因此在无阻塞时与 #82 之前逐字节相同。
+        chain = render_chain_collapsed(self._blocked_chain_lines())
         section = f"""<!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
 > 数据文件: `{os.path.basename(self.json_path)}` | 最后更新: {now}
 
-{tree_text}
+{tree_text}{chain}
 """
         if focus_detail:
             section += focus_detail
@@ -1130,15 +1786,13 @@ class Roadmap:
         lines = []
         root = self.data["nodes"][root_id]
         children = root.get("children", [])
+        blocked = self.blocked_node_ids()
 
         def _render(nid: str, prefix: str, is_last: bool, depth: int):
             node = self.data["nodes"].get(nid)
             if not node:
                 return
-            icon = STATUS_ICONS.get(node["status"], "[?]")
-            mode_tag = MODE_TAG.get(node.get("mode"), "")
-            connector = "└── " if is_last else "├── "
-            lines.append(f"{prefix}{connector}{icon}{mode_tag} {nid}. {node['label']}")
+            lines.append(tree_line(node, prefix, is_last, depth, blocked))
 
             child_ids = node.get("children", [])
             child_prefix = prefix + ("    " if is_last else "│   ")
@@ -1274,11 +1928,14 @@ class Roadmap:
         # 悬空边：端点节点已经不在了。来源只有两种——外部手改文件，或
         # bundle 上"删节点后、删边前"崩溃留下的半态。它必须被检出，不能
         # 静默参与调度；修法见 `edge remove`（不需要事务来防，检出即可）。
+        # 端点落盘是 uid：有效端点要么是某个节点的 uid，要么是（迁移前）显示 id。
         nodes = self.data.get("nodes", {})
+        node_ids = set(nodes.keys())
+        uids = {n.get("uid") for n in nodes.values() if n.get("uid")}
         for edge in self.data.get("edges", []):
             for key in ("from", "to"):
                 endpoint = edge.get(key)
-                if endpoint not in nodes:
+                if endpoint not in uids and endpoint not in node_ids:
                     errors.append(f"边 {edge.get('id')}: {key} 端点 {endpoint} 不存在（悬空边）")
 
         return errors

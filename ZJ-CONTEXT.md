@@ -15,6 +15,14 @@ own `README.md` listing its skills with a one-line description. See `AGENTS.md`
 for the bucket policy.
 _Avoid_: category, folder, group
 
+**Installed-copy drift**:
+已装副本漂移。`~/.workbuddy/skills/<name>/`（扁平安装桶）里的副本与仓库源码
+`skills/<bucket>/<name>/` 长期不同步的状态。更新只能走「删-重装」——scanner
+启动即扫并内存缓存、无 fs.watch，所以改了源码不重装就不会生效；而跳过重装时
+WorkBuddy **不报错**，技能照常出现在发现列表里，漂移因此是静默的。判据：对比
+已装 `SKILL.md` 的字节数与 `scripts/` 清单。
+_Avoid_: sync, update, refresh（这些暗示存在增量机制，实际没有）
+
 ### Codebase documentation
 
 **Codebase docs**:
@@ -516,6 +524,20 @@ node's `decisions` array. "Decision not in JSON = did not happen" is the
 operating principle — every directional choice must `decide` before acting.
 _Avoid_: comment, TODO, note (in roadmap context)
 
+**Edge**:
+An orthogonal link between nodes, outside the tree. Four types share one
+storage shape and command set, differing only in semantics and cycle rules:
+`blocks` (hard dependency, must not form a cycle — `E_CYCLE`), `informs` and
+`derives-from` (context / provenance, cycles allowed), `supersedes` (marks a
+node archived-without-delete). Per the P0 uid ground rule (§1), an edge's
+`from`/`to` are stored as **uid**, never display id — the display id is
+materialized back only at read time for the Human/Agent view. Legacy
+display-id edges from before S4 are converted in place by `edge migrate`;
+both carriers translate either shape on read, so cycle detection and derived
+views stay correct whether or not migration has run.
+_Avoid_: link, relation, dependency (as the edge concept itself; `blocks` is
+the hard dependency — see **Hard dependency**)
+
 **Focus**:
 The first `in_progress` leaf node in the roadmap. The current point of work;
 the agent's attention is anchored here until the node moves to `completed`
@@ -529,10 +551,76 @@ cover, the spec must declare, and the commit message must call out. Seams are
 _Avoid_: boundary, interface, contract (in this specific engineering sense)
 
 **Status**:
-One of `pending` / `in_progress` / `completed` / `blocked`. The state machine
-on every node. Status cascades upward: a parent's status is derived from its
-children's until manually overridden by an explicit decision.
+One of `pending` / `in_progress` / `completed` — the settable states on every
+node. Status cascades upward: a parent's status is derived from its children's
+until manually overridden by an explicit decision. `blocked` is **not** a
+settable status; it is derived — see **Derived blocked**.
 _Avoid_: state, phase, stage
+
+**Derived blocked**:
+`blocked` plus its `blocked_reason`, computed **on read** from `blocks` edges and
+never written to the carrier. A node is blocked when a `blocks` edge points at it
+whose source node is not `completed`; `blocked_reason` lists those edge ids, so a
+stall can be explained instead of only reported. Both fields are absent when
+nothing blocks the node, and they disappear in the same read once the
+predecessors complete or the edges go away. The tree and Markdown views render
+the same node with the `[!]` icon, so the Human view and the Agent view cannot
+disagree about the same fact. `--status blocked` is refused with
+`E_INVALID_STATUS` (exit 1). The reason it is derived and not stored: a stored
+value needs a list of "when to recompute" triggers (add edge, remove edge,
+predecessor completed, `delete`, `supersedes`, carrier migration), and missing
+one is silent staleness — the same defect class as the `remove-decision` drift
+between carriers.
+_Avoid_: blocked status (as a stored value), blocked flag, dependency check (as a separate artifact)
+
+**Blocked chain**:
+A short section that appears in both Markdown views **only when something is
+blocked**, naming which node is held up by which edges. A tree line can carry the
+`[!]` icon but not the explanation, so the chain answers the question the icon
+raises — without the Human opening JSON and counting edges. `render` (written into
+the linked md file) collapses it into a `<details>` so the DAG stays out of the
+line of sight; `section` prints it plainly under `### 阻塞链` because that output
+is piped and grepped. Entries are capped (the rest are counted, and the summary
+reports the true total), and with nothing blocked both views are byte-identical to
+their output before the chain existed.
+_Avoid_: dependency graph (it is not the graph, it is a summary of what is stuck), `--deps` (Story 45 allowed "collapsed section **or** `--deps`"; the collapsed form shipped)
+
+**Ready set**:
+The work-claiming set of a roadmap: nodes whose `status` is `pending` **and**
+that have no `blocks` predecessor with `status != completed`. Computed on read
+from `blocks` edges (the same source as **Derived blocked**), sorted by id; it is
+a query, not a stored field, so finishing a predecessor moves a node into the set
+in the very next read. `in_progress` is excluded on purpose — the set answers
+"what can I start next", not "what is not blocked" — so it is a work-claiming
+query, not a status filter. Returned by `ready`; empty → `No ready nodes.`
+(rc 0). The lease clause in the spec's readiness rule (Story 20) is P2's work and
+is not yet implemented; today it is vacuously true and left as one explicit
+branch, not a flag.
+_Avoid_: pending set (it is not "all pending nodes"), next node (it returns a set, not one pick), startable
+
+**Critical path**:
+The single longest unfinished chain along `blocks` edges, returned by
+`critical-path`. "Unfinished" = `status != completed`; a completed node neither
+blocks nor contributes length, and is dropped from the induced subgraph before the
+longest-chain search, so finishing a predecessor shortens the path in the next
+read. The result is one chain (ids, predecessor→successor); ties among equal-length
+chains break by the smallest start id so two reads always agree. Derived on read,
+never stored. Empty graph or everything completed → `[]` (printed as
+`No unfinished chain.`, rc 0). See **Ready set** for the shared `blocks`-only
+boundary.
+_Avoid_: longest path in the tree, critical task (it is a chain of ids, not one node)
+
+**Impact**:
+The downstream reach of a node along `blocks` edges, returned by `impact <node>`:
+every node reachable from `<node>` through `blocks` edges, excluding `<node>`
+itself, sorted by id. It is the "if I change this, what must I re-check" view;
+completed downstream nodes are included on purpose, because a finished successor
+that depends on a changed predecessor is exactly the rework risk worth surfacing.
+`informs` / `derives-from` / `supersedes` edges carry context or provenance, not
+scheduling, so they never appear in an impact set. A leaf → `[]` (printed as
+`No downstream impact.`, rc 0); a `<node>` that does not exist → `E_NODE_NOT_FOUND`
+(exit 1). Derived on read, never stored, same `blocks`-only boundary as **Ready set**.
+_Avoid_: blast radius (colloquial), affected nodes (too vague about excluding self)
 
 ### Issue / Triage
 
@@ -632,3 +720,10 @@ _Avoid_: useful in principle, fills a gap, nice to have
 - A↔B relationship (this repo vs. any source skills collection) is
   intentionally **not defined** as a domain term here. It is a property of
   individual merge waves, not of the glossary.
+
+## Retros
+
+🔄 判断 push 是否成功一律用 `git ls-remote`，不信客户端退出码 — docs/zj-retros/2026-09-12-retro.md#1650
+🔄 Bash coreutils 可能整体不在 PATH（`ls`/`head`/`which` 缺失）→ 文件操作改 Python，删文件走 `[System.IO.File]::Delete` — docs/zj-retros/2026-09-12-retro.md#2315
+- 补文档前先 grep 本地确认基线，别假设已合并 PR 的文档一定在本地 — docs/zj-retros/2026-09-12-retro.md#1650
+- 更新 / 重装 skill 前先探测已装副本（SKILL.md 字节数 + `scripts/` 清单），防已装副本漂移 — docs/zj-retros/2026-09-12-retro.md#2315

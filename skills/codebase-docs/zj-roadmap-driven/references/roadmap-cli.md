@@ -50,6 +50,11 @@ python roadmap_cli.py focus <json_path>
 python roadmap_cli.py validate <json_path>
 python roadmap_cli.py stats <json_path>
 python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
+
+# Scheduling query (read-only, derived) — see "## Scheduling query" below
+python roadmap_cli.py ready <roadmap_path>
+python roadmap_cli.py critical-path <roadmap_path>
+python roadmap_cli.py impact <roadmap_path> <node_id>
 ```
 
 `render` writes the lightweight Markdown view (tree depth=2, current focus, and one level of the focus subtree). `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
@@ -68,6 +73,47 @@ decision, and append-only history shards independently readable. `tree`, `get`,
 `remove-decision` records a decision retraction in bundle mode, preserving the
 original record and its history rather than physically deleting it.
 
+## Scheduling query (read-only, derived)
+
+Three read-only queries answer "what can I start next / what is the longest
+outstanding chain / what does a change ripple into". All three are derived
+**on read** from `blocks` edges only — never stored, never counters (Story 24
+is deferred to P3). They share one module-level function in `roadmap.py`; both
+carriers feed it their own data, so the two carriers print byte-identical
+output. None of them takes the whole-graph lock: taking it would serialize
+concurrent reads and could trip the lock-timeout exit code 2, which is a
+writer's failure mode, not a reader's.
+
+```bash
+python roadmap_cli.py ready <roadmap_path>
+python roadmap_cli.py critical-path <roadmap_path>
+python roadmap_cli.py impact <roadmap_path> <node_id>
+```
+
+- **`ready`** — the work-claiming set: nodes that are `pending` **and** have no
+  unfinished `blocks` predecessor. Sorted by id. `in_progress` is *not* ready:
+  this is "what can be started", not a status filter. A hanging predecessor (its
+  node gone but the edge lingers) still counts as blocking.
+  - Empty → `No ready nodes.` (exit 0).
+- **`critical-path`** — the single longest unfinished chain along `blocks` edges.
+  "Unfinished" = `status != completed`; a completed node neither blocks nor
+  contributes length. Returns **one** chain (ids, predecessor→successor); ties
+  break by the smallest start id, so two reads always agree. Empty graph or
+  everything completed → `[]`.
+  - Empty → `No unfinished chain.` (exit 0).
+- **`impact`** — every downstream node reachable from `<node_id>` along `blocks`
+  edges (a change to a ripples to b). Excludes `<node_id>` itself; sorted by id.
+  `informs` / `derives-from` / `supersedes` do not propagate — only `blocks`
+  carries scheduling. A leaf has no downstream impact.
+  - Empty → `No downstream impact.` (exit 0).
+  - `<node_id>` does not exist → `E_NODE_NOT_FOUND` on stderr, exit 1.
+
+All three print `{id}. {label} {status_icon}` per line, so the Human can tell
+finished from unfinished in the impact set at a glance. The lease clause in the
+spec's readiness rule (Story 20) is P2's work and is not yet implemented; today
+the "no valid lease" branch is vacuously true and is intentionally not a flag or
+a hardcoded `True` — when leases land, only that one clause changes.
+
 ## Edges
 
 Edges are a layer orthogonal to the tree: `blocks` (hard dependency), `informs`
@@ -81,6 +127,23 @@ with `E_NODE_NOT_FOUND` (exit 1) — dangling edges are never created silently.
 
 Edge ids are assigned from a monotonic counter (`e1`, `e2`, ...) and are never
 reused after removal, so downstream output can cite them as stable references.
+
+`blocked` is derived from `blocks` edges on read, never stored: `get <node>`
+adds `blocked: true` plus `blocked_reason` (the ids of the `blocks` edges whose
+source node is not `completed`) and omits both when nothing blocks the node.
+Completing the predecessor or removing the edge is visible in the very next read.
+`tree` and the Markdown views render the same node with the `[!]` icon.
+
+When something is blocked, the Markdown views add a short **blocked chain** section
+listing who is holding what up. `render` (the view written into the linked md file)
+puts it inside a collapsed `<details>` so the DAG stays out of your line of sight;
+`section` prints it plainly under a `### 阻塞链` heading, because that output goes
+to pipes and greps. At most 5 nodes are listed and the rest are counted, not
+silently dropped. With nothing blocked, both views are byte-identical to their
+pre-chain output. See `roadmap-data-model.md` for the full reasoning.
+`--status blocked` is refused with `E_INVALID_STATUS` (exit 1) — a Human-written
+`blocked` would be a second source of truth that can disagree with the edges.
+`informs`, `derives-from` and `supersedes` never block.
 
 A `supersedes` edge archives the node it points at: the superseded node stays in
 the graph, keeps its decisions and history readable, and gains `archived: true`.
@@ -118,19 +181,42 @@ the code, never on the human-readable text after it. The cap is enforced on both
 carriers (single-file JSON and bundle) by the same shared helper, so the two
 never disagree on what counts as a start or a child.
 
+| Code | Raised by |
+|------|-----------|
+| `E_CYCLE` | a `blocks` edge that would close a cycle |
+| `E_NODE_NOT_FOUND` | an edge pointing at a node that does not exist |
+| `E_INVALID_STATUS` | `add` / `update --status blocked` (blocked is derived, not settable) |
+
+All three exit 1. `E_CYCLE` and `E_NODE_NOT_FOUND` are only raised by `edge`;
+pre-existing commands still raise `KeyError`/`BundleError` with their original
+wording, so their output is unchanged by P1.
+
 Bundle layout:
 
 ```text
 roadmap.bundle/
-├── manifest.json          # small control plane
+├── manifest.json          # small control plane (edgeSequence lives here)
 ├── current.json           # active materialized snapshot pointer
 ├── nodes/                 # one current-state shard per node
 ├── decisions/             # one decision shard per node
+├── edges/                 # one shard per edge + a rebuildable index.json
 ├── history/events.jsonl   # append-only mutation history
 ├── snapshots/             # materialized snapshot metadata
 ├── views/                 # generated Markdown views
 └── indexes/               # disposable derived indexes
 ```
+
+Edges live in exactly one place — `edges/<id>.json`. Node shards never cache an
+edge id: a second copy would allow "the node says this edge exists, `edges/`
+disagrees", and a transaction cannot save you from that (forget one of the two
+writes and the transaction still commits). `edges/index.json` is pure redundancy
+for `from`/`to` lookups and is rebuilt by rescanning the directory if it goes
+missing; the monotonic counter is **not** in it — that one lives in
+`manifest.json` as `edgeSequence`, because a rebuilt counter would reuse ids.
+A bundle that has never had an edge has no `edges/` directory at all.
+
+`migrate --to bundle` carries edges across. Dropping them would be silent data
+loss that looks like success at the command layer.
 
 Markdown is a generated view and is never imported back into roadmap state. The
 old `import` command is intentionally not supported; use `migrate --to bundle`

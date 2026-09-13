@@ -21,17 +21,54 @@ from typing import Any, Iterable, Optional
 
 # 预算与开工计数是 carrier 无关的语义，复用 roadmap.py 的实现，
 # 避免两个 carrier 对同一个 budget 各算一套（remove-decision 那类漂移）。
-from roadmap import build_budget, check_child_budget, count_round_start
-# 租约策略（P2）与 single-file 共用，保证两个 carrier 对 claim/heartbeat/steal/
-# release/fencing 只有一份语义真相；这里只负责把租约落进 leases/ 分片。
-from roadmap import (LEASE_TTL_SECONDS, is_expired, new_lease, apply_heartbeat, apply_steal)
-from roadmap import LeaseHeld
+from roadmap import (
+    # 租约策略（P2）与 single-file 共用，保证两个 carrier 对 claim/heartbeat/steal/
+    # release/fencing 只有一份语义真相；这里只负责把租约落进 leases/ 分片。
+    LEASE_TTL_SECONDS,
+    is_expired,
+    new_lease,
+    apply_heartbeat,
+    apply_steal,
+    LeaseHeld,
+    # 边 / 阻塞 / 序号 / uid / 引用解析 / 血缘 等 carrier 无关语义共用，避免漂移。
+    EDGE_BLOCKS,
+    EDGE_SUPERSEDES,
+    EDGE_TYPES,
+    CycleError,
+    NodeNotFound,
+    assert_settable_status,
+    blocked_chain_lines,
+    blocked_view,
+    build_budget,
+    check_child_budget,
+    count_round_start,
+    edge_sort_key,
+    is_blocking,
+    next_child_index,
+    note_child_removal,
+    ensure_uid,
+    ensure_uids,
+    new_uid,
+    resolve_node,
+    endpoint_to_uid,
+    edge_endpoints_as_display,
+    migrate_edge_endpoints_to_uid,
+    node_context,
+    ready_node_list,
+    critical_path,
+    impact_node_ids,
+    render_chain_collapsed,
+    render_chain_plain,
+    tree_line,
+)
 
 
 BUNDLE_SCHEMA = "zj-roadmap-bundle-manifest/v1"
 CURRENT_SCHEMA = "zj-roadmap-bundle-current/v1"
 SNAPSHOT_SCHEMA = "zj-roadmap-bundle-snapshot/v1"
 HISTORY_SCHEMA = "zj-roadmap-bundle-history/v1"
+EDGE_SCHEMA = "zj-roadmap-bundle-edge/v1"
+EDGE_INDEX_SCHEMA = "zj-roadmap-bundle-edge-index/v1"
 STATUS_VALUES = {"pending", "in_progress", "completed", "blocked"}
 MODE_VALUES = {"explore", "exploit"}
 NODE_ID_PATTERN = re.compile(r"^[1-9][0-9]*(?:-[1-9][0-9]*)*$")
@@ -109,6 +146,7 @@ class RoadmapBundle:
     def __init__(self, bundle_path: str | Path):
         self.path = Path(bundle_path).expanduser().resolve()
         self.manifest: dict[str, Any] = {}
+        self.last_edge_cascade: dict = {"total": 0, "by_type": {}}
 
     # ---- creation and loading -------------------------------------------------
 
@@ -173,6 +211,15 @@ class RoadmapBundle:
                     raise BundleError(f"legacy roadmap node {node_id} has invalid child reference {child_id}")
         if nodes["1"].get("parent") is not None:
             raise BundleError("legacy roadmap root node '1' must not have a parent")
+        # 边端点接受显示 id 或 uid（#106 S4 后存量边可能已是 uid）。
+        node_ids = set(nodes.keys())
+        uids = {n.get("uid") for n in nodes.values() if n.get("uid")}
+        valid_endpoints = node_ids | uids
+        for edge in data.get("edges") or []:
+            if not isinstance(edge, dict) or edge.get("from") not in valid_endpoints or edge.get("to") not in valid_endpoints:
+                raise BundleError(f"legacy roadmap has an edge with a missing endpoint: {edge}")
+            if edge.get("type") not in EDGE_TYPES:
+                raise BundleError(f"legacy roadmap has an edge of unknown type: {edge}")
 
     def _initialize_layout(self, data: dict[str, Any], snapshot_interval: int) -> None:
         self.path.mkdir(parents=True, exist_ok=True)
@@ -199,6 +246,23 @@ class RoadmapBundle:
             self._write_node_file(node_id, node)
             self._write_decisions_file(node_id, node.get("decisions", []))
             self._set_status_marker(node_id, node["status"], True)
+        # 边跟着一起迁：漏掉它就是静默丢数据，而命令层看起来一切正常。
+        # 没有边时一个目录都不要建——布局必须和没有边的 bundle 完全一致。
+        edges = data.get("edges") or []
+        if edges:
+            self._edges_dir().mkdir(parents=True, exist_ok=True)
+            # 存量边可能是显示 id（pre-S4 legacy）或已是 uid（post-S4 legacy）：
+            # endpoint_to_uid 两种形状都接，落盘一律翻成 uid（#106 S4）。
+            for edge in edges:
+                self._write_edge_file({
+                    "id": edge["id"],
+                    "from": endpoint_to_uid(edge["from"], nodes),
+                    "to": endpoint_to_uid(edge["to"], nodes),
+                    "type": edge["type"],
+                })
+            self._rebuild_edge_index()
+            # 计数器按现存最大 id 续，不是按条数：删过的 id 不该在迁移后被复用。
+            self.manifest["edgeSequence"] = max(int(str(edge["id"])[1:]) for edge in edges)
         stats = self._calculate_stats(nodes.values())
         atomic_json(self.path / "indexes/stats.json", stats)
         atomic_json(self.path / "indexes/focus.json", {"focus": self._focus_from_nodes(nodes.values())})
@@ -226,6 +290,10 @@ class RoadmapBundle:
         return str(self.path)
 
     def _write_node_file(self, node_id: str, node: dict[str, Any]) -> None:
+        # 写入时补 uid：老 bundle 的分片在这里被逐片升级。放在写侧而不是
+        # `_read_node_file` 里，理由与 Roadmap.save 相同——读命令无锁，
+        # 在读里写文件并发时可能给同一节点生成两个不同 uid。
+        ensure_uid(node)
         stored = {key: value for key, value in node.items() if key != "decisions"}
         atomic_json(self.path / "nodes" / f"{safe_node_id(node_id)}.json", stored)
 
@@ -368,6 +436,92 @@ class RoadmapBundle:
         node["decisions"] = self._read_decisions_file(node_id)
         return node
 
+    def resolve_node(self, ref: str) -> str:
+        """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。
+
+        bundle 没有"整图 dict"，节点分散在分片里，所以传 `_all_nodes()` 列表。
+        """
+        return resolve_node(ref, self._all_nodes())
+
+    # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
+
+    def context(self, node_id: str) -> dict:
+        """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。"""
+        self._read_node_file(node_id)  # 不存在抛 KeyError，与 single-file 一致
+        return node_context(node_id, self._all_nodes(), self.list_edges())
+
+    def next_nodes(self) -> list:
+        """就绪优先建议：关键路径上的就绪节点优先，其余按 id 排序。"""
+        ready = self.ready_nodes()
+        cp = set(self.critical_path())
+        ready.sort(key=lambda n: (n["id"] not in cp, n["id"]))
+        return ready
+
+    # ── 派生阻塞（#80）─────────────────────────────────
+    # 与 single-file 同一套语义：读视图里算，carrier 的 status 不写 blocked。
+
+    def blocking_edges(self, node_id: str) -> list[str]:
+        # 索引按 uid 建（端点落盘是 uid），不能用显示 id 直接查；逐边翻译后比对。
+        nodes = self._all_nodes()
+        blockers: list[str] = []
+        for edge_id in self._edge_ids():
+            de = edge_endpoints_as_display(self._read_edge_file(edge_id), nodes)
+            if de["to"] != node_id:
+                continue
+            try:
+                predecessor = self._read_node_file(de["from"])
+            except KeyError:
+                predecessor = None
+            if is_blocking(de, predecessor):
+                blockers.append(edge_id)
+        return sorted(blockers, key=edge_sort_key)
+
+    def blocked_node_ids(self) -> set[str]:
+        """一次算出整张图里被阻塞的节点 id（显示 id 集合，渲染按整棵树取图标）。
+
+        端点落盘是 uid：比较前每条边翻回显示 id。
+        """
+        nodes = self._all_nodes()
+        blocked: set[str] = set()
+        for edge_id in self._edge_ids():
+            de = edge_endpoints_as_display(self._read_edge_file(edge_id), nodes)
+            try:
+                predecessor = self._read_node_file(de["from"])
+            except KeyError:
+                predecessor = None
+            if is_blocking(de, predecessor):
+                blocked.add(de["to"])
+        return blocked
+
+    def _predecessor_or_none(self, node_id: str) -> Optional[dict[str, Any]]:
+        """读前驱节点；悬空边（前驱不存在）返回 None —— 按未完成算。"""
+        try:
+            return self._read_node_file(node_id)
+        except KeyError:
+            return None
+
+    def get_node_view(self, node_id: str) -> dict[str, Any]:
+        return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
+
+    def ready_nodes(self) -> list[dict[str, Any]]:
+        """就绪集（#81）：与 single-file 同一份判定，见 `is_ready`。"""
+        return ready_node_list(self._all_nodes(), self.blocked_node_ids())
+
+    def critical_path(self) -> list[str]:
+        """关键路径（#81）：与 single-file 同一份判定。"""
+        return critical_path(self._all_nodes(), self.list_edges())
+
+    def impact(self, node_id: str) -> list[str]:
+        """影响集（#81）：与 single-file 同一份判定（不含自身）。"""
+        return impact_node_ids(node_id, self._all_nodes(), self.list_edges())
+
+    def _all_nodes(self) -> list[dict[str, Any]]:
+        """整张图的节点：nodes/ 目录才是权威，状态索引可能失效。"""
+        return [
+            self._read_node_file(path.stem)
+            for path in sorted((self.path / "nodes").glob("*.json"))
+        ]
+
     def add_node(
         self,
         parent_id: str,
@@ -379,13 +533,14 @@ class RoadmapBundle:
         exit_criteria: Optional[list] = None,
     ) -> dict[str, Any]:
         parent = self._read_node_file(parent_id)
-        if status not in STATUS_VALUES or mode not in MODE_VALUES:
-            raise BundleError("invalid node status or mode")
+        assert_settable_status(status)
+        if mode not in MODE_VALUES:
+            raise BundleError("invalid node mode")
         check_child_budget(parent)
         children = parent.setdefault("children", [])
-        next_index = int(children[-1].split("-")[-1]) + 1 if children else 1
+        next_index = next_child_index(parent)
         node_id = f"{parent_id}-{next_index}"
-        node = {"id": node_id, "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
+        node = {"id": node_id, "uid": new_uid(), "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
         budget = build_budget(max_children, max_rounds)
         if budget:
             node["budget"] = budget
@@ -425,8 +580,7 @@ class RoadmapBundle:
         if label is not None:
             node["label"] = label
         if status is not None:
-            if status not in STATUS_VALUES:
-                raise BundleError(f"invalid status: {status}")
+            assert_settable_status(status)
             count_round_start(node, status)
             node["status"] = status
         if mode is not None:
@@ -474,13 +628,218 @@ class RoadmapBundle:
             result.extend(self._collect_subtree(child_id))
         return result
 
+    # ── 依赖边（P1 依赖层）──────────────────────────────
+    # 边只存一处：`edges/<id>.json`。节点分片里禁止反向存 edge id——
+    # 那会造出"节点说有这条边、edges/ 里没有"的双写不一致，而事务对它免疫
+    # （你忘了写哪个位置，事务照样提交）。`edges/index.json` 是纯冗余，能从
+    # 目录重扫重建，坏了不丢信息；节点里的 edge id 坏了则无法判断谁对。
+
+    def _edges_dir(self) -> Path:
+        return self.path / "edges"
+
+    def _edge_ids(self) -> list[str]:
+        """按 id 的数字序返回——与 single-file 的插入序一致，两个 carrier 可比对。"""
+        directory = self._edges_dir()
+        if not directory.is_dir():
+            return []
+        return sorted((path.stem for path in directory.glob("e*.json")), key=lambda name: int(name[1:]))
+
+    def _read_edge_file(self, edge_id: str) -> dict[str, Any]:
+        path = self._edges_dir() / f"{edge_id}.json"
+        if not path.is_file():
+            raise KeyError(f"边不存在: {edge_id}")
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise BundleError(f"could not read edge shard {path}: {error}") from error
+        if not isinstance(value, dict):
+            raise BundleError(f"edge shard is not an object: {path}")
+        value = dict(value)
+        value.pop("schema", None)
+        return value
+
+    def _write_edge_file(self, edge: dict[str, Any]) -> None:
+        atomic_json(self._edges_dir() / f"{edge['id']}.json", {"schema": EDGE_SCHEMA, **edge})
+
+    def _rebuild_edge_index(self) -> dict[str, Any]:
+        """从 edges/ 目录重扫索引。目录不存在时不要创建——那会污染布局。"""
+        index: dict[str, Any] = {"schema": EDGE_INDEX_SCHEMA, "from": {}, "to": {}}
+        for edge_id in self._edge_ids():
+            edge = self._read_edge_file(edge_id)
+            index["from"].setdefault(edge["from"], []).append(edge_id)
+            index["to"].setdefault(edge["to"], []).append(edge_id)
+        if self._edges_dir().is_dir():
+            atomic_json(self._edges_dir() / "index.json", index)
+        return index
+
+    def _read_edge_index(self) -> dict[str, Any]:
+        path = self._edges_dir() / "index.json"
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+        return self._rebuild_edge_index()
+
+    def _write_edge_index(self, index: dict[str, Any]) -> None:
+        atomic_json(self._edges_dir() / "index.json", index)
+
+    def add_edge(self, from_id: str, to_id: str, edge_type: str) -> dict[str, Any]:
+        """在两个节点之间记一条边。返回写出的边（端点翻回显示 id，保持旧契约）。
+
+        端点接受显示 id 或 uid（复用 resolve_node）；落盘一律存 uid（#106 S4）。
+        """
+        from_display = self.resolve_node(from_id)
+        to_display = self.resolve_node(to_id)
+        try:
+            self._read_node_file(from_display)
+        except KeyError:
+            raise NodeNotFound(f"节点不存在: {from_id}") from None
+        try:
+            self._read_node_file(to_display)
+        except KeyError:
+            raise NodeNotFound(f"节点不存在: {to_id}") from None
+        if edge_type not in EDGE_TYPES:
+            raise ValueError(f"无效的边类型: {edge_type}")
+        from_uid = self._read_node_file(from_display)["uid"]
+        to_uid = self._read_node_file(to_display)["uid"]
+        if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_uid, from_uid):
+            raise CycleError(
+                f"{from_id} -blocks-> {to_id} 会让依赖图成环"
+                f"（{to_id} 已经直接或间接阻塞 {from_id}）"
+            )
+        self._edges_dir().mkdir(parents=True, exist_ok=True)
+        sequence = int(self.manifest.get("edgeSequence", 0)) + 1
+        self.manifest["edgeSequence"] = sequence
+        edge = {"id": f"e{sequence}", "from": from_uid, "to": to_uid, "type": edge_type}
+        self._write_edge_file(edge)
+        # 整表重建，不追加：追加会重复登记刚写进去的这条边——读索引时若索引
+        # 不存在会按目录重建，那份重建结果已经含它了。`list_edges` 用 set 去重
+        # 所以看不见，派生字段（#80 的 blocked_reason）直接照抄索引就会报两遍。
+        # 索引是纯冗余，重建的成本换"索引与目录不可能不一致"是划算的。
+        self._rebuild_edge_index()
+        if edge_type == EDGE_SUPERSEDES:
+            # 被取代的节点转 archived 但不删除：它的决策与历史仍然可读。
+            # 用标记而不是 status，因为"completed 且 archived"（做完了但被取代）
+            # 是合理组合，塞进 status 会丢掉"完成过"这个信息。
+            node = self._read_node_file(to_display)
+            node["archived"] = True
+            self._write_node_file(to_display, node)
+        self._commit("edge-added", {"edgeId": edge["id"], "from": from_uid, "to": to_uid, "type": edge_type}, self._read_stats())
+        # 返回显示 id 副本：控制例钉的是"返回给 Human 的是显示 id"，不钉落盘字节。
+        return edge_endpoints_as_display(edge, self._all_nodes())
+
+    def list_edges(self, node_id: Optional[str] = None) -> list[dict[str, Any]]:
+        """列出全部边；给了 node_id 就只列与它相连的（入边 + 出边）。
+
+        端点翻回显示 id：控制例钉的是"列给 Human 的是显示 id"，不钉落盘字节。
+        """
+        nodes = self._all_nodes()
+        raw = [self._read_edge_file(edge_id) for edge_id in self._edge_ids()]
+        disp = [edge_endpoints_as_display(e, nodes) for e in raw]
+        if node_id is None:
+            return disp
+        return [d for d in disp if d["from"] == node_id or d["to"] == node_id]
+
+    def remove_edges_touching(self, node_ids: set) -> dict:
+        """删掉所有端点落在 node_ids 里的边。返回 {"total": n, "by_type": {...}}。
+
+        边不能独立于节点存在——节点没了，它的边就没有信息量，留着只会变成
+        悬空边。所以 delete 默认级联，不设 --cascade 之类的开关。
+
+        不写 history：调用方（delete_node）会在自己的 event 里带上条数，
+        一次删除不该产生两条 event。
+
+        端点落盘是 uid：比较前把每条边翻回显示 id（node_ids 是显示 id 集合）。
+        """
+        directory = self._edges_dir()
+        if not directory.is_dir():
+            # 一条边都没有时别碰磁盘：否则会给从未用过边的 bundle 造出
+            # edges/ 目录与空 index，违反"没有边时布局与 P1 之前一致"。
+            return {"total": 0, "by_type": {}}
+        nodes = self._all_nodes()
+        by_type: dict = {}
+        doomed = []
+        for edge_id in self._edge_ids():
+            raw = self._read_edge_file(edge_id)
+            de = edge_endpoints_as_display(raw, nodes)
+            if de["from"] in node_ids or de["to"] in node_ids:
+                by_type[raw["type"]] = by_type.get(raw["type"], 0) + 1
+                doomed.append(edge_id)
+        for edge_id in doomed:
+            (directory / f"{edge_id}.json").unlink()
+        if doomed:
+            self._rebuild_edge_index()
+        return {"total": sum(by_type.values()), "by_type": by_type}
+
+    def remove_edge(self, edge_id: str) -> dict[str, Any]:
+        """删掉一条边。返回被删掉的边（端点翻回显示 id，保持旧契约）。"""
+        edge = self._read_edge_file(edge_id)
+        (self._edges_dir() / f"{edge_id}.json").unlink()
+        self._rebuild_edge_index()
+        self._commit("edge-removed", {"edgeId": edge_id}, self._read_stats())
+        return edge_endpoints_as_display(edge, self._all_nodes())
+
+    def migrate_edges(self) -> int:
+        """把存量显示 id 边一次性转成 uid（#106 S4 的显式迁移命令）。
+
+        逐边文件改端点并写回；改了几条提交一份 history event。已是 uid 的边不动，
+        所以幂等——重跑不会制造写入噪声。
+        """
+        nodes = self._all_nodes()
+        total = 0
+        for edge_id in self._edge_ids():
+            raw = self._read_edge_file(edge_id)
+            new_f = endpoint_to_uid(raw["from"], nodes)
+            new_t = endpoint_to_uid(raw["to"], nodes)
+            if new_f != raw["from"] or new_t != raw["to"]:
+                raw["from"] = new_f
+                raw["to"] = new_t
+                self._write_edge_file(raw)
+                total += 1
+        if total:
+            self._rebuild_edge_index()
+            self._commit("edges-migrated", {"count": total}, self._read_stats())
+        return total
+
+    def _blocks_reachable(self, start: str, target: str) -> bool:
+        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。
+
+        边端点统一翻成 uid 再建邻接表（与单文件 carrier 同语义）：存量显示 id 边
+        （迁移前）与 uid 边在 uid 空间里一致，环检测才与存储形状无关、始终正确。
+        """
+        adjacency: dict[str, list[str]] = {}
+        nodes = self._all_nodes()
+        for edge_id in self._edge_ids():
+            edge = self._read_edge_file(edge_id)
+            if edge["type"] == EDGE_BLOCKS:
+                try:
+                    f = endpoint_to_uid(edge["from"], nodes)
+                    t = endpoint_to_uid(edge["to"], nodes)
+                except NodeNotFound:
+                    continue
+                adjacency.setdefault(f, []).append(t)
+        seen: set[str] = set()
+        stack = [start]
+        while stack:
+            current = stack.pop()
+            if current == target:
+                return True
+            if current in seen:
+                continue
+            seen.add(current)
+            stack.extend(adjacency.get(current, []))
+        return False
+
     def delete_node(self, node_id: str) -> list[str]:
         if node_id == "1":
             raise BundleError("不能删除根节点")
         node = self._read_node_file(node_id)
         parent = self._read_node_file(node["parent"])
         deleted_nodes = self._collect_subtree(node_id)
+        # 先删边、后删节点：万一中间被打断，剩下的是"边没了、节点还在"这种
+        # 能重做的半态，而不是悬空边。穷人的事务——零成本，且两个 carrier 一致。
+        self.last_edge_cascade = self.remove_edges_touching({item["id"] for item in deleted_nodes})
         parent["children"].remove(node_id)
+        # 抬高水位：被删掉的序号不再发第二次（Problem #5）。
+        note_child_removal(parent, node_id)
         self._write_node_file(parent["id"], parent)
         stats = self._read_stats()
         for deleted in deleted_nodes:
@@ -498,7 +857,11 @@ class RoadmapBundle:
         stats["max_depth"] = max((node_depth(path.stem) for path in (self.path / "nodes").glob("*.json")), default=0)
         self._sync_parent_status(parent["id"], stats, include_self=True)
         self._refresh_focus()
-        self._commit("nodes-deleted", {"nodeIds": [item["id"] for item in deleted_nodes]}, stats)
+        payload = {"nodeIds": [item["id"] for item in deleted_nodes]}
+        if self.last_edge_cascade["total"]:
+            # 只在真删了边时带：没有边的 bundle 的 history 必须与 P1 之前逐字节一致。
+            payload["removedEdges"] = self.last_edge_cascade
+        self._commit("nodes-deleted", payload, stats)
         return [item["id"] for item in deleted_nodes]
 
     def add_decision(self, node_id: str, question: str, answer: str, note: str = "") -> dict[str, Any]:
@@ -673,8 +1036,8 @@ class RoadmapBundle:
                 "version": self.manifest.get("roadmapVersion", 1)}
 
     def current_revision(self) -> str:
-        from roadmap import canonical_json, sha256_bytes
-        return sha256_bytes(canonical_json(self.materialize()))
+        from roadmap import canonical_json, sha256
+        return sha256(canonical_json(self.materialize()))
 
     def _sync_parent_status(self, node_id: str, stats: dict[str, Any], include_self: bool = False) -> None:
         current = self._read_node_file(node_id)
@@ -697,12 +1060,13 @@ class RoadmapBundle:
 
     def get_tree(self, root_id: str = "1", max_depth: int = 2) -> str:
         root = self._read_node_file(root_id)
-        lines = [self._tree_line(root, "", True, 0)]
+        blocked = self.blocked_node_ids()
+        lines = [tree_line(root, "", True, 0, blocked)]
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
             if depth > max_depth:
                 return
-            lines.append(self._tree_line(node, prefix, last, depth))
+            lines.append(tree_line(node, prefix, last, depth, blocked))
             if depth >= max_depth:
                 return
             children = node.get("children", [])
@@ -715,13 +1079,6 @@ class RoadmapBundle:
             child_last = index == len(root.get("children", [])) - 1
             walk(child, "", child_last, 1)
         return "\n".join(lines)
-
-    @staticmethod
-    def _tree_line(node: dict[str, Any], prefix: str, last: bool, depth: int) -> str:
-        icons = {"pending": "[ ]", "in_progress": "[~]", "completed": "[x]", "blocked": "[!]"}
-        modes = {"explore": "[X+]", "exploit": "[Y+]"}
-        connector = "" if depth == 0 else ("└── " if last else "├── ")
-        return f"{prefix}{connector}{icons.get(node.get('status'), '[?]')}{modes.get(node.get('mode'), '')} {node['id']}. {node['label']}"
 
     def get_path(self, node_id: str) -> list[str]:
         path: list[str] = []
@@ -744,10 +1101,10 @@ class RoadmapBundle:
     def get_focus_subtree(self, root_id: str, max_depth: int = 1) -> str:
         root = self._read_node_file(root_id)
         lines: list[str] = []
+        blocked = self.blocked_node_ids()
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
-            connector = "└── " if last else "├── "
-            lines.append(self._tree_line(node, prefix, last, depth))
+            lines.append(tree_line(node, prefix, last, depth, blocked))
             children = node.get("children", [])
             child_prefix = prefix + ("    " if last else "│   ")
             if depth >= max_depth:
@@ -761,9 +1118,24 @@ class RoadmapBundle:
             walk(self._read_node_file(child_id), "", index == len(root.get("children", [])) - 1, 1)
         return "\n".join(lines)
 
+    def _blocked_chain_lines(self) -> list[str]:
+        """本 carrier 的阻塞链条目：喂的是自己的边与节点，取舍规则共用。
+
+        源喂的是 `edges/` 目录本身，不是它的索引——索引可以整份丢掉。逐个边文件
+        读比读索引贵，但索引是另一份可失效的副本：挂在它上面就等于让派生值依赖
+        派生值。端点落盘是 uid：喂给 blocked_chain_lines 前每条边翻回显示 id。
+        """
+        nodes = self._all_nodes()
+        return blocked_chain_lines(
+            (edge_endpoints_as_display(self._read_edge_file(edge_id), nodes) for edge_id in self._edge_ids()),
+            self._predecessor_or_none,
+        )
+
     def render_light_section(self) -> str:
         focus_id = self.get_current_focus()
-        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2)}\n"
+        # 空链时这里得到空串：下面的模板因此在无阻塞时与 #82 之前逐字节相同。
+        chain = render_chain_collapsed(self._blocked_chain_lines())
+        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2)}{chain}\n"
         if focus_id:
             focus = self._read_node_file(focus_id)
             section += f"\n### 当前施工：{focus_id}. {focus['label']}\n"
@@ -779,7 +1151,11 @@ class RoadmapBundle:
 
     def render_full_section(self, all_nodes: bool = False, max_depth: int = 2, max_bytes: Optional[int] = None) -> str:
         depth = 100000 if all_nodes else max_depth
-        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth)}\n"
+        # 换行归谁要想清楚：模板里那个 `\n` 是"树的收尾"，链自带自己的开头换行。
+        # 拼错一个，两个 carrier 的 md 就差一整个空行——diff 里最容易被肉眼放过
+        # 的那类不一致，也正是上面那条字节比对要抓的。
+        plain_chain = render_chain_plain(self._blocked_chain_lines())
+        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth)}\n{plain_chain}"
         if all_nodes:
             decisions = self.get_decisions()
             if decisions:
@@ -848,6 +1224,7 @@ class RoadmapBundle:
             stats = self._read_stats()
             nodes = [self._read_node_file(path.stem) for path in sorted((self.path / "nodes").glob("*.json"))]
             node_ids = {node.get("id") for node in nodes}
+            uids = {node.get("uid") for node in nodes if node.get("uid")}
             if "1" not in node_ids:
                 errors.append("bundle is missing root node 1")
             if len(node_ids) != len(nodes):
@@ -873,6 +1250,15 @@ class RoadmapBundle:
                 decisions = self._read_decisions_file(node_id)
                 if not isinstance(decisions, list):
                     errors.append(f"node {node_id} decisions are not a list")
+            for edge_id in self._edge_ids():
+                try:
+                    edge = self._read_edge_file(edge_id)
+                except (KeyError, BundleError) as error:
+                    errors.append(str(error))
+                    continue
+                for endpoint in ("from", "to"):
+                    if edge.get(endpoint) not in uids and edge.get(endpoint) not in node_ids:
+                        errors.append(f"edge {edge_id} points at missing node {edge.get(endpoint)}")
             expected = self._calculate_stats(nodes)
             expected["total_decisions"] = sum(len(self._read_decisions_file(node["id"])) for node in nodes)
             if stats != expected:

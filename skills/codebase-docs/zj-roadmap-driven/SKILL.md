@@ -34,10 +34,35 @@ Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
 Agent 需要选择载体 → 调 `recommend-storage`（只读建议，不自动迁移）
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
+Agent 需要取活/看最长未完工链/看改动波及 → 调 `ready` / `critical-path` / `impact`（只读，不拿锁）
 
 依赖是树之外的一层正交边：`blocks` 是硬依赖（不许成环，会返 `E_CYCLE`），
 `informs` / `derives-from` 只是上下文与来源追溯，允许成环。删节点会级联删掉
 触及它的边并报告条数——边不能比它的节点活得久。
+
+`blocked` / `blocked_reason` 是**读取时从 `blocks` 边派生的，永不落盘**：
+`get <node>` 在有未完成前驱时附带这两个字段（reason 是阻塞它的边 id 列表），
+前驱一完成或边一删，同一次读里就消失；`tree` / md 渲染里同一个节点显示 `[!]`，
+Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status blocked` 被拒并返
+回 `E_INVALID_STATUS`（退出码 1）——人写的 blocked 会与边推导出的 blocked 打架。
+
+树的一行只装得下一个图标，装不下"被谁挡住"。所以当**有东西被阻塞**时，md 两个
+视图都多出一小节阻塞链，每条说清哪个节点被哪几条边挡住（含边 id 与前驱）：
+`render` 写进关联 md 文件时把它折进 `<details>`（依赖图不占视线），`section`
+把它打平成 `### 阻塞链`（那是给管道用的）。最多列 5 个节点，其余写明数量不静默
+丢掉。**没有任何东西被阻塞时，两个视图的输出一个字节都不变**——这条有控制例守着，
+不是"应该差不多"。
+
+调度查询（#81，`ready` / `critical-path` / `impact`）是**读取时从 `blocks` 边派生**的，
+只读、不拿整图锁：`ready` 是"现在能开工哪些节点"（pending 且无未完成 `blocks` 前驱，
+`in_progress` 不算），`critical-path` 是"最长的未完工 `blocks` 链"（已完成节点不计入、
+平局取最小起点 id），`impact <node>` 是"改这个节点会波及哪些下游"（只沿 `blocks` 顺流、
+不含自身、含已完成下游以预警返工）。三者边界与 `blocked` 一致——只有 `blocks` 参与；
+两个载体输出逐字节相同。
+
+两个载体（single-file JSON 与 bundle）对边的行为完全一致，同一套验收跑两遍。
+bundle 把边存在 `edges/<id>.json`，节点分片里不反向存边 id，`migrate --to
+bundle` 会把边一起带走。
 ```
 
 ## Scope gate — before any node write or project edit
