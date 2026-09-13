@@ -33,6 +33,14 @@ E_NODE_NOT_FOUND = "E_NODE_NOT_FOUND"
 # metadata.updated 每次运行都变，比对前归一掉。
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 
+# `uid` 是 P0 给节点加的新字段，会合法地出现在 `add` / `get` 这些回显节点的
+# 命令输出里。控制例守的是 Human 视野与命令语义，不守"节点有几个字段"——
+# 所以比对前把 uid 那一行剥掉，其余内容一个字节都不丢。
+#
+# 为什么不是"跳过 `add` / `get` 这两条命令"：那会连带丢掉它们覆盖的大量行为
+# （节点形状、错误码、字段顺序）。只剥一行能同时保住两边。
+UID_LINE = re.compile(r'^\s*"uid":\s*"[^"]*",?\n', re.MULTILINE)
+
 # stats 的 status_counts 由 `set` 推导，键顺序跟着 PYTHONHASHSEED 变。
 # 控制例要在两个**不同进程**之间比对输出，不固定种子就会随机失败。
 FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
@@ -491,7 +499,7 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             text = f"$ {result.returncode}\n{result.stdout}{result.stderr}".replace(
                 str(workdir), "<W>"
             )
-            output.append(TIMESTAMP.sub("<T>", text))
+            output.append(TIMESTAMP.sub("<T>", UID_LINE.sub("", text)))
         return "\n".join(output)
 
     def test_existing_commands_are_byte_identical_without_edges(self):
@@ -508,7 +516,39 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
 
         self.assertEqual(after, before)
 
-    def test_a_roadmap_that_never_had_edges_has_the_same_json_bytes(self):
+    def md_section_bytes(self, cli_dir, workdir) -> str:
+        """跑同一串命令，返回 `section` 的 md 字节。
+
+        控制例的承诺面是 **Human 视野（md）**，不是 carrier 字节。carrier 里多
+        一个字段（P0 的 `uid`、S1 的单调计数器）从来不是对外承诺，md 才是
+        （Story 11/12、§6 护栏 2）——见 issue #99 的决策 B。
+
+        反向说明：不要把这个 helper 退化回"比 r.json 字节"。那样每加一个
+        carrier 字段都要重设 BASELINE_REF，而重设基线等于让控制例自己跟自己
+        比（见 `assert_baseline_is_not_the_current_implementation` 的注释）。
+        """
+        workdir.mkdir(parents=True, exist_ok=True)
+        md = ""
+        for command in self.SEQUENCE:
+            result = subprocess.run(
+                [sys.executable, str(Path(cli_dir) / "roadmap_cli.py"), *command],
+                cwd=str(workdir),
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                env=FIXED_ENV,
+            )
+            if command[0] == "section":
+                md = result.stdout
+        return TIMESTAMP.sub("<T>", md)
+
+    def test_the_human_view_is_byte_identical_without_edges(self):
+        """没有边时，Human 视野（md section）与 P1 之前逐字节一致。
+
+        替代原先的 `...same_json_bytes`：那条比的是 carrier JSON，会把"往节点
+        里加了字段"误判成"污染了无边路径"。决策 B 把它换成 md。
+        """
         baseline = self.baseline_dir()
         current = self.root / "current"
         current.mkdir(exist_ok=True)
@@ -517,23 +557,10 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
                 (SKILL_DIR / name).read_text(encoding="utf-8"), encoding="utf-8"
             )
 
-        shapes = {}
-        for label, cli_dir in (("before", baseline), ("after", current)):
-            work = self.root / f"j-{label}"
-            work.mkdir(exist_ok=True)
-            for command in self.SEQUENCE:
-                subprocess.run(
-                    [sys.executable, str(Path(cli_dir) / "roadmap_cli.py"), *command],
-                    cwd=str(work),
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                    env=FIXED_ENV,
-                )
-            shapes[label] = TIMESTAMP.sub("<T>", (work / "r.json").read_text(encoding="utf-8"))
+        before = self.md_section_bytes(baseline, self.root / "m1")
+        after = self.md_section_bytes(current, self.root / "m2")
 
-        self.assertEqual(shapes["after"], shapes["before"])
+        self.assertEqual(after, before)
 
 
 class Slice09DanglingEdgeTest(EdgeContractTest):

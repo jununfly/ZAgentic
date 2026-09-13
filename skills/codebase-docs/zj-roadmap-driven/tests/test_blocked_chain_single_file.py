@@ -31,6 +31,11 @@ if str(SKILL_DIR) not in sys.path:
 CLI = SKILL_DIR / "roadmap_cli.py"
 
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
+
+# P0 给节点加了 `uid`，它会合法地出现在 `add` / `get` 这些回显节点的命令输出里。
+# 控制例守的是 Human 视野与命令语义，不守"节点有几个字段"——比对前剥掉这一行，
+# 其余内容一个字节都不丢（比整条命令跳过好，那会连覆盖一起丢）。
+UID_LINE = re.compile(r'^\s*"uid":\s*"[^"]*",?\n', re.MULTILINE)
 """metadata.updated 每次运行都变，比对前归一掉。"""
 
 FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
@@ -505,7 +510,7 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
             text = f"$ {result.returncode}\n{result.stdout}{result.stderr}"
             # 工作目录 / md 文件的绝对路径两边不同；metadata.updated 每次都变。
             text = text.replace(str(workdir), "<W>").replace(str(workdir).replace("\\", "/"), "<W>")
-            output.append(TIMESTAMP.sub("<T>", text))
+            output.append(TIMESTAMP.sub("<T>", UID_LINE.sub("", text)))
         return "\n".join(output)
 
     def test_markdown_and_section_are_byte_identical_without_edges(self):
