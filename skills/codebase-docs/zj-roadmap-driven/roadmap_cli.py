@@ -274,9 +274,10 @@ def cmd_init(args: dict):
 
 def cmd_add(args: dict):
     r = _load_roadmap(args["positional"][0])
-    _enforce_write_guard(r, args["positional"][1], args)
+    parent_id = r.resolve_node(args["positional"][1])
+    _enforce_write_guard(r, parent_id, args)
     node = r.add_node(
-        parent_id=args["positional"][1],
+        parent_id=parent_id,
         label=args["positional"][2],
         status=args.get("status", "pending"),
         mode=args.get("mode", "explore"),
@@ -290,9 +291,10 @@ def cmd_add(args: dict):
 
 def cmd_update(args: dict):
     r = _load_roadmap(args["positional"][0])
-    _enforce_write_guard(r, args["positional"][1], args)
+    node_id = r.resolve_node(args["positional"][1])
+    _enforce_write_guard(r, node_id, args)
     node = r.update_node(
-        node_id=r.resolve_node(args["positional"][1]),
+        node_id=node_id,
         label=args.get("label"),
         status=args.get("status"),
         mode=args.get("mode"),
@@ -492,9 +494,10 @@ def cmd_impact(args: dict):
 
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
-    _enforce_write_guard(r, args["positional"][1], args)
+    node_id = r.resolve_node(args["positional"][1])
+    _enforce_write_guard(r, node_id, args)
     d = r.add_decision(
-        node_id=r.resolve_node(args["positional"][1]),
+        node_id=node_id,
         question=args["positional"][2],
         answer=args["positional"][3],
         note=args["positional"][4] if len(args["positional"]) > 4 else "",

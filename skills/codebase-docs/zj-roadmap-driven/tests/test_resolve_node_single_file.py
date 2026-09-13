@@ -114,7 +114,16 @@ class Slice02ResolveErrorsTest(ResolveNodeContractTest):
 
 
 class Slice03OtherCommandsAcceptUidTest(ResolveNodeContractTest):
-    """其余取节点 id 的命令也该认 uid：update / decide / edge / siblings。"""
+    """其余取节点 id 的命令也该认 uid：add / update / decide / edge / siblings。"""
+
+    def test_add_accepts_parent_uid(self):
+        self.init_roadmap()
+        a = self.add_node("1", "设计")  # 1-1
+        ua = a["uid"]
+
+        # add 以 uid 作 parent（写守卫须先解析 uid，否则 safe_node_id 拒 uid）
+        child = self.run_cli("add", self.roadmap, ua, "子任务")
+        self.assertEqual(self.get_node("1-1-1")["label"], "子任务")
 
     def test_update_decide_edge_and_siblings_work_by_uid(self):
         self.init_roadmap()
