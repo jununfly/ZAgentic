@@ -493,6 +493,12 @@ git init /tmp/scratch && cd /tmp/scratch && git status   # 若正常 → git 本
 
 - **机制二下，agent 会话内不要对本地仓库跑任何 `git`**；把提交 / 同步留给用户在无 WorkBuddy 沙箱的终端执行（普通 PowerShell、文件资源管理器地址栏起 `powershell`、或 Win+R → `powershell`）。
 - 本地仓库同步（main 快进、pack-refs 修正等）照常走既定配方，但必须**在 agent 会话之外**做。
+- **agent 会话内若必须推进（无法离会）：走 `gh` CLI（GitHub API，不依赖本地 git）**。实测 `gh` 本身可用（`gh auth status` 正常、token 有效），但 `gh pr create` 会 `git` 子进程而报 `not a git repository` 失败——改走 `gh api` REST 端点（本会话已用此路径完整建分支 + 推文件 + 开 PR + 删分支）：
+  - 建分支：`gh api -X POST repos/<o>/<r>/git/refs -f ref=refs/heads/<b> -f sha=<base-sha>`
+  - 推文件：`gh api -X PUT repos/<o>/<r>/contents/<path> --input body.json`，`body.json = {"message","content"(base64),"branch","sha"(base 上该文件 blob sha)}`；base64 用 PowerShell `[Convert]::ToBase64String([IO.File]::ReadAllBytes(<本地文件>))` 生成，写文件用 `[IO.File]::WriteAllText`（**勿经 stdout**，本环境 PowerShell stdout 被吞）。
+  - 开 PR：**不能**用 `gh pr create`；用 `gh api -X POST repos/<o>/<r>/pulls --input pr.json`，`pr.json` 用 `[ordered]@{title;head;base;body} | ConvertTo-Json`；**`body` 必须 `[string][IO.File]::ReadAllText(<pr正文>, UTF8)`**——`Get-Content -Raw` 会把字符串包成 PSObject，`ConvertTo-Json` 会序列出 `PSPath`/`PSParentPath` 等杂属性导致 API 拒收，且默认编码 GBK 会乱码。
+  - 删远端分支：`gh api -X DELETE repos/<o>/<r>/git/refs/heads/<b>`。
+  - 第二次推同一分支时，`body.json` 的 `sha` 要换成该分支当前 tip 上此文件的 blob sha（不是 base 的），否则 422。
 - **规避复现**：agent 会话内绝不对本地仓库跑 `checkout -f <branch>` / `reset --hard`（前者会触发沙箱藏 .git、后者同理）。改用 `git update-ref` + `git pack-refs --all --prune`（改 ref、不动工作树）与 `git checkout -f <sha> -- .`（checkout 提交对象而非分支，不移动 HEAD）来同步与恢复。**注意**：`checkout -f <sha> -- .` 仍会异步冲刷掉本次会话早先 `update-ref` 刚写的 loose ref（见 Symptom I）——`update-ref` 后要么立即复核、要么把 checkout 放到另一会话；打过永久修复则无此虑。
 
 ### 实测教训（2026-09-12）
