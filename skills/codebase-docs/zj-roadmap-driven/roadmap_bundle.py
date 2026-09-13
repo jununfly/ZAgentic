@@ -44,6 +44,8 @@ from roadmap import (
     new_uid,
     # 引用解析（#105 S3）：显示 id / uid 统一翻成显示 id，两个 carrier 共用一份。
     resolve_node,
+    # 血缘上下文（#104 S5）：上下游 / 阻塞链共用一份，避免两个 carrier 各算一套。
+    node_context,
     ready_node_list,
     critical_path,
     impact_node_ids,
@@ -421,6 +423,20 @@ class RoadmapBundle:
         bundle 没有"整图 dict"，节点分散在分片里，所以传 `_all_nodes()` 列表。
         """
         return resolve_node(ref, self._all_nodes())
+
+    # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
+
+    def context(self, node_id: str) -> dict:
+        """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。"""
+        self._read_node_file(node_id)  # 不存在抛 KeyError，与 single-file 一致
+        return node_context(node_id, self._all_nodes(), self.list_edges())
+
+    def next_nodes(self) -> list:
+        """就绪优先建议：关键路径上的就绪节点优先，其余按 id 排序。"""
+        ready = self.ready_nodes()
+        cp = set(self.critical_path())
+        ready.sort(key=lambda n: (n["id"] not in cp, n["id"]))
+        return ready
 
     # ── 派生阻塞（#80）─────────────────────────────────
     # 与 single-file 同一套语义：读视图里算，carrier 的 status 不写 blocked。
