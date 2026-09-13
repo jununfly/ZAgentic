@@ -480,10 +480,18 @@ class RoadmapBundle:
         """一次算出整张图里被阻塞的节点 id（显示 id 集合，渲染按整棵树取图标）。
 
         端点落盘是 uid：比较前每条边翻回显示 id。
+
+        没有边就不可能有被阻塞节点——直接返回空集，不读任何节点分片，
+        保证 tree --depth 的懒读契约（只读到请求深度）不被 `blocked_node_ids`
+        拉成整图扫描。有边时再走全图计算，供 ready_nodes / critical_path /
+        render_* 等需要整图 blocked 集的调用方使用。
         """
+        edge_ids = self._edge_ids()
+        if not edge_ids:
+            return set()
         nodes = self._all_nodes()
         blocked: set[str] = set()
-        for edge_id in self._edge_ids():
+        for edge_id in edge_ids:
             de = edge_endpoints_as_display(self._read_edge_file(edge_id), nodes)
             try:
                 predecessor = self._read_node_file(de["from"])
