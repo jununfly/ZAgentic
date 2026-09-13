@@ -444,6 +444,31 @@ $p = Join-Path $PWD ".git\refs\heads\<branch>"
 - 未打补丁时：`update-ref` 写完后**单独一条命令立即 `git rev-parse` 复核**，确认 ref 还在再做后续操作；或把 `checkout -f <sha> -- .` 放到**另一个会话**跑，避免同会话的异步回收叠加。
 - 远端始终以 `git ls-remote` 为真相，本地 loose ref 在同会话里不是可靠的读回通道（同 Symptom F/E）。
 
+### Symptom J — 整个 `refs/` 目录被 shim 移走（git 报 `not a git repository`，HEAD/objects/config 都在）
+
+`git` 对任何命令都报 `fatal: not a git repository (or any of the parent directories): .git`，但 `.git/HEAD`、`config`、`objects`、`index`、`packed-refs` **物理完好**——根因是 **`.git/refs/` 目录整个不存在**。`is_git_directory` 要求存在 `refs/`（或能解析出 HEAD 的有效 ref）；`refs/` 缺失 + `HEAD` 指向的 `refs/heads/<b>` 无处可寻 → git 拒认仓库。表现与机制二（沙箱蒙眼）相同，但这是**机制一**的更严重变体（shim 把整个 `refs/` 连同里面所有 loose ref 一起挪进了回收站，而非只丢单个 ref）。
+
+**Detection**（`.git` 物理可见时用文件系统看，别信 git）：
+```python
+import os
+g = '.git'
+print('refs exists:', os.path.isdir(os.path.join(g,'refs')))   # False → 本症
+for p in ['HEAD','config','objects','index','packed-refs']:
+    print(p, os.path.exists(os.path.join(g,p)))
+# 读 packed-refs：看是否还有 branch/remote ref 可恢复，或有无指向已删分支/root-commit 的陈旧行
+```
+判别要点（见文末「实测教训」）：只要 `.git` 物理可见、唯独本仓库失败、且 `objects/` 完好，就优先查 `refs/` 是否缺失——别急于归咎沙箱。
+
+**Fix（纯文件系统，不碰 git；shim 拦不到 mkdir / `[IO.File]::WriteAllBytes`）**：
+1. 取权威 sha：`gh api repos/<o>/<r>/git/refs/heads/main -q '.object.sha'`（或真终端 `git ls-remote origin main`）；其它分支 tip 用 `gh api .../pulls/<n> -q '.head.sha'`。
+2. 重建目录：`refs/heads`、`refs/remotes/origin`、`refs/tags`（分支名带 `/` 要建嵌套目录，如 `refs/heads/docs/<b>`）。
+3. 写 loose ref（40-hex + `\n`）：`refs/heads/main`、`refs/remotes/origin/main` = <main-sha>；HEAD 指向的分支也补 `refs/heads/<b>` = 其远端 tip。
+4. 修 `HEAD`：`ref: refs/heads/main\n`（或保留原分支）。
+5. 清 `packed-refs` 里**陈旧/孤儿** remote-tracking 行（如指向已删分支或 root-commit `c85d58c...` 的行）——否则 `git fetch` 因非快进卡住；删前先备份 `packed-refs.bak`。
+6. 做完在真终端 `git status` 即恢复；`git fetch --prune origin` 补齐其余 remote-tracking 并清掉已删分支的 stale ref。
+
+**Prevention**：同 Symptom I —— 打完 `disable-safe-delete.ps1` 永久修复后不再发生；未打前 `refs/` 在同会话不是可靠通道，任何会动 ref 的命令后都立即 `Test-Path .git/refs` + `git rev-parse HEAD` 复核。
+
 ### Prevention
 
 Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Five checkpoints, each right after the command that can trigger it:
