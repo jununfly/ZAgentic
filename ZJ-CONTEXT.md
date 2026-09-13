@@ -524,6 +524,20 @@ node's `decisions` array. "Decision not in JSON = did not happen" is the
 operating principle — every directional choice must `decide` before acting.
 _Avoid_: comment, TODO, note (in roadmap context)
 
+**Edge**:
+An orthogonal link between nodes, outside the tree. Four types share one
+storage shape and command set, differing only in semantics and cycle rules:
+`blocks` (hard dependency, must not form a cycle — `E_CYCLE`), `informs` and
+`derives-from` (context / provenance, cycles allowed), `supersedes` (marks a
+node archived-without-delete). Per the P0 uid ground rule (§1), an edge's
+`from`/`to` are stored as **uid**, never display id — the display id is
+materialized back only at read time for the Human/Agent view. Legacy
+display-id edges from before S4 are converted in place by `edge migrate`;
+both carriers translate either shape on read, so cycle detection and derived
+views stay correct whether or not migration has run.
+_Avoid_: link, relation, dependency (as the edge concept itself; `blocks` is
+the hard dependency — see **Hard dependency**)
+
 **Focus**:
 The first `in_progress` leaf node in the roadmap. The current point of work;
 the agent's attention is anchored here until the node moves to `completed`
