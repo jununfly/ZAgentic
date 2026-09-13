@@ -42,6 +42,8 @@ from roadmap import (
     ensure_uid,
     ensure_uids,
     new_uid,
+    # 引用解析（#105 S3）：显示 id / uid 统一翻成显示 id，两个 carrier 共用一份。
+    resolve_node,
     ready_node_list,
     critical_path,
     impact_node_ids,
@@ -412,6 +414,13 @@ class RoadmapBundle:
         node = self._read_node_file(node_id)
         node["decisions"] = self._read_decisions_file(node_id)
         return node
+
+    def resolve_node(self, ref: str) -> str:
+        """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。
+
+        bundle 没有"整图 dict"，节点分散在分片里，所以传 `_all_nodes()` 列表。
+        """
+        return resolve_node(ref, self._all_nodes())
 
     # ── 派生阻塞（#80）─────────────────────────────────
     # 与 single-file 同一套语义：读视图里算，carrier 的 status 不写 blocked。

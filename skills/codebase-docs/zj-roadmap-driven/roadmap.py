@@ -9,6 +9,7 @@ zj-roadmap-driven — 路线图核心数据模型
 import errno
 import json
 import os
+import re
 import secrets
 import shutil
 import tempfile
@@ -513,6 +514,47 @@ def ensure_uids(nodes) -> int:
     """给一批节点补齐 uid（`dict` 的 values 或 list 都吃）。返回补了几条。"""
     items = nodes.values() if isinstance(nodes, dict) else nodes
     return sum(1 for node in items if ensure_uid(node))
+
+
+# ── 节点引用解析（#105 S3）────────────────────────────────
+# 用户既可以用显示 id（1-3-1）也可以用 uid 引用节点；命令层统一经 resolve_node
+# 把任意一种翻成显示 id，再交给各 carrier 方法（它们只认显示 id）。
+# 解析规则：
+#   1. 显示 id 直查 nodes（single-file 是 dict 键）→ 命中即返回，O(1)。
+#   2. 形如 uid 的字符串 → 扫一遍 nodes 找 uid 命中 → 返回其显示 id。
+#   3. uid 形状但不匹配任何节点 → 抛 NodeNotFound（清晰报错，不静默误命中）。
+#   4. 非 uid 形状（如错的显示 id）→ 原样返回，交给 get_node 抛既有 KeyError
+#      （保持 #99 明令保留的历史错误文案不变）。
+# 命名空间天然不重叠：uid 含 hex 字母 a-f，显示 id 只有数字与 -，无法误命中。
+
+UID_RE = re.compile(r"^[0-9a-f]{12}-[0-9a-f]{10}$")
+
+
+def looks_like_uid(ref: str) -> bool:
+    """这个字符串是否像是 new_uid() 产出的 uid。
+
+    必须跟 new_uid() 的形状保持一致：`<12 hex>-<10 hex>`。改 new_uid 时这里要同步。
+    """
+    return bool(UID_RE.match(ref))
+
+
+def resolve_node(ref: str, nodes) -> str:
+    """把"显示 id 或 uid"统一解析成显示 id。
+
+    `nodes` 接受 dict（single-file，键为显示 id）或 list（bundle，节点字典列表）。
+    返回解析后的显示 id；uid 形状但不匹配时抛 NodeNotFound。
+    """
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    # 显示 id 直查（仅 single-file 有 dict 键；bundle 走下面的 uid 段）。
+    if isinstance(nodes, dict) and ref in nodes:
+        return ref
+    if looks_like_uid(ref):
+        for node in items:
+            if node.get("uid") == ref:
+                return node["id"]
+        raise NodeNotFound(f"节点不存在（uid 不匹配任何节点）: {ref}")
+    # 非 uid 形状：原样返回，错误语义留给调用方 get_node。
+    return ref
 
 
 def note_child_removal(parent: dict, child_id: str) -> None:
@@ -1032,6 +1074,10 @@ class Roadmap:
         if node_id is None:
             return list(edges)
         return [e for e in edges if e["from"] == node_id or e["to"] == node_id]
+
+    def resolve_node(self, ref: str) -> str:
+        """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。"""
+        return resolve_node(ref, self.data["nodes"])
 
     def get_node(self, node_id: str) -> dict:
         """获取节点。"""
