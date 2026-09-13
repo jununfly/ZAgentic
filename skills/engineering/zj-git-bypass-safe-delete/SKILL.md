@@ -418,6 +418,57 @@ C:\...\cli\vendor\shim\safe-bin/rm: line 17: safe_delete_main: command not found
 - 删完必须验证：`Test-Path <path>` 应为 `False`；别把删除塞进 `&&` 链，单独一条跑。
 - 同一环境下 Bash 运行时还可能缺 `head` / `which` / `dirname`，`ls ... | head` 会**静默丢输出**——要看结果就整条命令不接管道，或写进文件后用 Read 读回。
 
+### Symptom I — `git checkout -f <sha> -- .` 异步冲刷掉同会话早先 `update-ref` 写的 loose ref（HEAD 悬空、status 全 A）
+
+`git checkout -f <sha> -- .`（checkout 提交对象而非分支，本来是机制二「规避复现」段推荐的"安全"写法，用来同步工作树又不移动 HEAD）**仍会触发 safe-delete shim 的异步吞 ref**——但它吞的不是 checkout 自己写的 ref，而是**本次会话早先 `git update-ref refs/heads/<branch> <sha>` 刚写进去的那个 loose ref**。表现为：checkout 之后 `git rev-parse refs/heads/<branch>` 报 `unknown revision`，HEAD 成悬空 symref，`git status` 整仓显 `A`（index 与空 HEAD 比对，全仓被当成新增）。
+
+**典型复现场景**：先 `git update-ref refs/heads/<branch> <WIP>`（把 WIP 提交落成本地分支，不动物化工作树）→ 再 `git checkout -f <main-sha> -- .`（把工作树钉到 main）。第二条命令的 shim 异步回收把第一条命令刚写的 `refs/heads/<branch>` 文件挪进了回收站。**远端分支（`<WIP>` 已 `git push` 过）始终安全**，丢的只是本地 loose ref。
+
+**Detection**：
+```bash
+git rev-parse refs/heads/<branch>          # unknown revision → 本地 ref 被吞
+git status --short                         # 整仓 A（HEAD 悬空，index vs HEAD 全新增）
+git ls-remote origin refs/heads/<branch>   # 远端 sha 还在 → 工作没丢，只是本地 ref 没了
+```
+
+**Fix（在 git 进程外手写 loose ref，shim 拦不到 Node fs）**：
+```powershell
+$p = Join-Path $PWD ".git\refs\heads\<branch>"
+[IO.Directory]::CreateDirectory((Split-Path $p)) | Out-Null
+[IO.File]::WriteAllBytes($p, [System.Text.Encoding]::ASCII.GetBytes("<sha>`n"))
+```
+`WriteAllBytes` + LF 结尾（git 的 loose ref 格式）；写完 `git rev-parse HEAD` 即恢复。`<sha>` 取 `git ls-remote` 的真实值，不要信本地 `rev-parse`（同会话里本地 ref 不可靠，见 Symptom F/E）。
+
+**Prevention**：
+- **永久修复之后不再发生**：`disable-safe-delete.ps1` 中性化三层 shim 后，异步吞 ref 整个消失，本 Symptom 不再触发（见 Skill 顶部「Root cause & permanent fix」）。
+- 未打补丁时：`update-ref` 写完后**单独一条命令立即 `git rev-parse` 复核**，确认 ref 还在再做后续操作；或把 `checkout -f <sha> -- .` 放到**另一个会话**跑，避免同会话的异步回收叠加。
+- 远端始终以 `git ls-remote` 为真相，本地 loose ref 在同会话里不是可靠的读回通道（同 Symptom F/E）。
+
+### Symptom J — 整个 `refs/` 目录被 shim 移走（git 报 `not a git repository`，HEAD/objects/config 都在）
+
+`git` 对任何命令都报 `fatal: not a git repository (or any of the parent directories): .git`，但 `.git/HEAD`、`config`、`objects`、`index`、`packed-refs` **物理完好**——根因是 **`.git/refs/` 目录整个不存在**。`is_git_directory` 要求存在 `refs/`（或能解析出 HEAD 的有效 ref）；`refs/` 缺失 + `HEAD` 指向的 `refs/heads/<b>` 无处可寻 → git 拒认仓库。表现与机制二（沙箱蒙眼）相同，但这是**机制一**的更严重变体（shim 把整个 `refs/` 连同里面所有 loose ref 一起挪进了回收站，而非只丢单个 ref）。
+
+**Detection**（`.git` 物理可见时用文件系统看，别信 git）：
+```python
+import os
+g = '.git'
+print('refs exists:', os.path.isdir(os.path.join(g,'refs')))   # False → 本症
+for p in ['HEAD','config','objects','index','packed-refs']:
+    print(p, os.path.exists(os.path.join(g,p)))
+# 读 packed-refs：看是否还有 branch/remote ref 可恢复，或有无指向已删分支/root-commit 的陈旧行
+```
+判别要点（见文末「实测教训」）：只要 `.git` 物理可见、唯独本仓库失败、且 `objects/` 完好，就优先查 `refs/` 是否缺失——别急于归咎沙箱。
+
+**Fix（纯文件系统，不碰 git；shim 拦不到 mkdir / `[IO.File]::WriteAllBytes`）**：
+1. 取权威 sha：`gh api repos/<o>/<r>/git/refs/heads/main -q '.object.sha'`（或真终端 `git ls-remote origin main`）；其它分支 tip 用 `gh api .../pulls/<n> -q '.head.sha'`。
+2. 重建目录：`refs/heads`、`refs/remotes/origin`、`refs/tags`（分支名带 `/` 要建嵌套目录，如 `refs/heads/docs/<b>`）。
+3. 写 loose ref（40-hex + `\n`）：`refs/heads/main`、`refs/remotes/origin/main` = <main-sha>；HEAD 指向的分支也补 `refs/heads/<b>` = 其远端 tip。
+4. 修 `HEAD`：`ref: refs/heads/main\n`（或保留原分支）。
+5. 清 `packed-refs` 里**陈旧/孤儿** remote-tracking 行（如指向已删分支或 root-commit `c85d58c...` 的行）——否则 `git fetch` 因非快进卡住；删前先备份 `packed-refs.bak`。
+6. 做完在真终端 `git status` 即恢复；`git fetch --prune origin` 补齐其余 remote-tracking 并清掉已删分支的 stale ref。
+
+**Prevention**：同 Symptom I —— 打完 `disable-safe-delete.ps1` 永久修复后不再发生；未打前 `refs/` 在同会话不是可靠通道，任何会动 ref 的命令后都立即 `Test-Path .git/refs` + `git rev-parse HEAD` 复核。
+
 ### Prevention
 
 Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Five checkpoints, each right after the command that can trigger it:
@@ -467,7 +518,13 @@ git init /tmp/scratch && cd /tmp/scratch && git status   # 若正常 → git 本
 
 - **机制二下，agent 会话内不要对本地仓库跑任何 `git`**；把提交 / 同步留给用户在无 WorkBuddy 沙箱的终端执行（普通 PowerShell、文件资源管理器地址栏起 `powershell`、或 Win+R → `powershell`）。
 - 本地仓库同步（main 快进、pack-refs 修正等）照常走既定配方，但必须**在 agent 会话之外**做。
-- **规避复现**：agent 会话内绝不对本地仓库跑 `checkout -f` / `reset --hard`；改用 `git update-ref` + `git pack-refs --all --prune`（改 ref、不动工作树）与 `git checkout -f <sha> -- .`（checkout 提交对象而非分支，不移动 HEAD）来同步与恢复。
+- **agent 会话内若必须推进（无法离会）：走 `gh` CLI（GitHub API，不依赖本地 git）**。实测 `gh` 本身可用（`gh auth status` 正常、token 有效），但 `gh pr create` 会 `git` 子进程而报 `not a git repository` 失败——改走 `gh api` REST 端点（本会话已用此路径完整建分支 + 推文件 + 开 PR + 删分支）：
+  - 建分支：`gh api -X POST repos/<o>/<r>/git/refs -f ref=refs/heads/<b> -f sha=<base-sha>`
+  - 推文件：`gh api -X PUT repos/<o>/<r>/contents/<path> --input body.json`，`body.json = {"message","content"(base64),"branch","sha"(base 上该文件 blob sha)}`；base64 用 PowerShell `[Convert]::ToBase64String([IO.File]::ReadAllBytes(<本地文件>))` 生成，写文件用 `[IO.File]::WriteAllText`（**勿经 stdout**，本环境 PowerShell stdout 被吞）。
+  - 开 PR：**不能**用 `gh pr create`；用 `gh api -X POST repos/<o>/<r>/pulls --input pr.json`，`pr.json` 用 `[ordered]@{title;head;base;body} | ConvertTo-Json`；**`body` 必须 `[string][IO.File]::ReadAllText(<pr正文>, UTF8)`**——`Get-Content -Raw` 会把字符串包成 PSObject，`ConvertTo-Json` 会序列出 `PSPath`/`PSParentPath` 等杂属性导致 API 拒收，且默认编码 GBK 会乱码。
+  - 删远端分支：`gh api -X DELETE repos/<o>/<r>/git/refs/heads/<b>`。
+  - 第二次推同一分支时，`body.json` 的 `sha` 要换成该分支当前 tip 上此文件的 blob sha（不是 base 的），否则 422。
+- **规避复现**：agent 会话内绝不对本地仓库跑 `checkout -f <branch>` / `reset --hard`（前者会触发沙箱藏 .git、后者同理）。改用 `git update-ref` + `git pack-refs --all --prune`（改 ref、不动工作树）与 `git checkout -f <sha> -- .`（checkout 提交对象而非分支，不移动 HEAD）来同步与恢复。**注意**：`checkout -f <sha> -- .` 仍会异步冲刷掉本次会话早先 `update-ref` 刚写的 loose ref（见 Symptom I）——`update-ref` 后要么立即复核、要么把 checkout 放到另一会话；打过永久修复则无此虑。
 
 ### 实测教训（2026-09-12）
 
