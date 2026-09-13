@@ -235,5 +235,54 @@ class SliceCCycleInUidSpaceTest(UidEdgeContractTest):
         )
 
 
+class SliceDCycleAndDerivedViewBeforeMigrateTest(UidEdgeContractTest):
+    """验收 #4 的 pre-migration 洞 + 验收 #2 的派生视图不变量（迁移前也要成立）。"""
+
+    def test_blocks_cycle_refused_with_legacy_display_id_edges_before_migrate(self):
+        """回归 #4：迁移前的存量显示 id 边，blocks 成环仍应被拒（uid 空间环检测）。
+
+        这是评审发现的真 bug 的护栏——修复前，单文件 carrier 在 migrate 之前
+        因为邻接表键是显示 id、而环检测喂的是 uid，会静默放行成环。
+        """
+        self.init_roadmap()
+        self.add_node("1", "设计")
+        self.add_node("1", "实现")
+        self.seed_display_id_edges([{"id": "e1", "from": "1-1", "to": "1-2", "type": "blocks"}])
+
+        result = self.run_cli(
+            "edge", "add", self.roadmap, "1-2", "1-1", "--type", "blocks", check=False
+        )
+        self.assertIn(E_CYCLE, result.stderr)
+        self.assertEqual(result.returncode, 1)
+
+    def test_derived_view_outputs_unchanged_after_migrate(self):
+        """验收 #2：迁移前后，派生视图（critical-path / impact / list）输出逐字节一致。
+
+        `edge migrate` 只翻落盘端点，Human/Agent 视野（显示 id）与派生视图输出不变。
+        """
+        self.init_roadmap()
+        self.add_node("1", "设计")
+        self.add_node("1", "实现")
+        self.add_node("1", "联调")
+        self.seed_display_id_edges([
+            {"id": "e1", "from": "1-1", "to": "1-2", "type": "blocks"},
+            {"id": "e2", "from": "1-2", "to": "1-3", "type": "blocks"},
+        ])
+
+        before_critical = self.run_cli("critical-path", self.roadmap).stdout
+        before_impact = self.run_cli("impact", self.roadmap, "1-1").stdout
+        before_list = json.dumps(self.list_edges()["edges"], sort_keys=True)
+
+        self.run_cli("edge", "migrate", self.roadmap)
+
+        after_critical = self.run_cli("critical-path", self.roadmap).stdout
+        after_impact = self.run_cli("impact", self.roadmap, "1-1").stdout
+        after_list = json.dumps(self.list_edges()["edges"], sort_keys=True)
+
+        self.assertEqual(after_critical, before_critical)
+        self.assertEqual(after_impact, before_impact)
+        self.assertEqual(after_list, before_list)
+
+
 if __name__ == "__main__":
     unittest.main()

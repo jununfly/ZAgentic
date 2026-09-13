@@ -84,5 +84,11 @@ class SliceCCycleInUidSpaceBundleTest(BundleStorageMixin, sf.SliceCCycleInUidSpa
     """同 SliceC：bundle 上 uid 空间环检测正确。"""
 
 
+class SliceDCycleAndDerivedViewBeforeMigrateBundleTest(
+    BundleStorageMixin, sf.SliceDCycleAndDerivedViewBeforeMigrateTest
+):
+    """同 SliceD：bundle 上 pre-migration 环检测 + 派生视图不变量。"""
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -636,15 +636,6 @@ def endpoint_to_uid(endpoint: str, nodes) -> str:
     raise NodeNotFound(f"节点不存在: {endpoint}")
 
 
-def display_id_for_uid(uid: str, nodes) -> str:
-    """uid → 显示 id；找不到抛 NodeNotFound。"""
-    items = nodes.values() if isinstance(nodes, dict) else nodes
-    for node in items:
-        if node.get("uid") == uid:
-            return node["id"]
-    raise NodeNotFound(f"节点不存在（uid 不匹配任何节点）: {uid}")
-
-
 def edge_endpoints_as_display(edge: dict, nodes) -> dict:
     """返回一份 from/to 已翻成显示 id 的边副本（不改原边）。
 
@@ -1173,11 +1164,21 @@ class Roadmap:
         return {"total": sum(by_type.values()), "by_type": by_type}
 
     def _blocks_reachable(self, start: str, target: str) -> bool:
-        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。"""
+        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。
+
+        边端点统一翻成 uid 再建邻接表：存量显示 id 边（迁移前）与 uid 边（迁移后 /
+        新加）在 uid 空间里一致，环检测才与存储形状无关、始终正确（验收 #4）。
+        """
         adjacency: dict = {}
+        nodes = self.data["nodes"]
         for edge in self._edge_list():
             if edge["type"] == EDGE_BLOCKS:
-                adjacency.setdefault(edge["from"], []).append(edge["to"])
+                try:
+                    f = endpoint_to_uid(edge["from"], nodes)
+                    t = endpoint_to_uid(edge["to"], nodes)
+                except NodeNotFound:
+                    continue
+                adjacency.setdefault(f, []).append(t)
         seen = set()
         stack = [start]
         while stack:

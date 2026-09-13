@@ -797,12 +797,22 @@ class RoadmapBundle:
         return total
 
     def _blocks_reachable(self, start: str, target: str) -> bool:
-        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。"""
+        """沿 blocks 边从 start 出发能否走到 target。自环也算（start == target）。
+
+        边端点统一翻成 uid 再建邻接表（与单文件 carrier 同语义）：存量显示 id 边
+        （迁移前）与 uid 边在 uid 空间里一致，环检测才与存储形状无关、始终正确。
+        """
         adjacency: dict[str, list[str]] = {}
+        nodes = self._all_nodes()
         for edge_id in self._edge_ids():
             edge = self._read_edge_file(edge_id)
             if edge["type"] == EDGE_BLOCKS:
-                adjacency.setdefault(edge["from"], []).append(edge["to"])
+                try:
+                    f = endpoint_to_uid(edge["from"], nodes)
+                    t = endpoint_to_uid(edge["to"], nodes)
+                except NodeNotFound:
+                    continue
+                adjacency.setdefault(f, []).append(t)
         seen: set[str] = set()
         stack = [start]
         while stack:
