@@ -60,6 +60,10 @@ from roadmap import (
     impact_node_ids,
     render_chain_collapsed,
     render_chain_plain,
+    open_question_items,
+    render_open_questions_collapsed,
+    render_open_questions_plain,
+    owner_label,
     tree_line,
 )
 
@@ -1081,15 +1085,55 @@ class RoadmapBundle:
 
     # ---- bounded navigation and views ---------------------------------------
 
-    def get_tree(self, root_id: str = "1", max_depth: int = 2) -> str:
+    # ── #115 md 视图数据（owner 列 / 待决问题队列） ──────
+
+    def owner_map(self) -> dict[str, str]:
+        """display id → `agent[/device]`：当前持有**未过期**租约的节点。
+
+        租约分片在 `leases/<node_uid>.json`；uid 与显示 id 都可能被当作键传入
+        （claim 不解析），所以两端都查。过期租约不算持有者——僵尸租约留着不自动删，
+        但 md 不该显示。
+        """
+        result: dict[str, str] = {}
+        lookup: dict[str, str] = {}
+        for node in self._all_nodes():
+            nid = node.get("id")
+            if nid is None:
+                continue
+            lookup[nid] = nid
+            if node.get("uid"):
+                lookup[node["uid"]] = nid
+        leases_dir = self.path / "leases"
+        if not leases_dir.is_dir():
+            return result
+        now = time.time()
+        for path in leases_dir.glob("*.json"):
+            try:
+                lease = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            if is_expired(lease, now):
+                continue
+            nid = lookup.get(lease.get("node_uid") or path.stem)
+            if nid is None:
+                continue
+            result[nid] = owner_label(lease)
+        return result
+
+    def open_question_items(self) -> list:
+        """带 open_question 字段的节点，按 display id 排序——喂给 md 渲染。"""
+        return open_question_items(((n.get("id"), n) for n in self._all_nodes()))
+
+    def get_tree(self, root_id: str = "1", max_depth: int = 2, owners: dict = None) -> str:
         root = self._read_node_file(root_id)
         blocked = self.blocked_node_ids()
-        lines = [tree_line(root, "", True, 0, blocked)]
+        owners = owners or {}
+        lines = [tree_line(root, "", True, 0, blocked, owners.get(root.get("id")))]
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
             if depth > max_depth:
                 return
-            lines.append(tree_line(node, prefix, last, depth, blocked))
+            lines.append(tree_line(node, prefix, last, depth, blocked, owners.get(node.get("id"))))
             if depth >= max_depth:
                 return
             children = node.get("children", [])
@@ -1121,13 +1165,14 @@ class RoadmapBundle:
     def get_current_focus(self) -> Optional[str]:
         return self._read_focus()
 
-    def get_focus_subtree(self, root_id: str, max_depth: int = 1) -> str:
+    def get_focus_subtree(self, root_id: str, max_depth: int = 1, owners: dict = None) -> str:
         root = self._read_node_file(root_id)
         lines: list[str] = []
+        owners = owners or {}
         blocked = self.blocked_node_ids()
 
         def walk(node: dict[str, Any], prefix: str, last: bool, depth: int) -> None:
-            lines.append(tree_line(node, prefix, last, depth, blocked))
+            lines.append(tree_line(node, prefix, last, depth, blocked, owners.get(node.get("id"))))
             children = node.get("children", [])
             child_prefix = prefix + ("    " if last else "│   ")
             if depth >= max_depth:
@@ -1156,9 +1201,12 @@ class RoadmapBundle:
 
     def render_light_section(self) -> str:
         focus_id = self.get_current_focus()
+        owners = self.owner_map()
         # 空链时这里得到空串：下面的模板因此在无阻塞时与 #82 之前逐字节相同。
         chain = render_chain_collapsed(self._blocked_chain_lines())
-        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2)}{chain}\n"
+        # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
+        oq = render_open_questions_collapsed(self.open_question_items())
+        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2, owners=owners)}{chain}{oq}\n"
         if focus_id:
             focus = self._read_node_file(focus_id)
             section += f"\n### 当前施工：{focus_id}. {focus['label']}\n"
@@ -1167,18 +1215,21 @@ class RoadmapBundle:
             decisions = self._read_decisions_file(focus_id)
             if decisions:
                 section += "\n**决策：**\n" + "\n".join(f"- Q: {item['q']} → {item['answer']}" for item in decisions) + "\n"
-            subtree = self.get_focus_subtree(focus_id, max_depth=1)
+            subtree = self.get_focus_subtree(focus_id, max_depth=1, owners=owners)
             if subtree:
                 section += f"\n**当前子树：**\n{subtree}\n"
         return section + "<!-- ROADMAP_SECTION_END -->\n"
 
     def render_full_section(self, all_nodes: bool = False, max_depth: int = 2, max_bytes: Optional[int] = None) -> str:
         depth = 100000 if all_nodes else max_depth
+        owners = self.owner_map()
         # 换行归谁要想清楚：模板里那个 `\n` 是"树的收尾"，链自带自己的开头换行。
         # 拼错一个，两个 carrier 的 md 就差一整个空行——diff 里最容易被肉眼放过
         # 的那类不一致，也正是上面那条字节比对要抓的。
         plain_chain = render_chain_plain(self._blocked_chain_lines())
-        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth)}\n{plain_chain}"
+        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth, owners=owners)}\n{plain_chain}"
+        # #115：待决问题队列，只在有状态时出现（无状态时空串，md 不变）。
+        section += render_open_questions_plain(self.open_question_items())
         if all_nodes:
             decisions = self.get_decisions()
             if decisions:
