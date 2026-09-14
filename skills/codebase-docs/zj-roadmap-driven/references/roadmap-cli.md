@@ -186,10 +186,41 @@ never disagree on what counts as a start or a child.
 | `E_CYCLE` | a `blocks` edge that would close a cycle |
 | `E_NODE_NOT_FOUND` | an edge pointing at a node that does not exist |
 | `E_INVALID_STATUS` | `add` / `update --status blocked` (blocked is derived, not settable) |
+| `E_LEASE_HELD` | writing a lease holder's fields on a node someone else holds (or with a stale fencing token) |
+| `E_CONFLICT` | `--if-rev <sha>` no longer matches the current revision |
+| `E_SCOPE` | an `--scope`-bearing write aimed outside that node's subtree |
 
-All three exit 1. `E_CYCLE` and `E_NODE_NOT_FOUND` are only raised by `edge`;
+All six exit 1. `E_CYCLE` and `E_NODE_NOT_FOUND` are only raised by `edge`;
 pre-existing commands still raise `KeyError`/`BundleError` with their original
 wording, so their output is unchanged by P1.
+
+### Scope tokens (P2)
+
+`--scope <node>` confines the write to `<node>` and its subtree (inclusive). A
+write aimed anywhere else fails with `E_SCOPE` **naming the allowed scope**, so
+the caller can correct the call instead of editing someone else's subtree. The
+check walks parent links upward from the target, so it costs O(depth) and both
+carriers answer it with the same code.
+
+Omitting `--scope` means unrestricted, not read-only: the CLI cannot tell a
+subagent from a planner or a Human, and "read-only by default" would also block
+the lease holder from writing `status` on the node it holds. Read-only is a
+policy the *parent* agent enforces by always handing down a `--scope`.
+
+### Field-level ownership (P2)
+
+Which fields a lease actually protects:
+
+| Owner | Fields | Guarded by the lease? |
+|-------|--------|----------------------|
+| lease holder | `status`, `notes` | yes |
+| planner | `label`, `mode`, `budget`, `exit_criteria` | no |
+| append-only | `decisions` (`decide`) | no |
+| structural | `add`, `delete`, `remove-decision` | yes |
+
+The point is that most concurrent edits never conflict: renaming or re-budgeting
+a node while another agent executes it is legal and succeeds. A mixed `update`
+that touches any lease-holder field is rejected whole — no half-written node.
 
 Bundle layout:
 

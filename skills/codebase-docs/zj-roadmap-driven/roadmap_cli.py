@@ -45,6 +45,15 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   写命令可带 --if-rev <sha> 乐观并发（冲突返 E_CONFLICT）与
   --as-agent <id> [--token <n>] 租约守卫（被他人持有且 token 旧则返 E_LEASE_HELD）。
 
+  --scope <node> 把写限制在该节点的子树内（含自身），越界返 E_SCOPE 并报出
+  允许的 scope；不给 --scope 就是不限（不是只读）。
+
+  字段级所有权决定这次写要不要过租约守卫：
+    status / notes        归租约持有者 → 要出示 --as-agent/--token
+    label / mode / budget / exit_criteria  归 planner → 不受租约阻挡
+    decisions             只追加不覆盖 → 不受租约阻挡（但撤回决策要过守卫）
+    add / delete / remove-decision  结构性写 → 过守卫
+
   get     <json_path> <node_id>              # 获取节点详情 (JSON)
                                              # 有未完成 blocks 前驱时附带派生字段
                                              # blocked / blocked_reason（不落盘）
@@ -104,7 +113,10 @@ from roadmap import (
     RoadmapLockTimeout,
     LeaseHeld,
     ConflictError,
+    ScopeError,
     exit_code_for,
+    is_within_scope,
+    write_requires_lease,
     roadmap_file_lock,
     status_icon,
     unlock_roadmap,
@@ -292,7 +304,7 @@ def cmd_add(args: dict):
 def cmd_update(args: dict):
     r = _load_roadmap(args["positional"][0])
     node_id = r.resolve_node(args["positional"][1])
-    _enforce_write_guard(r, node_id, args)
+    _enforce_write_guard(r, node_id, args, _update_fields(args))
     node = r.update_node(
         node_id=node_id,
         label=args.get("label"),
@@ -332,16 +344,26 @@ def cmd_edge(args: dict):
     action = args["positional"][0]
     r = _load_roadmap(args["positional"][1])
     if action == "add":
+        ends = [r.resolve_node(args["positional"][2]), r.resolve_node(args["positional"][3])]
+        # 边也是写：两端都必须在 scope 内，否则 subagent 能把别人的子树拉进
+        # 自己的依赖图。只查 scope 不查租约——加边此前就不受租约约束。
+        for end in ends:
+            _enforce_scope(r, end, args)
         edge = r.add_edge(
-            r.resolve_node(args["positional"][2]),
-            r.resolve_node(args["positional"][3]),
+            ends[0],
+            ends[1],
             args.get("type", "blocks"),
         )
         r.save()
         _print_json(edge)
         return
     if action == "remove":
-        edge = r.remove_edge(args["positional"][2])
+        target = args["positional"][2]
+        existing = next((e for e in r.list_edges() if e["id"] == target), None)
+        if existing:
+            for end in (existing["from"], existing["to"]):
+                _enforce_scope(r, end, args)
+        edge = r.remove_edge(target)
         r.save()
         _print_json(edge)
         return
@@ -362,26 +384,85 @@ def cmd_edge(args: dict):
     raise ValueError(f"未知 edge 动作: {action}")
 
 
-def _enforce_write_guard(r, node_id: str, args: dict) -> None:
-    """写前守卫：--if-rev 乐观并发 + 租约 fencing。
+def _enforce_scope(r, node_id: str, args: dict) -> None:
+    """作用域令牌守卫（Story 29/30）：越界写返 E_SCOPE 并报出允许的 scope。
 
-    - `--if-rev <sha>`：当前 rev 与提供的不一致 → E_CONFLICT（调用方重读重试）。
-    - 节点有有效租约时，调用方必须出示匹配 --as-agent / --token，否则 E_LEASE_HELD
-      （僵尸写被拒）。两者退出码都是 1（都该"稍后重试"）。
+    不给 `--scope` 就完全不限制——"subagent 默认只读"是**父 Agent 派活时必须
+    下发 --scope** 来兑现的策略，CLI 区分不出 subagent 与 planner/Human；而且
+    把它做成"给了 --as-agent 没给 --scope 就只读"会让 #111 已交付的验收
+    （`update --as-agent a7 --token 1` 写入成功）变红。
     """
+    scope = args.get("scope")
+    if not scope or scope == "true":
+        return
+    scope_root = r.resolve_node(scope)
+    parent_of = lambda nid: r.get_node(nid).get("parent")
+    if not is_within_scope(node_id, scope_root, parent_of):
+        raise ScopeError(
+            f"node {node_id} is outside scope {scope_root}; "
+            f"allowed scope: {scope_root} and its subtree"
+        )
+
+
+# `update` 的 CLI 标志 → 字段所有权分类用的字段名（planner / 执行者分组见
+# roadmap.PLANNER_FIELDS / EXECUTOR_FIELDS）。
+UPDATE_FIELD_FLAGS = {
+    "label": "label",
+    "status": "status",
+    "mode": "mode",
+    "notes": "notes",
+    "exit-criteria": "exit_criteria",
+}
+
+
+def _update_fields(args: dict) -> set:
+    """这次 `update` 实际会写哪些字段。空集 = 结构性写。"""
+    fields = {field for flag, field in UPDATE_FIELD_FLAGS.items() if args.get(flag) is not None}
+    if (args.get("max-children") is not None or args.get("max-rounds") is not None
+            or args.get("clear-budget") == "true"):
+        fields.add("budget")
+    if args.get("clear-exit-criteria") == "true":
+        fields.add("exit_criteria")
+    return fields
+
+
+def _enforce_write_guard(r, node_id: str, args: dict, fields=frozenset()) -> None:
+    """写前守卫：作用域 + --if-rev 乐观并发 + 租约 fencing（按字段所有权）。
+
+    - `--scope <node>`：写到别人子树 → E_SCOPE（权限错，改调用）。
+    - `--if-rev <sha>`：当前 rev 与提供的不一致 → E_CONFLICT（调用方重读重试）。
+    - 节点有有效租约时按**两层**判：
+      ◦ 出示的 `--token` 已作废（< fencing）→ 僵尸持有者，任何字段都拒；
+      ◦ 否则按字段所有权——status/notes 要出示匹配的 --as-agent，planner 字段
+        与追加型 decisions 放行（Story 32：大多数并发编辑根本不冲突）。
+
+    三者退出码都是 1（都该"改调用或稍后重试"）。`fields` 为空 = 结构性写
+    （add / delete / 撤回决策），一律过守卫。
+    """
+    _enforce_scope(r, node_id, args)
     if args.get("if-rev") is not None:
         current = r.current_revision()
         if current != str(args["if-rev"]):
             raise ConflictError(f"revision conflict: have {current}, expected {args['if-rev']}")
+    # 注意：这里**不能**按 planner 字段提前 return——那样会在到达 fencing 判据
+    # 之前放行僵尸持有者（它换个 planner 字段就能绕过回收），见下方注释。
     lease = r.get_lease(node_id)
     if lease and not is_expired(lease, time.time()):
-        agent = args.get("as-agent")
-        token = args.get("token")
-        if agent is None or agent != lease["agent_id"] or (token is not None and int(token) < int(lease["fencing_token"])):
-            raise LeaseHeld(
-                f"node {node_id} leased by {lease['agent_id']} (fencing {lease['fencing_token']}); "
-                f"present --as-agent/--token or wait for TTL"
-            )
+        fencing = int(lease["fencing_token"])
+        raw_token = args.get("token")
+        token = int(raw_token) if raw_token is not None else None
+        # fencing 与字段所有权是两个正交的问题，判据顺序不能反：
+        # 出示了**已作废**的 token 说明这是被回收的僵尸持有者，它对任何字段的
+        # 写都要拒——否则换个 planner 字段就能绕过 fencing；反过来，没出示凭据
+        # 的人只是"不是持有者"，planner 字段照样能写（Story 32）。
+        fenced_out = token is not None and token < fencing
+        is_holder = args.get("as-agent") == lease["agent_id"] and not fenced_out
+        if is_holder or (not fenced_out and not write_requires_lease(fields)):
+            return
+        raise LeaseHeld(
+            f"node {node_id} leased by {lease['agent_id']} (fencing {fencing}); "
+            f"present --as-agent/--token or wait for TTL"
+        )
 
 
 def cmd_lease(args: dict):
@@ -495,7 +576,8 @@ def cmd_impact(args: dict):
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
     node_id = r.resolve_node(args["positional"][1])
-    _enforce_write_guard(r, node_id, args)
+    # decisions 只追加不覆盖：追加永不冲突，所以不按租约拦（Story 32）。
+    _enforce_write_guard(r, node_id, args, {"decisions"})
     d = r.add_decision(
         node_id=node_id,
         question=args["positional"][2],

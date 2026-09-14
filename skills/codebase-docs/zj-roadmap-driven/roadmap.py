@@ -201,6 +201,17 @@ class InvalidStatus(RoadmapError):
     exit_code = 1
 
 
+class ScopeError(RoadmapError):
+    """写到了 `--scope` 指定的子树之外（Story 29/30）。
+
+    作用域令牌是"父 Agent 派给 subagent 的物理边界"：越界写必须失败并**报出
+    允许的 scope**，让调用方改对调用，而不是静默把别人的子树改掉。
+    """
+
+    code = "E_SCOPE"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
@@ -209,6 +220,7 @@ ERROR_EXIT_CODES = {
     LeaseHeld.code: LeaseHeld.exit_code,
     ConflictError.code: ConflictError.exit_code,
     InvalidStatus.code: InvalidStatus.exit_code,
+    ScopeError.code: ScopeError.exit_code,
 }
 
 
@@ -218,6 +230,58 @@ ERROR_EXIT_CODES = {
 def exit_code_for(exc: BaseException) -> int:
     """把异常映射为进程退出码。"""
     return ERROR_EXIT_CODES.get(getattr(exc, "code", ""), 1)
+
+
+# ── 作用域令牌与字段级所有权（P2，#113）────────────────────
+# 与租约策略同一条纪律：判定只写一处，两个 carrier 只 differ 在字节落哪儿。
+# 两个问题是分开的，别合成一个开关：作用域回答"这次写瞄没瞄错节点"（权限），
+# 字段所有权回答"这次写要不要过租约守卫"（时序）。Agent 的处置完全不同——
+# 前者改调用，后者稍后重试。
+
+EXECUTOR_FIELDS = frozenset({"status", "notes"})
+"""归租约持有者的字段：只有正在施工的人能推进进度、写施工笔记。"""
+
+PLANNER_FIELDS = frozenset({"label", "mode", "budget", "exit_criteria"})
+"""归 planner 的字段（zj 2026-09-14 定：规划元数据，不含 mode 之外的执行态）。
+
+改这些不推进执行进度，所以租约期内谁都能改——"大多数并发编辑根本不冲突"
+（Story 32 的 so that）全靠这一条。
+"""
+
+APPEND_ONLY_FIELDS = frozenset({"decisions"})
+"""只追加不覆盖的字段：追加永不冲突，因此不过租约守卫。"""
+
+
+def write_requires_lease(fields) -> bool:
+    """这批字段里有没有归租约持有者的？
+
+    空集 = **结构性写**（`add` / `delete` / 撤回决策），不是"没写字段"——
+    动到树本身的写一律过守卫。
+    """
+    touched = set(fields)
+    if not touched:
+        return True
+    return bool(touched - PLANNER_FIELDS - APPEND_ONLY_FIELDS)
+
+
+def is_within_scope(node_id: str, scope_root: str, parent_of) -> bool:
+    """node_id 是否在 scope_root 的子树内（含 scope_root 自身）。
+
+    沿 parent 链**上行**而不是下行枚举整棵子树：上行只要 O(深度) 次取节点，
+    且两个 carrier 都已经有 `get_node`，不必为"列全图"再开一个 carrier 专有
+    入口——那正是两 carrier 语义漂移最喜欢从哪儿进来的地方。
+
+    `parent_of(node_id)` 返回父 id，根返回 None。`seen` 防的是父链成环的损坏
+    数据：那会让 CLI 挂死而不是报错。
+    """
+    current = node_id
+    seen = set()
+    while current is not None and current not in seen:
+        if current == scope_root:
+            return True
+        seen.add(current)
+        current = parent_of(current)
+    return False
 
 
 # ── 派生阻塞的共享语义（#80）────────────────────────────

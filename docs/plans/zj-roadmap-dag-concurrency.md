@@ -223,6 +223,12 @@
 - 作用域令牌：`--as-agent <id> --scope <node_uid>`，越界写返回 `E_SCOPE`；subagent 默认无 scope（只读）。
 - 乐观并发：`--if-rev <sha>`（沿用 bundle 已有的 canonical sha256 基础设施），冲突返回 `E_CONFLICT` + 当前 rev，由 Agent 重读重试。
 - 字段级所有权：status / notes 归租约持有者，label / scope 归 planner，decisions 只追加不覆盖。
+
+  **2026-09-14 定案（zj，实现 #113 时）**，上面两条留了两个歧义，按下述口径落地：
+
+  - **不给 `--scope` 就是不限，不是只读。** spec 里的"（只读）"会被误读成"给了 `--as-agent` 没给 `--scope` 就拒绝一切写"，那与同一节的字段所有权自相矛盾——租约持有者必须能写它持有节点的 `status`——而且会让 #111 已交付的验收变红。"subagent 只读"是**父 Agent 派活时必须下发 `--scope`** 来兑现的策略；CLI 区分不出 subagent 与 planner/Human。
+  - **planner 字段 = label + mode + budget + exit_criteria**（比 spec 字面宽：spec 只写了 label）。判据不是"spec 列了谁"，而是"改它推不推进执行进度"：这四项都是规划元数据，改了不影响正在施工的人。
+  - **fencing 优先于字段所有权**：出示了已作废 `--token`（< fencing）的僵尸持有者，对**任何**字段的写都拒，包括 planner 字段——否则把 `--status` 换成 `--label` 就能绕过回收。字段所有权只在"没出示凭据 / 凭据没作废"时才生效。
 - 失败语义：`attempts` 递增、`last_error` 记录、`retry_backoff` 退避；超过阈值转 `blocked` 并挂 open question。
 
 ### 5. Carrier 演进：SQLite 优先于"自研事件流"（P3）
