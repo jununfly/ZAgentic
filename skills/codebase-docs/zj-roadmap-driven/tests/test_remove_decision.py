@@ -30,6 +30,7 @@ if str(SKILL_DIR) not in sys.path:
 from roadmap import Roadmap  # noqa: E402
 from roadmap_bundle import RoadmapBundle, BundleError  # noqa: E402
 from roadmap_bundle import canonical_json, sha256  # bundle 是 retracts 公式的权威源  # noqa: E402
+from roadmap_sqlite import RoadmapSqlite  # noqa: E402  # 第三个 carrier，验证 retract-and-keep 跨 carrier 一致
 CLI = SKILL_DIR / "roadmap_cli.py"
 
 NODE = "1-1"  # 根 "1" 下挂的第一个子节点
@@ -281,6 +282,36 @@ class BundleRemoveDecisionTest(RemoveDecisionContractTest, unittest.TestCase):
 
     def _raw_decisions(self, carrier, node_id):
         return carrier._read_decisions_file(node_id)
+
+    def _total_decisions(self, carrier):
+        return carrier.stats()["total_decisions"]
+
+
+class SqliteRemoveDecisionTest(RemoveDecisionContractTest, unittest.TestCase):
+    """第三个 carrier：sqlite 与 single-file / bundle 必须产出逐字段相同的撤回孪生。
+
+    sqlite 继承 `Roadmap` 的 `remove_decision`，默认抛 ValueError（与 single-file 同），
+    retracts 哈希用同一 canonical_json/sha256 公式 → 跨 carrier 字节一致。
+    """
+
+    NO_TARGET_ERROR = ValueError
+
+    def _build(self):
+        path = self.workdir / "roadmap.sqlite"
+        r = RoadmapSqlite(str(path))
+        r.init(title="rm-dec", description="", md_file="")
+        r.add_node("1", "根")
+        r.add_node("1", "子")
+        r.save()
+        return path
+
+    def _carrier(self):
+        r = RoadmapSqlite(str(self.path))
+        r.load()
+        return r
+
+    def _raw_decisions(self, carrier, node_id):
+        return carrier.data["nodes"][node_id]["decisions"]
 
     def _total_decisions(self, carrier):
         return carrier.stats()["total_decisions"]
