@@ -95,6 +95,66 @@ STATUS_ICONS = {
     STATUS_BLOCKED: "[!]",
 }
 
+# ── 失败语义与升级（#114，Story 33/34）──────────────────
+# 失败 N 次后挂 open question 升级给 Human；不改 status（blocked 仍纯派生，见 §3）。
+DEFAULT_MAX_ATTEMPTS = 3
+BACKOFF_BASE_SECONDS = 60
+BACKOFF_CAP_SECONDS = 3600
+
+
+def compute_retry_backoff(attempts: int) -> int:
+    """封顶指数退避：第 n 次失败建议等待 `min(60 * 2^(n-1), 3600)` 秒。"""
+    if attempts < 1:
+        attempts = 1
+    return min(BACKOFF_BASE_SECONDS * (2 ** (attempts - 1)), BACKOFF_CAP_SECONDS)
+
+
+def should_escalate(attempts: int, max_attempts: int) -> bool:
+    """第 N 次失败（attempts == max_attempts）即触发升级。"""
+    return attempts >= max_attempts
+
+
+def apply_failure(node: dict, error: str, now=None, raised_by: str = None,
+                  question: str = None, max_attempts: int = None) -> dict:
+    """在节点 dict 上累积一次失败（Story 33/34），两 carrier 共用此核心。
+
+    - attempts +1；last_error / last_failed_at 记录；retry_backoff 封顶指数退避。
+    - attempts 达阈值（默认 3，节点可带 max_attempts 覆盖）→ 挂 open_question 升级。
+    - **不改 status**：blocked 仍纯派生，fail 不碰它（决策 #1）。
+    - open_question 已存在时只刷新 attempts / last_error，保留首次 raised_at。
+    返回同一个 node（原地修改）。
+    """
+    if max_attempts is not None:
+        node["max_attempts"] = int(max_attempts)
+    attempts = node.get("attempts", 0) + 1
+    node["attempts"] = attempts
+    node["last_error"] = str(error)
+    now_val = now if now is not None else datetime.now()
+    if isinstance(now_val, (int, float)):
+        now_val = datetime.fromtimestamp(now_val)
+    ts = now_val.isoformat()
+    node["last_failed_at"] = ts
+    node["retry_backoff"] = compute_retry_backoff(attempts)
+
+    _max = node.get("max_attempts", DEFAULT_MAX_ATTEMPTS)
+    if should_escalate(attempts, _max):
+        existing = node.get("open_question")
+        if existing:
+            existing["attempts"] = attempts
+            existing["last_error"] = str(error)
+        else:
+            node["open_question"] = {
+                "question": question or (
+                    f"节点在执行 {attempts} 次后仍失败，需人工决策是否继续 / 调整方向。"
+                ),
+                "raised_at": ts,
+                "raised_by": raised_by or "agent",
+                "attempts": attempts,
+            }
+    return node
+
+
+
 # ── 依赖边类型（P1 依赖层）────────────────────────────────
 # 四种边共享同一套存储与命令，差别只在语义与成环规则。
 EDGE_BLOCKS = "blocks"
@@ -1220,6 +1280,18 @@ class Roadmap:
         self._sync_parent_status(node_id)
 
         return node
+
+    def record_failure(self, node_id: str, error: str, now=None,
+                       raised_by: str = None, question: str = None,
+                       max_attempts: int = None) -> dict:
+        """记录一次节点执行失败（Story 33/34）。见模块级 `apply_failure`。"""
+        if node_id not in self.data["nodes"]:
+            raise KeyError(f"节点不存在: {node_id}")
+        return apply_failure(
+            self.data["nodes"][node_id], error,
+            now=now, raised_by=raised_by, question=question,
+            max_attempts=max_attempts,
+        )
 
     def delete_node(self, node_id: str) -> list[str]:
         """删除节点及其所有子节点。返回被删除的 id 列表。"""

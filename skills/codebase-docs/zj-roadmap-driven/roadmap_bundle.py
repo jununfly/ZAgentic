@@ -39,6 +39,7 @@ from roadmap import (
     assert_settable_status,
     blocked_chain_lines,
     blocked_view,
+    apply_failure,
     build_budget,
     check_child_budget,
     count_round_start,
@@ -627,6 +628,20 @@ class RoadmapBundle:
         if clear_exit_criteria:
             fields.append("clear_exit_criteria")
         self._commit("node-updated", {"nodeId": node_id, "fields": fields}, stats)
+        return node
+
+    def record_failure(self, node_id: str, error: str, now=None,
+                       raised_by: str = None, question: str = None,
+                       max_attempts: int = None) -> dict:
+        """记录一次节点执行失败（Story 33/34）。见 `roadmap.apply_failure`。
+
+        分片 carrier：读节点 → 原地累积 → 写回节点分片（fail 不改 status，
+        故状态索引 / stats 不动）。
+        """
+        node = self._read_node_file(node_id)
+        apply_failure(node, error, now=now, raised_by=raised_by, question=question,
+                      max_attempts=max_attempts)
+        self._write_node_file(node_id, node)
         return node
 
     def _collect_subtree(self, node_id: str) -> list[dict[str, Any]]:
