@@ -31,6 +31,11 @@ python roadmap_cli.py decisions <json_path> [<node_id>]
 python roadmap_cli.py remove-decision <json_path> <node_id> --index N
 python roadmap_cli.py remove-decision <json_path> <node_id> --question "<问题文本>"
 
+# Failure semantics & escalation (P2, #114) — Story 33/34
+python roadmap_cli.py fail <json_path> <node_id> --error "失败原因" [--question "升级时给 Human 的问题"] [--max-attempts N]
+#   attempts+1 / last_error / retry_backoff(封顶指数退避)；达阈值(默认3)挂 open_question 升级。不改 status。
+#   执行侧元数据，需持租约（同 status）：非持有者写返回 E_LEASE_HELD。
+
 # Dependencies (P1) — edges live outside the tree.
 # Note: `edge` takes the action first and the path second, unlike every other
 # command, because it is a command group (`git remote add` style).
@@ -221,6 +226,25 @@ Which fields a lease actually protects:
 The point is that most concurrent edits never conflict: renaming or re-budgeting
 a node while another agent executes it is legal and succeeds. A mixed `update`
 that touches any lease-holder field is rejected whole — no half-written node.
+
+### Failure semantics & escalation (P2, #114)
+
+`fail` records an execution failure on a node (Story 33/34):
+
+```bash
+python roadmap_cli.py fail <json_path> <node_id> --error "..." [--question "..."] [--max-attempts N]
+```
+
+- `attempts` increments; `last_error` and `last_failed_at` are recorded; `retry_backoff`
+  is set to a capped exponential `min(60 * 2^(n-1), 3600)` seconds, recomputed every fail.
+- When `attempts` reaches the threshold (default `3`, overridable per node via
+  `--max-attempts`), the node gets an `open_question` field
+  `{question, raised_at, raised_by, attempts}` — the signal #115's md queue renders.
+- **`fail` never writes `status`.** `blocked` stays purely derived from `blocks` edges
+  (§3 decision). Escalation is expressed by the `open_question` marker, not by changing
+  status — so the `[!]` icon keeps meaning "dependency-blocked" only.
+- `fail` touches executor-owned metadata, so it passes through the same lease gate as
+  `status`: a non-holder write is rejected with `E_LEASE_HELD`.
 
 Bundle layout:
 

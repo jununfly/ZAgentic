@@ -229,7 +229,13 @@
   - **不给 `--scope` 就是不限，不是只读。** spec 里的"（只读）"会被误读成"给了 `--as-agent` 没给 `--scope` 就拒绝一切写"，那与同一节的字段所有权自相矛盾——租约持有者必须能写它持有节点的 `status`——而且会让 #111 已交付的验收变红。"subagent 只读"是**父 Agent 派活时必须下发 `--scope`** 来兑现的策略；CLI 区分不出 subagent 与 planner/Human。
   - **planner 字段 = label + mode + budget + exit_criteria**（比 spec 字面宽：spec 只写了 label）。判据不是"spec 列了谁"，而是"改它推不推进执行进度"：这四项都是规划元数据，改了不影响正在施工的人。
   - **fencing 优先于字段所有权**：出示了已作废 `--token`（< fencing）的僵尸持有者，对**任何**字段的写都拒，包括 planner 字段——否则把 `--status` 换成 `--label` 就能绕过回收。字段所有权只在"没出示凭据 / 凭据没作废"时才生效。
-- 失败语义：`attempts` 递增、`last_error` 记录、`retry_backoff` 退避；超过阈值转 `blocked` 并挂 open question。
+- 失败语义：`attempts` 递增、`last_error` 记录、`retry_backoff` 退避（封顶指数 `min(60*2^(n-1), 3600)`，默认阈值 3）；失败达阈值挂 `open_question` 升级给 Human。**升级不改 `status`**——`blocked` 仍纯派生（见 §3 决策）。
+
+  **2026-09-14 定案（zj，实现 #114 时）**，plan §4 line 232 原写"超过阈值转 `blocked`"，与 §3 2026-09-09 决策（blocked 纯派生、永不落盘）直接冲突，按下述口径落地：
+
+  - **升级只挂 `open_question`，不写 `status`。** §3 已定 blocked 由 blocks 边派生、不可人设（人设会与派生并存成第二真相源）。若升级把 status 写成 blocked，既污染 `[!]` 图标的语义（派生 blocked vs 升级 blocked 混为一谈），又要在 fail 路径绕过 `E_INVALID_STATUS` 守卫。Story 34 的"becomes blocked"理解为"挂起等 Human 决策"，由 `open_question` 字段表达，status 保持不变。
+  - **`open_question` 落节点字段**（单一真相源）：`node["open_question"] = {question, raised_at, raised_by, attempts}`。#115 的 md 队列扫描带此字段的节点即可渲染，删节点自动清队列，无孤儿。不做 roadmap 级独立列表（那会多一处真相源 + 删除级联）。
+  - **阈值与退避**：默认 `max_attempts = 3`，节点可用 `--max-attempts` 覆盖；`retry_backoff = min(60 * 2^(n-1), 3600)` 封顶指数退避，每次 fail 重算落盘，让调用方"稍后重试"而非立即重跑。`fail` 触碰执行侧元数据，与 `status` 同属执行者字段，走 #111 租约守卫（非持有者写被租约挡住，返回 `E_LEASE_HELD`）。
 
 ### 5. Carrier 演进：SQLite 优先于"自研事件流"（P3）
 
