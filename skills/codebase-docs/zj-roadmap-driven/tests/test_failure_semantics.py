@@ -54,6 +54,7 @@ CLI = SKILL_DIR / "roadmap_cli.py"
 sys.path.insert(0, str(SKILL_DIR))
 
 import roadmap
+from roadmap_sqlite import RoadmapSqlite
 from roadmap import (
     DEFAULT_MAX_ATTEMPTS,
     compute_retry_backoff,
@@ -72,6 +73,10 @@ def load_instance(path: str, storage: str):
         rb = RoadmapBundle(path)
         rb.load()
         return rb
+    if storage == "sqlite":
+        r = RoadmapSqlite(path)
+        r.load()
+        return r
     r = roadmap.Roadmap(path)
     r.load()
     return r
@@ -106,7 +111,8 @@ class FailureContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("r.json" if self.storage == "single" else "r.bundle")
+        path = Path(self.tmp.name) / ("r.sqlite" if self.storage == "sqlite"
+                                         else "r.json" if self.storage == "single" else "r.bundle")
         init = run_cli("init", str(path), "--title", "fail", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.assertEqual(run_cli("add", str(path), "1", "A").returncode, 0)
@@ -189,6 +195,11 @@ class BundleFailure(FailureContract, unittest.TestCase):
     storage = "bundle"
 
 
+class SqliteFailure(FailureContract, unittest.TestCase):
+    """Third-pass carrier for #116: RoadmapSqlite must agree on failure semantics."""
+    storage = "sqlite"
+
+
 # ── Slice 3: CLI contract (both carriers) ──
 
 class FailureCliContract:
@@ -196,7 +207,8 @@ class FailureCliContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("r.json" if self.storage == "single" else "r.bundle")
+        path = Path(self.tmp.name) / ("r.sqlite" if self.storage == "sqlite"
+                                         else "r.json" if self.storage == "single" else "r.bundle")
         init = run_cli("init", str(path), "--title", "fail", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.assertEqual(run_cli("add", str(path), "1", "A").returncode, 0)
@@ -250,6 +262,11 @@ class SingleFileFailureCli(FailureCliContract, unittest.TestCase):
 
 class BundleFailureCli(FailureCliContract, unittest.TestCase):
     storage = "bundle"
+
+
+class SqliteFailureCli(FailureCliContract, unittest.TestCase):
+    """Third-pass CLI carrier for #116: `fail` against sqlite-backed roadmap."""
+    storage = "sqlite"
 
 
 if __name__ == "__main__":
