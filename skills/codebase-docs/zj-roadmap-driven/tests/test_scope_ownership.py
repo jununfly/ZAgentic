@@ -145,7 +145,8 @@ class ScopeCliContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("roadmap.json" if self.storage == "single" else "roadmap.bundle")
+        path = Path(self.tmp.name) / ("roadmap.sqlite" if self.storage == "sqlite"
+                                        else "roadmap.json" if self.storage == "single" else "roadmap.bundle")
         init = run_cli("init", str(path), "--title", "scope", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.path = str(path)
@@ -239,6 +240,11 @@ class BundleScopeCli(ScopeCliContract, unittest.TestCase):
     storage = "bundle"
 
 
+class SqliteScopeCli(ScopeCliContract, unittest.TestCase):
+    """Third-pass CLI carrier for #116: scope guard against sqlite-backed roadmap."""
+    storage = "sqlite"
+
+
 # ── Slice 4: field-level ownership through the CLI ──
 
 class OwnershipCliContract:
@@ -252,7 +258,8 @@ class OwnershipCliContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("roadmap.json" if self.storage == "single" else "roadmap.bundle")
+        path = Path(self.tmp.name) / ("roadmap.sqlite" if self.storage == "sqlite"
+                                        else "roadmap.json" if self.storage == "single" else "roadmap.bundle")
         init = run_cli("init", str(path), "--title", "ownership", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.path = str(path)
@@ -372,6 +379,11 @@ class SingleFileOwnershipCli(OwnershipCliContract, unittest.TestCase):
 
 class BundleOwnershipCli(OwnershipCliContract, unittest.TestCase):
     storage = "bundle"
+
+
+class SqliteOwnershipCli(OwnershipCliContract, unittest.TestCase):
+    """Third-pass CLI carrier for #116: field ownership against sqlite-backed roadmap."""
+    storage = "sqlite"
 
 
 if __name__ == "__main__":
