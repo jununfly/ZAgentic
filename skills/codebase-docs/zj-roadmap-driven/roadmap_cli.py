@@ -60,6 +60,11 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   tree    <json_path> [node_id] [--depth N]  # 树形文本视图
 
+  fail    <json_path> <node_id> --error "..." [--question "..."] [--max-attempts N]
+              # 记录一次执行失败：attempts+1 / last_error / retry_backoff（封顶指数退避）
+              # 失败达阈值（默认 3，--max-attempts 覆盖）挂 open_question 升级给 Human
+              # 不改 status（blocked 仍纯派生）；执行侧元数据，需持租约（同 status）
+
   decide  <json_path> <node_id> "<question>" "<answer>" ["<note>"]
 
   remove-decision <json_path> <node_id> --index N | --question "..."
@@ -319,6 +324,27 @@ def cmd_update(args: dict):
     )
     r.save()
     _print_json(node)
+
+
+def cmd_fail(args: dict):
+    r = _load_roadmap(args["positional"][0])
+    node_id = r.resolve_node(args["positional"][1])
+    # fail 触碰的是执行侧元数据（attempts/last_error/retry_backoff/open_question），
+    # 与 status 同属执行者字段 → 走租约守卫（#111 依赖；非持有者写被租约挡住）。
+    _enforce_write_guard(r, node_id, args, {"status"})
+    error = args.get("error")
+    if not error or error == "true":
+        raise ValueError("--error 必须给出失败原因文本")
+    max_attempts = args.get("max-attempts")
+    node = r.record_failure(
+        node_id,
+        error,
+        raised_by=args.get("as-agent"),
+        question=args.get("question"),
+        max_attempts=int(max_attempts) if max_attempts is not None else None,
+    )
+    r.save()
+    _print_json(r.get_node_view(node_id))
 
 
 def cmd_delete(args: dict):
@@ -754,6 +780,7 @@ COMMANDS = {
     "add": cmd_add,
     "update": cmd_update,
     "delete": cmd_delete,
+    "fail": cmd_fail,
     "get": cmd_get,
     "tree": cmd_tree,
     "ready": cmd_ready,
@@ -782,7 +809,7 @@ COMMANDS = {
 
 # 写命令走整图锁；`edge` 按子动作区分，因为 `edge list` 是只读。
 LOCK_COMMANDS = frozenset(
-    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease"}
+    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease", "fail"}
 )
 EDGE_WRITE_ACTIONS = frozenset({"add", "remove", "migrate"})
 
