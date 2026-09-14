@@ -147,6 +147,7 @@ def apply_failure(node: dict, error: str, now=None, raised_by: str = None,
                 "question": question or (
                     f"节点在执行 {attempts} 次后仍失败，需人工决策是否继续 / 调整方向。"
                 ),
+                "last_error": str(error),
                 "raised_at": ts,
                 "raised_by": raised_by or "agent",
                 "attempts": attempts,
@@ -505,16 +506,20 @@ def status_icon(node: dict) -> str:
     return STATUS_ICONS.get(node.get("status"), "[?]")
 
 
-def tree_line(node: dict, prefix: str, last: bool, depth: int, blocked: set) -> str:
+def tree_line(node: dict, prefix: str, last: bool, depth: int, blocked: set, owner: str = None) -> str:
     """渲染一行树；blocked 图标来自边，不来自 status——status 里永远不该有它。
 
     渲染是给 Human 看的唯一视图。它跟 `get` 打架（一个说被挡、一个说没开工）
     比任何内部实现差异都贵，所以行格式两个 carrier 共用一份。
+
+    `owner` 是 #115 的 owner 列：持有未过期租约的节点在行尾标出 `agent/device`，
+    让 Human 一眼看到"谁拿着哪节点"。无租约时传 None → 行尾不动，md 字节不变。
     """
     icon = STATUS_ICONS[STATUS_BLOCKED] if node["id"] in blocked else status_icon(node)
     mode_tag = MODE_TAG.get(node.get("mode"), "")
     connector = "" if depth == 0 else ("└── " if last else "├── ")
-    return f"{prefix}{connector}{icon}{mode_tag} {node['id']}. {node['label']}"
+    owner_suffix = f"  · owner: {owner}" if owner else ""
+    return f"{prefix}{connector}{icon}{mode_tag} {node['id']}. {node['label']}{owner_suffix}"
 
 
 # ── md 阻塞链（#82）──────────────────────────────────────
@@ -604,6 +609,66 @@ def render_chain_collapsed(lines: list) -> str:
     return _chain_block(
         lines, f"\n<details><summary>{summary}</summary>\n\n", "\n\n</details>\n"
     )
+
+
+# ── md 待决问题队列 + owner 列（#115） ──────────────────
+# 与阻塞链同源：条目内容 / 取舍 / 上限两边一致，写在模块层，两个 carrier 只喂数据。
+# 两个新元素都是"有状态才出现"——无待决问题、无持有租约时这些函数返回空串，
+# 调用方拼进 md 后输出与改动前逐字节一致（§6 护栏 3 的硬验收）。
+
+OPEN_QUESTION_LIMIT = 5
+"""md 待决问题队列的节点上限——与 BLOCKED_CHAIN_LIMIT 同一条"不膨胀"验收。"""
+
+
+def owner_label(lease: dict) -> str:
+    """租约持有者展示串：agent，带 device 时 `agent/device`。"""
+    agent = lease.get("agent_id", "")
+    device = lease.get("device_id", "")
+    return agent if not device else f"{agent}/{device}"
+
+
+def open_question_items(nodes) -> list:
+    """收集带 open_question 字段的节点，返回 [(display_id, label, oq), ...]。
+
+    `nodes` 是 (display_id, node_dict) 的可迭代；两个 carrier 喂各自的数据，
+    排序由这里统一（按 display id），避免两个 carrier 顺序不一致而被断言放过。
+    """
+    items = []
+    for nid, node in nodes:
+        oq = node.get("open_question")
+        if not oq:
+            continue
+        items.append((nid, node.get("label", ""), oq))
+    items.sort(key=lambda t: t[0])
+    return items
+
+
+def format_open_question_entry(nid: str, label: str, oq: dict) -> str:
+    question = oq.get("question", "")
+    raised_by = oq.get("raised_by", "")
+    attempts = oq.get("attempts", "?")
+    last_error = oq.get("last_error", "")
+    if last_error:
+        return (f"- {nid}. {label} — {question} 失败原因：{last_error} "
+                f"(raised by {raised_by}, attempts {attempts})")
+    return f"- {nid}. {label} — {question} (raised by {raised_by}, attempts {attempts})"
+
+
+def render_open_questions_collapsed(items) -> str:
+    """Human 主视图里的待决问题队列：折叠成一行摘要，展开见条目。"""
+    if not items:
+        return ""
+    lines = [format_open_question_entry(nid, label, oq) for nid, label, oq in items]
+    summary = f"待决问题：{len(items)} 个节点等待人工决策"
+    return _chain_block(lines, f"\n<details><summary>{summary}</summary>\n\n", "\n\n</details>\n")
+
+
+def render_open_questions_plain(items) -> str:
+    """导出视图里的待决问题队列：非折叠，能一路 grep。"""
+    if not items:
+        return ""
+    lines = [format_open_question_entry(nid, label, oq) for nid, label, oq in items]
+    return _chain_block(lines, "\n### 待决问题\n\n", "\n")
 
 
 # ── 结构预算（case 1） ───────────────────────────────────
@@ -1517,6 +1582,37 @@ class Roadmap:
                 blocked.add(de["to"])
         return blocked
 
+    # ── #115 md 视图数据（owner 列 / 待决问题队列） ──────
+
+    def owner_map(self) -> dict:
+        """display id → `agent[/device]`：当前持有**未过期**租约的节点。
+
+        租约侧车以 node_uid 为键；uid 与显示 id 都可能被当作键传入（claim 不解析），
+        所以两端都查。过期租约不算持有者——僵尸租约留着不自动删，但 md 不该显示。
+        """
+        result: dict = {}
+        store = self._read_lease_store()
+        lookup: dict = {}
+        for nid, node in self.data["nodes"].items():
+            lookup[nid] = nid
+            if node.get("uid"):
+                lookup[node["uid"]] = nid
+        now = time.time()
+        for key, lease in store.get("leases", {}).items():
+            if is_expired(lease, now):
+                continue
+            nid = lookup.get(key)
+            if nid is None:
+                continue
+            result[nid] = owner_label(lease)
+        return result
+
+    def open_question_items(self) -> list:
+        """带 open_question 字段的节点，按 display id 排序——喂给 md 渲染。"""
+        return open_question_items(
+            ((nid, node) for nid, node in self.data["nodes"].items())
+        )
+
     def get_node_view(self, node_id: str) -> dict:
         """读视图：节点本体 + 派生的 blocked / blocked_reason。"""
         return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
@@ -1714,15 +1810,20 @@ class Roadmap:
 
     # ── 树遍历 ─────────────────────────────────────────
 
-    def get_tree(self, root_id: str = "1", max_depth: int = 10) -> str:
-        """生成 Unicode 盒状树形文本视图。"""
+    def get_tree(self, root_id: str = "1", max_depth: int = 10, owners: dict = None) -> str:
+        """生成 Unicode 盒状树形文本视图。
+
+        `owners` 是 #115 的 owner 列：display id → `agent[/device]`。传 None 或空
+        dict 时树行与改动前逐字节一致（md 不膨胀的硬验收）。
+        """
         if root_id not in self.data["nodes"]:
             return f"(节点 {root_id} 不存在)"
 
         blocked = self.blocked_node_ids()
+        owners = owners or {}
         root = self.data["nodes"][root_id]
         # 根不带 connector，也不给子节点垫缩进——所以根单独走一行。
-        lines = [tree_line(root, "", True, 0, blocked)]
+        lines = [tree_line(root, "", True, 0, blocked, owners.get(root_id))]
 
         def _render(nid: str, prefix: str, is_last: bool, depth: int):
             if depth > max_depth:
@@ -1730,7 +1831,7 @@ class Roadmap:
             node = self.data["nodes"].get(nid)
             if not node:
                 return
-            lines.append(tree_line(node, prefix, is_last, depth, blocked))
+            lines.append(tree_line(node, prefix, is_last, depth, blocked, owners.get(nid)))
 
             children = node.get("children", [])
             for i, cid in enumerate(children):
@@ -1830,7 +1931,7 @@ class Roadmap:
             focus_node = self.data["nodes"][focus_id]
             focus_line = f"> 当前施工: {focus_id}. {focus_node['label']}"
 
-        tree_text = self.get_tree(max_depth=50 if all_nodes else max_depth)
+        tree_text = self.get_tree(max_depth=50 if all_nodes else max_depth, owners=self.owner_map())
 
         all_decisions = self.get_decisions() if all_nodes else []
         decision_lines = ""
@@ -1860,6 +1961,8 @@ class Roadmap:
         # 树之后立刻给出"为什么没进展"——Human 的视线顺序是先扫树看见 `[!]`，
         # 再需要一个不用翻 JSON 的答案。
         section += render_chain_plain(self._blocked_chain_lines())
+        # #115：待决问题队列（失败达阈值挂起的 open question），同样只在有状态时出现。
+        section += render_open_questions_plain(self.open_question_items())
 
         if decision_lines:
             section += f"\n### 决策历史\n\n{decision_lines}\n"
@@ -1879,7 +1982,8 @@ class Roadmap:
         """轻量渲染（Human 视图）：树 depth=2 + 焦点节点展开。"""
         now = self.data["metadata"].get("updated", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-        tree_text = self.get_tree(max_depth=2)
+        owners = self.owner_map()
+        tree_text = self.get_tree(max_depth=2, owners=owners)
 
         focus_id = self.get_current_focus()
         focus_detail = ""
@@ -1894,18 +1998,20 @@ class Roadmap:
                 for d in decisions:
                     note = f" ({d.get('note', '')})" if d.get("note") else ""
                     focus_detail += f"- Q: {d['q']} → {d['answer']}{note}\n"
-            focus_subtree = self.get_focus_subtree(focus_id, max_depth=1)
+            focus_subtree = self.get_focus_subtree(focus_id, max_depth=1, owners=owners)
             if focus_subtree:
                 focus_detail += f"\n**当前子树：**\n{focus_subtree}\n"
 
         # 空链时这里得到空串：下面那个模板因此在无阻塞时与 #82 之前逐字节相同。
         chain = render_chain_collapsed(self._blocked_chain_lines())
+        # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
+        oq = render_open_questions_collapsed(self.open_question_items())
         section = f"""<!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
 > 数据文件: `{os.path.basename(self.json_path)}` | 最后更新: {now}
 
-{tree_text}{chain}
+{tree_text}{chain}{oq}
 """
         if focus_detail:
             section += focus_detail
@@ -1914,12 +2020,17 @@ class Roadmap:
 
         return section
 
-    def get_focus_subtree(self, root_id: str, max_depth: int = 1) -> str:
-        """Render a bounded subtree under the focus node."""
+    def get_focus_subtree(self, root_id: str, max_depth: int = 1, owners: dict = None) -> str:
+        """Render a bounded subtree under the focus node.
+
+        `owners` 是 #115 的 owner 列（display id → `agent[/device]`）；传 None 时
+        子树行与改动前逐字节一致。
+        """
         if root_id not in self.data["nodes"]:
             return ""
 
         lines = []
+        owners = owners or {}
         root = self.data["nodes"][root_id]
         children = root.get("children", [])
         blocked = self.blocked_node_ids()
@@ -1928,7 +2039,7 @@ class Roadmap:
             node = self.data["nodes"].get(nid)
             if not node:
                 return
-            lines.append(tree_line(node, prefix, is_last, depth, blocked))
+            lines.append(tree_line(node, prefix, is_last, depth, blocked, owners.get(nid)))
 
             child_ids = node.get("children", [])
             child_prefix = prefix + ("    " if is_last else "│   ")
