@@ -8,7 +8,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
 命令:
   init    <roadmap_path> --title "..." [--description "..."] [--md-file "..."]
-              [--storage single|bundle] [--snapshot-interval N]
+              [--storage single|bundle|sqlite] [--snapshot-interval N]
 
   add     <json_path> <parent_id> "<label>"
               [--status pending|in_progress|completed]   # blocked 派生，不可设
@@ -127,6 +127,7 @@ from roadmap import (
     unlock_roadmap,
 )
 from roadmap_bundle import BundleError, RoadmapBundle
+from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from storage_advisor import recommend_storage
 from roadmap import LEASE_TTL_SECONDS, is_expired
 import time
@@ -265,7 +266,13 @@ def _emit(data, fmt=None, fields=None, quiet=False):
 
 def _load_roadmap(path: str):
     """Select storage by the path shape, then load one command-facing adapter."""
-    roadmap = RoadmapBundle(path) if Path(path).is_dir() else Roadmap(path)
+    p = Path(path)
+    if p.is_dir():
+        roadmap = RoadmapBundle(path)
+    elif is_sqlite_path(path):
+        roadmap = RoadmapSqlite(path)
+    else:
+        roadmap = Roadmap(path)
     roadmap.load()
     return roadmap
 
@@ -273,18 +280,27 @@ def _load_roadmap(path: str):
 def cmd_init(args: dict):
     path = args["positional"][0]
     storage = args.get("storage", "single")
+    title = args.get("title", "Untitled")
+    description = args.get("description", "")
+    md_file = args.get("md-file", "")
+    if storage == "sqlite":
+        r = RoadmapSqlite(path)
+        r.init(title=title, description=description, md_file=md_file)
+        r.save()
+        print(f"Created sqlite: {r.json_path}")
+        return
     seed = Roadmap(path)
     data = seed.init(
-        title=args.get("title", "Untitled"),
-        description=args.get("description", ""),
-        md_file=args.get("md-file", ""),
+        title=title,
+        description=description,
+        md_file=md_file,
     )
     if storage == "bundle":
         bundle = RoadmapBundle.create_from_data(path, data, int(args.get("snapshot-interval", 100)))
         print(f"Created bundle: {bundle.path}")
         return
     if storage != "single":
-        raise ValueError("--storage must be single or bundle")
+        raise ValueError("--storage must be single, bundle or sqlite")
     seed.save()
     print(f"Created: {seed.json_path}")
 
