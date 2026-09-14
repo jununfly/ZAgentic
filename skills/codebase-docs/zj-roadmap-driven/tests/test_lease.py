@@ -3,9 +3,9 @@
 
 Scope (reconstructed from docs/plans/zj-roadmap-dag-concurrency.md §4 + Story 25-31,
 "01 P2 租约核心"): claim / heartbeat / steal / release (+ --force) + fencing token
-+ `--if-rev` optimistic concurrency. Two carriers (single-file + bundle) must agree
-on what a lease means — the policy lives in `lease.py` and is the one source of
-truth; storage differs only in *where the bytes go*.
++ `--if-rev` optimistic concurrency. Three carriers (single-file + bundle + sqlite)
+must agree on what a lease means — the policy lives in `lease.py` and is the one
+source of truth; storage differs only in *where the bytes go*.
 
 Why this file exists
 --------------------
@@ -23,7 +23,7 @@ Seams under test
      main seam: `lease` lifecycle exit codes, stale-token write rejection
      (E_LEASE_HELD), and `--if-rev` conflict (E_CONFLICT).
 
-Both carriers run every test.
+All three carriers run every test.
 
 Run: python tests/test_lease.py        (also works under pytest)
 """
@@ -45,6 +45,8 @@ import roadmap
 from roadmap import Roadmap, LeaseHeld, ConflictError
 import roadmap_bundle
 from roadmap_bundle import RoadmapBundle
+import roadmap_sqlite
+from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 
 LEASE_TTL = 300
 
@@ -67,7 +69,7 @@ def build_data() -> dict:
 # ── Carrier-level: claim/heartbeat/steal/release/fencing semantics ──
 
 class LeaseContract:
-    """Subclassed by SingleFileLease and BundleLease; supplies the storage."""
+    """Subclassed by SingleFileLease / BundleLease / SqliteLease; supplies the storage."""
 
     def build(self) -> str:
         raise NotImplementedError
@@ -81,7 +83,13 @@ class LeaseContract:
         self.tmp.cleanup()
 
     def load(self):
-        r = RoadmapBundle(self.path) if Path(self.path).is_dir() else Roadmap(self.path)
+        p = Path(self.path)
+        if p.is_dir():
+            r = RoadmapBundle(self.path)
+        elif is_sqlite_path(self.path):
+            r = RoadmapSqlite(self.path)
+        else:
+            r = Roadmap(self.path)
         r.load()
         return r
 
@@ -89,7 +97,7 @@ class LeaseContract:
         if getattr(r, "is_bundle", False):
             lines = (r.path / "history/events.jsonl").read_text(encoding="utf-8").splitlines()
             return [json.loads(line) for line in lines if line.strip()]
-        store = json.loads(Path(r.json_path + ".leases.json").read_text(encoding="utf-8"))
+        store = r._read_lease_store()
         return store.get("events", [])
 
     # slice 1: claim
@@ -192,6 +200,15 @@ class BundleLease(LeaseContract, unittest.TestCase):
         return str(path)
 
 
+class SqliteLease(LeaseContract, unittest.TestCase):
+    def build(self) -> str:
+        path = Path(self.tmp.name) / "roadmap.sqlite"
+        r = RoadmapSqlite(str(path))
+        r.data = build_data()
+        r.save()
+        return str(path)
+
+
 # ── CLI-level: exit codes are the Agent-facing contract ──
 
 def run_cli(*args):
@@ -200,7 +217,13 @@ def run_cli(*args):
 
 
 def rev_of(path: str) -> str:
-    r = RoadmapBundle(path) if Path(path).is_dir() else Roadmap(path)
+    p = Path(path)
+    if p.is_dir():
+        r = RoadmapBundle(path)
+    elif is_sqlite_path(path):
+        r = RoadmapSqlite(path)
+    else:
+        r = Roadmap(path)
     r.load()
     return r.current_revision()
 
@@ -210,7 +233,8 @@ class LeaseCliContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("roadmap.json" if self.storage == "single" else "roadmap.bundle")
+        ext = {"single": "json", "bundle": "bundle", "sqlite": "sqlite"}[self.storage]
+        path = Path(self.tmp.name) / f"roadmap.{ext}"
         init = run_cli("init", str(path), "--title", "lease-cli", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.path = str(path)
@@ -272,6 +296,10 @@ class SingleFileLeaseCli(LeaseCliContract, unittest.TestCase):
 
 class BundleLeaseCli(LeaseCliContract, unittest.TestCase):
     storage = "bundle"
+
+
+class SqliteLeaseCli(LeaseCliContract, unittest.TestCase):
+    storage = "sqlite"
 
 
 if __name__ == "__main__":

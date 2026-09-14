@@ -33,6 +33,7 @@ from roadmap import (  # noqa: E402  （错误码表这道缝只在 Python API �
     InvalidStatus,
     RoadmapError,
 )
+from roadmap_sqlite import RoadmapSqlite  # noqa: E402  # 第三个 carrier：blocked 派生在 sqlite 上同样只存在于读视图
 
 CLI = SKILL_DIR / "roadmap_cli.py"
 
@@ -412,6 +413,27 @@ class Slice10TreeRendersTheDerivedIconTest(BlockedContractTest):
         section = self.run_cli("section", self.roadmap).stdout
 
         self.assertEqual(self.icon_for(section, "1-2"), "[!]")
+
+
+class SqliteBlockedTest(BlockedContractTest):
+    """第三个 carrier：sqlite 上 blocked 同样只在 `get`/tree/section 里派生，绝不落盘。
+
+    init 必须显式 `--storage sqlite`，否则 CLI 默认会往 `.sqlite` 文件名里写 JSON；
+    落盘缝改成直接从 sqlite 回读 `self.data["nodes"]`。
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.roadmap = self.workdir / "roadmap.sqlite"
+
+    def init_roadmap(self):
+        self.run_cli("init", self.roadmap, "--title", "P1 阻塞派生", "--storage", "sqlite")
+
+    def on_disk_nodes(self):
+        """落盘缝：sqlite carrier 里真实存着的节点，不含任何派生字段。"""
+        r = RoadmapSqlite(str(self.roadmap))
+        r.load()
+        return r.data["nodes"]
 
 
 if __name__ == "__main__":
