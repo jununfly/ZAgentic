@@ -47,10 +47,13 @@ from roadmap import (
     TraceNotFound,
     InvalidLayer,
     PromoteTargetInvalid,
+    PruneNoEdge,
+    ReferencedError,
     assert_settable_status,
     blocked_chain_lines,
     blocked_view,
     apply_failure,
+    apply_promotion,
     build_budget,
     check_child_budget,
     count_round_start,
@@ -63,9 +66,11 @@ from roadmap import (
     new_uid,
     LAYER_PLAN,
     LAYER_TRACE,
+    PROMOTE_ACCEPTED,
     TRACE_KINDS,
     EDGE_MAINLINE,
     EDGE_REFERENCE,
+    EDGE_DERIVES_FROM,
     ensure_layer,
     assert_plan_layer,
     resolve_node,
@@ -556,10 +561,27 @@ class RoadmapBundle:
 
     # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
 
-    def context(self, node_id: str) -> dict:
-        """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。"""
-        self._read_node_file(node_id)  # 不存在抛 KeyError，与 single-file 一致
-        return node_context(node_id, self._all_nodes(), self.list_edges())
+    def context(self, node_id: str, includes=()) -> dict:
+        """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链 + `--include`（P5-S4）。
+
+        bundle 的 plan 节点在 `nodes/`、trace 在 `traces/`，故把两者一起喂给
+        node_context，--include trace 的对端 trace 才可见（single-file 两份同处
+        data["nodes"]，无需此处理）。端点已是显示 id（list_edges 已翻译）。
+
+        注意：bundle 把 `decisions` 拆进独立分片，`_read_node_file` 返回的节点**不含**
+        decisions 字段；--include decisions 要读 `by_id[node]["decisions"]`，所以这里
+        从分片补回（single-file 的节点 dict 自带 decisions，天然免疫）。
+        """
+        self._read_any_node(node_id)  # 不存在抛 KeyError，与 single-file 一致
+        nodes = self._all_nodes() + self._all_trace_nodes()
+        for n in nodes:
+            n["decisions"] = self._read_decisions_file(n["id"])
+        return node_context(
+            node_id,
+            nodes,
+            self.list_edges(),
+            includes=includes,
+        )
 
     def next_nodes(self) -> list:
         """就绪优先建议：关键路径上的就绪节点优先，其余按 id 排序。"""
@@ -573,7 +595,9 @@ class RoadmapBundle:
 
     def blocking_edges(self, node_id: str) -> list[str]:
         # 索引按 uid 建（端点落盘是 uid），不能用显示 id 直接查；逐边翻译后比对。
-        nodes = self._all_nodes()
+        # 翻译表须含 trace（_nodes_for_edge_translation），否则 derives-from 等边的
+        # trace 端点留成 raw uid，下游 _read_node_file 会炸。
+        nodes = self._nodes_for_edge_translation()
         blockers: list[str] = []
         for edge_id in self._edge_ids():
             de = edge_endpoints_as_display(self._read_edge_file(edge_id), nodes)
@@ -600,23 +624,27 @@ class RoadmapBundle:
         edge_ids = self._edge_ids()
         if not edge_ids:
             return set()
-        nodes = self._all_nodes()
+        # 端点翻译必须含 trace 节点：derives-from / mainline / reference 边的端点可能是
+        # trace 的 uid，plan 之外的 uid 不在 _all_nodes() 里，会被 edge_endpoints_as_display
+        # 原样留成 raw uid，随后 _read_node_file(raw_uid) 触发 safe_node_id 抛 BundleError
+        # （single-file 把 trace 与 plan 同存 data["nodes"]，天然免疫——这是 bundle 特有问题）。
+        nodes = self._nodes_for_edge_translation()
         blocked: set[str] = set()
         for edge_id in edge_ids:
             de = edge_endpoints_as_display(self._read_edge_file(edge_id), nodes)
             try:
                 predecessor = self._read_node_file(de["from"])
-            except KeyError:
+            except (KeyError, BundleError):
                 predecessor = None
             if is_blocking(de, predecessor):
                 blocked.add(de["to"])
         return blocked
 
     def _predecessor_or_none(self, node_id: str) -> Optional[dict[str, Any]]:
-        """读前驱节点；悬空边（前驱不存在）返回 None —— 按未完成算。"""
+        """读前驱节点；悬空边（前驱不存在）或非法 id 返回 None —— 按未完成算。"""
         try:
             return self._read_node_file(node_id)
-        except KeyError:
+        except (KeyError, BundleError):
             return None
 
     def get_node_view(self, node_id: str) -> dict[str, Any]:
@@ -776,6 +804,66 @@ class RoadmapBundle:
             # 端点落盘一律 uid；mainline 不触发环检测。
             self.add_edge(trace_id, from_id, EDGE_MAINLINE)
         return node
+
+    # ── promote 状态机 / prune（P5-S3/S4，§3.2/§3.3）────────
+    # trace 节点在 bundle 里是 traces/ 分片，不在 data["nodes"]，所以覆写 single-file
+    # 的 promote/prune：读/写走 _read_trace_file / _write_trace_file，状态机语义仍交
+    # 给模块级 apply_promotion（单一事实源）。
+
+    def promote(
+        self,
+        trace_id: str,
+        action: str,
+        target: Optional[str] = None,
+        label: Optional[str] = None,
+        reason: Optional[str] = None,
+    ) -> dict[str, Any]:
+        trace_id = self.resolve_node(trace_id)
+        # 先按"任意节点"解析并判 layer：plan 节点必须先在这里以 InvalidLayer 拒掉，
+        # 不能等 _read_trace_file 抛 KeyError（那会变成"trace 节点不存在"的误报，§3.4）。
+        node = self._read_any_node(trace_id)
+        if node.get("layer", LAYER_PLAN) != LAYER_TRACE:
+            raise InvalidLayer(f"promote 只作用于 trace 节点，{trace_id} 是 plan 节点")
+        if action == "propose":
+            target_id = self.resolve_node(target) if target is not None else None
+            if target_id is not None:
+                tnode = self._read_any_node(target_id)
+                if tnode.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                    raise PromoteTargetInvalid(f"--under 目标 {target_id} 不是 plan 节点")
+            result = apply_promotion(node, action, target=target_id, label=label, reason=reason)
+        else:
+            result = apply_promotion(node, action, target=target, label=label, reason=reason)
+        if result.get("create_plan"):
+            spec = result["create_plan"]
+            new_node = self.add_node(spec["parent_id"], spec["label"])
+            self.add_edge(trace_id, new_node["id"], EDGE_DERIVES_FROM)
+            self._write_trace_file(trace_id, node)
+            return new_node
+        self._write_trace_file(trace_id, node)
+        return node
+
+    def prune(self, trace_id: str, edge_id: str = None) -> dict[str, Any]:
+        trace_id = self.resolve_node(trace_id)
+        # 先按"任意节点"解析并判 layer：plan 节点必须先以 InvalidLayer 拒掉，
+        # 不能等 _read_trace_file 抛 KeyError（会变成"trace 节点不存在"的误报）。
+        node = self._read_any_node(trace_id)
+        if node.get("layer", LAYER_PLAN) != LAYER_TRACE:
+            raise InvalidLayer(f"prune 只作用于 trace 节点，{trace_id} 是 plan 节点")
+        if edge_id is not None:
+            for e in self.list_edges(trace_id):
+                if e["id"] == edge_id:
+                    return self.remove_edge(edge_id)
+            raise TraceNotFound(f"边 {edge_id} 不存在或不涉及 trace {trace_id}")
+        mainline = [
+            e for e in self.list_edges(trace_id)
+            if e["type"] == EDGE_MAINLINE and e["to"] == trace_id
+        ] or [
+            e for e in self.list_edges(trace_id)
+            if e["type"] == EDGE_MAINLINE and e["from"] == trace_id
+        ]
+        if not mainline:
+            raise PruneNoEdge(f"trace {trace_id} 没有 mainline 边可 prune")
+        return self.remove_edge(mainline[0]["id"])
 
     def update_node(
         self,
@@ -1060,7 +1148,11 @@ class RoadmapBundle:
     def delete_node(self, node_id: str) -> list[str]:
         if node_id == "1":
             raise BundleError("不能删除根节点")
-        node = self._read_node_file(node_id)
+        # trace 节点在 traces/ 分片（L3），不在 nodes/——先识别它再走专门的删除路径。
+        try:
+            node = self._read_node_file(node_id)
+        except KeyError:
+            return self._delete_trace_node(node_id)
         parent = self._read_node_file(node["parent"])
         deleted_nodes = self._collect_subtree(node_id)
         # 先删边、后删节点：万一中间被打断，剩下的是"边没了、节点还在"这种
@@ -1092,6 +1184,22 @@ class RoadmapBundle:
             payload["removedEdges"] = self.last_edge_cascade
         self._commit("nodes-deleted", payload, stats)
         return [item["id"] for item in deleted_nodes]
+
+    def _delete_trace_node(self, trace_id: str) -> list[str]:
+        """删除一条 trace 节点（L3 在 traces/）。plan 节点的删除走上面的 delete_node。"""
+        node = self._read_trace_file(trace_id)
+        # S3 参照完整性：已被 promote --accept 落进地图的 trace 不允许删（派生自单纯
+        # 文件的同一验收，避免两 carrier 漂移）。
+        promo = node.get("promotion") or {}
+        if promo.get("state") == PROMOTE_ACCEPTED:
+            raise ReferencedError(
+                f"trace {trace_id} 已被 promote --accept 引用，删除会让 derives-from 边悬空"
+            )
+        # 先删边、后删节点：与 plan 删除同纪律的穷人事务。
+        self.last_edge_cascade = self.remove_edges_touching({trace_id})
+        (self.path / "traces" / f"{trace_id}.json").unlink()
+        self._commit("trace-deleted", {"nodeId": trace_id}, self._read_stats())
+        return [trace_id]
 
     def add_decision(self, node_id: str, question: str, answer: str, note: str = "") -> dict[str, Any]:
         self._read_node_file(node_id)
@@ -1480,8 +1588,10 @@ class RoadmapBundle:
         源喂的是 `edges/` 目录本身，不是它的索引——索引可以整份丢掉。逐个边文件
         读比读索引贵，但索引是另一份可失效的副本：挂在它上面就等于让派生值依赖
         派生值。端点落盘是 uid：喂给 blocked_chain_lines 前每条边翻回显示 id。
+        翻译表须含 trace（_nodes_for_edge_translation），否则 derives-from 等边的
+        trace 端点留成 raw uid，下游 _read_node_file 会炸（single-file 同存两张图免疫）。
         """
-        nodes = self._all_nodes()
+        nodes = self._nodes_for_edge_translation()
         return blocked_chain_lines(
             (edge_endpoints_as_display(self._read_edge_file(edge_id), nodes) for edge_id in self._edge_ids()),
             self._predecessor_or_none,

@@ -317,6 +317,29 @@ class PromoteTargetInvalid(RoadmapError):
     exit_code = 1
 
 
+class PromoteStateInvalid(RoadmapError):
+    """promote 状态机非法转移（P5-S3，§3.2）：例如对已 accepted 的 proposal 再
+    `--reject`，或对没有 proposal 的 trace 直接 `--accept`/`--reject`。"""
+
+    code = "E_PROMOTE_STATE_INVALID"
+    exit_code = 1
+
+
+class ReferencedError(RoadmapError):
+    """试图删除被引用的节点（P5-S3/S4，§3.4）：已被 `promote --accept` 引用的
+    trace、或被 `compressed_from` 引用的节点。删除会让指向它的边悬空，故拒绝。"""
+
+    code = "E_REFERENCED"
+    exit_code = 1
+
+
+class PruneNoEdge(RoadmapError):
+    """`prune` 默认删 mainline 边，但该 trace 没有任何 mainline 边可删（P5-S4，§3.3）。"""
+
+    code = "E_PRUNE_NO_EDGE"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
@@ -331,6 +354,9 @@ ERROR_EXIT_CODES = {
     TraceNotFound.code: TraceNotFound.exit_code,
     InvalidLayer.code: InvalidLayer.exit_code,
     PromoteTargetInvalid.code: PromoteTargetInvalid.exit_code,
+    PromoteStateInvalid.code: PromoteStateInvalid.exit_code,
+    ReferencedError.code: ReferencedError.exit_code,
+    PruneNoEdge.code: PruneNoEdge.exit_code,
 }
 
 
@@ -940,6 +966,22 @@ LAYER_PLAN = "plan"
 LAYER_TRACE = "trace"
 TRACE_KINDS = frozenset({"turn", "finding", "doubt", "attempt", "artifact"})
 
+# `promotion` 状态机（P5-S3，§3.2）：trace 节点上的一等状态，取代"挂一个待办"，
+# 因为本仓库此刻没有 open-question 设施可挂。proposal 默认由 Agent 产出（proposed），
+# Human 用 `--accept` 落正式 plan 节点、用 `--reject` 记录拒绝（保留痕迹，不物理删除）。
+PROMOTE_PROPOSED = "proposed"
+PROMOTE_ACCEPTED = "accepted"
+PROMOTE_REJECTED = "rejected"
+PROMOTE_STATES = frozenset({PROMOTE_PROPOSED, PROMOTE_ACCEPTED, PROMOTE_REJECTED})
+# 权限矩阵（§4.2）：Agent 提案、Human 决定。这里只记角色，不引入自报身份机制。
+PROMOTER_AGENT = "agent"
+DECIDER_HUMAN = "human"
+# context --include 的三类取值（P5-S4，§3.3）。
+INCLUDE_DECISIONS = "decisions"
+INCLUDE_TRACE = "trace"
+INCLUDE_CHILDREN = "children"
+VALID_INCLUDES = frozenset({INCLUDE_DECISIONS, INCLUDE_TRACE, INCLUDE_CHILDREN})
+
 
 def ensure_layer(nodes) -> int:
     """给缺 `layer` 的节点补 `'plan'`；已有则不动。返回补了几条。
@@ -1047,12 +1089,15 @@ def resolve_node(ref: str, nodes) -> str:
     return ref
 
 
-def node_context(node_id: str, nodes, edges) -> dict:
-    """节点来龙去脉（#104 S5）。
+def node_context(node_id: str, nodes, edges, includes=()) -> dict:
+    """节点来龙去脉（#104 S5）+ P5-S4 的 edge-driven `--include`（§3.3）。
 
-    - upstream：所有 blocks 祖先（沿 blocks 边反向可达，不含自身）
-    - downstream：所有 blocks 后代（沿 blocks 边正向可达，不含自身）
-    - blocked_by：直接未完成 blocks 前驱（阻塞链）
+    - upstream / downstream / blocked_by：blocks 依赖图（默认始终给出）。
+    - includes 控制额外维度，缺省为空（输出与 S5 完全一致，字节级可比对）：
+      - "children"：直接子节点 id 列表；
+      - "decisions"：该节点的 decisions 数组（输入约束 3：不读 trace）；
+      - "trace"：涉及该节点的 trace 边（mainline / reference / derives-from /
+        prompted-by），每条带对端 trace 的 kind / body 摘要，供 edge-driven 上下文。
 
     `nodes` 接受 dict（single-file）或 list（bundle）；`edges` 是边字典列表。
     结果稳定（id 排序），便于两 carrier 比对与测试。
@@ -1083,13 +1128,36 @@ def node_context(node_id: str, nodes, edges) -> dict:
         f for f in pred.get(node_id, [])
         if is_blocking({"type": EDGE_BLOCKS, "from": f, "to": node_id}, by_id.get(f))
     ]
-    return {
+    result: dict = {
         "id": node_id,
         "label": by_id[node_id]["label"],
         "upstream": sorted(upstream),
         "downstream": sorted(downstream),
         "blocked_by": sorted(blocked_by),
     }
+    if INCLUDE_CHILDREN in includes:
+        result["children"] = sorted(by_id.get(node_id, {}).get("children", []))
+    if INCLUDE_DECISIONS in includes:
+        result["decisions"] = by_id.get(node_id, {}).get("decisions", [])
+    if INCLUDE_TRACE in includes:
+        trace_edges = []
+        for e in edges or []:
+            # trace 维度只暴露 trace 相关的边：mainline / reference / derives-from。
+            # 注意 `prompted_by` 是 trace 节点上的**字段**而非边类型，没有 EDGE_PROMPTED_BY。
+            if e.get("type") not in (EDGE_MAINLINE, EDGE_REFERENCE, EDGE_DERIVES_FROM):
+                continue
+            if e.get("from") != node_id and e.get("to") != node_id:
+                continue
+            other = e["to"] if e["from"] == node_id else e["from"]
+            entry = {"id": e.get("id"), "type": e["type"], "from": e["from"], "to": e["to"]}
+            other_node = by_id.get(other)
+            if other_node and other_node.get("layer") == LAYER_TRACE:
+                entry["other_kind"] = other_node.get("kind")
+                entry["other_body"] = (other_node.get("body") or "")[:120]
+            trace_edges.append(entry)
+        trace_edges.sort(key=lambda x: (x["type"], x["id"] or ""))
+        result["trace_edges"] = trace_edges
+    return result
 
 
 # ── 边 uid（#106 S4） ───────────────────────────────────────
@@ -1374,6 +1442,99 @@ def roadmap_file_lock(json_path: str, timeout_seconds: float = DEFAULT_LOCK_TIME
 
 # ── Roadmap 类 ────────────────────────────────────────────
 
+def apply_promotion(
+    node: dict,
+    action: str,
+    target: Optional[str] = None,
+    label: Optional[str] = None,
+    reason: Optional[str] = None,
+    now: Optional[str] = None,
+) -> dict:
+    """把一次 promote 动作应用到 trace 节点的 `promotion` 字段（纯函数，P5-S3，§3.2）。
+
+    两 carrier 共用这一份语义——`promotion` 状态机若各写一遍就是 `remove-decision`
+    那类漂移。函数只改传入的 `node` dict（trace 节点的物理落盘由调用方负责），返回
+    一个副作用描述，告诉 carrier 要不要去落一个 plan 节点：
+
+        {"create_plan": {"parent_id": <显示 id>, "label": <str>} | None}
+
+    - propose（默认）：写 `state=proposed` + target/label + proposed_by/at；exit 0，
+      不落节点。重复 propose（同 target 同 label）幂等：已 accepted 的不降级、已
+      proposed 的不再刷时间戳。
+    - accept（Human）：从 proposal 落正式 plan 节点（调用方据此建节点 + derives-from
+      边）；已 accepted 幂等（不落第二个）。无 proposal（state 为 None 或 rejected）
+      则 E_PROMOTE_STATE_INVALID。
+    - reject（Human）：记 `state=rejected` + reason，保留痕迹不物理删除；已 rejected
+      幂等。对已 accepted 的 proposal 拒绝是 E_PROMOTE_STATE_INVALID（节点已进地图）。
+    """
+    now = now or datetime.now().isoformat(timespec="seconds")
+    promo = node.get("promotion") or {}
+    state = promo.get("state")
+
+    if action == "propose":
+        if state == PROMOTE_ACCEPTED:
+            # 已落地的 proposal 不再接受改动（避免无声降级）。
+            return {"create_plan": None}
+        node["promotion"] = {
+            "state": PROMOTE_PROPOSED,
+            "target": target,
+            "label": label,
+            "proposed_by": PROMOTER_AGENT,
+            "proposed_at": now,
+            "decided_by": None,
+            "decided_at": None,
+            "reason": None,
+        }
+        return {"create_plan": None}
+
+    if action == "accept":
+        if state == PROMOTE_ACCEPTED:
+            return {"create_plan": None}  # 幂等：不落第二个节点 / 不写第二条边。
+        # None（从未 proposal）或 rejected 都算"无有效 proposal"，应报状态机错误，
+        # 而不是掉到下面的 target 检查去报 E_PROMOTE_TARGET_INVALID（§3.2）。
+        if state != PROMOTE_PROPOSED:
+            raise PromoteStateInvalid(
+                f"无法 accept 一个处于 {state} 状态的 proposal（trace={node.get('id')}），"
+                f"先 promote --under 给出 proposal"
+            )
+        parent_id = target or promo.get("target")
+        if not parent_id:
+            raise PromoteTargetInvalid("accept 缺少 proposal target（先 promote --under）")
+        lbl = label or promo.get("label") or f"promoted:{node.get('kind')}"
+        node["promotion"] = {
+            "state": PROMOTE_ACCEPTED,
+            "target": parent_id,
+            "label": lbl,
+            "proposed_by": promo.get("proposed_by"),
+            "proposed_at": promo.get("proposed_at"),
+            "decided_by": DECIDER_HUMAN,
+            "decided_at": now,
+            "reason": None,
+        }
+        return {"create_plan": {"parent_id": parent_id, "label": lbl}}
+
+    if action == "reject":
+        if state == PROMOTE_REJECTED:
+            return {"create_plan": None}  # 幂等：不追加痕迹条目。
+        if state == PROMOTE_ACCEPTED:
+            raise PromoteStateInvalid(
+                f"无法 reject 已 accepted 的 proposal（trace={node.get('id')}），节点已进地图"
+            )
+        node["promotion"] = {
+            "state": PROMOTE_REJECTED,
+            "target": promo.get("target"),
+            "label": promo.get("label"),
+            "proposed_by": promo.get("proposed_by"),
+            "proposed_at": promo.get("proposed_at"),
+            "decided_by": DECIDER_HUMAN,
+            "decided_at": now,
+            "reason": reason,
+        }
+        return {"create_plan": None}
+
+    raise ValueError(f"未知 promote 动作: {action}")
+
+
 class Roadmap:
     """路线图核心类。"""
 
@@ -1574,6 +1735,77 @@ class Roadmap:
             self.add_edge(trace_id, from_id, EDGE_MAINLINE)
         return node
 
+    def promote(
+        self,
+        trace_id: str,
+        action: str,
+        target: Optional[str] = None,
+        label: Optional[str] = None,
+        reason: Optional[str] = None,
+    ) -> dict:
+        """promote 状态机（P5-S3，§3.2/§3.3）。
+
+        - propose（默认）：写 `promotion.state=proposed`，exit 0，不落节点。
+        - accept（Human）：从 proposal 落正式 plan 节点并写 derives-from 边，返回新节点。
+        - reject（Human）：记 rejected，保留痕迹不物理删除。
+
+        trace 节点在 single-file 里同处 `data["nodes"]`；bundle 覆写本方法走 traces/ 分片。
+        """
+        trace_id = self.resolve_node(trace_id)
+        node = self.get_node(trace_id)
+        if node.get("layer", LAYER_PLAN) != LAYER_TRACE:
+            raise InvalidLayer(f"promote 只作用于 trace 节点，{trace_id} 是 plan 节点")
+        if action == "propose":
+            target_id = self.resolve_node(target) if target is not None else None
+            if target_id is not None:
+                tnode = self.get_node(target_id)
+                if tnode.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                    raise PromoteTargetInvalid(f"--under 目标 {target_id} 不是 plan 节点")
+            result = apply_promotion(node, action, target=target_id, label=label, reason=reason)
+        else:
+            result = apply_promotion(node, action, target=target, label=label, reason=reason)
+        if result.get("create_plan"):
+            spec = result["create_plan"]
+            new_node = self.add_node(spec["parent_id"], spec["label"])
+            # derives-from：§2.7 定义是 trace → plan（端点落盘 uid，与既有边同纪律）。
+            self.add_edge(trace_id, new_node["id"], EDGE_DERIVES_FROM)
+            self.save()
+            return new_node
+        self.save()
+        return node
+
+    def prune(self, trace_id: str, edge_id: str = None) -> dict:
+        """删一条边而非节点（P5-S4，§3.3，借 thoughtDAG：删边即改变上下文）。
+
+        - 给定 --edge <id>：删那条边（须是该 trace 的边，否则 E_*）。
+        - 不带 --edge：默认删该 trace 的 mainline 边（先找入边，再找它的出边），
+          从上下文把这条 trace 摘掉，节点仍在。无 mainline 边则 E_PRUNE_NO_EDGE。
+        """
+        trace_id = self.resolve_node(trace_id)
+        node = self.get_node(trace_id)
+        if node.get("layer", LAYER_PLAN) != LAYER_TRACE:
+            raise InvalidLayer(f"prune 只作用于 trace 节点，{trace_id} 是 plan 节点")
+        if edge_id is not None:
+            for e in self.list_edges(trace_id):
+                if e["id"] == edge_id:
+                    removed = self.remove_edge(edge_id)
+                    self.save()  # remove_edge 只动内存，落盘必须显式 save
+                    return removed
+            raise TraceNotFound(f"边 {edge_id} 不存在或不涉及 trace {trace_id}")
+        # 默认：mainline 边（入边优先，其次出边）。
+        mainline = [
+            e for e in self.list_edges(trace_id)
+            if e["type"] == EDGE_MAINLINE and e["to"] == trace_id
+        ] or [
+            e for e in self.list_edges(trace_id)
+            if e["type"] == EDGE_MAINLINE and e["from"] == trace_id
+        ]
+        if not mainline:
+            raise PruneNoEdge(f"trace {trace_id} 没有 mainline 边可 prune")
+        removed = self.remove_edge(mainline[0]["id"])
+        self.save()
+        return removed
+
     def update_node(
         self,
         node_id: str,
@@ -1645,6 +1877,14 @@ class Roadmap:
             raise KeyError(f"节点不存在: {node_id}")
         if node_id == "1":
             raise ValueError("不能删除根节点")
+        # S3 参照完整性：已被 promote --accept 落进地图的 trace 不允许删，否则指向
+        # 它的 derives-from 边会悬空（§3.4 E_REFERENCED）。
+        node = self.data["nodes"][node_id]
+        promo = node.get("promotion") or {}
+        if node.get("layer") == LAYER_TRACE and promo.get("state") == PROMOTE_ACCEPTED:
+            raise ReferencedError(
+                f"trace {node_id} 已被 promote --accept 引用，删除会让 derives-from 边悬空"
+            )
 
         # 递归收集所有子孙节点
         deleted = []
@@ -1803,10 +2043,11 @@ class Roadmap:
 
     # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
 
-    def context(self, node_id: str) -> dict:
+    def context(self, node_id: str, includes=()) -> dict:
         """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。
 
-        端点落盘是 uid：喂给 node_context 前翻回显示 id。
+        single-file 的 trace 节点也在 `data["nodes"]` 里，故直接喂给 node_context
+        （--include trace 需要的对端 trace 节点自然可见）。端点落盘是 uid：翻回显示 id。
         """
         if node_id not in self.data["nodes"]:
             raise KeyError(f"节点不存在: {node_id}")
@@ -1814,6 +2055,7 @@ class Roadmap:
             node_id,
             self.data["nodes"],
             [edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])],
+            includes=includes,
         )
 
     def next_nodes(self) -> list:

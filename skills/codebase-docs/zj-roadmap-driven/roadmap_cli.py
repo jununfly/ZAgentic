@@ -123,6 +123,7 @@ from roadmap import (
     is_within_scope,
     write_requires_lease,
     LAYER_TRACE,
+    VALID_INCLUDES,
     roadmap_file_lock,
     status_icon,
     unlock_roadmap,
@@ -136,7 +137,7 @@ import time
 
 
 # 可以重复出现、每次追加一条值的参数（`--exit-criteria` 可给多条判据）。
-MULTI_VALUE_FLAGS = frozenset({"exit-criteria"})
+MULTI_VALUE_FLAGS = frozenset({"exit-criteria", "include"})
 
 
 def _store(args: dict, key: str, value: str) -> None:
@@ -459,6 +460,45 @@ def cmd_trace(args: dict):
         _print_json(node)
         return
     raise ValueError(f"未知 trace 动作: {action}")
+
+
+def cmd_promote(args: dict):
+    """`promote <roadmap_path> <trace_uid> ...` —— 提案状态机（P5-S3，§3.3）。
+
+    默认（无 --accept/--reject）= 提案：写 `promotion.state=proposed`，exit 0，不落节点。
+    `--accept`（Human）= 落正式 plan 节点 + derives-from 边。
+    `--reject`（Human）= 记 rejected，保留痕迹。
+    """
+    r = _load_roadmap(args["positional"][0])
+    trace_uid = args["positional"][1]
+    if args.get("accept") == "true":
+        action = "accept"
+    elif args.get("reject") == "true":
+        action = "reject"
+    else:
+        action = "propose"
+    node = r.promote(
+        trace_uid,
+        action,
+        target=args.get("under"),
+        label=args.get("label"),
+        reason=args.get("reason"),
+    )
+    _print_json(node)
+    return
+
+
+def cmd_prune(args: dict):
+    """`prune <roadmap_path> <trace_uid> [--edge <id>]` —— 删边而非删节点（P5-S4，§3.3）。
+
+    thoughtDAG 原则：删一条边即改变上下文。不带 --edge 时默认删该 trace 的 mainline
+    边（从上下文移除，节点仍在）。
+    """
+    r = _load_roadmap(args["positional"][0])
+    trace_uid = args["positional"][1]
+    removed = r.prune(trace_uid, edge_id=args.get("edge"))
+    _print_json(removed)
+    return
 
 
 def _enforce_scope(r, node_id: str, args: dict) -> None:
@@ -809,9 +849,21 @@ def cmd_migrate(args: dict):
 
 
 def cmd_context(args: dict):
-    """来龙去脉（#104 S5）：上游（依赖谁）/下游（谁依赖我）/阻塞链。"""
+    """来龙去脉（#104 S5）+ P5-S4 edge-driven `--include`。
+
+    默认只给 blocks 依赖图；`--include decisions|trace|children` 可重复追加维度，
+    trace 维度才暴露 trace 边（否则 md 不膨胀、输出与 S5 逐字节一致）。
+    """
     r = _load_roadmap(args["positional"][0])
-    data = r.context(r.resolve_node(args["positional"][1]))
+    includes = args.get("include")
+    if includes:
+        includes = includes if isinstance(includes, list) else [includes]
+        bad = [v for v in includes if v not in VALID_INCLUDES]
+        if bad:
+            raise ValueError(f"--include 仅支持 {sorted(VALID_INCLUDES)}，收到: {bad}")
+    else:
+        includes = []
+    data = r.context(r.resolve_node(args["positional"][1]), includes=includes)
     fa = _fmt_args(args)
     if fa:
         _emit(data, **fa)
@@ -861,13 +913,16 @@ COMMANDS = {
     "migrate": cmd_migrate,
     "context": cmd_context,
     "trace": cmd_trace,
+    "promote": cmd_promote,
+    "prune": cmd_prune,
     "next": cmd_next,
 }
 
 
 # 写命令走整图锁；`edge` 按子动作区分，因为 `edge list` 是只读。
 LOCK_COMMANDS = frozenset(
-    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease", "fail"}
+    {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease", "fail",
+     "promote", "prune"}
 )
 EDGE_WRITE_ACTIONS = frozenset({"add", "remove", "migrate"})
 TRACE_WRITE_ACTIONS = frozenset({"add", "prune"})
