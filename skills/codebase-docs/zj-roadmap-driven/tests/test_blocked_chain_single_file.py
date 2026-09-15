@@ -417,8 +417,19 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
         ("section", "r.json", "--all"),
     )
 
-    BASELINE_REF = "a8ee1b9"
-    BASELINE_FILES = ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py")
+    # 基线锚点 2026-09-15 重锚 a8ee1b9→c2e5a64：P5-S1 有意引入 `layer` 字段，
+    # 原基线（P1 前）不含该字段致 #1「字节相同」断言红，属锚点 stale 非回归（#136）。
+    # 清单须跟随 c2e5a64 的 import 闭包：比 a8ee1b9 多 carrier_migration.py /
+    # roadmap_sqlite.py（#116），漏掉会让基线 CLI import 阶段挂（#116 同款坑）。
+    BASELINE_REF = "c2e5a64"
+    BASELINE_FILES = (
+        "carrier_migration.py",
+        "roadmap.py",
+        "roadmap_bundle.py",
+        "roadmap_cli.py",
+        "roadmap_sqlite.py",
+        "storage_advisor.py",
+    )
 
     def setUp(self):
         super().setUp()

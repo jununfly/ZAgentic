@@ -427,17 +427,30 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             probe = probe.parent
         return None
 
-    # 控制例的基线是「P1 边存储落地之前」的那份实现，不是 main 的当前头。
+    # 控制例的基线 = 被测改动之前的一份稳定实现，不是 main 的当前头。
+    # 用 `main` 是错的：PR 一合进 main，基线=被改动后的自己，控制例恒真零信息量。
     #
-    # 用 `main` 是错的：PR #85/#86 一合进 main，main 上的脚本就等于工作树里的
-    # 脚本，控制例变成自己跟自己比，恒真但零信息量——它会在每次"没污染无边
-    # 路径"时通过，也会在真的污染了时照样通过。
-    #
-    # 所以钉死在一个历史 commit 上：a8ee1b9 是 PR #85 的第一父，即 P1 之前
-    # 最后一个 main commit。commit 不可变，这个基线不会 stale；要重新校准，
-    # 就把 P1/P2……的起点 commit 换进来，并在 commit message 里说明理由。
-    BASELINE_REF = "a8ee1b9"
-    BASELINE_FILES = ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py")
+    # 锚点变更（详见 #136）：
+    # - a8ee1b9 原锚点 = PR #85 第一父，P1 之前最后一个 main commit。
+    # - c2e5a64 = PR #118（P5-S1）合，S1 有意引入 `layer` 字段，使无边缘路径
+    #   的节点 JSON 多出 `"layer": "plan"`。原基线（a8ee1b9）不含该字段 →
+    #   #1–#4「字节相同」断言红，属契约锚点 stale 而非回归。重锚到 c2e5a64 后，
+    #   该契约继续看守 S2/S3/S4 不污染无边缘路径。
+    # commit 不可变，这个基线不会 stale；要再校准就把 P1/P2……起点 commit 换进来，
+    # 并在 commit message 里说明理由。
+    BASELINE_REF = "c2e5a64"
+    # 基线清单须跟随 pinned ref 的 import 闭包：c2e5a64（P5-S1，含 #116 的
+    # carrier_migration.py / roadmap_sqlite.py）比原 a8ee1b9 多这两个模块；
+    # 漏掉任一会让克隆出的基线 CLI 在 import 阶段 ModuleNotFoundError，控制例
+    # 给出与行为无关的假红（#116 同款坑）。重锚时务必一并更新（见 #136）。
+    BASELINE_FILES = (
+        "carrier_migration.py",
+        "roadmap.py",
+        "roadmap_bundle.py",
+        "roadmap_cli.py",
+        "roadmap_sqlite.py",
+        "storage_advisor.py",
+    )
 
     def baseline_dir(self):
         repo = self.repo_root()
@@ -530,6 +543,29 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         self.assertNotIn("ModuleNotFoundError", result.stderr, result.stderr)
         self.assertNotIn("ImportError", result.stderr, result.stderr)
         self.assertIn("roadmap_cli.py", cli_runtime.current_files())
+
+    def test_the_baseline_cli_imports_cleanly(self):
+        """守护 baseline 侧 machinery：克隆出的基线 CLI 必须能 import。
+
+        current 侧有 `test_the_cloned_cli_imports_cleanly` 守清单推导；baseline
+        侧清单是字面历史（`BASELINE_FILES`），重锚 BASELINE_REF 时极易漏掉
+        pinned commit 新 import 的模块（#116 的 carrier_migration.py /
+        roadmap_sqlite.py 就漏过），导致基线 CLI 在 import 阶段 ModuleNotFoundError，
+        控制例因而报红却与要守的行为无关（#136 同款坑）。这条让"漏清单"立刻红在
+        import，而不是伪装成字节差。
+        """
+        baseline = self.baseline_dir()
+        result = subprocess.run(
+            [sys.executable, str(Path(baseline) / "roadmap_cli.py")],
+            cwd=str(self.root),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=FIXED_ENV,
+        )
+        self.assertNotIn("ModuleNotFoundError", result.stderr, result.stderr)
+        self.assertNotIn("ImportError", result.stderr, result.stderr)
 
     def test_existing_commands_are_byte_identical_without_edges(self):
         baseline = self.baseline_dir()
