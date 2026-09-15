@@ -38,7 +38,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-from roadmap import Roadmap, ensure_uids
+from roadmap import Roadmap, ensure_uids, ensure_layer
 
 SQLITE_SUFFIXES = (".sqlite", ".sqlite3", ".db")
 
@@ -133,6 +133,7 @@ class RoadmapSqlite(Roadmap):
         self.data.setdefault("metadata", {})
         self.data["metadata"]["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ensure_uids(self.data.get("nodes", {}))
+        ensure_layer(self.data.get("nodes", {}))
 
         conn = self._connect()
         try:

@@ -641,6 +641,22 @@ scheduling, so they never appear in an impact set. A leaf → `[]` (printed as
 (exit 1). Derived on read, never stored, same `blocks`-only boundary as **Ready set**.
 _Avoid_: blast radius (colloquial), affected nodes (too vague about excluding self)
 
+**Layer**:
+The required discriminant separating plan nodes (`plan`, default) from trace nodes (`trace`) in the two-layer execution graph (P5). Both layers share one node table and one edge table. `trace` nodes are machine-emergent material (turn / finding / doubt / attempt / artifact) that default out of the Markdown views, out of scheduling, and never sit in a plan node's `children`/`parent`. `ensure_layer` backfills `plan` on write (same discipline as `ensure_uid`), so legacy roadmaps missing the field migrate in as `plan` with no data loss. Per §2.2 the default is fail-safe: omitting the layer filter yields "see no trace," exposing a mistake on the spot rather than leaking trace into a human view.
+_Avoid_: level, tier, kind (as the layer discriminant; trace nodes carry a separate `kind` describing the material)
+
+**Trace layer**:
+The execution-emergent half of the two-layer graph (opposite of **Layer** `plan`). Trace nodes are produced by the machine during execution and proliferate fast; they are recorded, never curated. They share the carrier and edge table with plan nodes but are excluded from Markdown, scheduling, and tree `children` by §2.4 — the only legal way to express a parent/child relationship across layers is an edge (`mainline` / `reference`), never a tree link. In the bundle carrier they are physically isolated under `traces/` (L3); in single-file / sqlite they live in the same `nodes` map but are filtered out by `iter_nodes` (L2).
+_Avoid_: log, transcript, event stream (those are storage shapes, not the layer concept)
+
+**iter_nodes(layer=)**:
+The single traversal entry point that all read queries converge on (L1 of the three-layer convergence in §2.3). Signature `iter_nodes(layer='plan')` / `node_ids(layer=...)`; the two carriers each implement it once and a shared contract pins the semantics. Default `plan` is the fail-safe (L2): a forgotten filter surfaces as "trace missing," not as trace leaking into a human view. Explicit `layer='trace'` is the only way to see trace nodes, and that surface is pried open by S2's `trace add`, not S1.
+_Avoid_: traverse, walk, get_all_nodes (those bypass the layer contract)
+
+**E_LAYER_VIOLATION**:
+The error (exit code 1, in `ERROR_EXIT_CODES`) raised when a write path tries to make a trace node the parent of a plan node, or otherwise violate §2.4's hard premise that trace nodes carry no `parent` and never appear in `children`. `assert_plan_layer(parent)` is the guard, called inside `add_node` for all three carriers before the child is attached. This is the third defensive layer (after L2 `iter_nodes` filtering and L3 `traces/` isolation): even if a trace node were to slip into the plan `nodes` space, attaching a child to it fails closed rather than polluting the tree / `_sync_parent_status`.
+_Avoid_: E_PARENT (does not exist), E_INVALID_PARENT
+
 ### Issue / Triage
 
 **Issue tracker**:
