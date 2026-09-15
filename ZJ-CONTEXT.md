@@ -416,17 +416,36 @@ _Avoid_: split JSON, database migration
 
 **Roadmap carrier**:
 The selected canonical storage form for an execution roadmap: ordinary routes
-use one JSON file, while large routes may use an explicit Roadmap bundle. The
+use one JSON file (`single`), large routes may use an explicit Roadmap bundle,
+and write-heavy or large-DAG routes may use a single SQLite file (`sqlite`). The
 carrier is the fact source; generated Markdown is only a human-readable view.
-Do not maintain both forms as active sources for one roadmap.
+Do not maintain two forms as active sources for one roadmap.
 _Avoid_: roadmap format, Markdown source, dual truth
+
+**Carrier migration**:
+The explicit conversion of one roadmap from one carrier to another
+(`migrate <path> --to single|bundle|sqlite`). It carries nodes, decisions,
+edges, the edge-id counter, node leases and their audit events, and leaves the
+source artifact byte-identical, so "which artifact is the fact source" stays
+answerable. No command performs it implicitly, and a target that already exists
+or equals the source's carrier is refused.
+_Avoid_: silent upgrade, auto-migration, in-place conversion
+
+**Markdown section template**:
+The single rendering template behind both roadmap Markdown views. The two
+carriers feed it their own tree, blocked chain, open questions and focus node;
+they do not each own a copy of the layout. It used to be duplicated, and the
+bundle copy drifted — missing the current-focus line, the `ROADMAP_TREE`
+markers, the focus detail block, and decision notes.
+_Avoid_: per-carrier templates, "light" vs "full" formats that differ by carrier
 
 **Storage recommendation**:
 A read-only, versioned advisory from `recommend-storage` that compares roadmap
 node/decision counts, canonical bytes, optional local timings, and bundle
 artifact sizes. It selects `keep-single`, `consider-bundle`,
-`recommend-bundle`, or `keep-bundle`; it never migrates, repairs, or rewrites a
-roadmap.
+`recommend-bundle`, `consider-sqlite`, `keep-bundle`, or `keep-sqlite`; it never
+migrates, repairs, or rewrites a roadmap. When it names a different carrier it
+also reports the explicit command to run — naming a command is not running it.
 _Avoid_: automatic migration, performance gate, storage switch
 
 **Storage signal**:

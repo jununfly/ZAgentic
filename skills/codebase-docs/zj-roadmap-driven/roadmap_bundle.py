@@ -34,6 +34,13 @@ from roadmap import (
     EDGE_BLOCKS,
     EDGE_SUPERSEDES,
     EDGE_TYPES,
+    # Markdown 模板（#117）：与 single-file 共用同一份，两个 carrier 只喂数据。
+    ALL_NODES_TREE_DEPTH,
+    compose_full_section,
+    compose_light_section,
+    focus_export_detail,
+    focus_light_detail,
+    focus_line,
     CycleError,
     NodeNotFound,
     assert_settable_status,
@@ -84,8 +91,32 @@ class BundleError(RuntimeError):
     """A user-actionable roadmap bundle failure."""
 
 
+# history / manifest 里的时间戳一律是这个形状（现在的 `now_text()` 产出，
+# 也是所有既有产物里已落盘的形状）。
+BUNDLE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
 def now_text() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now().strftime(BUNDLE_TIME_FORMAT)
+
+
+def bundle_timestamp_to_epoch(text: Any) -> float:
+    """bundle history 的文本时间 → epoch float（租约跨 carrier 搬运用）。
+
+    转成 float 是为了和 single / sqlite 侧车里 event 的 `at` 同型：搬过去又搬回来
+    时类型不能变，否则同一个事件在两家 carrier 上长得不一样（漂移）。
+    """
+    try:
+        return datetime.strptime(str(text), BUNDLE_TIME_FORMAT).timestamp()
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def epoch_to_bundle_timestamp(value: Any) -> str:
+    try:
+        return datetime.fromtimestamp(float(value)).strftime(BUNDLE_TIME_FORMAT)
+    except (TypeError, ValueError, OSError, OverflowError):
+        return now_text()
 
 
 def canonical_json(value: Any) -> bytes:
@@ -962,15 +993,18 @@ class RoadmapBundle:
         except FileNotFoundError:
             pass
 
-    def _commit_event(self, operation: str, payload: dict[str, Any]) -> None:
+    def _commit_event(self, operation: str, payload: dict[str, Any], at: str | None = None) -> None:
         """轻量事件提交：只追加 history + 推进 current/manifest，不动 stats。
 
         租约动作的 stats 不变（租约不是节点/决策），无需重算 indexes/stats；
         claim/steal/release 仍要进 history 以满足 release --force 的可审计要求。
+
+        `at` 只在**搬运既有事件**（#117 跨 carrier 迁移）时显式给：那时时间要跟着
+        事件走，不能写成"现在"，否则审计时间线被改写。正常写路径不传，就用当前时间。
         """
         sequence = int(self.manifest.get("historySequence", 0)) + 1
         event = {"schema": HISTORY_SCHEMA, "sequence": sequence, "operation": operation,
-                 "payload": payload, "at": now_text()}
+                 "payload": payload, "at": at or now_text()}
         append_jsonl(self.path / "history/events.jsonl", event)
         current = self.manifest.get("currentSnapshot", "snapshots/snapshot-000000.json")
         atomic_json(self.path / "current.json", self._current_document(sequence, self._read_stats(), current))
@@ -1035,6 +1069,86 @@ class RoadmapBundle:
         self._delete_lease_file(node_uid)
         self._commit_event("lease-released", {"nodeId": node_uid, "agentId": agent_id, "force": force})
 
+    # ── 跨 carrier 租约搬运（#117）──────────────────────────
+    # bundle 自己一条租约一个文件、事件进共享 history；single / sqlite 则是整份
+    # {"leases", "events"} 侧车。下面这一对把 bundle 的布局翻译成那个共用形状，
+    # 于是"带着租约换 carrier"在三家 carrier 上是同一个调用，不需要各写一趟翻译。
+    #
+    # 形状要说清三点：
+    #   - leases 的键与**显示 id**同形（`_lease_path` 走 `safe_node_id`，uid 那种
+    #     带十六进制的字符串会被拒），和 single / sqlite 的侧车一致；
+    #   - event 的 `at` 统一成 epoch float：bundle history 里它是文本时间戳，原样
+    #     搬会让 round-trip 换一种类型，属于漂移；
+    #   - payload 的 camelCase 与 flat 的 snake_case 逐键可逆映射，`force` 这类只
+    #     在部分动作里出现的字段不会被丢。
+
+    _LEASE_PAYLOAD_KEYS = {
+        "node_uid": "nodeId",
+        "agent_id": "agentId",
+        "fencing_token": "fencingToken",
+        "force": "force",
+    }
+
+    def _history_events(self) -> list[dict[str, Any]]:
+        history = self.path / "history" / "events.jsonl"
+        if not history.is_file():
+            return []
+        events = []
+        for line in history.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+        return events
+
+    def _read_lease_store(self) -> dict:
+        store: dict[str, Any] = {"leases": {}, "events": []}
+        leases_dir = self.path / "leases"
+        if leases_dir.is_dir():
+            for path in sorted(leases_dir.glob("*.json")):
+                try:
+                    lease = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError) as error:
+                    raise BundleError(f"could not read lease shard {path}: {error}") from error
+                if isinstance(lease, dict):
+                    store["leases"][path.stem] = lease
+        reverse = {v: k for k, v in self._LEASE_PAYLOAD_KEYS.items()}
+        for event in self._history_events():
+            operation = event.get("operation")
+            if not operation or not operation.startswith("lease-"):
+                continue
+            flat = {"operation": operation}
+            for camel, value in (event.get("payload") or {}).items():
+                flat[reverse.get(camel, camel)] = value
+            flat["at"] = bundle_timestamp_to_epoch(event.get("at"))
+            store["events"].append(flat)
+        return store
+
+    def _write_lease_store(self, store: dict) -> None:
+        leases = store.get("leases", {})
+        leases_dir = self.path / "leases"
+        for uid, lease in leases.items():
+            self._write_lease_file(uid, lease)
+        # 整份替换的语义与 single / sqlite 一致：store 里没有的那把锁必须消失，
+        # 否则迁移会把源侧已释放的租约复活成"看起来还持有"。
+        if leases_dir.is_dir():
+            for path in sorted(leases_dir.glob("*.json")):
+                if path.stem not in leases:
+                    path.unlink()
+        for event in store.get("events", []):
+            payload = {
+                camel: event[key]
+                for key, camel in self._LEASE_PAYLOAD_KEYS.items()
+                if key in event
+            }
+            self._commit_event(
+                event["operation"],
+                payload,
+                at=epoch_to_bundle_timestamp(event.get("at")),
+            )
+
     def materialize(self) -> dict[str, Any]:
         """重建与 single-file 同形的 canonical 数据，供 current_revision 哈希。
 
@@ -1047,16 +1161,16 @@ class RoadmapBundle:
             stored = {key: value for key, value in node.items() if key != "decisions"}
             stored["decisions"] = self._read_decisions_file(path.stem)
             nodes[path.stem] = stored
+        # 边从 **edges/ 里的边文件**读，不从 edges/index.json 读：那份索引只有
+        # from/to 两张邻接表、从来没有 `edges` 列表（`_rebuild_edge_index` 不写它），
+        # 于是这里的 `index.get("edges", [])` 恒为 []——bundle 的 rev 完全不含边。
+        # 后果是 `--if-rev` 在 bundle 上探测不到别人并发加/删边，而且同一个 roadmap
+        # 在 bundle 与另外两家 carrier 上算出不同 rev（#117 迁移验收时发现）。
+        # 索引是纯冗余，真正的边事实在分片里，从这里读才能让三家 carrier 的
+        # current_revision 对齐。
         edges: list[dict[str, Any]] = []
-        edges_dir = self.path / "edges"
-        if edges_dir.is_dir():
-            index_path = edges_dir / "index.json"
-            if index_path.is_file():
-                try:
-                    index = json.loads(index_path.read_text(encoding="utf-8"))
-                    edges = index.get("edges", []) if isinstance(index, dict) else []
-                except (OSError, json.JSONDecodeError):
-                    edges = []
+        if self._edges_dir().is_dir():
+            edges = [self._read_edge_file(edge_id) for edge_id in self._edge_ids()]
         metadata = {k: v for k, v in self.manifest.get("metadata", {}).items()
                     if k not in ("updated", "created")}
         return {"nodes": nodes, "edges": edges, "metadata": metadata,
@@ -1202,43 +1316,60 @@ class RoadmapBundle:
     def render_light_section(self) -> str:
         focus_id = self.get_current_focus()
         owners = self.owner_map()
-        # 空链时这里得到空串：下面的模板因此在无阻塞时与 #82 之前逐字节相同。
-        chain = render_chain_collapsed(self._blocked_chain_lines())
-        # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
-        oq = render_open_questions_collapsed(self.open_question_items())
-        section = f"<!-- ROADMAP_SECTION_START -->\n## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=2, owners=owners)}{chain}{oq}\n"
-        if focus_id:
-            focus = self._read_node_file(focus_id)
-            section += f"\n### 当前施工：{focus_id}. {focus['label']}\n"
-            if focus.get("notes"):
-                section += f"\n{focus['notes']}\n"
-            decisions = self._read_decisions_file(focus_id)
-            if decisions:
-                section += "\n**决策：**\n" + "\n".join(f"- Q: {item['q']} → {item['answer']}" for item in decisions) + "\n"
-            subtree = self.get_focus_subtree(focus_id, max_depth=1, owners=owners)
-            if subtree:
-                section += f"\n**当前子树：**\n{subtree}\n"
-        return section + "<!-- ROADMAP_SECTION_END -->\n"
+        focus = self._read_node_file(focus_id) if focus_id else None
+        # 模板与 single-file 共用（#117）：这里只喂本 carrier 的数据。
+        # 以前这里自己拼一份，于是焦点决策的备注被整段漏掉——同一个焦点节点在两个
+        # carrier 的 md 里长相不同，而 diff 里看不出来。
+        return compose_light_section(
+            artifact_name=self.path.name,
+            updated=self.manifest.get("updated", now_text()),
+            tree_text=self.get_tree(max_depth=2, owners=owners),
+            # 空链时这里得到空串：模板因此在无阻塞时与 #82 之前逐字节相同。
+            chain=render_chain_collapsed(self._blocked_chain_lines()),
+            # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
+            open_questions=render_open_questions_collapsed(self.open_question_items()),
+            focus_detail=focus_light_detail(
+                focus_id,
+                focus["label"] if focus else "",
+                focus.get("notes", "") if focus else "",
+                self._read_decisions_file(focus_id) if focus_id else [],
+                self.get_focus_subtree(focus_id, max_depth=1, owners=owners) if focus_id else "",
+            ),
+        )
 
     def render_full_section(self, all_nodes: bool = False, max_depth: int = 2, max_bytes: Optional[int] = None) -> str:
-        depth = 100000 if all_nodes else max_depth
+        focus_id = self.get_current_focus()
+        focus = self._read_node_file(focus_id) if focus_id else None
         owners = self.owner_map()
-        # 换行归谁要想清楚：模板里那个 `\n` 是"树的收尾"，链自带自己的开头换行。
-        # 拼错一个，两个 carrier 的 md 就差一整个空行——diff 里最容易被肉眼放过
-        # 的那类不一致，也正是上面那条字节比对要抓的。
-        plain_chain = render_chain_plain(self._blocked_chain_lines())
-        section = f"## ZJ Roadmap\n\n> 数据文件: `{self.path.name}` | 最后更新: {self.manifest.get('updated', now_text())}\n\n{self.get_tree(max_depth=depth, owners=owners)}\n{plain_chain}"
-        # #115：待决问题队列，只在有状态时出现（无状态时空串，md 不变）。
-        section += render_open_questions_plain(self.open_question_items())
+        table = ""
         if all_nodes:
             decisions = self.get_decisions()
             if decisions:
-                section += "\n### 决策历史\n\n| 节点 | 问题 | 答案 | 备注 |\n|------|------|------|------|\n"
-                section += "\n".join(f"| {item['node_id']} | {item['q']} | {item['answer']} | {item.get('note', '')} |" for item in decisions) + "\n"
-        if max_bytes is not None and len(section.encode("utf-8")) > max_bytes:
-            encoded = section.encode("utf-8")[:max_bytes]
-            section = encoded.decode("utf-8", errors="ignore") + "\n> View truncated at --max-bytes. Use section --all with a larger limit for export.\n"
-        return section
+                table = "| 节点 | 问题 | 答案 | 备注 |\n|------|------|------|------|\n"
+                table += "\n".join(
+                    f"| {item['node_id']} | {item['q']} | {item['answer']} | {item.get('note', '')} |"
+                    for item in decisions
+                ) + "\n"
+        return compose_full_section(
+            artifact_name=self.path.name,
+            updated=self.manifest.get("updated", now_text()),
+            # 以前这里连 `> 当前施工` 行、ROADMAP_TREE 标记与"当前施工点"块都没有：
+            # Human 看到的 md 少一截，而 `section` 看起来一切正常。
+            focus_head=focus_line(focus_id, focus["label"] if focus else ""),
+            tree_text=self.get_tree(
+                max_depth=ALL_NODES_TREE_DEPTH if all_nodes else max_depth, owners=owners
+            ),
+            chain=render_chain_plain(self._blocked_chain_lines()),
+            # #115：待决问题队列，只在有状态时出现（无状态时空串，md 不变）。
+            open_questions=render_open_questions_plain(self.open_question_items()),
+            decision_table=table,
+            focus_detail=focus_export_detail(
+                focus_id,
+                focus["label"] if focus else "",
+                focus.get("notes", "") if focus else "",
+            ),
+            max_bytes=max_bytes,
+        )
 
     def write_markdown_section(self) -> Optional[str]:
         internal = self.path / "views/roadmap.md"

@@ -119,6 +119,13 @@ class Slice08BundleBaselineTest(sf.Slice08NoEdgeBaselineTest):
     bundle 是目录，所以"字节一致"比的是整个目录树：文件清单 + 每个文件的
     内容。这能抓住 single-file 那边抓不到的一类污染——给从未用过边的 bundle
     造出 `edges/` 目录、空 `index.json`，或在 manifest 里多出一个 `edgeSequence`。
+
+    **序列里没有 `section`**，且下面那条 Human 视野用例对 bundle 不适用：历史基线的
+    bundle 渲染器本身就是缺的（没有 `> 当前施工` 行、没有 ROADMAP_TREE 标记、没有
+    "当前施工点"块，焦点决策还丢备注——#117 修）。拿"与那份基线逐字节相同"当验收，
+    等于把那个缺陷钉成标准：渲染一修，这条就红，而它红的原因恰恰是修对了。
+    Human 视野现在由 `tests/test_cross_carrier_render.py` 守——三个 carrier 互比，
+    比跟历史基线比更强，也永远不会把缺陷固化成标准。
     """
 
     SEQUENCE = (
@@ -132,7 +139,6 @@ class Slice08BundleBaselineTest(sf.Slice08NoEdgeBaselineTest):
         ("decisions", "r.bundle"),
         ("remove-decision", "r.bundle", "1-1", "--index", "0"),
         ("decisions", "r.bundle"),
-        ("section", "r.bundle"),
         ("stats", "r.bundle"),
         ("validate", "r.bundle"),
         ("path", "r.bundle", "1-2"),
@@ -142,14 +148,16 @@ class Slice08BundleBaselineTest(sf.Slice08NoEdgeBaselineTest):
         ("tree", "r.bundle"),
     )
 
+    def test_the_human_view_is_byte_identical_without_edges(self):
+        self.skipTest(
+            "历史基线的 bundle 渲染器本身缺焦点行/标记/当前施工点块（#117 修），"
+            "与它逐字节相同不是验收标准；Human 视野改由 "
+            "tests/test_cross_carrier_render.py 三个 carrier 互比来守。"
+        )
+
     def test_existing_commands_are_byte_identical_without_edges(self):
         baseline = self.baseline_dir()
-        current = self.root / "current"
-        current.mkdir(exist_ok=True)
-        for name in ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py"):
-            (current / name).write_text(
-                (SKILL_DIR / name).read_text(encoding="utf-8"), encoding="utf-8"
-            )
+        current = sf.cli_runtime.clone_current_cli(self.root / "current")
 
         before = self.run_sequence(baseline, self.root / "w1")
         after = self.run_sequence(current, self.root / "w2")
@@ -158,12 +166,7 @@ class Slice08BundleBaselineTest(sf.Slice08NoEdgeBaselineTest):
 
     def test_a_bundle_that_never_had_edges_has_the_same_layout(self):
         baseline = self.baseline_dir()
-        current = self.root / "current"
-        current.mkdir(exist_ok=True)
-        for name in ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py"):
-            (current / name).write_text(
-                (SKILL_DIR / name).read_text(encoding="utf-8"), encoding="utf-8"
-            )
+        current = sf.cli_runtime.clone_current_cli(self.root / "current")
 
         shapes = {}
         for label, cli_dir in (("before", baseline), ("after", current)):

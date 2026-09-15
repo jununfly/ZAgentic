@@ -88,8 +88,8 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   validate <json_path>                       # 验证数据完整性
 
-  migrate <json_path> --to bundle [--output <bundle_path>]
-              # 显式把 legacy JSON 转为 sharded bundle；源文件不改写
+  migrate <roadmap_path> --to single|bundle|sqlite [--output <path>] [--snapshot-interval N]
+              # 显式把事实源换到另一种 carrier；源文件不改写，目标已存在则拒绝
 
   path    <json_path> <node_id>              # 获取从根到节点的路径
 
@@ -126,8 +126,9 @@ from roadmap import (
     status_icon,
     unlock_roadmap,
 )
-from roadmap_bundle import BundleError, RoadmapBundle
+from roadmap_bundle import BundleError, RoadmapBundle, DEFAULT_SNAPSHOT_INTERVAL
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
+from carrier_migration import CARRIERS, default_output, migrate
 from storage_advisor import recommend_storage
 from roadmap import LEASE_TTL_SECONDS, is_expired
 import time
@@ -753,18 +754,24 @@ def cmd_unlock(args: dict):
 
 
 def cmd_migrate(args: dict):
+    """显式换 carrier：`<source> --to single|bundle|sqlite`（#117 Story 40）。
+
+    源文件读完之后一个字节都不动——迁移改写输入的话，"一分钟前哪个产物是事实源"
+    这个问题就答不出来了，而这正是 Story 40 要 Answer 的那个问题。
+    """
     source = Path(args["positional"][0]).expanduser().resolve()
-    if args.get("to") != "bundle":
-        raise ValueError("migrate requires --to bundle")
-    default_output = source.with_suffix(".bundle") if source.suffix else Path(f"{source}.bundle")
-    output = Path(args.get("output", str(default_output))).expanduser().resolve()
-    interval = int(args.get("snapshot-interval", 100))
-    lock_paths = sorted({str(source), str(output)})
+    to = args.get("to")
+    if to not in CARRIERS:
+        raise ValueError(f"migrate requires --to one of: {', '.join(CARRIERS)}")
+    interval = int(args.get("snapshot-interval", DEFAULT_SNAPSHOT_INTERVAL))
+    output = args.get("output")
+    target = Path(output).expanduser().resolve() if output else default_output(source, to)
+    # 两端都锁：source 防止读到写一半的状态，target 防止两个 migrate 同时落地。
     with ExitStack() as stack:
-        for lock_path in lock_paths:
+        for lock_path in sorted({str(source), str(target)}):
             stack.enter_context(roadmap_file_lock(lock_path))
-        bundle = RoadmapBundle.migrate_from_legacy(source, output, interval)
-    print(f"Migrated: {source} -> {bundle.path}")
+        report = migrate(source, to, target, interval)
+    print(f"Migrated: {report['source']} -> {report['target']}")
 
 
 def cmd_context(args: dict):

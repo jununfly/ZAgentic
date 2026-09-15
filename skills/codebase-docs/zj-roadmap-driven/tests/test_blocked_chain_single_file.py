@@ -28,6 +28,8 @@ SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
 
+import cli_runtime  # noqa: E402
+
 CLI = SKILL_DIR / "roadmap_cli.py"
 
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
@@ -439,9 +441,11 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
         return None
 
     def write_impl(self, target, source):
-        target.mkdir(parents=True, exist_ok=True)
-        for name in self.BASELINE_FILES:
-            (target / name).write_text((source / name).read_text(encoding="utf-8"), encoding="utf-8")
+        # current 侧的清单从 roadmap_cli.py 的 import 推导（见 tests/cli_runtime.py）：
+        # 手抄清单在 #116 加 roadmap_sqlite.py 时漏了更新，clone 出去的 CLI 直接
+        # 倒在 import 阶段，这条控制例给出的是与行为无关的假红。
+        target = cli_runtime.clone_current_cli(target, source)
+        return target
 
     def baseline_dir(self):
         repo = self.repo_root()

@@ -27,6 +27,11 @@ if str(SKILL_DIR) not in sys.path:
 from roadmap import Roadmap  # noqa: E402  （辅缝：Python API）
 CLI = SKILL_DIR / "roadmap_cli.py"
 
+# 「current」侧的运行时清单由 roadmap_cli.py 自己的 import 推导，不在这里手抄：
+# 手抄的清单在 #116 加 roadmap_sqlite.py 时全部漏更新，克隆出来的 CLI 在 import
+# 阶段就挂掉，控制例给出一句与实际行为无关的假红。详见 tests/cli_runtime.py。
+import cli_runtime  # noqa: E402
+
 E_CYCLE = "E_CYCLE"
 E_NODE_NOT_FOUND = "E_NODE_NOT_FOUND"
 
@@ -502,14 +507,33 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             output.append(TIMESTAMP.sub("<T>", UID_LINE.sub("", text)))
         return "\n".join(output)
 
+    def test_the_cloned_cli_imports_cleanly(self):
+        """守护 machinery 本身：克隆出来的 current 必须能 import。
+
+        这是 #116 漏拷 roadmap_sqlite.py 那两处假红的直接反例——当时 clone 出去
+        的 CLI 在 import 阶段就 ModuleNotFoundError，控制例因而报红，但那句红与
+        它要守的行为毫无关系。清单现在从 roadmap_cli.py 的 import 推导，推导错
+        就在这里红（而不是伪装成行为差异）。
+        """
+        current = cli_runtime.clone_current_cli(self.root / "current")
+
+        result = subprocess.run(
+            [sys.executable, str(current / "roadmap_cli.py")],
+            cwd=str(self.root),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=FIXED_ENV,
+        )
+
+        self.assertNotIn("ModuleNotFoundError", result.stderr, result.stderr)
+        self.assertNotIn("ImportError", result.stderr, result.stderr)
+        self.assertIn("roadmap_cli.py", cli_runtime.current_files())
+
     def test_existing_commands_are_byte_identical_without_edges(self):
         baseline = self.baseline_dir()
-        current = self.root / "current"
-        current.mkdir(exist_ok=True)
-        for name in ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py"):
-            (current / name).write_text(
-                (SKILL_DIR / name).read_text(encoding="utf-8"), encoding="utf-8"
-            )
+        current = cli_runtime.clone_current_cli(self.root / "current")
 
         before = self.run_sequence(baseline, self.root / "w1")
         after = self.run_sequence(current, self.root / "w2")
@@ -550,12 +574,7 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         里加了字段"误判成"污染了无边路径"。决策 B 把它换成 md。
         """
         baseline = self.baseline_dir()
-        current = self.root / "current"
-        current.mkdir(exist_ok=True)
-        for name in ("roadmap.py", "roadmap_cli.py", "roadmap_bundle.py", "storage_advisor.py"):
-            (current / name).write_text(
-                (SKILL_DIR / name).read_text(encoding="utf-8"), encoding="utf-8"
-            )
+        current = cli_runtime.clone_current_cli(self.root / "current")
 
         before = self.md_section_bytes(baseline, self.root / "m1")
         after = self.md_section_bytes(current, self.root / "m2")
