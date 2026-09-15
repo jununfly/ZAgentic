@@ -122,6 +122,7 @@ from roadmap import (
     exit_code_for,
     is_within_scope,
     write_requires_lease,
+    LAYER_TRACE,
     roadmap_file_lock,
     status_icon,
     unlock_roadmap,
@@ -425,6 +426,39 @@ def cmd_edge(args: dict):
         print(f"Migrated {n} edge endpoint(s) to uid.")
         return
     raise ValueError(f"未知 edge 动作: {action}")
+
+
+def cmd_trace(args: dict):
+    """`trace <action> <roadmap_path> ...` —— 动作在前（与 `edge` 同款）。
+
+    add 写（整图锁）；list / get 只读。trace 是机器自主记录，无需审批。
+    输出走 stdout 的 JSON（与既有命令一致）；失败输出到 stderr 且含 `E_*` code。
+    """
+    action = args["positional"][0]
+    r = _load_roadmap(args["positional"][1])
+    if action == "add":
+        node = r.add_trace(
+            kind=args.get("kind"),
+            body=args.get("body") or "",
+            under=args.get("under"),
+            from_trace=args.get("from"),
+        )
+        r.save()
+        _print_json(node)
+        return
+    if action == "list":
+        rows = r.iter_nodes(layer=LAYER_TRACE)
+        fa = _fmt_args(args)
+        if fa:
+            _emit(rows, **fa)
+        else:
+            _print_json(rows)
+        return
+    if action == "get":
+        node = r.get_node(args["positional"][2])
+        _print_json(node)
+        return
+    raise ValueError(f"未知 trace 动作: {action}")
 
 
 def _enforce_scope(r, node_id: str, args: dict) -> None:
@@ -826,6 +860,7 @@ COMMANDS = {
     "focus": cmd_focus,
     "migrate": cmd_migrate,
     "context": cmd_context,
+    "trace": cmd_trace,
     "next": cmd_next,
 }
 
@@ -835,6 +870,7 @@ LOCK_COMMANDS = frozenset(
     {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease", "fail"}
 )
 EDGE_WRITE_ACTIONS = frozenset({"add", "remove", "migrate"})
+TRACE_WRITE_ACTIONS = frozenset({"add", "prune"})
 
 
 def _needs_lock(cmd: str, args: dict) -> bool:
@@ -843,9 +879,11 @@ def _needs_lock(cmd: str, args: dict) -> bool:
     只读的 `edge list` 不拿锁：为它拿锁会把并发读串行化，还让读命令
     可能撞上锁超时（退出码 2），那是写命令才该有的失败模式。
     """
-    if cmd != "edge":
-        return cmd in LOCK_COMMANDS
-    return args["positional"][0] in EDGE_WRITE_ACTIONS
+    if cmd == "edge":
+        return args["positional"][0] in EDGE_WRITE_ACTIONS
+    if cmd == "trace":
+        return args["positional"][0] in TRACE_WRITE_ACTIONS
+    return cmd in LOCK_COMMANDS
 
 
 def _lock_path(cmd: str, args: dict) -> str:
@@ -856,7 +894,7 @@ def _lock_path(cmd: str, args: dict) -> str:
     （生成 `<roadmap>.lock/`），不能落在动作名上，否则所有 roadmap 的
     `lease claim` 会抢同一个 `claim.lock` 而互相阻塞。
     """
-    if cmd in ("lease", "edge"):
+    if cmd in ("lease", "edge", "trace"):
         return args["positional"][1]
     return args["positional"][0]
 

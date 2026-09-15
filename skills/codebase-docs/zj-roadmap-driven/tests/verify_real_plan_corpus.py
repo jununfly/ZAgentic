@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -117,6 +118,14 @@ def build_legacy_fixture(plans_dir: Path, view_path: Path) -> tuple[dict[str, An
     }, files
 
 
+TS_RE = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?")
+
+
+def normalize(s: str) -> str:
+    """归一时间戳，让两次快照的字节比较不受"现在"影响。"""
+    return TS_RE.sub("TS", s)
+
+
 def verify(plans_dir: Path) -> dict[str, Any]:
     plans_dir = plans_dir.expanduser().resolve()
     before_hash = sha256_tree(plans_dir)
@@ -180,6 +189,23 @@ def verify(plans_dir: Path) -> dict[str, Any]:
         if sha256_tree(workspace) == source_hash:
             raise AssertionError("verification fixture did not produce migration artifacts")
 
+        # P5-S2 回归（spec §4.3）：迁移产物上新增 trace 后，plan 遍历字节不变——
+        # trace 不得泄进任何 plan 视图，否则既膨胀视图又制造"升级后误报"。
+        probe_views = ("tree", "section", "stats", "validate")
+        before = {
+            v: normalize(run_cli(v, bundle, "--depth", "10" if v == "tree" else None, cwd=workspace).stdout)
+            for v in probe_views
+        }
+        run_cli("trace", "add", bundle, "--kind", "finding",
+                "--body", "corpus regression probe trace", "--under", "1-1", cwd=workspace)
+        after = {
+            v: normalize(run_cli(v, bundle, "--depth", "10" if v == "tree" else None, cwd=workspace).stdout)
+            for v in probe_views
+        }
+        for v in probe_views:
+            if before[v] != after[v]:
+                raise AssertionError(f"adding a trace changed plan view '{v}' (trace leaked into plan traversal)")
+
         return {
             "plans_dir": str(plans_dir),
             "markdown_files": len(files),
@@ -189,6 +215,7 @@ def verify(plans_dir: Path) -> dict[str, Any]:
             "source_unchanged": True,
             "markdown_import": "rejected",
             "bounded_depth_1_reads": reads,
+            "trace_add_invariant": True,
         }
 
 

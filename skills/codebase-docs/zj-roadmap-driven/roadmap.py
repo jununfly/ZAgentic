@@ -162,7 +162,9 @@ EDGE_BLOCKS = "blocks"
 EDGE_INFORMS = "informs"
 EDGE_SUPERSEDES = "supersedes"
 EDGE_DERIVES_FROM = "derives-from"
-EDGE_TYPES = (EDGE_BLOCKS, EDGE_INFORMS, EDGE_SUPERSEDES, EDGE_DERIVES_FROM)
+EDGE_MAINLINE = "mainline"
+EDGE_REFERENCE = "reference"
+EDGE_TYPES = (EDGE_BLOCKS, EDGE_INFORMS, EDGE_SUPERSEDES, EDGE_DERIVES_FROM, EDGE_MAINLINE, EDGE_REFERENCE)
 
 MODE_EXPLORE = "explore"
 
@@ -287,6 +289,34 @@ class LayerViolation(RoadmapError):
     exit_code = 1
 
 
+class InvalidKind(RoadmapError):
+    """`trace add` 的 kind 不在枚举（P5-S2，§3.4）。"""
+
+    code = "E_INVALID_KIND"
+    exit_code = 1
+
+
+class TraceNotFound(RoadmapError):
+    """引用了不存在的 trace 节点 / uid（P5-S2，§3.4）。"""
+
+    code = "E_TRACE_NOT_FOUND"
+    exit_code = 1
+
+
+class InvalidLayer(RoadmapError):
+    """对 plan 节点用 trace 命令，或反向（P5-S2，§3.4）。"""
+
+    code = "E_INVALID_LAYER"
+    exit_code = 1
+
+
+class PromoteTargetInvalid(RoadmapError):
+    """`trace add --under` 的目标不存在，或不是 plan 节点（P5-S2，§3.4）。"""
+
+    code = "E_PROMOTE_TARGET_INVALID"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
@@ -297,6 +327,10 @@ ERROR_EXIT_CODES = {
     InvalidStatus.code: InvalidStatus.exit_code,
     ScopeError.code: ScopeError.exit_code,
     LayerViolation.code: LayerViolation.exit_code,
+    InvalidKind.code: InvalidKind.exit_code,
+    TraceNotFound.code: TraceNotFound.exit_code,
+    InvalidLayer.code: InvalidLayer.exit_code,
+    PromoteTargetInvalid.code: PromoteTargetInvalid.exit_code,
 }
 
 
@@ -904,6 +938,7 @@ def next_child_index(parent: Optional[dict]) -> int:
 # 而不是"trace 泄进调度与 md"（静默泄漏，与视图膨胀头号风险叠加）。
 LAYER_PLAN = "plan"
 LAYER_TRACE = "trace"
+TRACE_KINDS = frozenset({"turn", "finding", "doubt", "attempt", "artifact"})
 
 
 def ensure_layer(nodes) -> int:
@@ -1467,6 +1502,76 @@ class Roadmap:
 
         self._sync_parent_status(node_id)
 
+        return node
+
+    # ── trace 节点（P5-S2，§3.3）────────────────────────
+    # trace 是执行期涌现的机器记录（turn / finding / doubt / attempt / artifact）。
+    # 与 plan 节点共享一张节点表，但：layer=trace、parent=None、不进任何 plan
+    # 节点的 children（§2.4 硬前提）。provenance 诞生即写——`--under` 记
+    # prompted-by、`--from` 记一条 mainline 边——无需审批。
+
+    def _new_trace_id(self) -> str:
+        """生成不与 plan 节点冲突的 trace id。
+
+        plan 节点 id 都派生自根 '1'（add_node 只在已有 plan 节点下生子），
+        所以 '9-*' 命名空间（NODE_ID_PATTERN 合法、不以 '1' 开头）不会撞车。
+        """
+        seq = 1
+        while f"9-{seq}" in self.data["nodes"]:
+            seq += 1
+        return f"9-{seq}"
+
+    def add_trace(
+        self,
+        kind: str,
+        body: str,
+        under: Optional[str] = None,
+        from_trace: Optional[str] = None,
+    ) -> dict:
+        """追加一条 trace 节点，provenance 诞生即写。返回新节点。
+
+        - kind 不在 TRACE_KINDS → E_INVALID_KIND
+        - --under 目标不存在 / 不是 plan 节点 → E_PROMOTE_TARGET_INVALID
+        - --from 引用的 trace 不存在 → E_TRACE_NOT_FOUND
+        """
+        if kind not in TRACE_KINDS:
+            raise InvalidKind(kind)
+        under_id: Optional[str] = None
+        if under is not None:
+            try:
+                under_id = self.resolve_node(under)
+                under_node = self.get_node(under_id)
+            except (NodeNotFound, KeyError):
+                raise PromoteTargetInvalid(f"--under 目标不存在: {under}")
+            if under_node.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                raise PromoteTargetInvalid(f"--under 目标 {under_id} 不是 plan 节点")
+        from_id: Optional[str] = None
+        if from_trace is not None:
+            try:
+                from_id = self.resolve_node(from_trace)
+                src = self.get_node(from_id)
+            except (NodeNotFound, KeyError):
+                raise TraceNotFound(from_trace)
+            if src.get("layer") != LAYER_TRACE:
+                raise TraceNotFound(from_trace)
+        trace_id = self._new_trace_id()
+        node = {
+            "id": trace_id,
+            "uid": new_uid(),
+            "label": f"trace:{kind}",
+            "layer": LAYER_TRACE,
+            "kind": kind,
+            "body": body,
+            "parent": None,
+            "children": [],
+            "decisions": [],
+            "notes": "",
+            "prompted_by": under_id,
+        }
+        self.data["nodes"][trace_id] = node
+        if from_trace is not None:
+            # 端点落盘一律 uid（与 plan 边同纪律）；mainline 不是 blocks，不触发环检测。
+            self.add_edge(trace_id, from_id, EDGE_MAINLINE)
         return node
 
     def update_node(
