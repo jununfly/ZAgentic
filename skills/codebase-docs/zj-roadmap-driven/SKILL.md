@@ -32,7 +32,8 @@ Agent 完成一个子任务 → 调用 `update` 打勾 → 调用 `render` 更�
     ↓
 Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
-Agent 需要选择载体 → 调 `recommend-storage`（只读建议，不自动迁移）
+Agent 需要选择载体 → 调 `recommend-storage`（只读建议，只给出命令，不自动迁移）
+Agent 需要换载体 → 调 `migrate --to single|bundle|sqlite`（显式；源文件不动，目标已存在则拒）
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
 Agent 需要取活/看最长未完工链/看改动波及 → 调 `ready` / `critical-path` / `impact`（只读，不拿锁）
 
@@ -58,11 +59,13 @@ Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status 
 `in_progress` 不算），`critical-path` 是"最长的未完工 `blocks` 链"（已完成节点不计入、
 平局取最小起点 id），`impact <node>` 是"改这个节点会波及哪些下游"（只沿 `blocks` 顺流、
 不含自身、含已完成下游以预警返工）。三者边界与 `blocked` 一致——只有 `blocks` 参与；
-两个载体输出逐字节相同。
+三个载体输出逐字节相同。
 
-两个载体（single-file JSON 与 bundle）对边的行为完全一致，同一套验收跑两遍。
-bundle 把边存在 `edges/<id>.json`，节点分片里不反向存边 id，`migrate --to
-bundle` 会把边一起带走。
+三个载体（single-file JSON、bundle、sqlite）对边的行为完全一致，同一套验收跑三遍。
+bundle 把边存在 `edges/<id>.json`（索引 `index.json` 只有 from/to 邻接表，是纯冗余，
+不是事实源），节点分片里不反向存边 id，`migrate --to <carrier>` 会把边一起带走。
+三个载体的两个 Markdown 视图（`render` 写进 md 的轻量视图与 `section` 的导出视图）
+共用同一份模板，逐字节相同——模板曾各抄一份并漂移，抄两份本身就是缺陷。
 ```
 
 ## Scope gate — before any node write or project edit
@@ -110,6 +113,12 @@ Acceptance/evaluation 路线按以下顺序运行：
 - md section 由 `render` 命令完全重写，手动修改会被覆盖。
 - CLI 写类命令按顺序执行；其余数据模型、命令和锁细节见对应 reference。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建；无 `import` 命令，md 不能反导回 JSON。
-- `recommend-storage` 只读取事实源和派生文件，输出 `keep-single`、
-  `consider-bundle`、`recommend-bundle` 或 `keep-bundle`；它不会写入索引、
-  迁移载体或改写 Markdown。需要转换时，仍必须显式调用 `migrate --to bundle`。
+- `recommend-storage` 只读取事实源和派生文件，**但从不动手**：它输出 `keep-single`、
+  `consider-bundle`、`recommend-bundle`、`consider-sqlite`、`keep-bundle` 或
+  `keep-sqlite`，不写索引、不迁 carrier、不改写 Markdown。给出迁移目标的那些档会
+  在 `recommendation.command` 里附上**那条显式命令**（`migrate <path> --to <carrier>`）
+  让人去跑——把命令写出来 ≠ 替人跑。
+- 换 carrier 只能靠 `migrate <path> --to single|bundle|sqlite`：源文件一个字节都不改，
+  目标已存在或与源同 carrier 都直接拒绝。**没有任何命令会自动替你换事实源**，所以
+  "现在哪个产物是事实源"永远是你上一次显式做出的那个。租约与它的审计事件会跟着一
+  起走（带过去的那把锁在新 carrier 上仍然生效）。

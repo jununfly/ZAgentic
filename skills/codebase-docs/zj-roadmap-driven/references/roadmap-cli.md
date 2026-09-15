@@ -9,8 +9,9 @@ All roadmap operations use the skill's `roadmap_cli.py`. Inputs are deterministi
 python roadmap_cli.py init <roadmap_path> --title "项目名称" [--description "描述"] [--md-file "关联的md文件.md"]
 python roadmap_cli.py init <bundle_path> --storage bundle --title "大型路线图"
 
-# Convert an existing legacy JSON explicitly; the source is never rewritten
-python roadmap_cli.py migrate <json_path> --to bundle [--output <bundle_path>] [--snapshot-interval N]
+# Convert between carriers explicitly; the source is never rewritten
+python roadmap_cli.py migrate <roadmap_path> --to single|bundle|sqlite \
+    [--output <path>] [--snapshot-interval N]
 
 # Node CRUD
 python roadmap_cli.py add <json_path> <parent_id> "<label>" [--status pending] [--mode explore]
@@ -66,14 +67,46 @@ python roadmap_cli.py impact <roadmap_path> <node_id>
 
 `recommend-storage` is a read-only advisory. It reports node/decision counts,
 canonical and view bytes, and bundle shard/history sizes. It returns
-`keep-single`, `consider-bundle`, `recommend-bundle`, or `keep-bundle` without
-writing indexes, migrating the roadmap, or editing Markdown. `--measure` adds
-local bounded-tree and full-section timings; timing thresholds are advisory and
-machine-dependent.
+`keep-single`, `consider-bundle`, `recommend-bundle`, `consider-sqlite`,
+`keep-bundle`, or `keep-sqlite` without writing indexes, migrating the roadmap,
+or editing Markdown. When a recommendation names a different carrier it also
+carries the exact command to act on it in `recommendation.command`
+(`migrate <path> --to <carrier>`) — naming the command is not running it.
+`--measure` adds local bounded-tree and full-section timings; timing thresholds
+are advisory and machine-dependent.
 
-The CLI selects storage from the path: an existing directory with `manifest.json`
-is a roadmap bundle; a file is legacy single-file JSON. Bundle mode keeps node,
-decision, and append-only history shards independently readable. `tree`, `get`,
+## Carriers and explicit migration
+
+The CLI selects storage from the path: an existing directory with
+`manifest.json` is a **bundle**, a `.sqlite` / `.sqlite3` / `.db` file is
+**sqlite**, anything else is **single-file** JSON. The three share one adapter
+contract, so the same command works on any of them.
+
+```bash
+python roadmap_cli.py migrate <roadmap_path> --to single|bundle|sqlite \
+    [--output <path>] [--snapshot-interval N]
+```
+
+Both Markdown views are produced by **one** template in `roadmap.py`
+(`compose_light_section` / `compose_full_section`); the carriers feed it their
+own tree, chain and focus node. They used to keep separate copies of the
+layout, and the bundle copy silently drifted — no `> 当前施工` line, no
+`ROADMAP_TREE` markers, no focus block, no decision notes. Duplicating a
+template is the defect, not something care can prevent, so cross-carrier md
+equality is asserted directly by `tests/test_cross_carrier_render.py`.
+
+Migration is **explicit only** — no command changes your fact source by itself.
+The source file is read and left byte-identical (including mtime), so after a
+migration you can always answer "which artifact was the fact source a minute
+ago". A target that already exists is refused, and so is migrating onto the
+carrier the source is already on: neither is a silent-overwrite-shaped failure.
+Nodes, decisions, edges (uid endpoints, translated to display ids only on the
+way out), the edge-id counter, node leases and their audit events all come
+across; the carried lease still guards writes on the new carrier.
+
+Bundle mode keeps node, decision, and append-only history shards independently
+readable, and each node lease in its own `leases/<display-id>.json` shard.
+`tree`, `get`,
 `focus`, node-scoped `decisions`, and light `render` are lazy/bounded operations.
 `remove-decision` records a decision retraction in bundle mode, preserving the
 original record and its history rather than physically deleting it.
@@ -255,7 +288,8 @@ roadmap.bundle/
 ├── nodes/                 # one current-state shard per node
 ├── decisions/             # one decision shard per node
 ├── edges/                 # one shard per edge + a rebuildable index.json
-├── history/events.jsonl   # append-only mutation history
+├── leases/                # one shard per leased node (the lease store)
+├── history/events.jsonl   # append-only mutation history (incl. lease audit)
 ├── snapshots/             # materialized snapshot metadata
 ├── views/                 # generated Markdown views
 └── indexes/               # disposable derived indexes
@@ -268,14 +302,19 @@ writes and the transaction still commits). `edges/index.json` is pure redundancy
 for `from`/`to` lookups and is rebuilt by rescanning the directory if it goes
 missing; the monotonic counter is **not** in it — that one lives in
 `manifest.json` as `edgeSequence`, because a rebuilt counter would reuse ids.
-A bundle that has never had an edge has no `edges/` directory at all.
+The same "read the source-of-truth shards, not the index" rule is why
+`materialize()` reads edges out of `edges/*.json`: `index.json` has no edge
+list at all, so trusting it used to make `current_revision()` blind to every
+edge (fixed in #117). A bundle that has never had an edge has no `edges/`
+directory at all — including after a migration.
 
-`migrate --to bundle` carries edges across. Dropping them would be silent data
-loss that looks like success at the command layer.
+Every `migrate --to <carrier>` carries edges, decisions, node leases and their
+audit events across. Dropping any of them would be silent data loss that looks
+like success at the command layer.
 
 Markdown is a generated view and is never imported back into roadmap state. The
-old `import` command is intentionally not supported; use `migrate --to bundle`
-for storage conversion.
+old `import` command is intentionally not supported; use
+`migrate --to single|bundle|sqlite` for storage conversion.
 
 `unlock` is an explicit cleanup operation:
 

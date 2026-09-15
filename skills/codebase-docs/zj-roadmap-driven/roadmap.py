@@ -671,6 +671,118 @@ def render_open_questions_plain(items) -> str:
     return _chain_block(lines, "\n### 待决问题\n\n", "\n")
 
 
+# ── Markdown section 模板（两个 carrier 共用）────────────
+#
+# 模板从 carrier 里搬到这里，是因为它**被抄成了两份**：Roadmap 一份、RoadmapBundle
+# 一份。抄两份等于承诺它们永远同步，而它们没有——bundle 那份缺 `> 当前施工` 行、
+# ROADMAP_TREE 标记与"当前施工点"块，light section 里焦点决策还丢了备注（#117）。
+#
+# 这里所有函数都只吃"已经渲染好的片段"：它们不知道 carrier、节点和边，因此不可能
+# 对某一家的存储形状产生偏好，也就没有第二处可以漂移。
+
+# `section --all` / `render` 里"树不再截断"的深度。以前 single 写 50、bundle 写
+# 100000——同一条命令在两个 carrier 上对深树给出不同输出，这类差异没有正当理由。
+ALL_NODES_TREE_DEPTH = 50
+
+
+def focus_line(focus_id: Optional[str], label: str = "") -> str:
+    """导出视图里那一行"当前施工"；无焦点时返回空串（模板因此与无焦点时逐字节相同）。"""
+    return f"> 当前施工: {focus_id}. {label}" if focus_id else ""
+
+
+def focus_export_detail(focus_id: Optional[str], label: str = "", notes: str = "") -> str:
+    """导出视图（`section`）的焦点块。"""
+    if not focus_id:
+        return ""
+    detail = f"\n### 当前施工点\n\n**{focus_id}. {label}**\n"
+    if notes:
+        detail += f"\n{notes}\n"
+    return detail
+
+
+def focus_light_detail(
+    focus_id: Optional[str],
+    label: str = "",
+    notes: str = "",
+    decisions: Optional[list] = None,
+    subtree: str = "",
+) -> str:
+    """轻量视图（`render` 写进 md）的焦点块。
+
+    `decisions` 带备注时括号括在答案后面——bundle 曾整段漏掉这个后缀，于是同一个
+    焦点节点在两个 carrier 的 md 里长相不同。
+    """
+    if not focus_id:
+        return ""
+    detail = f"\n### 当前施工：{focus_id}. {label}\n"
+    if notes:
+        detail += f"\n{notes}\n"
+    if decisions:
+        detail += "\n**决策：**\n"
+        for d in decisions:
+            note = f" ({d.get('note', '')})" if d.get("note") else ""
+            detail += f"- Q: {d['q']} → {d['answer']}{note}\n"
+    if subtree:
+        detail += f"\n**当前子树：**\n{subtree}\n"
+    return detail
+
+
+def compose_light_section(
+    artifact_name: str,
+    updated: str,
+    tree_text: str,
+    chain: str,
+    open_questions: str,
+    focus_detail: str,
+) -> str:
+    """轻量视图：`render` 写进关联 md 文件的那一块。"""
+    section = (
+        "<!-- ROADMAP_SECTION_START -->\n"
+        "## ZJ Roadmap\n\n"
+        f"> 数据文件: `{artifact_name}` | 最后更新: {updated}\n\n"
+        f"{tree_text}{chain}{open_questions}\n"
+    )
+    if focus_detail:
+        section += focus_detail
+    return section + "<!-- ROADMAP_SECTION_END -->\n"
+
+
+def compose_full_section(
+    artifact_name: str,
+    updated: str,
+    focus_head: str,
+    tree_text: str,
+    chain: str,
+    open_questions: str,
+    decision_table: str = "",
+    focus_detail: str = "",
+    max_bytes: Optional[int] = None,
+) -> str:
+    """导出视图：`section` 打给 stdout 的那一块。"""
+    if max_bytes is not None and max_bytes < 0:
+        raise ValueError("max_bytes must be non-negative")
+    section = (
+        "## ZJ Roadmap\n\n"
+        f"> 数据文件: `{artifact_name}` | 最后更新: {updated}\n"
+        f"{focus_head}\n\n"
+        "<!-- ROADMAP_TREE_START -->\n"
+        "<!-- 由 zj-roadmap-driven 自动生成，请勿手动编辑 -->\n"
+        f"{tree_text}\n"
+        "<!-- ROADMAP_TREE_END -->\n"
+    )
+    section += chain
+    section += open_questions
+    if decision_table:
+        section += f"\n### 决策历史\n\n{decision_table}\n"
+    if focus_detail:
+        section += focus_detail
+    if max_bytes is not None and len(section.encode("utf-8")) > max_bytes:
+        encoded = section.encode("utf-8")[:max_bytes]
+        section = encoded.decode("utf-8", errors="ignore")
+        section += "\n> View truncated at --max-bytes. Use section --all with a larger limit for export.\n"
+    return section
+
+
 # ── 结构预算（case 1） ───────────────────────────────────
 # budget 的单位是结构单位（子节点数 / 开工轮次），不是 token：
 # token 不可跨模型比较，也无法在规划期预估（见 docs/plans 的 P5 §8.5）。
@@ -1905,6 +2017,15 @@ class Roadmap:
             parent_id = parent.get("parent")
 
     # ── Markdown 渲染 ──────────────────────────────────
+    #
+    # 模板只写一份，放在这一节的模块级函数里，两个 carrier 各自只负责**喂数据**
+    # （自己的树、自己的链、自己的焦点）。以前是 Roadmap 抄一份、RoadmapBundle 再抄
+    # 一份，抄出来就必然漂移：bundle 那份少了 `> 当前施工` 行、ROADMAP_TREE 标记与
+    # "当前施工点"块，light section 里焦点决策的备注也丢了（#117 一并修）。md 是
+    # Human 唯一看得到的面子，"两个 carrier 同语义"在这里就得是逐字节同。
+    #
+    # 参数全是已经渲染好的片段：这些函数不再知道 carrier、节点与边，因此不可能
+    # 对某一家的存储形状产生偏好。
 
     def _blocked_chain_lines(self) -> list:
         """本 carrier 的阻塞链条目：喂的是自己的边与节点，取舍规则共用。
@@ -1926,12 +2047,11 @@ class Roadmap:
         now = self.data["metadata"].get("updated", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         focus_id = self.get_current_focus()
-        focus_line = ""
-        if focus_id:
-            focus_node = self.data["nodes"][focus_id]
-            focus_line = f"> 当前施工: {focus_id}. {focus_node['label']}"
+        focus_node = self.data["nodes"][focus_id] if focus_id else None
 
-        tree_text = self.get_tree(max_depth=50 if all_nodes else max_depth, owners=self.owner_map())
+        tree_text = self.get_tree(
+            max_depth=ALL_NODES_TREE_DEPTH if all_nodes else max_depth, owners=self.owner_map()
+        )
 
         all_decisions = self.get_decisions() if all_nodes else []
         decision_lines = ""
@@ -1942,41 +2062,26 @@ class Roadmap:
                 note = d.get("note", "")
                 decision_lines += f"| {d['node_id']} | {d['q']} | {d['answer']} | {note} |\n"
 
-        current_detail = ""
-        if focus_id:
-            current_detail = f"\n### 当前施工点\n\n**{focus_id}. {self.data['nodes'][focus_id]['label']}**\n"
-            if self.data["nodes"][focus_id].get("notes"):
-                current_detail += f"\n{self.data['nodes'][focus_id]['notes']}\n"
-
-        section = f"""## ZJ Roadmap
-
-> 数据文件: `{os.path.basename(self.json_path)}` | 最后更新: {now}
-{focus_line}
-
-<!-- ROADMAP_TREE_START -->
-<!-- 由 zj-roadmap-driven 自动生成，请勿手动编辑 -->
-{tree_text}
-<!-- ROADMAP_TREE_END -->
-"""
-        # 树之后立刻给出"为什么没进展"——Human 的视线顺序是先扫树看见 `[!]`，
-        # 再需要一个不用翻 JSON 的答案。
-        section += render_chain_plain(self._blocked_chain_lines())
-        # #115：待决问题队列（失败达阈值挂起的 open question），同样只在有状态时出现。
-        section += render_open_questions_plain(self.open_question_items())
-
-        if decision_lines:
-            section += f"\n### 决策历史\n\n{decision_lines}\n"
-
-        if current_detail:
-            section += current_detail
-
-        if max_bytes is not None and max_bytes < 0:
-            raise ValueError("max_bytes must be non-negative")
-        if max_bytes is not None and len(section.encode("utf-8")) > max_bytes:
-            encoded = section.encode("utf-8")[:max_bytes]
-            section = encoded.decode("utf-8", errors="ignore")
-            section += "\n> View truncated at --max-bytes. Use section --all with a larger limit for export.\n"
-        return section
+        # 模板与片段的组装交给模块级函数：这里只负责从本 carrier 的数据里取出
+        # 要显示的东西，不再自己拼 Markdown。
+        return compose_full_section(
+            artifact_name=os.path.basename(self.json_path),
+            updated=now,
+            focus_head=focus_line(focus_id, focus_node["label"] if focus_node else ""),
+            tree_text=tree_text,
+            # 树之后立刻给出"为什么没进展"——Human 的视线顺序是先扫树看见 `[!]`，
+            # 再需要一个不用翻 JSON 的答案。
+            chain=render_chain_plain(self._blocked_chain_lines()),
+            # #115：待决问题队列（失败达阈值挂起的 open question），只在有状态时出现。
+            open_questions=render_open_questions_plain(self.open_question_items()),
+            decision_table=decision_lines,
+            focus_detail=focus_export_detail(
+                focus_id,
+                focus_node["label"] if focus_node else "",
+                focus_node.get("notes", "") if focus_node else "",
+            ),
+            max_bytes=max_bytes,
+        )
 
     def render_light_section(self) -> str:
         """轻量渲染（Human 视图）：树 depth=2 + 焦点节点展开。"""
@@ -1986,39 +2091,24 @@ class Roadmap:
         tree_text = self.get_tree(max_depth=2, owners=owners)
 
         focus_id = self.get_current_focus()
-        focus_detail = ""
-        if focus_id:
-            focus_node = self.data["nodes"][focus_id]
-            focus_detail = f"\n### 当前施工：{focus_id}. {focus_node['label']}\n"
-            if focus_node.get("notes"):
-                focus_detail += f"\n{focus_node['notes']}\n"
-            decisions = focus_node.get("decisions", [])
-            if decisions:
-                focus_detail += "\n**决策：**\n"
-                for d in decisions:
-                    note = f" ({d.get('note', '')})" if d.get("note") else ""
-                    focus_detail += f"- Q: {d['q']} → {d['answer']}{note}\n"
-            focus_subtree = self.get_focus_subtree(focus_id, max_depth=1, owners=owners)
-            if focus_subtree:
-                focus_detail += f"\n**当前子树：**\n{focus_subtree}\n"
+        focus_node = self.data["nodes"][focus_id] if focus_id else None
 
-        # 空链时这里得到空串：下面那个模板因此在无阻塞时与 #82 之前逐字节相同。
-        chain = render_chain_collapsed(self._blocked_chain_lines())
-        # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
-        oq = render_open_questions_collapsed(self.open_question_items())
-        section = f"""<!-- ROADMAP_SECTION_START -->
-## ZJ Roadmap
-
-> 数据文件: `{os.path.basename(self.json_path)}` | 最后更新: {now}
-
-{tree_text}{chain}{oq}
-"""
-        if focus_detail:
-            section += focus_detail
-
-        section += "<!-- ROADMAP_SECTION_END -->\n"
-
-        return section
+        return compose_light_section(
+            artifact_name=os.path.basename(self.json_path),
+            updated=now,
+            tree_text=tree_text,
+            # 空链时这里得到空串：下面那个模板因此在无阻塞时与 #82 之前逐字节相同。
+            chain=render_chain_collapsed(self._blocked_chain_lines()),
+            # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
+            open_questions=render_open_questions_collapsed(self.open_question_items()),
+            focus_detail=focus_light_detail(
+                focus_id,
+                focus_node["label"] if focus_node else "",
+                focus_node.get("notes", "") if focus_node else "",
+                focus_node.get("decisions", []) if focus_node else [],
+                self.get_focus_subtree(focus_id, max_depth=1, owners=owners) if focus_id else "",
+            ),
+        )
 
     def get_focus_subtree(self, root_id: str, max_depth: int = 1, owners: dict = None) -> str:
         """Render a bounded subtree under the focus node.
