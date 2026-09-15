@@ -57,6 +57,10 @@ from roadmap import (
     ensure_uid,
     ensure_uids,
     new_uid,
+    LAYER_PLAN,
+    LAYER_TRACE,
+    ensure_layer,
+    assert_plan_layer,
     resolve_node,
     endpoint_to_uid,
     edge_endpoints_as_display,
@@ -259,7 +263,7 @@ class RoadmapBundle:
 
     def _initialize_layout(self, data: dict[str, Any], snapshot_interval: int) -> None:
         self.path.mkdir(parents=True, exist_ok=True)
-        for directory in ("nodes", "decisions", "history", "snapshots", "views", "indexes/status/pending", "indexes/status/in_progress", "indexes/status/completed", "indexes/status/blocked"):
+        for directory in ("nodes", "decisions", "history", "snapshots", "views", "traces", "indexes/status/pending", "indexes/status/in_progress", "indexes/status/completed", "indexes/status/blocked"):
             (self.path / directory).mkdir(parents=True, exist_ok=True)
         metadata = data.get("metadata", {})
         self.manifest = {
@@ -326,10 +330,11 @@ class RoadmapBundle:
         return str(self.path)
 
     def _write_node_file(self, node_id: str, node: dict[str, Any]) -> None:
-        # 写入时补 uid：老 bundle 的分片在这里被逐片升级。放在写侧而不是
-        # `_read_node_file` 里，理由与 Roadmap.save 相同——读命令无锁，
-        # 在读里写文件并发时可能给同一节点生成两个不同 uid。
+        # 写入时补 uid / layer：老 bundle 的分片在这里被逐片升级。放在写侧
+        # 而不是 `_read_node_file` 里，理由与 Roadmap.save 相同——读命令无锁，
+        # 在读里写文件并发时可能给同一节点生成两个不同 uid / layer。
         ensure_uid(node)
+        ensure_layer([node])
         stored = {key: value for key, value in node.items() if key != "decisions"}
         atomic_json(self.path / "nodes" / f"{safe_node_id(node_id)}.json", stored)
 
@@ -451,7 +456,10 @@ class RoadmapBundle:
         return focus
 
     def rebuild_indexes(self) -> dict[str, Any]:
-        nodes = [self._read_node_file(path.stem) for path in sorted((self.path / "nodes").glob("*.json"))]
+        # 只重建 plan 层索引：trace 节点（S2 起，L3 在 traces/）没有 status，
+        # 套用 plan 的状态索引会误建标记甚至崩。遍历经 `iter_nodes(layer='plan')`
+        # ——即便某条 trace 分片误落进 nodes/，也只重建 plan 索引。
+        nodes = self.iter_nodes()
         for status in STATUS_VALUES:
             directory = self.path / "indexes/status" / status
             if directory.exists():
@@ -548,23 +556,50 @@ class RoadmapBundle:
         return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
 
     def ready_nodes(self) -> list[dict[str, Any]]:
-        """就绪集（#81）：与 single-file 同一份判定，见 `is_ready`。"""
-        return ready_node_list(self._all_nodes(), self.blocked_node_ids())
+        """就绪集（#81）：与 single-file 同一份判定，见 `is_ready`。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点不进就绪集。
+        """
+        return ready_node_list(self.iter_nodes(), self.blocked_node_ids())
 
     def critical_path(self) -> list[str]:
-        """关键路径（#81）：与 single-file 同一份判定。"""
-        return critical_path(self._all_nodes(), self.list_edges())
+        """关键路径（#81）：与 single-file 同一份判定。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点不进关键路径。
+        """
+        return critical_path(self.iter_nodes(), self.list_edges())
 
     def impact(self, node_id: str) -> list[str]:
-        """影响集（#81）：与 single-file 同一份判定（不含自身）。"""
-        return impact_node_ids(node_id, self._all_nodes(), self.list_edges())
+        """影响集（#81）：与 single-file 同一份判定（不含自身）。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点不进影响集。
+        """
+        return impact_node_ids(node_id, self.iter_nodes(), self.list_edges())
 
     def _all_nodes(self) -> list[dict[str, Any]]:
-        """整张图的节点：nodes/ 目录才是权威，状态索引可能失效。"""
+        """整张图的节点：nodes/ 目录才是权威，状态索引可能失效。
+
+        `nodes/` 只放 plan 节点（L3 物理隔离：trace 在 `traces/`），所以这里读
+        到的本来就是 plan；`iter_nodes` 再叠一层字段过滤作逻辑兜底。
+        """
         return [
             self._read_node_file(path.stem)
             for path in sorted((self.path / "nodes").glob("*.json"))
         ]
+
+    # ── 遍历入口收敛（P5-S1，L1/L2 归口，§2.3）──────────────
+    # 与 single-file 同一套语义契约：默认只看 plan，显式 `layer=LAYER_TRACE`
+    # 才看 trace。bundle 的 trace 在独立 `traces/` 目录（L3），目录布局即过滤；
+    # 这里再按 `layer` 字段过滤一次，作为逻辑兜底——即便某条 trace 分片误落
+    # 进 `nodes/`，遍历也不会把它泄进调度与 md。
+
+    def iter_nodes(self, layer: str = LAYER_PLAN) -> list[dict[str, Any]]:
+        selected = [n for n in self._all_nodes() if n.get("layer", LAYER_PLAN) == layer]
+        selected.sort(key=lambda n: n.get("id", ""))
+        return selected
+
+    def node_ids(self, layer: str = LAYER_PLAN) -> list[str]:
+        return [n["id"] for n in self.iter_nodes(layer)]
 
     def add_node(
         self,
@@ -577,6 +612,9 @@ class RoadmapBundle:
         exit_criteria: Optional[list] = None,
     ) -> dict[str, Any]:
         parent = self._read_node_file(parent_id)
+        # §2.4 硬前提：trace 节点不设 parent。任何把 plan 节点挂到 trace 节点下的写入
+        # 路径必须当场被拒，否则 trace 就会混进 children 数组，污染 tree / _sync_parent_status。
+        assert_plan_layer(parent)
         assert_settable_status(status)
         if mode not in MODE_VALUES:
             raise BundleError("invalid node mode")
@@ -584,7 +622,7 @@ class RoadmapBundle:
         children = parent.setdefault("children", [])
         next_index = next_child_index(parent)
         node_id = f"{parent_id}-{next_index}"
-        node = {"id": node_id, "uid": new_uid(), "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": ""}
+        node = {"id": node_id, "uid": new_uid(), "label": label, "status": "pending", "mode": mode, "parent": parent_id, "children": [], "decisions": [], "notes": "", "layer": LAYER_PLAN}
         budget = build_budget(max_children, max_rounds)
         if budget:
             node["budget"] = budget
@@ -959,10 +997,10 @@ class RoadmapBundle:
         if node_id:
             return self._read_decisions_file(node_id)
         result = []
-        for path in sorted((self.path / "nodes").glob("*.json"), key=lambda item: node_depth(item.stem)):
-            current_id = path.stem
-            node = self._read_node_file(current_id)
-            result.extend({"node_id": current_id, "node_label": node["label"], **decision} for decision in self._read_decisions_file(current_id))
+        for node in self.iter_nodes():
+            current_id = node["id"]
+            result.extend({"node_id": current_id, "node_label": node["label"], **decision}
+                          for decision in self._read_decisions_file(current_id))
         return result
 
     # ── 节点租约（P2 核心） ──────────────────────────────
@@ -1235,8 +1273,11 @@ class RoadmapBundle:
         return result
 
     def open_question_items(self) -> list:
-        """带 open_question 字段的节点，按 display id 排序——喂给 md 渲染。"""
-        return open_question_items(((n.get("id"), n) for n in self._all_nodes()))
+        """带 open_question 字段的节点，按 display id 排序——喂给 md 渲染。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点无 open_question、不进队列。
+        """
+        return open_question_items(((n["id"], n) for n in self.iter_nodes()))
 
     def get_tree(self, root_id: str = "1", max_depth: int = 2, owners: dict = None) -> str:
         root = self._read_node_file(root_id)

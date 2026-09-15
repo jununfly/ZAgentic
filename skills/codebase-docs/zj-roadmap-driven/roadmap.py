@@ -273,6 +273,20 @@ class ScopeError(RoadmapError):
     exit_code = 1
 
 
+class LayerViolation(RoadmapError):
+    """试图把 trace 节点写进 plan 节点的 `children` / `parent`（P5-S1 硬前提，§2.4）。
+
+    trace 与 plan 共享一张节点表，但 trace 节点**不设 `parent`、不进任何 plan 节点的
+    `children`**——它的父子与延续关系只用边（`mainline` / `reference`）表达。把 trace
+    混进 `children` 的后果与"忘记过滤 `layer`"一样严重：它会沿树被渲染、被 `_sync_parent_status`
+    派生状态，当场把 trace 泄进 plan 调度与 md。所以这个写入路径必须被拒绝，而不是靠
+    遍历过滤兜底。
+    """
+
+    code = "E_LAYER_VIOLATION"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
@@ -282,6 +296,7 @@ ERROR_EXIT_CODES = {
     ConflictError.code: ConflictError.exit_code,
     InvalidStatus.code: InvalidStatus.exit_code,
     ScopeError.code: ScopeError.exit_code,
+    LayerViolation.code: LayerViolation.exit_code,
 }
 
 
@@ -880,6 +895,49 @@ def next_child_index(parent: Optional[dict]) -> int:
     return max(base, high_water)
 
 
+# ── layer 字段（P5-S1，两层图共享一张节点表）──────────────
+# 两个 layer 共享同一张节点表，靠 `layer` 字段区分 plan / trace（§2.1.1）。
+# `layer` 是**必填**字段；缺省一律按 `plan` 处理，这样存量 roadmap（没有
+# `layer` 字段）迁移后仍是 plan，而 trace 节点必须显式写 `layer: 'trace'`。
+# 所有遍历入口（L1/L2 归口，§2.3）默认只看 plan；要看 trace 必须显式传
+# `layer='trace'`。这是 fail-safe：漏写过滤的后果是"看不到 trace"（当场暴露），
+# 而不是"trace 泄进调度与 md"（静默泄漏，与视图膨胀头号风险叠加）。
+LAYER_PLAN = "plan"
+LAYER_TRACE = "trace"
+
+
+def ensure_layer(nodes) -> int:
+    """给缺 `layer` 的节点补 `'plan'`；已有则不动。返回补了几条。
+
+    放在写入点（single-file / sqlite 的 `save`、bundle 的 `_write_node_file`）
+    做"写入时升级"，与 `ensure_uid` 同一条纪律：读命令无锁，在 load 里写文件
+    并发时可能给同一节点生成不一致状态。存量 roadmap 不显式迁移也自然带
+    `layer: 'plan'`，新节点在构造时显式写 `layer: 'plan'`。
+    """
+    items = nodes.values() if isinstance(nodes, dict) else nodes
+    count = 0
+    for node in items:
+        if "layer" not in node:
+            node["layer"] = LAYER_PLAN
+            count += 1
+    return count
+
+
+def assert_plan_layer(node: dict) -> None:
+    """§2.4 硬前提：进 `children` / 设 `parent` 的必须是 plan 节点。
+
+    缺 `layer` 的节点按 plan 处理（存量迁移后都是 plan），所以只有显式写了
+    `layer: 'trace'` 的节点会被拒。trace 的父子关系只走边（mainline / reference），
+    绝不进 plan 的树结构——否则它会沿树被渲染、被 `_sync_parent_status` 派生状态，
+    当场把 trace 泄进 plan 调度与 md，与"忘记过滤 layer"后果相同。
+    """
+    if node.get("layer", LAYER_PLAN) != LAYER_PLAN:
+        raise LayerViolation(
+            f"节点 {node.get('id')} 的 layer 是 {node.get('layer')!r}，"
+            f"不能进入 plan 节点的 children / parent；trace 节点只通过边表达父子关系"
+        )
+
+
 # ── 节点 uid（P0 地基）────────────────────────────────────
 
 def new_uid() -> str:
@@ -1311,6 +1369,7 @@ class Roadmap:
         self.data.setdefault("metadata", {})
         self.data["metadata"]["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ensure_uids(self.data.get("nodes", {}))
+        ensure_layer(self.data.get("nodes", {}))
         content = json.dumps(self.data, ensure_ascii=False, indent=2)
         atomic_write_text(self.json_path, content)
         return self.json_path
@@ -1335,6 +1394,7 @@ class Roadmap:
                     "children": [],
                     "decisions": [],
                     "notes": "",
+                    "layer": LAYER_PLAN,
                     # init 出来的根节点已经在施工，它就是第 1 轮；
                     # 否则 max_rounds=1 会被解释成"还能再开工一次"。
                     "rounds": 1,
@@ -1370,6 +1430,9 @@ class Roadmap:
         assert_settable_status(status)
 
         parent = self.data["nodes"][parent_id]
+        # §2.4 硬前提：trace 节点不设 parent。任何把 plan 节点挂到 trace 节点下的写入
+        # 路径必须当场被拒，否则 trace 就会混进 children 数组，污染 tree / _sync_parent_status。
+        assert_plan_layer(parent)
         check_child_budget(parent)
 
         index = next_child_index(parent)
@@ -1387,6 +1450,7 @@ class Roadmap:
             "children": [],
             "decisions": [],
             "notes": "",
+            "layer": LAYER_PLAN,
         }
 
         budget = build_budget(max_children, max_rounds)
@@ -1660,6 +1724,29 @@ class Roadmap:
             raise KeyError(f"节点不存在: {node_id}")
         return self.data["nodes"][node_id]
 
+    # ── 遍历入口收敛（P5-S1，L1/L2 归口，§2.3）──────────────
+    # 全图遍历分散在 stats / decisions / focus / validate / 调度查询等多处裸
+    # 遍历；把它们收敛成下面两个命名入口，默认 `layer='plan'`，调用方不写过滤
+    # 条件即可天然避开 trace（fail-safe：漏写 = 看不到 trace，当场暴露）。
+    # 两个 carrier 各自实现一次，语义契约（默认值 / 排序 / 返回形状）在此钉死，
+    # 不得各解释一套——同一语义两套实现是 `remove-decision` 那类漂移的入口。
+
+    def iter_nodes(self, layer: str = LAYER_PLAN) -> list:
+        """按 layer 遍历节点，返回节点 dict 列表（按 id 排序，确定性）。
+
+        缺 `layer` 的节点按 plan 处理（存量 roadmap 迁移后都是 plan）。要看 trace
+        必须显式传 `layer=LAYER_TRACE`——trace 不进 `children`、不设 `parent`，
+        所以只会经由这个入口被显式取出，不会混进 plan 调度与 md（§2.4）。
+        """
+        nodes = self.data.get("nodes", {})
+        selected = [n for n in nodes.values() if n.get("layer", LAYER_PLAN) == layer]
+        selected.sort(key=lambda n: n.get("id", ""))
+        return selected
+
+    def node_ids(self, layer: str = LAYER_PLAN) -> list:
+        """`iter_nodes` 的 id 视图，同样默认只看 plan。"""
+        return [n["id"] for n in self.iter_nodes(layer)]
+
     # ── 派生阻塞（#80）─────────────────────────────────
     # blocked / blocked_reason 只在读视图里出现，永不落盘：唯一权威是 blocks 边。
     # 落盘就必须维护一份"什么时候该重算"的清单（加边、删边、前驱完成、delete、
@@ -1720,9 +1807,12 @@ class Roadmap:
         return result
 
     def open_question_items(self) -> list:
-        """带 open_question 字段的节点，按 display id 排序——喂给 md 渲染。"""
+        """带 open_question 字段的节点，按 display id 排序——喂给 md 渲染。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点无 open_question、不进队列。
+        """
         return open_question_items(
-            ((nid, node) for nid, node in self.data["nodes"].items())
+            ((node["id"], node) for node in self.iter_nodes())
         )
 
     def get_node_view(self, node_id: str) -> dict:
@@ -1737,16 +1827,19 @@ class Roadmap:
         按边实时算一遍（O(V+E)），不落 `pending_deps` 计数器——Story 24 已决议
         推迟到 P3：计数器一旦落盘就得维护"什么时候重算"的清单，那正是
         `blocked` 改成派生要消灭的东西。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点（S2 起）不进就绪集。
         """
-        return ready_node_list(self.data["nodes"].values(), self.blocked_node_ids())
+        return ready_node_list(self.iter_nodes(), self.blocked_node_ids())
 
     def critical_path(self) -> list:
         """关键路径（#81）：依赖图里最长的未完工链。
 
         端点落盘是 uid：喂给模块级 critical_path 前翻回显示 id，使其输出显示 id。
+        遍历经 `iter_nodes(layer='plan')`：trace 节点不进关键路径。
         """
         return critical_path(
-            self.data["nodes"].values(),
+            self.iter_nodes(),
             [edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])],
         )
 
@@ -1754,10 +1847,11 @@ class Roadmap:
         """影响集（#81）：改 node_id 会波及的下游节点（不含自身）。
 
         端点落盘是 uid：喂给模块级 impact_node_ids 前翻回显示 id。
+        遍历经 `iter_nodes(layer='plan')`：trace 节点不进影响集。
         """
         return impact_node_ids(
             node_id,
-            self.data["nodes"].values(),
+            self.iter_nodes(),
             [edge_endpoints_as_display(e, self.data["nodes"]) for e in self.data.get("edges", [])],
         )
 
@@ -1803,11 +1897,12 @@ class Roadmap:
         return len(selected)
 
     def get_decisions(self, node_id: Optional[str] = None) -> list:
-        """获取决策记录。无 node_id 则返回全部。"""
+        """获取决策记录。无 node_id 则返回全部（按 id 排序，确定性）。"""
         if node_id:
             return self.get_node(node_id)["decisions"]
         result = []
-        for nid, node in self.data["nodes"].items():
+        for node in self.iter_nodes():
+            nid = node["id"]
             for d in node["decisions"]:
                 result.append({"node_id": nid, "node_label": node["label"], **d})
         return result
@@ -1980,9 +2075,11 @@ class Roadmap:
         只考虑 in_progress 叶子节点（非叶 in_progress 是 _sync_parent_status 的级联降级
         临时态，不是用户主动设置的施工点）。无 in_progress 叶子时返回 None，
         调用方应据此判断"全部完工或全部未开工"状态。
+
+        遍历经 `iter_nodes(layer='plan')`：trace 节点无 status、不进焦点候选。
         """
         candidates = [
-            nid for nid, node in self.data["nodes"].items()
+            node["id"] for node in self.iter_nodes()
             if node["status"] == STATUS_IN_PROGRESS
             and not node.get("children")  # 排除非叶 (级联降级临时态)
         ]
@@ -2231,14 +2328,19 @@ class Roadmap:
     # ── 验证 ───────────────────────────────────────────
 
     def validate(self) -> list[str]:
-        """验证路线图数据完整性，返回错误列表。"""
+        """验证路线图数据完整性，返回错误列表。
+
+        只校验 plan 层节点：trace 节点（S2 起）没有 `parent` / `children` /
+        `status`，套用 plan 的结构校验会误报。它们由 S2 的 trace 契约单独保证，
+        不在此处。遍历经 `iter_nodes(layer='plan')`。
+        """
         errors = []
 
         # 必须有根节点
         if "1" not in self.data.get("nodes", {}):
             errors.append("缺少根节点 '1'")
 
-        for nid, node in self.data.get("nodes", {}).items():
+        for nid, node in ((n["id"], n) for n in self.iter_nodes()):
             # id 一致性
             if node.get("id") != nid:
                 errors.append(f"节点 {nid}: id 字段不一致 ({node.get('id')})")
@@ -2281,23 +2383,23 @@ class Roadmap:
 
     def stats(self) -> dict:
         """路线图统计信息。"""
-        nodes = self.data.get("nodes", {})
+        nodes = self.iter_nodes()
         status_counts = {
             STATUS_PENDING: 0,
             STATUS_IN_PROGRESS: 0,
             STATUS_COMPLETED: 0,
             STATUS_BLOCKED: 0,
         }
-        for n in nodes.values():
+        for n in nodes:
             s = n.get("status", STATUS_PENDING)
             if s in status_counts:
                 status_counts[s] += 1
 
-        total_decisions = sum(len(n.get("decisions", [])) for n in nodes.values())
+        total_decisions = sum(len(n.get("decisions", [])) for n in nodes)
 
         return {
             "total_nodes": len(nodes),
             "status_counts": status_counts,
             "total_decisions": total_decisions,
-            "max_depth": max((node_depth(nid) for nid in nodes), default=0),
+            "max_depth": max((node_depth(n["id"]) for n in nodes), default=0),
         }
