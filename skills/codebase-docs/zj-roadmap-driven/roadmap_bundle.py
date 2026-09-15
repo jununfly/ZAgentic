@@ -43,6 +43,10 @@ from roadmap import (
     focus_line,
     CycleError,
     NodeNotFound,
+    InvalidKind,
+    TraceNotFound,
+    InvalidLayer,
+    PromoteTargetInvalid,
     assert_settable_status,
     blocked_chain_lines,
     blocked_view,
@@ -59,6 +63,9 @@ from roadmap import (
     new_uid,
     LAYER_PLAN,
     LAYER_TRACE,
+    TRACE_KINDS,
+    EDGE_MAINLINE,
+    EDGE_REFERENCE,
     ensure_layer,
     assert_plan_layer,
     resolve_node,
@@ -354,6 +361,65 @@ class RoadmapBundle:
             raise BundleError(f"node shard is not an object: {path}")
         return value
 
+    def _read_trace_file(self, node_id: str) -> dict[str, Any]:
+        """读一条 trace 分片（L3 隔离在 traces/）。与 _read_node_file 同纪律。"""
+        safe_node_id(node_id)
+        path = self.path / "traces" / f"{node_id}.json"
+        if not path.is_file():
+            raise KeyError(f"trace 节点不存在: {node_id}")
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise BundleError(f"could not read trace shard {path}: {error}") from error
+        if not isinstance(value, dict):
+            raise BundleError(f"trace shard is not an object: {path}")
+        return value
+
+    def _write_trace_file(self, node_id: str, node: dict[str, Any]) -> None:
+        """写一条 trace 分片到 traces/（L3 物理隔离，不进 nodes/、不进状态索引）。"""
+        ensure_uid(node)
+        ensure_layer([node])  # trace 已是 trace，幂等升级
+        stored = {key: value for key, value in node.items() if key != "decisions"}
+        atomic_json(self.path / "traces" / f"{safe_node_id(node_id)}.json", stored)
+
+    def _all_trace_nodes(self) -> list[dict[str, Any]]:
+        """traces/ 目录下的全部 trace 节点（L3）。目录不存在时返回空。
+
+        直接读每个分片的内容，用分片里的权威 `id` 字段，而不拿文件名当 id——
+        否则 `safe_node_id(文件名)` 会拒掉"文件名≠id"的存量/测试分片（如
+        `traces/t1.json` 内部 id 是 9001），导致 `list_edges` 等读侧路径崩。
+        """
+        traces_dir = self.path / "traces"
+        if not traces_dir.is_dir():
+            return []
+        out: list[dict[str, Any]] = []
+        for p in sorted(traces_dir.glob("*.json")):
+            try:
+                value = json.loads(p.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as error:
+                raise BundleError(f"could not read trace shard {p}: {error}") from error
+            if not isinstance(value, dict):
+                raise BundleError(f"trace shard is not an object: {p}")
+            out.append(value)
+        return out
+
+    def _read_any_node(self, node_id: str) -> dict[str, Any]:
+        """点查：先 nodes/（plan），再 traces/（trace）。get_node / resolve_node /
+        add_edge 都靠它，从而 trace↔trace 的边也能落地与翻译。"""
+        try:
+            return self._read_node_file(node_id)
+        except KeyError:
+            pass
+        return self._read_trace_file(node_id)
+
+    def _nodes_for_edge_translation(self) -> list[dict[str, Any]]:
+        """边端点翻译用的整图节点表（plan + trace）。
+
+        `_all_nodes()` 只含 plan（喂 render/tree/stats/validate），不能把 trace
+        端点漏掉——否则 `edge_endpoints_as_display` 翻不出 trace 的显示 id。
+        """
+        return self._all_nodes() + self._all_trace_nodes()
+
     def _read_decisions_file(self, node_id: str) -> list[dict[str, Any]]:
         safe_node_id(node_id)
         path = self.path / "decisions" / f"{node_id}.json"
@@ -476,16 +542,17 @@ class RoadmapBundle:
     # ---- node and decision operations ----------------------------------------
 
     def get_node(self, node_id: str) -> dict[str, Any]:
-        node = self._read_node_file(node_id)
+        node = self._read_any_node(node_id)
         node["decisions"] = self._read_decisions_file(node_id)
         return node
 
     def resolve_node(self, ref: str) -> str:
         """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。
 
-        bundle 没有"整图 dict"，节点分散在分片里，所以传 `_all_nodes()` 列表。
+        bundle 没有"整图 dict"，节点分散在分片里，所以传 `_all_nodes()` + `_all_trace_nodes()`
+        的合并列表——trace 节点的 id / uid 也要能解析（provenance 边引用 trace）。
         """
-        return resolve_node(ref, self._all_nodes())
+        return resolve_node(ref, self._all_nodes() + self._all_trace_nodes())
 
     # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
 
@@ -594,7 +661,15 @@ class RoadmapBundle:
     # 进 `nodes/`，遍历也不会把它泄进调度与 md。
 
     def iter_nodes(self, layer: str = LAYER_PLAN) -> list[dict[str, Any]]:
-        selected = [n for n in self._all_nodes() if n.get("layer", LAYER_PLAN) == layer]
+        if layer == LAYER_TRACE:
+            # L3 物理隔离的 trace（traces/）优先；同时保留 L2 字段过滤兜底：
+            # 即便某条 trace 分片误落进 nodes/，也能按 layer 过滤出来（不泄进 plan）。
+            selected = self._all_trace_nodes() + [
+                n for n in self._all_nodes() if n.get("layer") == LAYER_TRACE
+            ]
+        else:
+            # 默认只看 plan；_all_nodes 只读 nodes/，天然不含 traces。
+            selected = [n for n in self._all_nodes() if n.get("layer", LAYER_PLAN) == layer]
         selected.sort(key=lambda n: n.get("id", ""))
         return selected
 
@@ -642,6 +717,64 @@ class RoadmapBundle:
         self._sync_parent_status(node_id, stats)
         self._refresh_focus()
         self._commit("node-added", {"nodeId": node_id, "parentId": parent_id}, stats)
+        return node
+
+    # ── trace 节点（P5-S2，§3.3）────────────────────────
+    # 覆写 single-file 的 add_trace：trace 物理落在 traces/（L3），不进 nodes/、
+    # 不进状态索引；provenance 诞生即写（--under → prompted_by、--from → mainline 边）。
+
+    def _new_trace_id(self) -> str:
+        """生成不与 plan 节点冲突的 trace id（见 Roadmap._new_trace_id 的同名纪律）。"""
+        seq = 1
+        while (self.path / "traces" / f"9-{seq}.json").exists():
+            seq += 1
+        return f"9-{seq}"
+
+    def add_trace(
+        self,
+        kind: str,
+        body: str,
+        under: Optional[str] = None,
+        from_trace: Optional[str] = None,
+    ) -> dict[str, Any]:
+        if kind not in TRACE_KINDS:
+            raise InvalidKind(kind)
+        under_id: Optional[str] = None
+        if under is not None:
+            try:
+                under_id = self.resolve_node(under)
+                under_node = self.get_node(under_id)
+            except (NodeNotFound, KeyError):
+                raise PromoteTargetInvalid(f"--under 目标不存在: {under}")
+            if under_node.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                raise PromoteTargetInvalid(f"--under 目标 {under_id} 不是 plan 节点")
+        from_id: Optional[str] = None
+        if from_trace is not None:
+            try:
+                from_id = self.resolve_node(from_trace)
+                src = self.get_node(from_id)
+            except (NodeNotFound, KeyError):
+                raise TraceNotFound(from_trace)
+            if src.get("layer") != LAYER_TRACE:
+                raise TraceNotFound(from_trace)
+        trace_id = self._new_trace_id()
+        node = {
+            "id": trace_id,
+            "uid": new_uid(),
+            "label": f"trace:{kind}",
+            "layer": LAYER_TRACE,
+            "kind": kind,
+            "body": body,
+            "parent": None,
+            "children": [],
+            "decisions": [],
+            "notes": "",
+            "prompted_by": under_id,
+        }
+        self._write_trace_file(trace_id, node)
+        if from_trace is not None:
+            # 端点落盘一律 uid；mainline 不触发环检测。
+            self.add_edge(trace_id, from_id, EDGE_MAINLINE)
         return node
 
     def update_node(
@@ -785,17 +918,17 @@ class RoadmapBundle:
         from_display = self.resolve_node(from_id)
         to_display = self.resolve_node(to_id)
         try:
-            self._read_node_file(from_display)
+            self._read_any_node(from_display)
         except KeyError:
             raise NodeNotFound(f"节点不存在: {from_id}") from None
         try:
-            self._read_node_file(to_display)
+            self._read_any_node(to_display)
         except KeyError:
             raise NodeNotFound(f"节点不存在: {to_id}") from None
         if edge_type not in EDGE_TYPES:
             raise ValueError(f"无效的边类型: {edge_type}")
-        from_uid = self._read_node_file(from_display)["uid"]
-        to_uid = self._read_node_file(to_display)["uid"]
+        from_uid = self._read_any_node(from_display)["uid"]
+        to_uid = self._read_any_node(to_display)["uid"]
         if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_uid, from_uid):
             raise CycleError(
                 f"{from_id} -blocks-> {to_id} 会让依赖图成环"
@@ -815,19 +948,19 @@ class RoadmapBundle:
             # 被取代的节点转 archived 但不删除：它的决策与历史仍然可读。
             # 用标记而不是 status，因为"completed 且 archived"（做完了但被取代）
             # 是合理组合，塞进 status 会丢掉"完成过"这个信息。
-            node = self._read_node_file(to_display)
+            node = self._read_any_node(to_display)
             node["archived"] = True
             self._write_node_file(to_display, node)
         self._commit("edge-added", {"edgeId": edge["id"], "from": from_uid, "to": to_uid, "type": edge_type}, self._read_stats())
         # 返回显示 id 副本：控制例钉的是"返回给 Human 的是显示 id"，不钉落盘字节。
-        return edge_endpoints_as_display(edge, self._all_nodes())
+        return edge_endpoints_as_display(edge, self._nodes_for_edge_translation())
 
     def list_edges(self, node_id: Optional[str] = None) -> list[dict[str, Any]]:
         """列出全部边；给了 node_id 就只列与它相连的（入边 + 出边）。
 
         端点翻回显示 id：控制例钉的是"列给 Human 的是显示 id"，不钉落盘字节。
         """
-        nodes = self._all_nodes()
+        nodes = self._nodes_for_edge_translation()
         raw = [self._read_edge_file(edge_id) for edge_id in self._edge_ids()]
         disp = [edge_endpoints_as_display(e, nodes) for e in raw]
         if node_id is None:
@@ -850,7 +983,7 @@ class RoadmapBundle:
             # 一条边都没有时别碰磁盘：否则会给从未用过边的 bundle 造出
             # edges/ 目录与空 index，违反"没有边时布局与 P1 之前一致"。
             return {"total": 0, "by_type": {}}
-        nodes = self._all_nodes()
+        nodes = self._nodes_for_edge_translation()
         by_type: dict = {}
         doomed = []
         for edge_id in self._edge_ids():
@@ -871,7 +1004,7 @@ class RoadmapBundle:
         (self._edges_dir() / f"{edge_id}.json").unlink()
         self._rebuild_edge_index()
         self._commit("edge-removed", {"edgeId": edge_id}, self._read_stats())
-        return edge_endpoints_as_display(edge, self._all_nodes())
+        return edge_endpoints_as_display(edge, self._nodes_for_edge_translation())
 
     def migrate_edges(self) -> int:
         """把存量显示 id 边一次性转成 uid（#106 S4 的显式迁移命令）。
@@ -879,7 +1012,7 @@ class RoadmapBundle:
         逐边文件改端点并写回；改了几条提交一份 history event。已是 uid 的边不动，
         所以幂等——重跑不会制造写入噪声。
         """
-        nodes = self._all_nodes()
+        nodes = self._nodes_for_edge_translation()
         total = 0
         for edge_id in self._edge_ids():
             raw = self._read_edge_file(edge_id)
