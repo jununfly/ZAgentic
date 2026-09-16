@@ -35,7 +35,7 @@ if str(SKILL_DIR) not in sys.path:
 CLI = SKILL_DIR / "roadmap_cli.py"
 
 # 载体 → 文件名后缀。init 的 --storage 与后缀要一致，否则 CLI 会按路径形状挑错载体。
-TARGETS = {"single": "roadmap.json", "bundle": "roadmap.bundle", "sqlite": "roadmap.sqlite"}
+TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
 
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 # 数据文件名与最后更新时间在两个 carrier 上必然不同（文件名不同、写入时刻不同），
@@ -109,13 +109,11 @@ class CrossCarrierRenderTest(unittest.TestCase):
         views = self.light_sections()
 
         self.assertEqual(views["single"], views["sqlite"])
-        self.assertEqual(views["single"], views["bundle"])
 
     def test_the_full_section_is_byte_identical_across_carriers(self):
         views = self.full_sections()
 
         self.assertEqual(views["single"], views["sqlite"])
-        self.assertEqual(views["single"], views["bundle"])
 
     def test_the_full_export_is_byte_identical_across_carriers(self):
         views = {}
@@ -126,7 +124,6 @@ class CrossCarrierRenderTest(unittest.TestCase):
             )
 
         self.assertEqual(views["single"], views["sqlite"])
-        self.assertEqual(views["single"], views["bundle"])
 
     def test_the_focus_node_is_named_in_both_views(self):
         """差异最容易被肉眼放过的一处：bundle 曾完全没有"当前施工"这一行。"""

@@ -191,10 +191,6 @@ class SingleFileFailure(FailureContract, unittest.TestCase):
     storage = "single"
 
 
-class BundleFailure(FailureContract, unittest.TestCase):
-    storage = "bundle"
-
-
 class SqliteFailure(FailureContract, unittest.TestCase):
     """Third-pass carrier for #116: RoadmapSqlite must agree on failure semantics."""
     storage = "sqlite"
@@ -258,10 +254,6 @@ class FailureCliContract:
 
 class SingleFileFailureCli(FailureCliContract, unittest.TestCase):
     storage = "single"
-
-
-class BundleFailureCli(FailureCliContract, unittest.TestCase):
-    storage = "bundle"
 
 
 class SqliteFailureCli(FailureCliContract, unittest.TestCase):

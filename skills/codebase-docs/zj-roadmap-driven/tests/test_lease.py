@@ -294,10 +294,6 @@ class SingleFileLeaseCli(LeaseCliContract, unittest.TestCase):
     storage = "single"
 
 
-class BundleLeaseCli(LeaseCliContract, unittest.TestCase):
-    storage = "bundle"
-
-
 class SqliteLeaseCli(LeaseCliContract, unittest.TestCase):
     storage = "sqlite"
 

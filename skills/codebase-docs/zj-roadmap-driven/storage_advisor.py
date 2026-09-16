@@ -4,9 +4,10 @@ The advisor deliberately does not call bundle repair/rebuild paths and never
 changes the roadmap carrier.  It reports structural signals first; an
 optional ``measure`` pass adds local timing observations for comparison.
 
-Issue #117 (P3): it now speaks about **three** carriers (single / bundle /
-sqlite). Recognition follows the same rule the CLI uses to pick a carrier, so
-a `.sqlite` artifact can never again be handed to the JSON reader.
+Issue #117 (P3): it speaks about single / sqlite; bundle is deprecated (#140)
+and any bundle artifact on disk is only advised to migrate off. Recognition
+follows the same rule the CLI uses to pick a carrier, so a `.sqlite` artifact
+can never again be handed to the JSON reader.
 """
 
 from __future__ import annotations
@@ -23,25 +24,11 @@ from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 
 ADVISOR_SCHEMA = "zj-roadmap-storage-recommendation/v1"
 
-# These are advisory starting points, anchored by the small/medium/large
-# benchmark fixtures.  They are deliberately not migration gates.
+# 只有两档（#140 弃用 bundle 后）：single 是默认，sqlite 是 scale 档。
+# 这些是建议起点，锚在 benchmark 夹具上，绝非迁移闸门。
 THRESHOLDS: dict[str, dict[str, int | float]] = {
-    "consider_bundle": {
-        "total_nodes": 1_000,
-        "total_decisions": 500,
-        "canonical_bytes": 256 * 1024,
-        "full_section_ms": 100.0,
-    },
-    "recommend_bundle": {
-        "total_nodes": 5_000,
-        "total_decisions": 2_000,
-        "canonical_bytes": 1024 * 1024,
-        "full_section_ms": 300.0,
-    },
-    # 这一档是**外推**，不是实测：benchmark 的最大夹具就是 5000 节点
-    # （benchmarks/roadmap_bundle_benchmark.py 的 SIZES），上面 bundle 两档正锚在
-    # 它上面；再往上没有数据。取值按 §5 第 3 条（整图读放大）再上一个数量级估，
-    # 和其他阈值一样只是建议起点——advisor 从不替人迁移。
+    # 外推档：benchmark 最大夹具 5000 节点，再往上无实测数据；按 §5 第 3 条
+    # （整图读放大）上一个数量级估，只作建议起点——advisor 从不替人迁移。
     "consider_sqlite": {
         "total_nodes": 20_000,
         "total_decisions": 8_000,
@@ -198,28 +185,21 @@ def _measure(path: Path, storage: str) -> dict[str, float]:
 def _signals(
     metrics: dict[str, Any],
     measurements: dict[str, float],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> list[dict[str, Any]]:
+    """Return the metrics that justify suggesting sqlite, if any.
+
+    After the bundle carrier was deprecated (#140) there is only one advisory
+    tier above single: `consider_sqlite`.  No `consider`/`recommend` bundle
+    tiers remain.
+    """
     values = {**metrics, **measurements}
-    consider: list[dict[str, Any]] = []
-    recommend: list[dict[str, Any]] = []
     sqlite: list[dict[str, Any]] = []
-    for metric, threshold in THRESHOLDS["consider_bundle"].items():
+    for metric, threshold in THRESHOLDS["consider_sqlite"].items():
         value = values.get(metric)
         if value is None or value < threshold:
             continue
-        signal = {
-            "metric": metric,
-            "value": value,
-            "threshold": threshold,
-        }
-        consider.append(signal)
-        recommend_threshold = THRESHOLDS["recommend_bundle"][metric]
-        if value >= recommend_threshold:
-            recommend.append({**signal, "threshold": recommend_threshold})
-        sqlite_threshold = THRESHOLDS["consider_sqlite"][metric]
-        if value >= sqlite_threshold:
-            sqlite.append({**signal, "threshold": sqlite_threshold})
-    return consider, recommend, sqlite
+        sqlite.append({"metric": metric, "value": value, "threshold": threshold})
+    return sqlite
 
 
 def _reasons(signals: list[dict[str, Any]], level: str) -> list[str]:
@@ -229,18 +209,16 @@ def _reasons(signals: list[dict[str, Any]], level: str) -> list[str]:
 
 def _recommendation(
     storage: str,
-    consider: list[dict[str, Any]],
-    recommend: list[dict[str, Any]],
     sqlite: list[dict[str, Any]],
     path: str = "",
 ) -> dict[str, Any]:
-    """Pick the top tier the metrics justify, with the explicit command to act on it.
+    """Pick the tier the metrics justify, with the explicit command to act on it.
 
-    Tier order: keep < consider-bundle < recommend-bundle < consider-sqlite.
-    sqlite outranks bundle even for a bundle artifact (spec §5 lists four
-    things SQLite buys you that sharding cannot), but **nothing here migrates
-    anything** — the advisor's job ends at naming the command (Story 39/40).
-    The `command` value is that name, not an action taken.
+    Tier order after the bundle carrier was deprecated (#140): keep-single <
+    consider-sqlite.  A bundle artifact still on disk is advised to migrate off
+    (sqlite outranks it), but **nothing here migrates anything** — the
+    advisor's job ends at naming the command (Story 39/40).  The `command`
+    value is that name, not an action taken.
     """
     if storage == "sqlite":
         return {
@@ -250,6 +228,18 @@ def _recommendation(
             "reasons": ["sqlite roadmap is already explicitly selected; no migration is needed."],
         }
 
+    if storage == "bundle":
+        return {
+            "action": "deprecate-bundle",
+            "level": "deprecated",
+            "target_storage": "sqlite",
+            "reasons": [
+                "bundle carrier is deprecated (#140); migrate to sqlite (or single) "
+                "via an explicit command.",
+            ],
+            "command": f"migrate {path} --to sqlite",
+        }
+
     if sqlite:
         return {
             "action": "consider-sqlite",
@@ -257,32 +247,6 @@ def _recommendation(
             "target_storage": "sqlite",
             "reasons": _reasons(sqlite, "consider"),
             "command": f"migrate {path} --to sqlite",
-        }
-
-    if storage == "bundle":
-        return {
-            "action": "keep-bundle",
-            "level": "already-selected",
-            "target_storage": "bundle",
-            "reasons": ["roadmap bundle is already explicitly selected; no migration is needed."],
-        }
-
-    if recommend:
-        return {
-            "action": "recommend-bundle",
-            "level": "recommend",
-            "target_storage": "bundle",
-            "reasons": _reasons(recommend, "recommend"),
-            "command": f"migrate {path} --to bundle",
-        }
-
-    if consider:
-        return {
-            "action": "consider-bundle",
-            "level": "consider",
-            "target_storage": "bundle",
-            "reasons": _reasons(consider, "consider"),
-            "command": f"migrate {path} --to bundle",
         }
 
     return {
@@ -313,7 +277,7 @@ def recommend_storage(path_value: str | Path, measure: bool = False) -> dict[str
         metrics = _single_metrics(path, roadmap)
 
     measurements = _measure(path, storage) if measure else {}
-    consider, recommend, sqlite = _signals(metrics, measurements)
+    sqlite = _signals(metrics, measurements)
     return {
         "schema": ADVISOR_SCHEMA,
         "path": str(path),
@@ -322,10 +286,8 @@ def recommend_storage(path_value: str | Path, measure: bool = False) -> dict[str
         "metrics": metrics,
         "measurements_ms": measurements,
         "signals": {
-            "consider_bundle": consider,
-            "recommend_bundle": recommend,
             "consider_sqlite": sqlite,
         },
         "thresholds": THRESHOLDS,
-        "recommendation": _recommendation(storage, consider, recommend, sqlite, str(path)),
+        "recommendation": _recommendation(storage, sqlite, str(path)),
     }

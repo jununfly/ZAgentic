@@ -181,7 +181,7 @@ class AdvisorCliCase(unittest.TestCase):
 
 
 class StorageAdvisorCliTest(AdvisorCliCase):
-    """single-file / bundle 两档：checklist 见 #117 之前的既有验收。"""
+    """single / sqlite 两档：#140 弃用 bundle 后只剩这两档。"""
 
     def test_small_single_is_keep_and_read_only(self):
         self.run_cli("init", self.single, "--title", "Small roadmap")
@@ -202,34 +202,25 @@ class StorageAdvisorCliTest(AdvisorCliCase):
         self.assertEqual(before, self.file_digest(self.single))
         self.assertEqual(before_mtime, self.single.stat().st_mtime_ns)
 
-    def test_large_single_recommends_bundle(self):
+    def test_medium_single_stays_single_below_sqlite_threshold(self):
+        # bundle 档已移除：1000/5000 节点都还不到 sqlite 阈值（2万），仍是 keep-single。
         self.write_single_with_children(5000)
         before = self.file_digest(self.single)
 
         result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
 
-        self.assertEqual("recommend-bundle", result["recommendation"]["action"])
+        self.assertEqual("keep-single", result["recommendation"]["action"])
         self.assertGreaterEqual(result["metrics"]["total_nodes"], 5000)
-        self.assertTrue(result["signals"]["recommend_bundle"])
+        self.assertEqual([], result["signals"]["consider_sqlite"])
         self.assertEqual(before, self.file_digest(self.single))
 
-    def test_medium_single_suggests_consider_bundle(self):
-        self.write_single_with_children(1000)
-
-        result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
-
-        self.assertEqual("consider-bundle", result["recommendation"]["action"])
-        self.assertEqual(1000, result["metrics"]["total_nodes"])
-        self.assertEqual("total_nodes", result["signals"]["consider_bundle"][0]["metric"])
-
-    def test_two_moderate_structural_signals_stay_consider_without_measurement(self):
+    def test_two_moderate_structural_signals_stay_single_without_measurement(self):
         self.write_single_with_decisions(23, 694)
 
         result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
 
-        self.assertEqual("consider-bundle", result["recommendation"]["action"])
-        self.assertEqual(2, len(result["signals"]["consider_bundle"]))
-        self.assertEqual([], result["signals"]["recommend_bundle"])
+        self.assertEqual("keep-single", result["recommendation"]["action"])
+        self.assertEqual([], result["signals"]["consider_sqlite"])
 
     def test_non_execution_registry_json_is_rejected(self):
         self.single.write_text(
@@ -242,7 +233,8 @@ class StorageAdvisorCliTest(AdvisorCliCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("not a valid execution roadmap", result.stderr)
 
-    def test_bundle_is_keep_bundle_and_measurement_is_read_only(self):
+    def test_bundle_is_deprecated_and_measurement_is_read_only(self):
+        # bundle 仍能被 advisor 读（逃生用），但结论是 deprecated → migrate --to sqlite。
         self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Bundle roadmap")
         self.run_cli("add", self.bundle, "1", "One branch")
         before = self.file_digest(self.bundle)
@@ -250,7 +242,12 @@ class StorageAdvisorCliTest(AdvisorCliCase):
         result = json.loads(self.run_cli("recommend-storage", self.bundle, "--measure").stdout)
 
         self.assertEqual("bundle", result["storage"])
-        self.assertEqual("keep-bundle", result["recommendation"]["action"])
+        self.assertEqual("deprecate-bundle", result["recommendation"]["action"])
+        self.assertEqual("sqlite", result["recommendation"]["target_storage"])
+        self.assertEqual(
+            f"migrate {self.bundle.resolve()} --to sqlite",
+            result["recommendation"]["command"],
+        )
         self.assertIn("bounded_tree_ms", result["measurements_ms"])
         self.assertIn("full_section_ms", result["measurements_ms"])
         self.assertEqual(before, self.file_digest(self.bundle))
@@ -263,7 +260,7 @@ class StorageAdvisorCliTest(AdvisorCliCase):
         result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)
 
         self.assertEqual("bundle", result["storage"])
-        self.assertEqual("keep-bundle", result["recommendation"]["action"])
+        self.assertEqual("deprecate-bundle", result["recommendation"]["action"])
         self.assertFalse(stats_path.exists())
 
 
@@ -317,7 +314,7 @@ class SqliteStorageAdvisorCliTest(AdvisorCliCase):
         )
         self.assertTrue(result["read_only"])
 
-    def test_a_heavy_bundle_is_advised_to_consider_sqlite(self):
+    def test_a_heavy_bundle_is_deprecated_to_sqlite(self):
         self.write_single_with_bytes(9 * 1024 * 1024)
         self.run_cli("migrate", self.single, "--to", "bundle", "--output", self.bundle)
         before = self.file_digest(self.bundle)
@@ -325,17 +322,17 @@ class SqliteStorageAdvisorCliTest(AdvisorCliCase):
         result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)
 
         self.assertEqual("bundle", result["storage"])
-        self.assertEqual("consider-sqlite", result["recommendation"]["action"])
+        self.assertEqual("deprecate-bundle", result["recommendation"]["action"])
         self.assertEqual(before, self.file_digest(self.bundle))
 
-    def test_a_small_bundle_keeps_being_keep_bundle(self):
-        """sqlite 这一档不能把"什么都没触发"的 bundle 也升上去。"""
+    def test_a_small_bundle_is_also_deprecated(self):
+        """bundle 不论大小都 deprecated——sqlite 这一档不会把"什么都没触发"的 bundle 留成 keep。"""
         self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Bundle roadmap")
         self.run_cli("add", self.bundle, "1", "One branch")
 
         result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)
 
-        self.assertEqual("keep-bundle", result["recommendation"]["action"])
+        self.assertEqual("deprecate-bundle", result["recommendation"]["action"])
 
 
 if __name__ == "__main__":

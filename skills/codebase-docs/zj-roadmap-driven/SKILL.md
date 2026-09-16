@@ -85,7 +85,7 @@ Acceptance/evaluation 路线按以下顺序运行：
 3. 将 roadmap 试验结果与目标项目完成度分开报告；probe 通过不等于项目已实现或可发布。
 
 **关键规则：**
-- **Agent 每次完成实质工作后，必须 `render` 更新 md 文件。** 这是 Human 看到进度的唯一窗口。
+- **Agent 每次完成实质工作后，必须自动 `render` 更新 md 文件。** 这是 Human 看到进度的唯一窗口，也是 sqlite carrier 下「源不可读但 md 可审」的硬保证——**自动 render 是默认且必需**，human 手动触发 `render` 仅作补充 / 兜底手段，**不可作为主依赖**。
 - **Agent 做任何方向性决策前，先 `decide` 记录。** 决策不落盘 = 没发生。
 - **Human 随时可以通过 `tree` + `decisions` 了解全貌，无需翻对话历史。**
 - **Agent 禁止直接 Read/Edit md 的路线图 section。** 只能通过 CLI 操作 JSON，再 render 输出。

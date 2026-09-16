@@ -236,10 +236,6 @@ class SingleFileScopeCli(ScopeCliContract, unittest.TestCase):
     storage = "single"
 
 
-class BundleScopeCli(ScopeCliContract, unittest.TestCase):
-    storage = "bundle"
-
-
 class SqliteScopeCli(ScopeCliContract, unittest.TestCase):
     """Third-pass CLI carrier for #116: scope guard against sqlite-backed roadmap."""
     storage = "sqlite"
@@ -375,10 +371,6 @@ class OwnershipCliContract:
 
 class SingleFileOwnershipCli(OwnershipCliContract, unittest.TestCase):
     storage = "single"
-
-
-class BundleOwnershipCli(OwnershipCliContract, unittest.TestCase):
-    storage = "bundle"
 
 
 class SqliteOwnershipCli(OwnershipCliContract, unittest.TestCase):
