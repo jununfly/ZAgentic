@@ -30,9 +30,8 @@ Seams under test
 ----------------
   1. Pure policy helpers in `roadmap` (one source of truth for both carriers):
      `compute_retry_backoff`, `should_escalate`, `DEFAULT_MAX_ATTEMPTS`.
-  2. Carrier layer: `Roadmap.record_failure` / `RoadmapBundle.record_failure`
-     (parallel implementations sharing the pure helpers) — run on both
-     carriers.
+  2. Carrier layer: `Roadmap.record_failure` (shared by both carriers through
+     the pure helpers) — run on both carriers.
   3. CLI contract (subprocess: exit code + stderr `E_*` code) — `fail` runs
      against **both** carriers. `fail` is executor-owned, so it passes through
      the same lease gate as `status` (Story 33 "records" is an execution
@@ -68,11 +67,6 @@ def run_cli(*args):
 
 
 def load_instance(path: str, storage: str):
-    if storage == "bundle":
-        from roadmap_bundle import RoadmapBundle
-        rb = RoadmapBundle(path)
-        rb.load()
-        return rb
     if storage == "sqlite":
         r = RoadmapSqlite(path)
         r.load()
@@ -111,8 +105,7 @@ class FailureContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("r.sqlite" if self.storage == "sqlite"
-                                         else "r.json" if self.storage == "single" else "r.bundle")
+        path = Path(self.tmp.name) / ("r.sqlite" if self.storage == "sqlite" else "r.json")
         init = run_cli("init", str(path), "--title", "fail", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.assertEqual(run_cli("add", str(path), "1", "A").returncode, 0)
@@ -203,8 +196,7 @@ class FailureCliContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        path = Path(self.tmp.name) / ("r.sqlite" if self.storage == "sqlite"
-                                         else "r.json" if self.storage == "single" else "r.bundle")
+        path = Path(self.tmp.name) / ("r.sqlite" if self.storage == "sqlite" else "r.json")
         init = run_cli("init", str(path), "--title", "fail", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)
         self.assertEqual(run_cli("add", str(path), "1", "A").returncode, 0)

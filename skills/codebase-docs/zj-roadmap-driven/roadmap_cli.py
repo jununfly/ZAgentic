@@ -8,7 +8,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
 命令:
   init    <roadmap_path> --title "..." [--description "..."] [--md-file "..."]
-              [--storage single|sqlite] [--snapshot-interval N]
+              [--storage single|sqlite]
 
   add     <json_path> <parent_id> "<label>"
               [--status pending|in_progress|completed]   # blocked 派生，不可设
@@ -84,11 +84,11 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   stats   <json_path>                        # 统计信息
 
   recommend-storage <roadmap_path> [--measure]
-                                            # 只读建议单 JSON 或 bundle
+                                            # 只读建议单 JSON 或 sqlite
 
   validate <json_path>                       # 验证数据完整性
 
-  migrate <roadmap_path> --to single|sqlite [--output <path>] [--snapshot-interval N]
+  migrate <roadmap_path> --to single|sqlite [--output <path>]
               # 显式把事实源换到另一种 carrier；源文件不改写，目标已存在则拒绝
 
   path    <json_path> <node_id>              # 获取从根到节点的路径
@@ -128,8 +128,6 @@ from roadmap import (
     status_icon,
     unlock_roadmap,
 )
-# bundle carrier 已弃用 (#140)：仍 import 以支持读取/迁出现有 bundle，勿新增功能。
-from roadmap_bundle import BundleError, RoadmapBundle, DEFAULT_SNAPSHOT_INTERVAL
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
 from storage_advisor import recommend_storage
@@ -280,9 +278,8 @@ def _load_roadmap(path: str):
     """Select storage by the path shape, then load one command-facing adapter."""
     p = Path(path)
     if p.is_dir():
-        # bundle carrier 已弃用 (#140)：仅作为读取/迁出路径，不可新建（init/migrate 已拦）。
-        roadmap = RoadmapBundle(path)
-    elif is_sqlite_path(path):
+        raise ValueError(f"not a roadmap artifact (directory): {path}")
+    if is_sqlite_path(path):
         roadmap = RoadmapSqlite(path)
     else:
         roadmap = Roadmap(path)
@@ -296,11 +293,8 @@ def cmd_init(args: dict):
     title = args.get("title", "Untitled")
     description = args.get("description", "")
     md_file = args.get("md-file", "")
-    if storage == "bundle":
-        raise ValueError(
-            "bundle carrier is deprecated (#140); use --storage single or --storage sqlite. "
-            "Existing bundles migrate via `migrate <path> --to sqlite` (or --to single)."
-        )
+    if storage not in CARRIERS:
+        raise ValueError(f"--storage must be one of {', '.join(CARRIERS)}, got: {storage}")
     if storage == "sqlite":
         r = RoadmapSqlite(path)
         r.init(title=title, description=description, md_file=md_file)
@@ -308,13 +302,11 @@ def cmd_init(args: dict):
         print(f"Created sqlite: {r.json_path}")
         return
     seed = Roadmap(path)
-    data = seed.init(
+    seed.init(
         title=title,
         description=description,
         md_file=md_file,
     )
-    if storage != "single":
-        raise ValueError("--storage must be single or sqlite")
     seed.save()
     print(f"Created: {seed.json_path}")
 
@@ -639,8 +631,7 @@ def cmd_get(args: dict):
 def cmd_tree(args: dict):
     r = _load_roadmap(args["positional"][0])
     root = r.resolve_node(args["positional"][1]) if len(args["positional"]) > 1 else "1"
-    default_depth = 2 if getattr(r, "is_bundle", False) else 10
-    depth = int(args.get("depth", default_depth))
+    depth = int(args.get("depth", 10))
     print(r.get_tree(root, depth))
 
 
@@ -843,7 +834,7 @@ def cmd_unlock(args: dict):
 
 
 def cmd_migrate(args: dict):
-    """显式换 carrier：`<source> --to single|sqlite`（#117 Story 40；`--to bundle` 已禁用 #140）。
+    """显式换 carrier：`<source> --to single|sqlite`（#117 Story 40）。
 
     源文件读完之后一个字节都不动——迁移改写输入的话，"一分钟前哪个产物是事实源"
     这个问题就答不出来了，而这正是 Story 40 要 Answer 的那个问题。
@@ -852,14 +843,13 @@ def cmd_migrate(args: dict):
     to = args.get("to")
     if to not in CARRIERS:
         raise ValueError(f"migrate requires --to one of: {', '.join(CARRIERS)}")
-    interval = int(args.get("snapshot-interval", DEFAULT_SNAPSHOT_INTERVAL))
     output = args.get("output")
     target = Path(output).expanduser().resolve() if output else default_output(source, to)
     # 两端都锁：source 防止读到写一半的状态，target 防止两个 migrate 同时落地。
     with ExitStack() as stack:
         for lock_path in sorted({str(source), str(target)}):
             stack.enter_context(roadmap_file_lock(lock_path))
-        report = migrate(source, to, target, interval)
+        report = migrate(source, to, target)
     print(f"Migrated: {report['source']} -> {report['target']}")
 
 
@@ -995,7 +985,7 @@ def main():
         # 稳定错误码在行首，Agent 按 code 分支，不要匹配后半句的人类文案。
         print(f"Error: {e.code}: {e}", file=sys.stderr)
         sys.exit(exit_code_for(e))
-    except (BundleError, FileNotFoundError, KeyError, ValueError, json.JSONDecodeError) as e:
+    except (FileNotFoundError, KeyError, ValueError, json.JSONDecodeError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 

@@ -7,8 +7,7 @@ spec：每个节点一个不可变 `uid`，一经生成永不变更、永不复�
 测试缝：CLI 进程级。每条 CLI 调用都是新进程，所以"uid 是否真的落盘、是否稳定"
 由命令本身证明，不需要额外造 reload。
 
-本文件覆盖 single-file carrier；bundle 跑同一套断言的文件是 `test_uid_bundle.py`
-（继承本文件的 Slice，不复制）。
+本文件覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_uid_single_file.py
 """

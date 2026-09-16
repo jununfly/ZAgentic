@@ -54,10 +54,10 @@
 
 ## P3 — Carrier 演进：SQLite 优先于「自研事件流」
 
-- Roadmap carrier 收敛为 single-file JSON 与 SQLite 两种（bundle 已弃用 #140，仅作迁出源），由**同一套 adapter 契约**承载（`Roadmap` 继承 ~40 方法、只覆写存储原语）。
+- Roadmap carrier 收敛为 single-file JSON 与 SQLite 两种，由**同一套 adapter 契约**承载（`Roadmap` 继承 ~40 方法、只覆写存储原语）。
 - 选择理由：`sqlite3` 标准库零新依赖；WAL 多读一写；递归 CTE 天然表达 DAG 就绪/关键路径/影响集；history / decisions / edges / leases 各归一表。
 - **SQLite 的四条约正当性（lost update 已剔除）**：① 长事务跨多对象原子写（JSON 只能整图重写）；② 跨设备 P4 需要按行按字段的 HLC 合并粒度；③ 5000 节点读放大（今天每次读都 load 整图）；④ DAG 递归查询一次 CTE 完成。
-- 决策：先做 SQLite，不把事件流升格为主事实源（P4 前提，但单设备阶段只增读放大）；`recommend-storage` 仍只读建议，迁移只走显式命令；bundle 原保留为可 diff 导出形态，#140 已弃用，仅作迁出源。
+- 决策：先做 SQLite，不把事件流升格为主事实源（P4 前提，但单设备阶段只增读放大）；`recommend-storage` 仍只读建议，迁移只走显式命令。
 - **两种 carrier 语义漂移是头号同类缺陷**：加新 carrier 前先统一语义（如 `remove-decision` = 撤回保留历史，非物理删除），同一套契约测试三 carrier 各跑一遍。
 
 ## 错误码与退出码纪律

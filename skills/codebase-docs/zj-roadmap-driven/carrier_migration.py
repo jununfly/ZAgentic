@@ -20,14 +20,14 @@ Canonical shapes
 ----------------
 `export_roadmap_data` → the single-file JSON layout
     ``{title, description, version, nodes, edges, metadata, edge_seq?}``
-    Edges are always in **display-id** form. bundle stores them as uids, so the
-    export translates back — otherwise a single→bundle→single round trip would
-    silently rewrite the fact source's endpoints and change nothing else
-    visible, which is the worst kind of drift.
+    Edges are always in **display-id** form, and both carriers store them the
+    same way — so a migration round trip can never silently rewrite the fact
+    source's endpoints while changing nothing else visible, which is the worst
+    kind of drift.
 
 `export_lease_store` → the single-file sidecar layout
     ``{"leases": {...}, "events": [...]}`` keyed by display id, event `at` as
-    epoch float (see `RoadmapBundle._read_lease_store`).
+    epoch float (see `Roadmap._read_lease_store`).
 """
 
 from __future__ import annotations
@@ -37,19 +37,22 @@ from pathlib import Path
 from typing import Any
 
 from roadmap import Roadmap
-from roadmap_bundle import BundleError, RoadmapBundle, DEFAULT_SNAPSHOT_INTERVAL
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 
 
-CARRIERS = ("single", "bundle", "sqlite")
-SUFFIXES = {"single": ".json", "bundle": ".bundle", "sqlite": ".sqlite"}
+CARRIERS = ("single", "sqlite")
+SUFFIXES = {"single": ".json", "sqlite": ".sqlite"}
 
 
 def detect_storage(path: str | Path) -> str:
-    """Which carrier owns this artifact, by the same rule the CLI routes by."""
+    """Which carrier owns this artifact, by the same rule the CLI routes by.
+
+    A directory is not an artifact: the only carriers are a single JSON file
+    and a sqlite file, so refusing here keeps migration from guessing.
+    """
     target = Path(path)
     if target.is_dir():
-        return "bundle"
+        raise ValueError(f"not a roadmap artifact (directory): {target}")
     if is_sqlite_path(str(target)):
         return "sqlite"
     return "single"
@@ -59,10 +62,8 @@ def load_carrier(path: str | Path, storage: str | None = None):
     """Load `path` with whichever carrier knows how to read it."""
     target = Path(path)
     kind = storage or detect_storage(target)
-    roadmap: Roadmap | RoadmapBundle | RoadmapSqlite
-    if kind == "bundle":
-        roadmap = RoadmapBundle(target)
-    elif kind == "sqlite":
+    roadmap: Roadmap | RoadmapSqlite
+    if kind == "sqlite":
         roadmap = RoadmapSqlite(target)
     elif kind == "single":
         roadmap = Roadmap(target)
@@ -74,46 +75,14 @@ def load_carrier(path: str | Path, storage: str | None = None):
 
 def export_roadmap_data(carrier) -> dict[str, Any]:
     """The whole fact source, in the canonical single-file layout."""
-    if isinstance(carrier, RoadmapBundle):
-        return _bundle_data(carrier)
     return copy.deepcopy(carrier.data)
-
-
-def _bundle_data(bundle: RoadmapBundle) -> dict[str, Any]:
-    shown: dict[str, Any] = {}
-    for path in sorted((bundle.path / "nodes").glob("*.json"), key=lambda item: item.stem):
-        node = copy.deepcopy(bundle._read_node_file(path.stem))
-        node["decisions"] = bundle._read_decisions_file(path.stem)
-        shown[path.stem] = node
-    # 边**不翻显示 id**，保持 bundle 落盘的原形状（uid）。
-    #
-    # 翻成显示 id 看着更"像 Human 视野"，但它会让同一份 roadmap 在三家 carrier 上
-    # 算出三个不同的 rev：single/sqlite 存 uid，bundle 导出却是显示 id，于是
-    # single→bundle→sqlite 之后 rev 就漂移了。翻译层（`edge_endpoints_as_display`）
-    # 本来就在读侧给 Human 用，不作为存储形态；这里的取舍是"让三家 carrier 的
-    # current_revision 对齐"，而不是"导出看起来好看"。
-    edges = list(bundle.materialize()["edges"])
-    metadata = dict(bundle.manifest.get("metadata", {}))
-    data: dict[str, Any] = {
-        "title": bundle.manifest.get("title", "Untitled"),
-        "description": bundle.manifest.get("description", ""),
-        "version": bundle.manifest.get("roadmapVersion", 1),
-        "nodes": shown,
-        "edges": edges,
-        "metadata": metadata,
-    }
-    # 边的 id 计数器跟着走：删过 id 的那段历史 bundle 不知道（它按现存最大 id
-    # 续），带着它下次 `--to bundle` 才不会把已用过的 id 又发一遍。
-    if bundle.manifest.get("edgeSequence") is not None:
-        data["edge_seq"] = bundle.manifest["edgeSequence"]
-    return data
 
 
 def export_lease_store(carrier) -> dict[str, Any]:
     """Leases + audit events in the canonical sidecar layout.
 
-    All three carriers expose `_read_lease_store`; bundle got its own
-    implementation in #117 precisely so this function has no special cases.
+    Both carriers expose `_read_lease_store`, so this function has no
+    special cases.
     """
     return carrier._read_lease_store()
 
@@ -123,25 +92,20 @@ def write_carrier(
     storage: str,
     data: dict[str, Any],
     lease_store: dict[str, Any] | None = None,
-    snapshot_interval: int = DEFAULT_SNAPSHOT_INTERVAL,
 ):
     """Create `path` in `storage` from canonical data, then seed the leases.
 
-    Refuses to overwrite anything: `create_from_data` already guards the bundle
-    case and the file carriers get the same check here. Silent clobbering of an
-    existing fact source is exactly the failure Story 40 exists to prevent.
+    Refuses to overwrite anything: silent clobbering of an existing fact source
+    is exactly the failure Story 40 exists to prevent.
     """
     target = Path(path)
     if target.exists():
-        raise BundleError(f"migration target already exists: {target}")
+        raise ValueError(f"migration target already exists: {target}")
 
-    if storage == "bundle":
-        carrier: Any = RoadmapBundle.create_from_data(target, data, snapshot_interval)
-    else:
-        carrier = RoadmapSqlite(str(target)) if storage == "sqlite" else Roadmap(str(target))
-        carrier.data = copy.deepcopy(data)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        carrier.save()
+    carrier: Any = RoadmapSqlite(str(target)) if storage == "sqlite" else Roadmap(str(target))
+    carrier.data = copy.deepcopy(data)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    carrier.save()
 
     if lease_store:
         carrier._write_lease_store(copy.deepcopy(lease_store))
@@ -164,7 +128,6 @@ def migrate(
     source: str | Path,
     to: str,
     output: str | Path | None = None,
-    snapshot_interval: int = DEFAULT_SNAPSHOT_INTERVAL,
 ) -> dict[str, Any]:
     """Copy one roadmap into another carrier. Returns a report dict.
 
@@ -172,11 +135,6 @@ def migrate(
     leaves you unable to answer "which artifact was the fact source a minute
     ago", which is the question Story 40 is about.
     """
-    if to == "bundle":
-        raise ValueError(
-            "bundle carrier is deprecated (#140); migrate --to must be single or sqlite. "
-            "Existing bundles migrate via `migrate <path> --to sqlite` (or --to single)."
-        )
     if to not in CARRIERS:
         raise ValueError(f"--to must be one of {', '.join(CARRIERS)}, got: {to}")
     source_path = Path(source).expanduser().resolve()
@@ -189,7 +147,7 @@ def migrate(
     data = export_roadmap_data(original)
     leases = export_lease_store(original)
     target.parent.mkdir(parents=True, exist_ok=True)
-    write_carrier(target, to, data, leases, snapshot_interval)
+    write_carrier(target, to, data, leases)
 
     return {
         "source": str(source_path),

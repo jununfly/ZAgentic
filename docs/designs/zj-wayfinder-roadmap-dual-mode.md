@@ -36,11 +36,11 @@ service, or automatic migration between carriers.
 | Wayfinding | Issue tracker | One map issue and its decision-ticket issues, native blocking edges, and claims | Teamwork needs shared visibility and concurrent ticket ownership. |
 | Wayfinding | Local Markdown | One map file with numbered decision-ticket sections, `🔒` claims, and textual blocking | A self-contained, offline, single-writer planning view is preferable. This is the fallback without tracker configuration. |
 | Tracking | Local roadmap JSON | One roadmap JSON, edited through the roadmap CLI | The route is clear and execution needs a compact source of truth. |
-| Tracking | SQLite | Sharded storage with WAL concurrency and bounded views, edited through the CLI | A large roadmap exceeds the single-file operating envelope. (Bundle is deprecated #140; existing bundles migrate to sqlite/single.) |
+| Tracking | SQLite | Sharded storage with WAL concurrency and bounded views, edited through the CLI | A large roadmap exceeds the single-file operating envelope. |
 
 Tracker configuration comes from `zj-repo-init` when tracker mode is selected.
 Local wayfinding requires no tracker configuration. Storage advice is explicit:
-`zj-roadmap-driven`'s `recommend-storage` may return `deprecate-bundle` for an existing bundle but never migrates implicitly.
+`zj-roadmap-driven`'s `recommend-storage` may name `consider-sqlite`, but never migrates implicitly.
 
 ## Seam
 

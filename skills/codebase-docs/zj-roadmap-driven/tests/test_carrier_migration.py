@@ -40,12 +40,11 @@ from carrier_migration import (  # noqa: E402
     write_carrier,
 )
 from roadmap import Roadmap  # noqa: E402
-from roadmap_bundle import BundleError, RoadmapBundle  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 CLI = SKILL_DIR / "roadmap_cli.py"
-CARRIERS = ("single", "bundle", "sqlite")
-SUFFIX = {"single": ".json", "bundle": ".bundle", "sqlite": ".sqlite"}
+CARRIERS = ("single", "sqlite")
+SUFFIX = {"single": ".json", "sqlite": ".sqlite"}
 
 
 def revision_of(path):
@@ -55,9 +54,7 @@ def revision_of(path):
     代码当期望值来源，等于把"迁对了没有"这条断言变成自我比较。
     """
     target = Path(path)
-    if target.is_dir():
-        carrier = RoadmapBundle(target)
-    elif target.suffix.lower() in (".sqlite", ".sqlite3", ".db"):
+    if target.suffix.lower() in (".sqlite", ".sqlite3", ".db"):
         carrier = RoadmapSqlite(target)
     else:
         carrier = Roadmap(target)
@@ -66,9 +63,7 @@ def revision_of(path):
 
 
 def lease_of(path, node_uid):
-    carrier = RoadmapSqlite(path) if Path(path).suffix == ".sqlite" else (
-        RoadmapBundle(path) if Path(path).is_dir() else Roadmap(path)
-    )
+    carrier = RoadmapSqlite(path) if Path(path).suffix == ".sqlite" else Roadmap(path)
     carrier.load()
     return carrier.get_lease(node_uid)
 
@@ -105,8 +100,8 @@ class MigrationCliTest(unittest.TestCase):
     def build_single(self):
         """一张能把各家 carrier 的存储差异都逼出来的图：树 + 决策 + blocks 边 + 预算字段。
 
-        只用 `add` 建空树的话，边（uid 端点 vs 显示 id 端点）和 decisions（bundle
-        单独分片）这两处最容易静默丢数据的地方就不会被覆盖到。
+        只用 `add` 建空树的话，边（uid 端点 vs 显示 id 端点）和 decisions
+        这两处最容易静默丢数据的地方就不会被覆盖到。
         """
         self.run_cli("init", self.single, "--title", "跨载体迁移")
         self.run_cli("add", self.single, "1", "设计", "--mode", "explore", "--max-children", "3")
@@ -116,26 +111,11 @@ class MigrationCliTest(unittest.TestCase):
         self.run_cli("edge", "add", self.single, "1-1", "1-2", "--type", "blocks")
 
     def migrate_to(self, source, storage, output=None):
-        # 目标名带上这一站的目标 carrier：连续迁移时（single→bundle→sqlite）每一站
+        # 目标名带上这一站的目标 carrier：连续迁移时（single→sqlite→single）每一站
         # 的 stem 都不同，才不会一路都算出同一个文件名去撞已存在的产物。
         target = output or source.parent / f"{source.stem}.to-{storage}{SUFFIX[storage]}"
         self.run_cli("migrate", source, "--to", storage, "--output", target)
         return target
-
-    def make_bundle(self, source):
-        """用 Python API 造一个 bundle 夹具（migrate --to bundle 已弃用 #140）。
-
-        原测试用 `migrate_to(source, "bundle")` 造 bundle，现在 create-from-migrate
-        被封死；改用 RoadmapBundle.create_from_data 从同一份 single 数据直接落盘，
-        保留节点/边/决策/metadata（租约侧车不进 seed.data，本批用例不需要它）。
-        """
-        from roadmap import Roadmap
-        from roadmap_bundle import RoadmapBundle
-        seed = Roadmap(source)
-        seed.load()
-        bundle_path = source.parent / f"{source.stem}.bundle-fixture.bundle"
-        RoadmapBundle.create_from_data(bundle_path, seed.data, 100)
-        return bundle_path
 
     # ── 迁移是保真的 ────────────────────────────────────
 
@@ -145,17 +125,11 @@ class MigrationCliTest(unittest.TestCase):
         self.assertEqual(revision_of(self.single), revision_of(target))
 
     def test_migrate_to_bundle_is_rejected(self):
-        """`--to bundle` 被封死（bundle 弃用 #140）：CLI 退出非 0 且报错指向迁移逃生路线。"""
+        """`--to bundle` 不再是合法 carrier（bundle 已在 #140 移除）：非 0 退出且列出可选值。"""
         result = self.run_cli("migrate", self.single, "--to", "bundle", check=False)
         self.assertNotEqual(0, result.returncode)
-        self.assertIn("deprecated", result.stderr)
-        self.assertIn("migrate", result.stderr)
-
-    def test_bundle_to_sqlite_preserves_the_revision(self):
-        bundle = self.make_bundle(self.single)
-        target = self.migrate_to(bundle, "sqlite")
-
-        self.assertEqual(revision_of(self.single), revision_of(target))
+        self.assertIn("single", result.stderr)
+        self.assertIn("sqlite", result.stderr)
 
     def test_sqlite_to_single_preserves_the_revision(self):
         """绕一圈回到出发载体，revision 必须与最开始那份逐字节相同。
@@ -172,15 +146,15 @@ class MigrationCliTest(unittest.TestCase):
             json.loads(self.single.read_text(encoding="utf-8"))["edges"],
         )
 
-    def test_the_human_view_of_edges_survives_a_bundle_round_trip(self):
+    def test_the_human_view_of_edges_survives_a_carrier_round_trip(self):
         """导出保留 uid 端点；Human 看到的仍须是显示 id。
 
         翻译层本来就在读侧（`edge_endpoints_as_display`），导出不该替它做这一步——
         那是"看起来对"但会让三家 carrier 的 rev 漂移的做法。这条钉住另一半：
         存储换成 uid 了，Human 视野不许跟着变。
         """
-        bundle = self.make_bundle(self.single)
-        target = self.migrate_to(bundle, "single")
+        sqlite = self.migrate_to(self.single, "sqlite")
+        target = self.migrate_to(sqlite, "single")
 
         listing = json.loads(self.run_cli("edge", "list", target).stdout)["edges"]
         self.assertEqual([("1-1", "1-2")], [(e["from"], e["to"]) for e in listing])
@@ -222,9 +196,8 @@ class MigrationCliTest(unittest.TestCase):
 
     # ── 租约与审计随事实源一起走（zj 决策）────────────────
     #
-    # 租约与事件的键是**显示 id**，不是 uid：bundle 的 `_lease_path` 走
-    # `safe_node_id`，uid 那种带十六进制的串会被它直接拒掉；single / sqlite 的侧车
-    # 也是同一套键。所以这里没有"先查 uid 再认领"这一步——CLI 收的本来就是显示 id。
+    # 租约与事件的键是**显示 id**，不是 uid：single / sqlite 的侧车用的是同一套键，
+    # uid 那种带十六进制的串不在其中。所以这里没有"先查 uid 再认领"这一步——CLI 收的本来就是显示 id。
 
     def test_leases_and_audit_events_come_across(self):
         self.run_cli("lease", "claim", self.single, "1-2", "--agent", "agent-7")
@@ -242,7 +215,7 @@ class MigrationCliTest(unittest.TestCase):
     def test_the_audit_trail_survives_a_full_round_trip(self):
         """single → sqlite → single：事件数量与顺序不许变，时刻也不许被改写成"现在"。
 
-        bundle 弃用 #140 后，最像"真实逃生"的全往返是 single→sqlite→single；这条
+        最像"真实逃生"的全往返是 single→sqlite→single；这条
         钉住审计事件不丢、过期时刻不被刷成"现在"。
         """
         self.run_cli("lease", "claim", self.single, "1-2", "--agent", "agent-7")
@@ -293,20 +266,18 @@ class MigrationFunctionTest(MigrationCliTest):
         return self.TIMESTAMP.sub("<T>", "\n".join(lines))
 
     def test_detect_storage_agrees_with_the_cli_routing_rule(self):
-        b = self.make_bundle(self.single)
         s = self.migrate_to(self.single, "sqlite")
 
         self.assertEqual("single", detect_storage(self.single))
-        self.assertEqual("bundle", detect_storage(b))
         self.assertEqual("sqlite", detect_storage(s))
 
     def test_write_carrier_refuses_an_existing_target(self):
         existing = self.workdir / "occupied.json"
         existing.write_text("{}", encoding="utf-8")
 
-        for storage in ("single", "sqlite", "bundle"):
+        for storage in ("single", "sqlite"):
             with self.subTest(storage=storage):
-                with self.assertRaises(BundleError):
+                with self.assertRaises(ValueError):
                     write_carrier(existing, storage, {"nodes": {"1": {"id": "1"}}})
 
     def test_default_output_never_points_back_at_the_source(self):
@@ -321,35 +292,29 @@ class MigrationFunctionTest(MigrationCliTest):
         store = export_lease_store(single)
         self.assertEqual({"leases", "events"}, set(store.keys()))
 
-        bundle = export_lease_store(load_carrier(self.make_bundle(self.single), "bundle"))
         sqlite = export_lease_store(load_carrier(self.migrate_to(self.single, "sqlite"), "sqlite"))
-        self.assertEqual(set(store.keys()), set(bundle.keys()))
         self.assertEqual(set(store.keys()), set(sqlite.keys()))
 
     def test_the_human_view_is_identical_after_every_hop(self):
         """换了 carrier，Human 主视图必须逐字节等于出发那份——**每一种 carrier 都直比**。
 
-        这条之所以敢直接比 bundle（而不是绕道"再迁回 single"）：bundle 的 md 模板
-        曾经是另抄一份，缺 `> 当前施工` 行、ROADMAP_TREE 标记与"当前施工点"块，焦点
-        决策还丢备注，#117 里与 single 收敛成了同一份模板。在那之前只能比同一套渲染
-        器的跳数，现在三家 carrier 的 md 本就该逐字节相同（`test_cross_carrier_render.py`
-        不经过迁移也这么断言，那份是这条的前提）。
+        两个 carrier 的 md 模板早已收敛成同一份（#117），所以换存储这件事本身
+        不许改变 Human 看到的字节——直接逐字节比，而不是比"跳数"。
+        （`test_cross_carrier_render.py` 不经过迁移也这么断言，那份是这条的前提。）
         """
-        bundle = self.make_bundle(self.single)
         sqlite = self.migrate_to(self.single, "sqlite")
-        from_bundle = self.migrate_to(bundle, "sqlite")
-        from_bundle_single = self.migrate_to(bundle, "single")
+        back = self.migrate_to(sqlite, "single")
 
         reference = self.human_view(self.single)
-        for migrated in (bundle, sqlite, from_bundle, from_bundle_single):
+        for migrated in (sqlite, back):
             with self.subTest(migrated=migrated.name):
                 self.assertEqual(reference, self.human_view(migrated))
 
     def test_migrate_to_bundle_is_rejected_at_function_layer(self):
-        """缝 2：Python API `migrate()` 也必须拒 `--to bundle`（#140）。
+        """缝 2：Python API `migrate()` 也必须拒非法的 `--to`（#140 后只剩 single/sqlite）。
 
-        CLI 只是薄壳，真正的单向护栏在 carrier_migration.migrate 里；这条钉住
-        即便绕过 CLI 直接调函数，也造不出新 bundle。
+        CLI 只是薄壳，校验在 carrier_migration.migrate 里；这条钉住即便绕过 CLI
+        直接调函数，也造不出第三种 carrier。
         """
         from carrier_migration import migrate
         with self.assertRaises(ValueError):

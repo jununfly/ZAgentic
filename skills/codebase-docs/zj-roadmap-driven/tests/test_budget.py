@@ -1,7 +1,7 @@
 """case 1 契约测试：explore 节点的 budget（结构单位）与 exit_criteria。
 
 主缝是 CLI 契约（参数 + stdout/stderr + 退出码），与 spec 的 Testing 决策一致：
-同一套断言在 single-file 与 bundle 两个 carrier 上各跑一遍。
+同一套断言在 single-file 与 sqlite 两个 carrier 上各跑一遍。
 
 运行：python tests/test_budget.py
 """

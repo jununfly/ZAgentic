@@ -10,7 +10,7 @@
 3. **字节级控制例** —— 无阻塞时 md 与改动前逐字节一致；基线取 P1 之前的
    `a8ee1b9`（沿用 #79 的手法，而不是拿 main 跟自己比）。
 
-bundle 跑同一套断言的文件是最后一刀。
+sqlite 侧复用同一套断言。
 
 运行：python tests/test_blocked_chain_single_file.py
 """
@@ -425,6 +425,8 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
     BASELINE_FILES = (
         "carrier_migration.py",
         "roadmap.py",
+        # 历史基线（c2e5a64）的 roadmap_cli.py 仍 import 它：这是被克隆出来的
+        # **历史运行时依赖**，不是当前 carrier——删掉会让基线 CLI 在 import 阶段挂。
         "roadmap_bundle.py",
         "roadmap_cli.py",
         "roadmap_sqlite.py",
@@ -469,8 +471,8 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
         # 反斜杠，直接用会找不到。
         prefix = rel.as_posix()
         for name in self.BASELINE_FILES:
-            if not (SKILL_DIR / name).exists():
-                continue
+            # 以**基线 ref 里有没有**为准，不是当前工作树：文件可能已被删除
+            # （#140 移除了 roadmap_bundle.py），但基线版本仍然需要它才能 import。
             result = subprocess.run(
                 ["git", "show", f"{self.BASELINE_REF}:{prefix}/{name}"],
                 cwd=str(repo),
@@ -487,7 +489,10 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
         identical = [
             name
             for name in self.BASELINE_FILES
+            # 当前实现里已删除的文件（如 #140 移除的 roadmap_bundle.py）：它只在
+            # 历史基线里存在，基线必然 ≠ 当前实现，跳过比对。
             if (target / name).exists()
+            and (SKILL_DIR / name).exists()
             and (target / name).read_text(encoding="utf-8")
             == (SKILL_DIR / name).read_text(encoding="utf-8")
         ]

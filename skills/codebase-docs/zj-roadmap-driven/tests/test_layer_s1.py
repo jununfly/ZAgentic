@@ -54,7 +54,7 @@ def normalize(text: str) -> str:
 def make_trace(tid: str, kind: str = "finding", body: str = "...") -> dict:
     """trace 节点的最小合法形状（§2.6）：无 parent / children / status / decisions。
 
-    bundle 的 `safe_node_id` 要求数字型 id，故 trace id 用数字段（如 '9001'），
+    `safe_node_id` 要求数字型 id，故 trace id 用数字段（如 '9001'），
     不与 plan 的 '1' / '1-1' 冲突即可。
     """
     return {

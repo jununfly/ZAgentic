@@ -1,7 +1,7 @@
 ---
 name: zj-roadmap-driven
 title: "zj-roadmap-driven"
-description: "路线图驱动开发与验收——以树形 roadmap 和决策记录帮助 Agent 与 Human 保持共享地图；在节点执行前区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。支持单文件 JSON 与 SQLite 两种载体（bundle 已弃用 #140，仅可经 migrate 迁出），并与 zj-wayfinder、zj-to-tickets 配合。"
+description: "路线图驱动开发与验收——以树形 roadmap 和决策记录帮助 Agent 与 Human 保持共享地图；在节点执行前区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。支持单文件 JSON 与 SQLite 两种载体，并与 zj-wayfinder、zj-to-tickets 配合。"
 triggers:
   - 路线图驱动
   - roadmap driven
@@ -13,7 +13,7 @@ triggers:
 **目标：** 在复杂任务场景中，用路线图（树形节点 + 决策记录）作为 Agent 和 Human 的共享心智模型。避免持续对话导致的目标偏离——每一步都在地图上留下足迹。
 
 **核心原则：**
-1. **存储载体决定事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（分片 + 稳健的并发/读放大治理），由 manifest、节点/决策 shards 和 append-only history 共同构成事实源。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。bundle 已弃用（#140），现存 bundle 只能经 `migrate --to sqlite|single` 迁出，禁止新创建。
+1. **存储载体决定事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（分片 + 稳健的并发/读放大治理），由 manifest、节点/决策 shards 和 append-only history 共同构成事实源。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。
 2. **Markdown 是轻量渐进式视图**——只暴露树形概览（depth=2）+ 当前施工焦点。Human 一眼看清进度，不占满上下文；Markdown 永远不能反向导入事实源。
 3. **每个节点有编号**（1, 1-1, 1-1-1, …），方便 Human 和 Agent 快速定位
 4. **每个节点有状态 checkbox**（[ ] / [~] / [x] / [!]），一眼识别进度
@@ -33,7 +33,7 @@ Agent 完成一个子任务 → 调用 `update` 打勾 → 调用 `render` 更�
 Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
 Agent 需要选择载体 → 调 `recommend-storage`（只读建议，只给出命令，不自动迁移）
-Agent 需要换载体 → 调 `migrate --to single|sqlite`（显式；源文件不动，目标已存在则拒；`--to bundle` 已禁用，bundle 为弃用 carrier #140）
+Agent 需要换载体 → 调 `migrate --to single|sqlite`（显式；源文件不动，目标已存在则拒）
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
 Agent 需要取活/看最长未完工链/看改动波及 → 调 `ready` / `critical-path` / `impact`（只读，不拿锁）
 
@@ -61,9 +61,7 @@ Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status 
 不含自身、含已完成下游以预警返工）。三者边界与 `blocked` 一致——只有 `blocks` 参与；
 三个载体输出逐字节相同。
 
-两个载体（single-file JSON、sqlite）对边的行为完全一致，同一套验收跑两遍（bundle 已弃用 #140，仅作迁出源）。
-bundle（已弃用 #140）把边存在 `edges/<id>.json`（索引 `index.json` 只有 from/to 邻接表，是纯冗余，
-不是事实源），节点分片里不反向存边 id，`migrate --to <carrier>` 会把边一起带走。
+两个载体（single-file JSON、sqlite）对边的行为完全一致，同一套验收跑两遍：`migrate --to <carrier>` 会把边一起带走。
 三个载体的两个 Markdown 视图（`render` 写进 md 的轻量视图与 `section` 的导出视图）
 共用同一份模板，逐字节相同——模板曾各抄一份并漂移，抄两份本身就是缺陷。
 ```
@@ -108,17 +106,16 @@ Acceptance/evaluation 路线按以下顺序运行：
 
 ## Notes
 
-- 单文件模式的 JSON、SQLite 的存储都是事实源（bundle 模式已弃用 #140，其 shards 仅作迁出源）。所有数据操作必须通过 CLI，**禁止 Agent 直接 Read/Edit 它们或 md 的路线图 section。**
+- 单文件模式的 JSON、SQLite 的存储都是事实源。所有数据操作必须通过 CLI，**禁止 Agent 直接 Read/Edit 它们或 md 的路线图 section。**
 - 探索型节点（`mode: explore`）应设**结构预算**：`--max-children N` 限它能长出几个子节点，`--max-rounds N` 限它能被开工几次。触顶时 `add` / 重开以 `E_BUDGET_EXCEEDED`（退出码 3）失败且不落盘——这是"探索无界"的刹车，不是错误。`--exit-criteria "判据"` 记录完成判据（可重复追加），CLI 只存不判，检查由 Human/Agent 对照执行。
 - md section 由 `render` 命令完全重写，手动修改会被覆盖。
 - CLI 写类命令按顺序执行；其余数据模型、命令和锁细节见对应 reference。
 - 如果路线图 JSON 不存在，Agent 应先用 `init` 创建；无 `import` 命令，md 不能反导回 JSON。
 - `recommend-storage` 只读取事实源和派生文件，**但从不动手**：它输出 `keep-single`、
-  `consider-sqlite`、`keep-sqlite` 或 `deprecate-bundle`（现存 bundle 时附 `migrate <path> --to sqlite` 命令）
-  `keep-sqlite`，不写索引、不迁 carrier、不改写 Markdown。给出迁移目标的那些档会
+  `consider-sqlite` 或 `keep-sqlite`，不写索引、不迁 carrier、不改写 Markdown。给出迁移目标的那些档会
   在 `recommendation.command` 里附上**那条显式命令**（`migrate <path> --to <carrier>`）
   让人去跑——把命令写出来 ≠ 替人跑。
-- 换 carrier 只能靠 `migrate <path> --to single|sqlite`（`--to bundle` 已禁用，bundle 为弃用 carrier #140）：源文件一个字节都不改，
+- 换 carrier 只能靠 `migrate <path> --to single|sqlite`：源文件一个字节都不改，
   目标已存在或与源同 carrier 都直接拒绝。**没有任何命令会自动替你换事实源**，所以
   "现在哪个产物是事实源"永远是你上一次显式做出的那个。租约与它的审计事件会跟着一
   起走（带过去的那把锁在新 carrier 上仍然生效）。

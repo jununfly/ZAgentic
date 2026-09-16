@@ -3,7 +3,7 @@
 
 Scope (reconstructed from docs/plans/zj-roadmap-dag-concurrency.md §4 + Story 25-31,
 "01 P2 租约核心"): claim / heartbeat / steal / release (+ --force) + fencing token
-+ `--if-rev` optimistic concurrency. Three carriers (single-file + bundle + sqlite)
++ `--if-rev` optimistic concurrency. Two carriers (single-file + sqlite)
 must agree on what a lease means — the policy lives in `lease.py` and is the one
 source of truth; storage differs only in *where the bytes go*.
 
@@ -43,8 +43,6 @@ sys.path.insert(0, str(SKILL_DIR))
 
 import roadmap
 from roadmap import Roadmap, LeaseHeld, ConflictError
-import roadmap_bundle
-from roadmap_bundle import RoadmapBundle
 import roadmap_sqlite
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 
@@ -69,7 +67,7 @@ def build_data() -> dict:
 # ── Carrier-level: claim/heartbeat/steal/release/fencing semantics ──
 
 class LeaseContract:
-    """Subclassed by SingleFileLease / BundleLease / SqliteLease; supplies the storage."""
+    """Subclassed by SingleFileLease / SqliteLease; supplies the storage."""
 
     def build(self) -> str:
         raise NotImplementedError
@@ -84,9 +82,7 @@ class LeaseContract:
 
     def load(self):
         p = Path(self.path)
-        if p.is_dir():
-            r = RoadmapBundle(self.path)
-        elif is_sqlite_path(self.path):
+        if is_sqlite_path(self.path):
             r = RoadmapSqlite(self.path)
         else:
             r = Roadmap(self.path)
@@ -94,9 +90,6 @@ class LeaseContract:
         return r
 
     def _lease_events(self, r) -> list[dict]:
-        if getattr(r, "is_bundle", False):
-            lines = (r.path / "history/events.jsonl").read_text(encoding="utf-8").splitlines()
-            return [json.loads(line) for line in lines if line.strip()]
         store = r._read_lease_store()
         return store.get("events", [])
 
@@ -193,13 +186,6 @@ class SingleFileLease(LeaseContract, unittest.TestCase):
         return path
 
 
-class BundleLease(LeaseContract, unittest.TestCase):
-    def build(self) -> str:
-        path = Path(self.tmp.name) / "roadmap.bundle"
-        RoadmapBundle.create_from_data(path, build_data())
-        return str(path)
-
-
 class SqliteLease(LeaseContract, unittest.TestCase):
     def build(self) -> str:
         path = Path(self.tmp.name) / "roadmap.sqlite"
@@ -218,9 +204,7 @@ def run_cli(*args):
 
 def rev_of(path: str) -> str:
     p = Path(path)
-    if p.is_dir():
-        r = RoadmapBundle(path)
-    elif is_sqlite_path(path):
+    if is_sqlite_path(path):
         r = RoadmapSqlite(path)
     else:
         r = Roadmap(path)
@@ -233,7 +217,7 @@ class LeaseCliContract:
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        ext = {"single": "json", "bundle": "bundle", "sqlite": "sqlite"}[self.storage]
+        ext = {"single": "json", "sqlite": "sqlite"}[self.storage]
         path = Path(self.tmp.name) / f"roadmap.{ext}"
         init = run_cli("init", str(path), "--title", "lease-cli", "--storage", self.storage)
         self.assertEqual(init.returncode, 0, init.stderr)

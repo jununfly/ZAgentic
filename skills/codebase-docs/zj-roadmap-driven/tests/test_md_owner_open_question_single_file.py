@@ -1,8 +1,8 @@
 """#115 — md 视图：owner 列 + open question 队列（single-file carrier）。
 
 测试缝（与 #82 同源）：Human 真实看到的是 `render` 写进关联 md 的那份字节，
-`section` 是同一份数据的非折叠出口。两个 carrier 跑**同一套断言**（bundle 文件
-继承）。只测有状态时才出现的内容——无租约、无待决问题时 md 必须与改动前逐字节
+`section` 是同一份数据的非折叠出口。两个 carrier 跑**同一套断言**（sqlite 侧
+复用）。只测有状态时才出现的内容——无租约、无待决问题时 md 必须与改动前逐字节
 一致，那是 §6 护栏 3（新视图元素默认不进 md）的硬验收。
 
 运行：python tests/test_md_owner_open_question_single_file.py

@@ -7,8 +7,7 @@
 - 传错 ref 有清晰报错，不会静默误命中
 - 基线守卫不红（uid 不进 md，已由 S2 处理）
 
-本文件覆盖 single-file carrier；bundle 跑同一套断言的文件是
-`test_resolve_node_bundle.py`（继承本文件的 Slice，不复制）。
+本文件覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_resolve_node_single_file.py
 """

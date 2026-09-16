@@ -10,7 +10,7 @@
 4. 控制例 —— 软边（informs / derives-from）不产生 blocked；没有边的 roadmap
    读出来的 status 与今天一致。
 
-本文件只覆盖 single-file carrier；bundle 跑同一套断言的文件是第二刀。
+本文件只覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_blocked_single_file.py
 """

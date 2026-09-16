@@ -5,7 +5,7 @@
 2. 控制例 —— 没有边时 `ready` 与"状态为 pending 的节点集合"一致（AC 第 2 条）；
 3. 负向控制例 —— 带未完成 `blocks` 前驱的节点**不得**出现在就绪集（AC 第 1 条）。
 
-本文件只覆盖 single-file carrier；bundle 侧继承这里每个 Slice 类跑同一套契约
+本文件只覆盖 single-file carrier；另一 carrier 继承这里每个 Slice 类跑同一套契约
 （#80 / #82 同款：一个 carrier 没法独自漂移成绿）。
 
 运行：python tests/test_scheduling_single_file.py
@@ -30,7 +30,7 @@ NODE_ID = re.compile(r"^(\d+(?:-\d+)*)\.")
 
 
 class SchedulingTestBase(unittest.TestCase):
-    """建图与解析的脚手架；bundle 侧子类只覆写 STORAGE 与 carrier 读法。"""
+    """建图与解析的脚手架；子类只覆写 STORAGE 与 carrier 读法。"""
 
     STORAGE = "single"
 

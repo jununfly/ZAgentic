@@ -9,7 +9,7 @@
 - 裸 --include（无值）报错，不静默接受。
 - 真实回归：trace add + promote + prune + context 后，plan 视图字节不变。
 
-单元 + 两 carrier（single / bundle）各跑一遍；sqlite 继承 single-file。
+单元 + 两 carrier（single / sqlite）各跑一遍。
 """
 
 from __future__ import annotations
