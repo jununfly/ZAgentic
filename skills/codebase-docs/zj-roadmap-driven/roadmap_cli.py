@@ -88,7 +88,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   validate <json_path>                       # 验证数据完整性
 
-  migrate <roadmap_path> --to single|bundle|sqlite [--output <path>] [--snapshot-interval N]
+  migrate <roadmap_path> --to single|sqlite [--output <path>] [--snapshot-interval N]
               # 显式把事实源换到另一种 carrier；源文件不改写，目标已存在则拒绝
 
   path    <json_path> <node_id>              # 获取从根到节点的路径
@@ -841,7 +841,7 @@ def cmd_unlock(args: dict):
 
 
 def cmd_migrate(args: dict):
-    """显式换 carrier：`<source> --to single|bundle|sqlite`（#117 Story 40）。
+    """显式换 carrier：`<source> --to single|sqlite`（#117 Story 40；`--to bundle` 已禁用 #140）。
 
     源文件读完之后一个字节都不动——迁移改写输入的话，"一分钟前哪个产物是事实源"
     这个问题就答不出来了，而这正是 Story 40 要 Answer 的那个问题。

@@ -38,7 +38,8 @@ Multiple starting signals increase the explanation and keep the result at
 `--measure`, a full-section timing above 100 ms is a starting signal and above
 300 ms is severe. These are tunable advisory thresholds, not automatic
 migration gates. Markdown size is reported as a view metric and never becomes
-the fact source; use `migrate --to bundle` explicitly after deciding to move.
+the fact source; use `migrate --to single|sqlite` (bundle is deprecated #140, so migrate
+existing bundles to sqlite or single) after deciding to move.
 
 ## Combining with `zj-wayfinder`
 

@@ -33,7 +33,7 @@ Agent 完成一个子任务 → 调用 `update` 打勾 → 调用 `render` 更�
 Agent 需要局部 → 调 `tree` / `get` / `focus` / node-scoped `decisions`
 Agent 需要全貌 → 调 `section --all`（显式导出）
 Agent 需要选择载体 → 调 `recommend-storage`（只读建议，只给出命令，不自动迁移）
-Agent 需要换载体 → 调 `migrate --to single|bundle|sqlite`（显式；源文件不动，目标已存在则拒）
+Agent 需要换载体 → 调 `migrate --to single|sqlite`（显式；源文件不动，目标已存在则拒；`--to bundle` 已禁用，bundle 为弃用 carrier #140）
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
 Agent 需要取活/看最长未完工链/看改动波及 → 调 `ready` / `critical-path` / `impact`（只读，不拿锁）
 
@@ -118,7 +118,7 @@ Acceptance/evaluation 路线按以下顺序运行：
   `keep-sqlite`，不写索引、不迁 carrier、不改写 Markdown。给出迁移目标的那些档会
   在 `recommendation.command` 里附上**那条显式命令**（`migrate <path> --to <carrier>`）
   让人去跑——把命令写出来 ≠ 替人跑。
-- 换 carrier 只能靠 `migrate <path> --to single|bundle|sqlite`：源文件一个字节都不改，
+- 换 carrier 只能靠 `migrate <path> --to single|sqlite`（`--to bundle` 已禁用，bundle 为弃用 carrier #140）：源文件一个字节都不改，
   目标已存在或与源同 carrier 都直接拒绝。**没有任何命令会自动替你换事实源**，所以
   "现在哪个产物是事实源"永远是你上一次显式做出的那个。租约与它的审计事件会跟着一
   起走（带过去的那把锁在新 carrier 上仍然生效）。

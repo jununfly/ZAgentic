@@ -9,7 +9,7 @@ All roadmap operations use the skill's `roadmap_cli.py`. Inputs are deterministi
 python roadmap_cli.py init <roadmap_path> --title "项目名称" [--description "描述"] [--md-file "关联的md文件.md"]
 
 # Convert between carriers explicitly; the source is never rewritten
-python roadmap_cli.py migrate <roadmap_path> --to single|bundle|sqlite \
+python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
     [--output <path>] [--snapshot-interval N]
 
 # Node CRUD
@@ -82,7 +82,7 @@ The CLI selects storage from the path: an existing directory with
 contract, so the same command works on any of them.
 
 ```bash
-python roadmap_cli.py migrate <roadmap_path> --to single|bundle|sqlite \
+python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
     [--output <path>] [--snapshot-interval N]
 ```
 
@@ -313,7 +313,8 @@ like success at the command layer.
 
 Markdown is a generated view and is never imported back into roadmap state. The
 old `import` command is intentionally not supported; use
-`migrate --to single|bundle|sqlite` for storage conversion.
+`migrate --to single|sqlite` for storage conversion (bundle is deprecated #140, so migrate
+existing bundles to sqlite or single).
 
 `unlock` is an explicit cleanup operation:
 

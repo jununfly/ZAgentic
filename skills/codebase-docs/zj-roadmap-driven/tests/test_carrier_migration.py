@@ -122,6 +122,21 @@ class MigrationCliTest(unittest.TestCase):
         self.run_cli("migrate", source, "--to", storage, "--output", target)
         return target
 
+    def make_bundle(self, source):
+        """用 Python API 造一个 bundle 夹具（migrate --to bundle 已弃用 #140）。
+
+        原测试用 `migrate_to(source, "bundle")` 造 bundle，现在 create-from-migrate
+        被封死；改用 RoadmapBundle.create_from_data 从同一份 single 数据直接落盘，
+        保留节点/边/决策/metadata（租约侧车不进 seed.data，本批用例不需要它）。
+        """
+        from roadmap import Roadmap
+        from roadmap_bundle import RoadmapBundle
+        seed = Roadmap(source)
+        seed.load()
+        bundle_path = source.parent / f"{source.stem}.bundle-fixture.bundle"
+        RoadmapBundle.create_from_data(bundle_path, seed.data, 100)
+        return bundle_path
+
     # ── 迁移是保真的 ────────────────────────────────────
 
     def test_single_to_sqlite_preserves_the_revision(self):
@@ -129,13 +144,15 @@ class MigrationCliTest(unittest.TestCase):
 
         self.assertEqual(revision_of(self.single), revision_of(target))
 
-    def test_single_to_bundle_preserves_the_revision(self):
-        target = self.migrate_to(self.single, "bundle")
-
-        self.assertEqual(revision_of(self.single), revision_of(target))
+    def test_migrate_to_bundle_is_rejected(self):
+        """`--to bundle` 被封死（bundle 弃用 #140）：CLI 退出非 0 且报错指向迁移逃生路线。"""
+        result = self.run_cli("migrate", self.single, "--to", "bundle", check=False)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("deprecated", result.stderr)
+        self.assertIn("migrate", result.stderr)
 
     def test_bundle_to_sqlite_preserves_the_revision(self):
-        bundle = self.migrate_to(self.single, "bundle")
+        bundle = self.make_bundle(self.single)
         target = self.migrate_to(bundle, "sqlite")
 
         self.assertEqual(revision_of(self.single), revision_of(target))
@@ -162,7 +179,7 @@ class MigrationCliTest(unittest.TestCase):
         那是"看起来对"但会让三家 carrier 的 rev 漂移的做法。这条钉住另一半：
         存储换成 uid 了，Human 视野不许跟着变。
         """
-        bundle = self.migrate_to(self.single, "bundle")
+        bundle = self.make_bundle(self.single)
         target = self.migrate_to(bundle, "single")
 
         listing = json.loads(self.run_cli("edge", "list", target).stdout)["edges"]
@@ -176,7 +193,6 @@ class MigrationCliTest(unittest.TestCase):
         before_mtime = self.single.stat().st_mtime_ns
 
         self.migrate_to(self.single, "sqlite")
-        self.migrate_to(self.single, "bundle")
 
         self.assertEqual(before, self.single.read_bytes())
         self.assertEqual(before_mtime, self.single.stat().st_mtime_ns)
@@ -215,9 +231,8 @@ class MigrationCliTest(unittest.TestCase):
         source_lease = lease_of(self.single, "1-2")
 
         sqlite = self.migrate_to(self.single, "sqlite")
-        bundle = self.migrate_to(sqlite, "bundle")
 
-        for migrated in (sqlite, bundle):
+        for migrated in (sqlite,):
             carried = lease_of(migrated, "1-2")
             self.assertIsNotNone(carried, migrated)
             self.assertEqual(source_lease["agent_id"], carried["agent_id"])
@@ -225,21 +240,17 @@ class MigrationCliTest(unittest.TestCase):
             self.assertEqual(source_lease["expires_at"], carried["expires_at"])
 
     def test_the_audit_trail_survives_a_full_round_trip(self):
-        """single → bundle → single：事件数量与顺序不许变，时刻也不许被改写成"现在"。
+        """single → sqlite → single：事件数量与顺序不许变，时刻也不许被改写成"现在"。
 
-        bundle 的事件落在共享 history 里、时间是文本戳；往回搬时必须把类型与时刻
-        还原，做不到的话审计链在第二次迁移后就失真了。
+        bundle 弃用 #140 后，最像"真实逃生"的全往返是 single→sqlite→single；这条
+        钉住审计事件不丢、过期时刻不被刷成"现在"。
         """
         self.run_cli("lease", "claim", self.single, "1-2", "--agent", "agent-7")
-        claimed_at = lease_of(self.single, "1-2")["claimed_at"]
-        bundle = self.migrate_to(self.single, "bundle")
-        back = self.migrate_to(bundle, "single")
+        sqlite = self.migrate_to(self.single, "sqlite")
+        back = self.migrate_to(sqlite, "single")
 
         sidecar = json.loads(Path(f"{back}.leases.json").read_text(encoding="utf-8"))
         self.assertEqual(["lease-claimed"], [e["operation"] for e in sidecar["events"]])
-        # bundle 的 history 时间戳是秒级文本（`%Y-%m-%d %H:%M:%S`），往回搬时在
-        # 1 秒内对齐——再细就要求 bundle 改存储格式了，那是另一个 ticket。
-        self.assertAlmostEqual(claimed_at, sidecar["events"][0]["at"], delta=1.0)
         self.assertEqual(lease_of(self.single, "1-2")["expires_at"],
                          lease_of(back, "1-2")["expires_at"])
 
@@ -282,7 +293,7 @@ class MigrationFunctionTest(MigrationCliTest):
         return self.TIMESTAMP.sub("<T>", "\n".join(lines))
 
     def test_detect_storage_agrees_with_the_cli_routing_rule(self):
-        b = self.migrate_to(self.single, "bundle")
+        b = self.make_bundle(self.single)
         s = self.migrate_to(self.single, "sqlite")
 
         self.assertEqual("single", detect_storage(self.single))
@@ -310,7 +321,7 @@ class MigrationFunctionTest(MigrationCliTest):
         store = export_lease_store(single)
         self.assertEqual({"leases", "events"}, set(store.keys()))
 
-        bundle = export_lease_store(load_carrier(self.migrate_to(self.single, "bundle"), "bundle"))
+        bundle = export_lease_store(load_carrier(self.make_bundle(self.single), "bundle"))
         sqlite = export_lease_store(load_carrier(self.migrate_to(self.single, "sqlite"), "sqlite"))
         self.assertEqual(set(store.keys()), set(bundle.keys()))
         self.assertEqual(set(store.keys()), set(sqlite.keys()))
@@ -324,15 +335,25 @@ class MigrationFunctionTest(MigrationCliTest):
         器的跳数，现在三家 carrier 的 md 本就该逐字节相同（`test_cross_carrier_render.py`
         不经过迁移也这么断言，那份是这条的前提）。
         """
-        bundle = self.migrate_to(self.single, "bundle")
+        bundle = self.make_bundle(self.single)
         sqlite = self.migrate_to(self.single, "sqlite")
         from_bundle = self.migrate_to(bundle, "sqlite")
-        from_sqlite = self.migrate_to(sqlite, "single")
+        from_bundle_single = self.migrate_to(bundle, "single")
 
         reference = self.human_view(self.single)
-        for migrated in (bundle, sqlite, from_bundle, from_sqlite):
+        for migrated in (bundle, sqlite, from_bundle, from_bundle_single):
             with self.subTest(migrated=migrated.name):
                 self.assertEqual(reference, self.human_view(migrated))
+
+    def test_migrate_to_bundle_is_rejected_at_function_layer(self):
+        """缝 2：Python API `migrate()` 也必须拒 `--to bundle`（#140）。
+
+        CLI 只是薄壳，真正的单向护栏在 carrier_migration.migrate 里；这条钉住
+        即便绕过 CLI 直接调函数，也造不出新 bundle。
+        """
+        from carrier_migration import migrate
+        with self.assertRaises(ValueError):
+            migrate(self.single, "bundle")
 
 
 if __name__ == "__main__":

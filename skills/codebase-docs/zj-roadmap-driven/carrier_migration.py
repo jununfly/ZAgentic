@@ -172,6 +172,11 @@ def migrate(
     leaves you unable to answer "which artifact was the fact source a minute
     ago", which is the question Story 40 is about.
     """
+    if to == "bundle":
+        raise ValueError(
+            "bundle carrier is deprecated (#140); migrate --to must be single or sqlite. "
+            "Existing bundles migrate via `migrate <path> --to sqlite` (or --to single)."
+        )
     if to not in CARRIERS:
         raise ValueError(f"--to must be one of {', '.join(CARRIERS)}, got: {to}")
     source_path = Path(source).expanduser().resolve()

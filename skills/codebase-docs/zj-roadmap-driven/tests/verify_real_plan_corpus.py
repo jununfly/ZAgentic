@@ -23,6 +23,7 @@ SKILL_DIR = Path(__file__).resolve().parents[1]
 CLI = SKILL_DIR / "roadmap_cli.py"
 sys.path.insert(0, str(SKILL_DIR))
 
+from roadmap import Roadmap  # noqa: E402
 from roadmap_bundle import RoadmapBundle  # noqa: E402
 
 
@@ -139,7 +140,11 @@ def verify(plans_dir: Path) -> dict[str, Any]:
         source_before = source.read_bytes()
         source_hash = sha256_tree(workspace)
 
-        run_cli("migrate", source, "--to", "bundle", "--output", bundle, "--snapshot-interval", "3", cwd=workspace)
+        # bundle 创建路径已弃用（#140：migrate --to bundle 被封死）；用 Python API
+        # 直接落 bundle 夹具，保留真实语料库的字节级不变验收（bundle 仍可读、可迁出）。
+        seed = Roadmap(source)
+        seed.load()
+        RoadmapBundle.create_from_data(bundle, seed.data, 3)
         run_cli("validate", bundle, cwd=workspace)
         stats = json.loads(run_cli("stats", bundle, cwd=workspace).stdout)
         expected_nodes = len(files) + 2
