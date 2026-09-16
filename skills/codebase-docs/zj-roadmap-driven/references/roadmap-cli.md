@@ -65,9 +65,9 @@ python roadmap_cli.py impact <roadmap_path> <node_id>
 `render` writes the lightweight Markdown view (tree depth=2, current focus, and one level of the focus subtree). `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
 
 `recommend-storage` is a read-only advisory. It reports node/decision counts,
-canonical and view bytes, and bundle shard/history sizes. It returns
-`keep-single`, `consider-bundle`, `recommend-bundle`, `consider-sqlite`,
-`keep-bundle`, or `keep-sqlite` without writing indexes, migrating the roadmap,
+canonical and view bytes, and (for existing bundles) shard/history sizes. It returns
+`keep-single`, `consider-sqlite`, `keep-sqlite`, or
+`deprecate-bundle` without writing indexes, migrating the roadmap,
 or editing Markdown. When a recommendation names a different carrier it also
 carries the exact command to act on it in `recommendation.command`
 (`migrate <path> --to <carrier>`) — naming the command is not running it.
@@ -77,8 +77,8 @@ are advisory and machine-dependent.
 ## Carriers and explicit migration
 
 The CLI selects storage from the path: an existing directory with
-`manifest.json` is a **bundle**, a `.sqlite` / `.sqlite3` / `.db` file is
-**sqlite**, anything else is **single-file** JSON. The three share one adapter
+`manifest.json` is a **bundle** (deprecated #140; readable and migratable out, not creatable), a `.sqlite` / `.sqlite3` / `.db` file is
+**sqlite**, anything else is **single-file** JSON. The carriers share one adapter
 contract, so the same command works on any of them.
 
 ```bash
@@ -215,7 +215,7 @@ the bundle carrier) is reported by `validate`, not silently scheduled around.
 
 Budget failures print `Error: E_BUDGET_EXCEEDED: <detail>` on stderr. Branch on
 the code, never on the human-readable text after it. The cap is enforced on both
-carriers (single-file JSON and bundle) by the same shared helper, so the two
+carriers (single-file JSON and sqlite) by the same shared helper, so the two
 never disagree on what counts as a start or a child.
 
 | Code | Raised by |

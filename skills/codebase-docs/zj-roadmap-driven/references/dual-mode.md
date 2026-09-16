@@ -6,7 +6,7 @@ Read this reference when choosing the roadmap carrier or handing work from `zj-w
 
 `zj-roadmap-driven` is the natural **local/self-contained carrier** in the pair:
 ordinary roadmaps use one local JSON source of truth, while large roadmaps use
-an explicit sharded bundle with a small manifest and bounded views. It also
+SQLite (sharded, WAL-concurrent) as the scalable carrier; the bundle carrier is deprecated (#140) and only migrates out. It also
 consumes the route planned by wayfinder's **tracker mode**. `zj-roadmap-driven`
 does not plan on the tracker; it consumes wayfinder's decision map through
 `zj-to-tickets`, which exports decision tickets with blocking edges (local
@@ -15,7 +15,7 @@ route in the selected local storage mode.
 
 Both uses share one mental model — map/route plus decision records — while the physical carrier differs:
 
-- **Local/self-contained:** when one person has full control or works offline, use single-file JSON for ordinary routes; explicitly choose a bundle when node/decision/history artifacts are large, then render the bounded Markdown view.
+- **Local/self-contained:** when one person has full control or works offline, use single-file JSON for ordinary routes; use SQLite when node/decision/history artifacts are large, then render the bounded Markdown view. (Bundle is deprecated #140; existing bundles migrate to sqlite/single.)
 - **Tracker planning → roadmap tracking:** when collaborating or running multiple agents, plan in wayfinder's tracker mode, export decision tickets with `zj-to-tickets`, then consume that route here.
 
 Switching guide: collaboration or multiple agents → tracker (wayfinder) + export (`zj-to-tickets`); personal exploration, offline work, or full control → local carrier (wayfinder local mode + this skill). The mental model stays the same, so switching carriers does not redo decisions.
@@ -26,15 +26,14 @@ Use `roadmap_cli.py recommend-storage <roadmap>` before choosing a carrier for
 a local roadmap. The command is read-only and returns a versioned JSON advisory:
 
 - `keep-single` when no starting signal is reached;
-- `consider-bundle` when one signal is reached;
-- `recommend-bundle` when a severe structural signal or a measured severe
-  full-section timing is reached;
-- `keep-bundle` when the roadmap is already an explicit bundle.
+- `consider-sqlite` when one starting signal is reached;
+- `deprecate-bundle` when the roadmap is still an explicit bundle (action
+  carries the `migrate <path> --to sqlite` command; bundle is deprecated #140).
 
 The starting signals are 1,000 nodes, 500 decisions, or 256 KiB of canonical
 single-file data. Severe signals are 5,000 nodes, 2,000 decisions, or 1 MiB.
 Multiple starting signals increase the explanation and keep the result at
-`consider-bundle`; they do not become a performance claim by themselves. With
+`consider-sqlite`; they do not become a performance claim by themselves. With
 `--measure`, a full-section timing above 100 ms is a starting signal and above
 300 ms is severe. These are tunable advisory thresholds, not automatic
 migration gates. Markdown size is reported as a view metric and never becomes
