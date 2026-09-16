@@ -764,6 +764,10 @@ class RoadmapBundle:
         body: str,
         under: Optional[str] = None,
         from_trace: Optional[str] = None,
+        session_ref: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        device_id: Optional[str] = None,
+        compressed_from: Optional[list] = None,
     ) -> dict[str, Any]:
         if kind not in TRACE_KINDS:
             raise InvalidKind(kind)
@@ -798,6 +802,10 @@ class RoadmapBundle:
             "decisions": [],
             "notes": "",
             "prompted_by": under_id,
+            "session_ref": session_ref or "",
+            "agent_id": agent_id or "",
+            "device_id": device_id or "",
+            "compressed_from": [self.resolve_node(c) for c in compressed_from] if compressed_from else [],
         }
         self._write_trace_file(trace_id, node)
         if from_trace is not None:

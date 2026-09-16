@@ -1688,12 +1688,18 @@ class Roadmap:
         body: str,
         under: Optional[str] = None,
         from_trace: Optional[str] = None,
+        session_ref: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        device_id: Optional[str] = None,
+        compressed_from: Optional[list] = None,
     ) -> dict:
         """追加一条 trace 节点，provenance 诞生即写。返回新节点。
 
         - kind 不在 TRACE_KINDS → E_INVALID_KIND
         - --under 目标不存在 / 不是 plan 节点 → E_PROMOTE_TARGET_INVALID
         - --from 引用的 trace 不存在 → E_TRACE_NOT_FOUND
+        - 身份 provenance（#119）：agent_id / device_id / session_ref 缺省为 ""，
+          compressed_from 缺省不写；CLI 显式给才落。
         """
         if kind not in TRACE_KINDS:
             raise InvalidKind(kind)
@@ -1728,6 +1734,10 @@ class Roadmap:
             "decisions": [],
             "notes": "",
             "prompted_by": under_id,
+            "session_ref": session_ref or "",
+            "agent_id": agent_id or "",
+            "device_id": device_id or "",
+            "compressed_from": [self.resolve_node(c) for c in compressed_from] if compressed_from else [],
         }
         self.data["nodes"][trace_id] = node
         if from_trace is not None:

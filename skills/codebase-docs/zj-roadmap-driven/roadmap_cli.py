@@ -182,6 +182,14 @@ def _parse_args(argv: list[str]) -> dict:
     return args
 
 
+def _split_ids(raw: object) -> list | None:
+    """把 `--compressed-from a,b` 这样的逗号串拆成 id 列表；无值/空返回 None。"""
+    if raw is None:
+        return None
+    parts = [p.strip() for p in str(raw).split(",") if p.strip()]
+    return parts or None
+
+
 def _exit_criteria_arg(args: dict) -> list | None:
     """取出 --exit-criteria；无值标志（`--exit-criteria` 不带文本）视为参数错误。"""
     raw = args.get("exit-criteria")
@@ -443,6 +451,10 @@ def cmd_trace(args: dict):
             body=args.get("body") or "",
             under=args.get("under"),
             from_trace=args.get("from"),
+            session_ref=args.get("session-ref"),
+            agent_id=args.get("agent-id"),
+            device_id=args.get("device-id"),
+            compressed_from=_split_ids(args.get("compressed-from")),
         )
         r.save()
         _print_json(node)
