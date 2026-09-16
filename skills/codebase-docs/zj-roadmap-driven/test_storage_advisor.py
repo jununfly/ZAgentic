@@ -54,6 +54,19 @@ class AdvisorCliCase(unittest.TestCase):
                 digest.update(child.read_bytes())
         return digest.hexdigest()
 
+    def _make_bundle(self, title="Bundle roadmap", description="", md_file=""):
+        """用 Python API 直接造一个 bundle 夹具（init --storage bundle 已弃用 #140）。
+
+        绕开 CLI 的 init 拦截，用来验证 advisor 对既有的 bundle 仍给 deprecate-bundle。
+        """
+        from roadmap import Roadmap
+        from roadmap_bundle import RoadmapBundle
+
+        seed = Roadmap(self.bundle)
+        data = seed.init(title=title, description=description, md_file=md_file)
+        RoadmapBundle.create_from_data(self.bundle, data, 100)
+        return self.bundle
+
     def write_single_with_children(self, node_count: int):
         nodes = {
             "1": {
@@ -235,7 +248,7 @@ class StorageAdvisorCliTest(AdvisorCliCase):
 
     def test_bundle_is_deprecated_and_measurement_is_read_only(self):
         # bundle 仍能被 advisor 读（逃生用），但结论是 deprecated → migrate --to sqlite。
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Bundle roadmap")
+        self._make_bundle("Bundle roadmap")
         self.run_cli("add", self.bundle, "1", "One branch")
         before = self.file_digest(self.bundle)
 
@@ -253,7 +266,7 @@ class StorageAdvisorCliTest(AdvisorCliCase):
         self.assertEqual(before, self.file_digest(self.bundle))
 
     def test_missing_bundle_index_is_not_rebuilt(self):
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Indexless bundle")
+        self._make_bundle("Indexless bundle")
         stats_path = self.bundle / "indexes/stats.json"
         stats_path.unlink()
 
@@ -327,7 +340,7 @@ class SqliteStorageAdvisorCliTest(AdvisorCliCase):
 
     def test_a_small_bundle_is_also_deprecated(self):
         """bundle 不论大小都 deprecated——sqlite 这一档不会把"什么都没触发"的 bundle 留成 keep。"""
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Bundle roadmap")
+        self._make_bundle("Bundle roadmap")
         self.run_cli("add", self.bundle, "1", "One branch")
 
         result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)

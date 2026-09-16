@@ -11,7 +11,7 @@ P5-S2 的 trace add（#133）只落了**因果** provenance（prompted_by + from
 - 缺省时字符串字段为 ""，compressed_from 不出现。
 - 带 provenance 追加后，所有 plan 遍历输出字节不变（trace 不泄进视图）。
 
-两个 carrier（single / bundle）各跑一遍；sqlite 继承 single-file 路径。
+两个 carrier（single / sqlite）各跑一遍；sqlite 继承 single-file 路径。
 """
 
 from __future__ import annotations
@@ -32,13 +32,11 @@ from roadmap import (  # noqa: E402
     Roadmap,
     LAYER_TRACE,
 )
-from roadmap_bundle import RoadmapBundle  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 
 TARGETS = {
     "single": "roadmap.json",
-    "bundle": "roadmap.bundle",
     "sqlite": "roadmap.sqlite",
 }
 
@@ -63,8 +61,6 @@ def run_cli(*args: object, cwd: Path, check: bool = True) -> subprocess.Complete
 def load_carrier(storage: str, path: Path):
     if storage == "single":
         rm = Roadmap(str(path))
-    elif storage == "bundle":
-        rm = RoadmapBundle(str(path))
     else:
         rm = RoadmapSqlite(str(path))
     rm.load()
@@ -85,9 +81,7 @@ class TraceProvenanceSessionRefTest(unittest.TestCase):
     def _add(self, storage: str, tmpd: Path, extra=None):
         path = tmpd / TARGETS[storage]
         md = tmpd / "view.md"
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", "--md-file", md, cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", "--md-file", md, cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", "--md-file", md, cwd=tmpd)
@@ -109,15 +103,6 @@ class TraceProvenanceSessionRefTest(unittest.TestCase):
             out = run_cli("trace", "get", path, t["id"], cwd=tmpd)
             self.assertEqual(json.loads(out.stdout)["session_ref"], "sess-42")
 
-    def test_bundle_session_ref_written(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, _ = self._add("bundle", tmpd, extra=["--session-ref", "sess-42"])
-            rm = load_carrier("bundle", path)
-            t = rm.iter_nodes(layer=LAYER_TRACE)[0]
-            self.assertEqual(t["session_ref"], "sess-42")
-            out = run_cli("trace", "get", path, t["id"], cwd=tmpd)
-            self.assertEqual(json.loads(out.stdout)["session_ref"], "sess-42")
 
     def test_sqlite_session_ref_written(self):
         with tempfile.TemporaryDirectory() as d:
@@ -136,9 +121,7 @@ class TraceProvenanceAgentDeviceTest(unittest.TestCase):
     def _add(self, storage: str, tmpd: Path, extra=None):
         path = tmpd / TARGETS[storage]
         md = tmpd / "view.md"
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", "--md-file", md, cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", "--md-file", md, cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", "--md-file", md, cwd=tmpd)
@@ -157,13 +140,6 @@ class TraceProvenanceAgentDeviceTest(unittest.TestCase):
             self.assertEqual(t["agent_id"], "a7")
             self.assertEqual(t["device_id"], "win")
 
-    def test_bundle_agent_device_written(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, _ = self._add("bundle", tmpd, extra=["--agent-id", "a7", "--device-id", "win"])
-            t = load_carrier("bundle", path).iter_nodes(layer=LAYER_TRACE)[0]
-            self.assertEqual(t["agent_id"], "a7")
-            self.assertEqual(t["device_id"], "win")
 
     def test_sqlite_agent_device_written(self):
         with tempfile.TemporaryDirectory() as d:
@@ -189,9 +165,7 @@ class TraceProvenanceCompressedFromTest(unittest.TestCase):
     def _seed(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
         md = tmpd / "view.md"
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", "--md-file", md, cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", "--md-file", md, cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", "--md-file", md, cwd=tmpd)
@@ -222,11 +196,6 @@ class TraceProvenanceCompressedFromTest(unittest.TestCase):
             path, _ = self._seed("single", tmpd)
             self._assert_compressed("single", tmpd, path)
 
-    def test_bundle_compressed_from(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, _ = self._seed("bundle", tmpd)
-            self._assert_compressed("bundle", tmpd, path)
 
     def test_sqlite_compressed_from(self):
         with tempfile.TemporaryDirectory() as d:
@@ -249,9 +218,7 @@ class TraceProvenanceInvarianceTest(unittest.TestCase):
     def _seed(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
         md = tmpd / "view.md"
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", "--md-file", md, cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", "--md-file", md, cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", "--md-file", md, cwd=tmpd)
@@ -291,16 +258,6 @@ class TraceProvenanceInvarianceTest(unittest.TestCase):
             after = self._snapshot(path, md)
             self._assert_byte_identical(before, after)
 
-    def test_bundle_traversal_unchanged_with_provenance(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, md = self._seed("bundle", tmpd)
-            before = self._snapshot(path, md)
-            run_cli("trace", "add", path, "--kind", "finding", "--body", "b", "--under", "1-1",
-                    "--session-ref", "sess-9", "--agent-id", "a7", "--device-id", "win",
-                    "--compressed-from", "1-2", cwd=tmpd)
-            after = self._snapshot(path, md)
-            self._assert_byte_identical(before, after)
 
     def test_sqlite_traversal_unchanged_with_provenance(self):
         with tempfile.TemporaryDirectory() as d:

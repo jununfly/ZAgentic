@@ -7,7 +7,6 @@ All roadmap operations use the skill's `roadmap_cli.py`. Inputs are deterministi
 ```bash
 # Initialize (single-file mode is the default)
 python roadmap_cli.py init <roadmap_path> --title "项目名称" [--description "描述"] [--md-file "关联的md文件.md"]
-python roadmap_cli.py init <bundle_path> --storage bundle --title "大型路线图"
 
 # Convert between carriers explicitly; the source is never rewritten
 python roadmap_cli.py migrate <roadmap_path> --to single|bundle|sqlite \

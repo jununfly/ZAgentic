@@ -51,11 +51,6 @@ class BudgetContractTest(unittest.TestCase):
     def init_single(self, title="Budget roadmap"):
         self.run_cli("init", self.roadmap, "--title", title)
 
-    def init_bundle(self, title="Bundle budget roadmap"):
-        self.bundle = self.workdir / "roadmap.bundle"
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", title)
-        return self.bundle
-
     def get_node(self, node_id, target=None):
         result = self.run_cli("get", target or self.roadmap, node_id)
         return json.loads(result.stdout)
@@ -179,24 +174,6 @@ class BudgetContractTest(unittest.TestCase):
         self.run_cli("update", self.roadmap, "1", "--exit-criteria", "压测通过")
         self.run_cli("update", self.roadmap, "1", "--status", "completed")
         self.assertEqual(self.get_node("1")["status"], "completed")
-
-    # ── 两个 carrier 同一套契约 ───────────────────────────
-
-    def test_bundle_carrier_enforces_the_same_budget_rule(self):
-        bundle = self.init_bundle()
-        self.run_cli("update", bundle, "1", "--max-children", "1")
-        self.run_cli("add", bundle, "1", "first")
-
-        result = self.run_cli("add", bundle, "1", "second", check=False)
-
-        self.assertEqual(result.returncode, BUDGET_EXIT_CODE)
-        self.assertIn(E_BUDGET_EXCEEDED, result.stderr)
-
-    def test_bundle_carrier_records_exit_criteria(self):
-        bundle = self.init_bundle()
-        self.run_cli("update", bundle, "1", "--exit-criteria", "跑通 smoke")
-        self.assertEqual(self.get_node("1", bundle)["exit_criteria"], ["跑通 smoke"])
-
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
