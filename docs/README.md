@@ -28,6 +28,34 @@ surfaces; navigation order does not establish global truth precedence.
 | `design.cross-stage-checkpoints` | Which focused checkpoints complement a ticketed delivery flow? | [Cross-stage checkpoints](designs/zj-cross-stage-skills.md) |
 | `design.skill-frontmatter-schema` | What frontmatter and sidecar rules make a skill mechanically discoverable? | [Skill frontmatter validation boundary](designs/zj-skill-frontmatter-schema.md) |
 | `design.wayfinder-roadmap-carrier-seam` | How do wayfinding and roadmap tracking hand off across their carriers? | [Wayfinder and roadmap carrier seam](designs/zj-wayfinder-roadmap-dual-mode.md) |
+| `design.roadmap-concurrency-model` | How do concurrent multi-agent writes stay safe, dependencies expressible, and reads scale across carriers? | [Roadmap concurrency & dependency model](designs/zj-roadmap-concurrency-model.md) |
+| `design.roadmap-execution-graph` | How are execution-time discoveries recorded and context supplied without bloating the human view? | [Roadmap execution graph (trace layer)](designs/zj-roadmap-execution-graph.md) |
+
+### Accepted decision records
+
+Historical rationale for hard-to-reverse decisions. These pages carry no
+`authority-id` (only primary pages do), and none of them replaces the current
+architecture or rules.
+
+| ADR | Question it settles | Status |
+| --- | --- | --- |
+| [0001](zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md) | Which skills must demand `/zj-repo-init` config, and which may merely reference it? | accepted |
+| [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) | How is one skill-pair between two repositories processed, named and filed? | accepted |
+| [0003](zj-adr/0003-khazix-wave-absorb-key-decisions.md) | Under which rules do we absorb third-party skills wholesale? | accepted |
+| [0004](zj-adr/0004-research-report-improvement-scope.md) | What scope was ratified for the research-skills rearchitecture? | accepted |
+
+## Process material
+
+| Question | Location | Lifecycle |
+| --- | --- | --- |
+| What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. The 2026-09-09 / 2026-09-12 retros had their durable concepts extracted into `ZJ-CONTEXT.md` and were archived to `.zj-out-of-scope/zj-retros/` (staged deletion, awaiting separate Human confirmation). |
+| What is specified and ready for an Agent to build? | [docs/plans/](plans/) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. The roadmap concurrency / execution-graph specs (`zj-roadmap-dag-concurrency.md`, `zj-roadmap-execution-graph.md`) were durably extracted into [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) and [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md), then archived to `.zj-out-of-scope/plans/` (staged deletion, awaiting separate Human confirmation). |
+
+## Evidence boundaries
+
+[research/](../research/) and [skills-outputs/](../skills-outputs/) are evidence
+surfaces. They may support a documented claim but are not long-lived
+documentation pages, and this map neither moves nor governs their storage.
 
 ### Primary architecture authorities
 
@@ -47,32 +75,6 @@ recognises as the routing surface rather than a primary view page.
 - [Misc bucket](architecture/ta-skill-bucket-misc.md) — What does the `misc/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.misc`.
 - [Research bucket](architecture/ta-skill-bucket-research.md) — What does the `research/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.research`.
 - [Personal skill tree](architecture/ta-zagentic-personal-tree.md) — What does the root-level `personal/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.personal-tree`.
-
-### Accepted decision records
-
-Historical rationale for hard-to-reverse decisions. These pages carry no
-`authority-id` (only primary pages do), and none of them replaces the current
-architecture or rules.
-
-| ADR | Question it settles | Status |
-| --- | --- | --- |
-| [0001](zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md) | Which skills must demand `/zj-repo-init` config, and which may merely reference it? | accepted |
-| [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) | How is one skill-pair between two repositories processed, named and filed? | accepted |
-| [0003](zj-adr/0003-khazix-wave-absorb-key-decisions.md) | Under which rules do we absorb third-party skills wholesale? | accepted |
-| [0004](zj-adr/0004-research-report-improvement-scope.md) | What scope was ratified for the research-skills rearchitecture? | accepted |
-
-## Process material
-
-| Question | Location | Lifecycle |
-| --- | --- | --- |
-| What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. |
-| What is specified and ready for an Agent to build? | [docs/plans/](plans/) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. |
-
-## Evidence boundaries
-
-[research/](../research/) and [skills-outputs/](../skills-outputs/) are evidence
-surfaces. They may support a documented claim but are not long-lived
-documentation pages, and this map neither moves nor governs their storage.
 
 ## Lazy categories
 

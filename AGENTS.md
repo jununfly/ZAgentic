@@ -1,3 +1,5 @@
+docs-map: docs/README.md
+
 Public skills live under `skills/`; private skills live in root-level `personal/`:
 
 - `engineering/` — daily code work
