@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Generate reproducible roadmap bundles and measure bounded operations.
 
+.. deprecated::
+    The bundle carrier this benchmark measures is deprecated as of #140
+    (2026-09). It remains runnable for measuring the *existing* bundle format's
+    read/migrate-out performance, but should not be extended. Prefer benchmarking
+    the single-file / sqlite carriers going forward.
+
 This is intentionally a generator rather than a checked-in giant fixture. Run:
 
     python roadmap_bundle_benchmark.py --size small

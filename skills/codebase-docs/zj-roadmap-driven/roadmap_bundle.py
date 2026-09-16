@@ -1,5 +1,12 @@
 """Sharded, lazy roadmap storage for large roadmaps.
 
+.. deprecated:: #140 (2026-09)
+    Bundle carrier is **deprecated**. New bundles cannot be created
+    (`init --storage bundle` and `migrate --to bundle` are both rejected),
+    but existing bundles remain readable and can be migrated out via
+    `migrate <path> --to single|sqlite`. Do not add new features here:
+    treat this module as maintenance-only (read + migrate-out path only).
+
 The public command surface is implemented by ``roadmap_cli.py``. This module
 is the bundle adapter behind that interface: current node and decision state is
 stored in small shards, history is append-only, and indexes/current pointers are

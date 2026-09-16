@@ -128,6 +128,7 @@ from roadmap import (
     status_icon,
     unlock_roadmap,
 )
+# bundle carrier 已弃用 (#140)：仍 import 以支持读取/迁出现有 bundle，勿新增功能。
 from roadmap_bundle import BundleError, RoadmapBundle, DEFAULT_SNAPSHOT_INTERVAL
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
@@ -279,6 +280,7 @@ def _load_roadmap(path: str):
     """Select storage by the path shape, then load one command-facing adapter."""
     p = Path(path)
     if p.is_dir():
+        # bundle carrier 已弃用 (#140)：仅作为读取/迁出路径，不可新建（init/migrate 已拦）。
         roadmap = RoadmapBundle(path)
     elif is_sqlite_path(path):
         roadmap = RoadmapSqlite(path)
