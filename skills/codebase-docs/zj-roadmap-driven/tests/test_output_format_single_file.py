@@ -8,8 +8,7 @@
 - context <id> 输出上游/下游/阻塞链；next 输出就绪优先节点
 - 两 carrier 覆盖
 
-本文件覆盖 single-file carrier；bundle 跑同一套断言的文件是
-`test_output_format_bundle.py`（继承本文件的 Slice，不复制）。
+本文件覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_output_format_single_file.py
 """

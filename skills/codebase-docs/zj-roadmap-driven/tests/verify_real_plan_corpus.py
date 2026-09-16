@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify roadmap bundle behavior against a real Markdown planning corpus.
+"""Verify roadmap carrier behavior against a real Markdown planning corpus.
 
 The input corpus is intentionally not imported as Markdown. This contract builds
 an equivalent temporary legacy JSON fixture from the corpus, migrates that JSON
@@ -23,7 +23,7 @@ SKILL_DIR = Path(__file__).resolve().parents[1]
 CLI = SKILL_DIR / "roadmap_cli.py"
 sys.path.insert(0, str(SKILL_DIR))
 
-from roadmap_bundle import RoadmapBundle  # noqa: E402
+from roadmap import Roadmap  # noqa: E402
 
 
 def run_cli(*args: object, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -132,54 +132,41 @@ def verify(plans_dir: Path) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="zj-roadmap-real-case-") as temporary:
         workspace = Path(temporary)
         source = workspace / "real-plans.json"
-        bundle = workspace / "real-plans.bundle"
+        migrated = workspace / "real-plans.sqlite"
         view = workspace / "real-plans.md"
         data, files = build_legacy_fixture(plans_dir, view)
         source.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         source_before = source.read_bytes()
         source_hash = sha256_tree(workspace)
 
-        run_cli("migrate", source, "--to", "bundle", "--output", bundle, "--snapshot-interval", "3", cwd=workspace)
-        run_cli("validate", bundle, cwd=workspace)
-        stats = json.loads(run_cli("stats", bundle, cwd=workspace).stdout)
+        # 迁到 sqlite（#140 后 migrated 不再是 carrier），保留真实语料库的字节级不变验收。
+        run_cli("migrate", source, "--to", "sqlite", "--output", migrated, cwd=workspace)
+        run_cli("validate", migrated, cwd=workspace)
+        stats = json.loads(run_cli("stats", migrated, cwd=workspace).stdout)
         expected_nodes = len(files) + 2
         if stats["total_nodes"] != expected_nodes or stats["total_decisions"] != len(files):
             raise AssertionError(f"unexpected migrated stats: {stats}")
 
-        bounded_bundle = RoadmapBundle(bundle)
-        bounded_bundle.load()
-        original_read = bounded_bundle._read_node_file
-        reads: list[str] = []
-
-        def counted_read(node_id: str) -> dict[str, Any]:
-            reads.append(node_id)
-            return original_read(node_id)
-
-        bounded_bundle._read_node_file = counted_read  # type: ignore[method-assign]
-        bounded_bundle.get_tree(max_depth=1)
-        if reads != ["1", "1-1"]:
-            raise AssertionError(f"depth-bounded tree read unexpected shards: {reads}")
-
         target_id = "1-1-1"
-        target = json.loads(run_cli("get", bundle, target_id, cwd=workspace).stdout)
+        target = json.loads(run_cli("get", migrated, target_id, cwd=workspace).stdout)
         source_content = files[0].read_text(encoding="utf-8")
         if target["notes"] != source_content:
             raise AssertionError("migrated node shard did not preserve source document content")
 
-        tree = run_cli("tree", bundle, "--depth", "1", cwd=workspace).stdout
+        tree = run_cli("tree", migrated, "--depth", "1", cwd=workspace).stdout
         if "1-1." not in tree or target["label"] in tree:
             raise AssertionError("bounded tree exposed document nodes")
-        bounded_section = run_cli("section", bundle, "--max-depth", "1", cwd=workspace).stdout
+        bounded_section = run_cli("section", migrated, "--max-depth", "1", cwd=workspace).stdout
         if target["label"] in bounded_section:
             raise AssertionError("bounded section exposed document nodes")
-        full_section = run_cli("section", bundle, "--all", cwd=workspace).stdout
+        full_section = run_cli("section", migrated, "--all", cwd=workspace).stdout
         if target["label"] not in full_section:
             raise AssertionError("full section omitted migrated document node")
 
-        run_cli("link", bundle, view, cwd=workspace)
-        run_cli("render", bundle, cwd=workspace)
+        run_cli("link", migrated, view, cwd=workspace)
+        run_cli("render", migrated, cwd=workspace)
         if "ROADMAP_SECTION_START" not in view.read_text(encoding="utf-8"):
-            raise AssertionError("bundle render did not write the linked Markdown view")
+            raise AssertionError("migrated render did not write the linked Markdown view")
 
         imported = run_cli("import", source, view, cwd=workspace, check=False)
         if imported.returncode == 0 or "Unknown command" not in imported.stdout:
@@ -193,13 +180,13 @@ def verify(plans_dir: Path) -> dict[str, Any]:
         # trace 不得泄进任何 plan 视图，否则既膨胀视图又制造"升级后误报"。
         probe_views = ("tree", "section", "stats", "validate")
         before = {
-            v: normalize(run_cli(v, bundle, "--depth", "10" if v == "tree" else None, cwd=workspace).stdout)
+            v: normalize(run_cli(v, migrated, "--depth", "10" if v == "tree" else None, cwd=workspace).stdout)
             for v in probe_views
         }
-        run_cli("trace", "add", bundle, "--kind", "finding",
+        run_cli("trace", "add", migrated, "--kind", "finding",
                 "--body", "corpus regression probe trace", "--under", "1-1", cwd=workspace)
         after = {
-            v: normalize(run_cli(v, bundle, "--depth", "10" if v == "tree" else None, cwd=workspace).stdout)
+            v: normalize(run_cli(v, migrated, "--depth", "10" if v == "tree" else None, cwd=workspace).stdout)
             for v in probe_views
         }
         for v in probe_views:
@@ -214,7 +201,6 @@ def verify(plans_dir: Path) -> dict[str, Any]:
             "migrated_decisions": stats["total_decisions"],
             "source_unchanged": True,
             "markdown_import": "rejected",
-            "bounded_depth_1_reads": reads,
             "trace_add_invariant": True,
         }
 

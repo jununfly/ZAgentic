@@ -6,8 +6,7 @@ Problem #5：老实现取 `children[-1]` 再 +1，删掉尾部子节点后新节
 测试缝：CLI 进程级。每条 CLI 调用都是**新进程**，所以"水位是否真的落盘"不需要
 额外造 reload —— 命令本身就是 reload。
 
-本文件只覆盖 single-file carrier；bundle 跑同一套断言的文件是
-`test_child_id_bundle.py`（继承本文件的 Slice，不复制）。
+本文件只覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_child_id_single_file.py
 """

@@ -9,7 +9,7 @@
 - 裸 --include（无值）报错，不静默接受。
 - 真实回归：trace add + promote + prune + context 后，plan 视图字节不变。
 
-单元 + 两 carrier（single / bundle）各跑一遍；sqlite 继承 single-file。
+单元 + 两 carrier（single / sqlite）各跑一遍。
 """
 
 from __future__ import annotations
@@ -33,13 +33,11 @@ from roadmap import (  # noqa: E402
     InvalidLayer,
     ERROR_EXIT_CODES,
 )
-from roadmap_bundle import RoadmapBundle  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 
 TARGETS = {
     "single": "roadmap.json",
-    "bundle": "roadmap.bundle",
     "sqlite": "roadmap.sqlite",
 }
 
@@ -58,8 +56,7 @@ def run_cli(*args: object, cwd: Path, check: bool = True) -> subprocess.Complete
 
 
 def load_carrier(storage: str, path: Path):
-    rm = Roadmap(str(path)) if storage == "single" else (
-        RoadmapBundle(str(path)) if storage == "bundle" else RoadmapSqlite(str(path)))
+    rm = Roadmap(str(path)) if storage == "single" else RoadmapSqlite(str(path))
     rm.load()
     return rm
 
@@ -76,9 +73,7 @@ def normalize(s: str) -> str:
 class PruneSliceTest(unittest.TestCase):
     def _seed(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", cwd=tmpd)
@@ -145,9 +140,7 @@ class PruneSliceTest(unittest.TestCase):
 class ContextIncludeTest(unittest.TestCase):
     def _seed_with_promotion(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", cwd=tmpd)
@@ -210,7 +203,7 @@ class ContextIncludeTest(unittest.TestCase):
             self.assertIn("children", out)
 
 
-for _storage in ("single", "bundle", "sqlite"):
+for _storage in ("single", "sqlite"):
     def _make(storage):
         def t1(self): self._prune_specific_edge(storage)
         def t2(self): self._prune_default_mainline(storage)

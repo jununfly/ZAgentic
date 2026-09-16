@@ -2,7 +2,7 @@
 """P5 真实计划语料常态化回归（spec §4.3）。
 
 把 `verify_real_plan_corpus.py` 包成 unittest 可发现套件：从仓库 `docs/plans`
-语料造 legacy fixture → 迁移 bundle → validate/stats/有界读/源不变，并断言
+语料造 legacy fixture → 迁移到 sqlite → validate/stats/有界读/源不变，并断言
 S2 新增 trace 后 plan 遍历字节不变（trace 不泄进视图，升级不误报）。
 """
 

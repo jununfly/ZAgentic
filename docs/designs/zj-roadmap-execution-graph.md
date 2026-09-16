@@ -35,7 +35,7 @@
 
 - **L1 遍历入口收敛**：散落裸遍历收成少数命名入口（如 `iter_nodes(layer='plan')` / `node_ids(layer=...)`），语义契约（默认值、排序、返回）写在共享位置，不允许各解释一套——同一语义两套实现是本仓库翻过的车。
 - **L2 默认值 `plan`（fail-safe）**：任何遍历入口 `layer` 默认 `plan`，看 trace 必须显式传 `layer='trace'`。方向反转——宁可「看不见」（命令返回空，当场暴露），不可「泄进来」（静默且叠加头号风险）。
-- **L3 bundle 物理隔离**：trace 分片放独立目录（如 `traces/`），`nodes/` 只放 plan 节点。glob 无法按字段过滤，独立目录让「目录布局本身就是过滤」，漏写过滤从逻辑错误降级为物理看不见。这是实现手段非语义约束——single-file 内存过滤、bundle 目录隔离、SQLite 列过滤，三者实现同一条语义契约。**两个 carrier 机制不同会漂移，防线是同一套负向用例两 carrier 各跑一遍。**
+- **L2 字段过滤**：trace 与 plan 节点同处 `nodes`（single-file 的 dict、SQLite 的表），靠 `layer` 字段区分——`iter_nodes` 按层过滤，漏写过滤会让 trace 泄进 plan 视图。这是实现手段非语义约束：single-file 内存过滤、SQLite 列过滤，二者实现同一条语义契约。**两 carrier 机制不同会漂移，防线是同一套负向用例两 carrier 各跑一遍。**
 - **硬前提（2.4）**：trace 节点不进任何 plan 节点的 `children`、不设 `parent`；trace 父子只用边表达。它天然不参与 `_sync_parent_status` 派生。
 
 ## trace 节点 schema（最小集）

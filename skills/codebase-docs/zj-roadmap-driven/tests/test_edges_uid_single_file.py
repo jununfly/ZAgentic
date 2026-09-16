@@ -6,8 +6,7 @@
 - 环检测在 uid 空间正确（迁移后照常拒绝 blocks 成环）。
 
 测试缝：CLI 进程级（与 test_edges_single_file 同款）+ 直接读 carrier 字节验证落盘形状。
-本文件覆盖 single-file carrier；bundle 跑同一套断言的文件是 test_edges_uid_bundle.py
-（继承本文件的 Slice，不复制）。
+本文件覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_edges_uid_single_file.py
 """
@@ -80,11 +79,11 @@ class UidEdgeContractTest(unittest.TestCase):
         return json.loads(self.roadmap.read_text(encoding="utf-8"))
 
     def raw_edge_endpoints(self):
-        """落盘字节里的边（single-file：data["edges"]）。bundle 那边会覆盖。"""
+        """落盘字节里的边（single-file：data["edges"]）。"""
         return self.read_raw().get("edges", [])
 
     def node_uids(self):
-        """当前图中所有节点的 uid 集合（single-file）。bundle 那边会覆盖。"""
+        """当前图中所有节点的 uid 集合（single-file）。"""
         return {n["uid"] for n in self.read_raw()["nodes"].values()}
 
     def seed_display_id_edges(self, edges):

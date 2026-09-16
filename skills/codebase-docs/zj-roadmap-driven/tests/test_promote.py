@@ -9,7 +9,7 @@
   E_REFERENCED，全部 exit 1。
 - 删除已被 accept 引用的 trace → E_REFERENCED（参照完整性，§3.4）。
 
-单元（apply_promotion 纯函数）+ 两个 carrier（single / bundle）各跑一遍；sqlite 继承 single-file。
+单元（apply_promotion 纯函数）+ 两个 carrier（single / sqlite）各跑一遍；sqlite 继承 single-file。
 """
 
 from __future__ import annotations
@@ -40,13 +40,11 @@ from roadmap import (  # noqa: E402
     ReferencedError,
     ERROR_EXIT_CODES,
 )
-from roadmap_bundle import RoadmapBundle  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 
 TARGETS = {
     "single": "roadmap.json",
-    "bundle": "roadmap.bundle",
     "sqlite": "roadmap.sqlite",
 }
 
@@ -65,8 +63,7 @@ def run_cli(*args: object, cwd: Path, check: bool = True) -> subprocess.Complete
 
 
 def load_carrier(storage: str, path: Path):
-    rm = Roadmap(str(path)) if storage == "single" else (
-        RoadmapBundle(str(path)) if storage == "bundle" else RoadmapSqlite(str(path)))
+    rm = Roadmap(str(path)) if storage == "single" else RoadmapSqlite(str(path))
     rm.load()
     return rm
 
@@ -137,9 +134,7 @@ class PromoteUnitTest(unittest.TestCase):
 class PromoteSliceTest(unittest.TestCase):
     def _seed(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", cwd=tmpd)
@@ -237,7 +232,7 @@ class PromoteSliceTest(unittest.TestCase):
             self.assertIn("E_PROMOTE_STATE_INVALID", p.stderr)
 
 
-for _storage in ("single", "bundle", "sqlite"):
+for _storage in ("single", "sqlite"):
     def _make(storage):
         def test_propose(self): self._propose_does_not_change_plan_or_md(storage)
         def test_accept(self): self._accept_creates_plan_node_and_edge(storage)

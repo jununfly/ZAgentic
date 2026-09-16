@@ -408,23 +408,17 @@ _Avoid_: monolithic JSON, mutable report file
 A small reference that identifies which immutable snapshot is the active one for a research or roadmap artifact; it can change without rewriting historical snapshots.
 _Avoid_: latest copy, in-place history
 
-**Roadmap bundle**:
-The optional large-artifact carrier for `zj-roadmap-driven`: a small manifest
-and independently readable node, decision, and history shards, with generated
-views and disposable indexes kept outside the canonical state.
-_Avoid_: split JSON, database migration
-
 **Roadmap carrier**:
 The selected canonical storage form for an execution roadmap: ordinary routes
-use one JSON file (`single`), large routes may use an explicit Roadmap bundle,
-and write-heavy or large-DAG routes may use a single SQLite file (`sqlite`). The
-carrier is the fact source; generated Markdown is only a human-readable view.
-Do not maintain two forms as active sources for one roadmap.
+use one JSON file (`single`), and write-heavy or large-DAG routes may use a
+single SQLite file (`sqlite`). The carrier is the fact source; generated
+Markdown is only a human-readable view. Do not maintain two forms as active
+sources for one roadmap.
 _Avoid_: roadmap format, Markdown source, dual truth
 
 **Carrier migration**:
 The explicit conversion of one roadmap from one carrier to another
-(`migrate <path> --to single|bundle|sqlite`). It carries nodes, decisions,
+(`migrate <path> --to single|sqlite`). It carries nodes, decisions,
 edges, the edge-id counter, node leases and their audit events, and leaves the
 source artifact byte-identical, so "which artifact is the fact source" stays
 answerable. No command performs it implicitly, and a target that already exists
@@ -435,16 +429,15 @@ _Avoid_: silent upgrade, auto-migration, in-place conversion
 The single rendering template behind both roadmap Markdown views. The two
 carriers feed it their own tree, blocked chain, open questions and focus node;
 they do not each own a copy of the layout. It used to be duplicated, and the
-bundle copy drifted — missing the current-focus line, the `ROADMAP_TREE`
+second copy drifted — missing the current-focus line, the `ROADMAP_TREE`
 markers, the focus detail block, and decision notes.
 _Avoid_: per-carrier templates, "light" vs "full" formats that differ by carrier
 
 **Storage recommendation**:
 A read-only, versioned advisory from `recommend-storage` that compares roadmap
-node/decision counts, canonical bytes, optional local timings, and bundle
-artifact sizes. It selects `keep-single`, `consider-bundle`,
-`recommend-bundle`, `consider-sqlite`, `keep-bundle`, or `keep-sqlite`; it never
-migrates, repairs, or rewrites a roadmap. When it names a different carrier it
+node/decision counts, canonical bytes, and optional local timings. It selects
+`keep-single`, `consider-sqlite`, or `keep-sqlite`; it never migrates, repairs,
+or rewrites a roadmap. When it names a different carrier it
 also reports the explicit command to run — naming a command is not running it.
 _Avoid_: automatic migration, performance gate, storage switch
 
@@ -646,7 +639,7 @@ The required discriminant separating plan nodes (`plan`, default) from trace nod
 _Avoid_: level, tier, kind (as the layer discriminant; trace nodes carry a separate `kind` describing the material)
 
 **Trace layer**:
-The execution-emergent half of the two-layer graph (opposite of **Layer** `plan`). Trace nodes are produced by the machine during execution and proliferate fast; they are recorded, never curated. They share the carrier and edge table with plan nodes but are excluded from Markdown, scheduling, and tree `children` by §2.4 — the only legal way to express a parent/child relationship across layers is an edge (`mainline` / `reference`), never a tree link. In the bundle carrier they are physically isolated under `traces/` (L3); in single-file / sqlite they live in the same `nodes` map but are filtered out by `iter_nodes` (L2).
+The execution-emergent half of the two-layer graph (opposite of **Layer** `plan`). Trace nodes are produced by the machine during execution and proliferate fast; they are recorded, never curated. They share the carrier and edge table with plan nodes but are excluded from Markdown, scheduling, and tree `children` by §2.4 — the only legal way to express a parent/child relationship across layers is an edge (`mainline` / `reference`), never a tree link. In both carriers they live in the same `nodes` map as plan nodes but are filtered out by `iter_nodes` (L2).
 _Avoid_: log, transcript, event stream (those are storage shapes, not the layer concept)
 
 **iter_nodes(layer=)**:

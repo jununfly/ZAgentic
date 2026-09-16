@@ -5,11 +5,11 @@
 ------------------
 这是从 #117 里剥出来的第二处漂移：迁移本身已经能证明"事实源搬过去了"，但
 `render` / `section` 是 Human 唯一看得到的面子，它两边的**模板是各抄一份的**
-（`Roadmap.render_full_section` 一份、`RoadmapBundle.render_full_section` 一份）。
-抄两份就等于承诺它们永远同步——bundle 那边已经缺了 `> 当前施工` 行、
+（曾经是 `Roadmap.render_full_section` 一份、另一个 carrier 再一份）。
+抄两份就等于承诺它们永远同步——另一份已经缺了 `> 当前施工` 行、
 `ROADMAP_TREE` 标记与"当前施工点"块，light section 里焦点节点的决策又丢了备注。
 
-所以这个文件守的是一条比"迁移保真"更强的断言：**同一张图，三个 carrier 的两个
+所以这个文件守的是一条比"迁移保真"更强的断言：**同一张图，两个 carrier 的
 Markdown 视图逐字节相同**。迁不迁移都得成立。
 
 覆盖的形状（每一条对应一处曾经真实的差异）：
@@ -35,7 +35,7 @@ if str(SKILL_DIR) not in sys.path:
 CLI = SKILL_DIR / "roadmap_cli.py"
 
 # 载体 → 文件名后缀。init 的 --storage 与后缀要一致，否则 CLI 会按路径形状挑错载体。
-TARGETS = {"single": "roadmap.json", "bundle": "roadmap.bundle", "sqlite": "roadmap.sqlite"}
+TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
 
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 # 数据文件名与最后更新时间在两个 carrier 上必然不同（文件名不同、写入时刻不同），
@@ -109,13 +109,11 @@ class CrossCarrierRenderTest(unittest.TestCase):
         views = self.light_sections()
 
         self.assertEqual(views["single"], views["sqlite"])
-        self.assertEqual(views["single"], views["bundle"])
 
     def test_the_full_section_is_byte_identical_across_carriers(self):
         views = self.full_sections()
 
         self.assertEqual(views["single"], views["sqlite"])
-        self.assertEqual(views["single"], views["bundle"])
 
     def test_the_full_export_is_byte_identical_across_carriers(self):
         views = {}
@@ -126,10 +124,9 @@ class CrossCarrierRenderTest(unittest.TestCase):
             )
 
         self.assertEqual(views["single"], views["sqlite"])
-        self.assertEqual(views["single"], views["bundle"])
 
     def test_the_focus_node_is_named_in_both_views(self):
-        """差异最容易被肉眼放过的一处：bundle 曾完全没有"当前施工"这一行。"""
+        """差异最容易被肉眼放过的一处：另一份模板曾完全没有"当前施工"这一行。"""
         for storage in TARGETS:
             with self.subTest(storage=storage):
                 here = self.build(storage)

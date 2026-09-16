@@ -5,7 +5,7 @@
 2. Roadmap Python API —— 钉住环检测、边 id 稳定性等用 JSON 输出难表达的语义；
 3. 控制例 —— 没有边时，既有命令的输出与今天字节一致。
 
-本文件只覆盖 single-file carrier；bundle 跑同一套断言的文件属于 #79 第二刀。
+本文件只覆盖 single-file carrier；sqlite 侧复用同一套断言。
 
 运行：python tests/test_edges_single_file.py
 """
@@ -291,11 +291,11 @@ class Slice06EdgeIdStabilityTest(EdgeContractTest):
     只能看到结果，看不到"删掉最后一条之后再建"这个关键顺序。
     """
 
-    # bundle carrier 是目录，不能用 .json 后缀（会让人以为是单文件）。
+    # 另一个 carrier 不是单文件 JSON，故这里显式用 .json 后缀。
     api_filename = "api-roadmap.json"
 
     def new_adapter(self, path):
-        """返回一个尚未 load 的 carrier 适配器。bundle 那边会覆盖它。"""
+        """返回一个尚未 load 的 carrier 适配器。"""
         return Roadmap(str(path))
 
     def build_api_roadmap(self, filename=None):
@@ -446,6 +446,8 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
     BASELINE_FILES = (
         "carrier_migration.py",
         "roadmap.py",
+        # 历史基线（c2e5a64）的 roadmap_cli.py 仍 import 它：这是被克隆出来的
+        # **历史运行时依赖**，不是当前 carrier——删掉会让基线 CLI 在 import 阶段挂。
         "roadmap_bundle.py",
         "roadmap_cli.py",
         "roadmap_sqlite.py",
@@ -491,7 +493,10 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
         identical = [
             name
             for name in self.BASELINE_FILES
-            if (target / name).read_text(encoding="utf-8")
+            # 当前实现里已删除的文件（如 #140 移除的 roadmap_bundle.py）：它只在
+            # 历史基线里存在，基线必然 ≠ 当前实现，跳过比对。
+            if (SKILL_DIR / name).exists()
+            and (target / name).read_text(encoding="utf-8")
             == (SKILL_DIR / name).read_text(encoding="utf-8")
         ]
         if len(identical) == len(self.BASELINE_FILES):
@@ -621,7 +626,7 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
 class Slice09DanglingEdgeTest(EdgeContractTest):
     """悬空边必须被检出，而不是静默参与调度。
 
-    手工往 JSON 里塞边来模拟：外部手改文件，或 bundle carrier 上"删节点后、
+    手工往 JSON 里塞边来模拟：外部手改文件，或写入中断留下"删节点后、
     删边前"崩溃留下的半态（single-file 写是整图替换，自己造不出这种状态）。
     """
 

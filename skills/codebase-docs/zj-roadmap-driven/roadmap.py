@@ -2,8 +2,7 @@
 zj-roadmap-driven — 路线图核心数据模型
 
 确定性操作：所有方法都是纯函数，输入确定则输出确定。
-普通模式以单 JSON 为事实源；大型模式由 roadmap bundle 的 canonical shards
-组成事实源，Markdown 只是渲染视图。
+事实源是单个 JSON 文件（single）或一个 sqlite 文件（sqlite），Markdown 只是渲染视图。
 """
 
 import errno
@@ -20,7 +19,7 @@ from contextlib import contextmanager
 from typing import Optional, Any
 
 # 租约策略（P2）：claim/heartbeat/steal/release/fencing 的纯函数，两个 carrier 共用，
-# 避免 single-file 与 bundle 对"一次 claim 意味着什么"各算一套（remove-decision 翻过一次的车）。
+# 避免两个 carrier 对"一次 claim 意味着什么"各算一套（remove-decision 翻过一次的车）。
 # ── 节点租约策略（P2 核心，两个 carrier 共用） ───────────────────────
 # 纯函数：给定租约 dict 与时钟，决定下一次租约长什么样。存储（字节落哪儿）是
 # carrier 的职责，所以两个 carrier 对"一次 claim/heartbeat/steal 意味着什么"
@@ -421,8 +420,8 @@ def is_within_scope(node_id: str, scope_root: str, parent_of) -> bool:
 
 
 # ── 派生阻塞的共享语义（#80）────────────────────────────
-# 两个 carrier 共用下面四个函数，跟 budget 复用同一套实现的理由相同
-# （见 roadmap_bundle 的导入注释）：#80 的验收之一是"两种载体行为一致"，
+# 两个 carrier 共用下面四个函数，跟 budget 复用同一套实现的理由相同：
+# #80 的验收之一是"两个载体行为一致"，
 # 规则写两遍就有机会各自漂移——而漂移在这里是静默的，因为两边各自都对。
 
 
@@ -748,15 +747,15 @@ def render_open_questions_plain(items) -> str:
 
 # ── Markdown section 模板（两个 carrier 共用）────────────
 #
-# 模板从 carrier 里搬到这里，是因为它**被抄成了两份**：Roadmap 一份、RoadmapBundle
-# 一份。抄两份等于承诺它们永远同步，而它们没有——bundle 那份缺 `> 当前施工` 行、
-# ROADMAP_TREE 标记与"当前施工点"块，light section 里焦点决策还丢了备注（#117）。
+# 模板从 carrier 里搬到这里，是因为它**被抄成过两份**：两个 carrier 各一份。
+# 抄两份等于承诺它们永远同步，而它们没有——另一份缺 `> 当前施工` 行、ROADMAP_TREE
+# 标记与"当前施工点"块，light section 里焦点决策还丢了备注（#117）。
 #
 # 这里所有函数都只吃"已经渲染好的片段"：它们不知道 carrier、节点和边，因此不可能
 # 对某一家的存储形状产生偏好，也就没有第二处可以漂移。
 
-# `section --all` / `render` 里"树不再截断"的深度。以前 single 写 50、bundle 写
-# 100000——同一条命令在两个 carrier 上对深树给出不同输出，这类差异没有正当理由。
+# `section --all` / `render` 里"树不再截断"的深度。这里只此一个常量，因为同一条
+# 命令在两个 carrier 上对深树必须给出相同输出——这类差异没有正当理由。
 ALL_NODES_TREE_DEPTH = 50
 
 
@@ -784,8 +783,8 @@ def focus_light_detail(
 ) -> str:
     """轻量视图（`render` 写进 md）的焦点块。
 
-    `decisions` 带备注时括号括在答案后面——bundle 曾整段漏掉这个后缀，于是同一个
-    焦点节点在两个 carrier 的 md 里长相不同。
+    `decisions` 带备注时括号括在答案后面。这个后缀曾在模板的第二份抄写里整段丢失，
+    于是同一个焦点节点在两个 carrier 的 md 里长相不同——模板只留一份就是为防这个。
     """
     if not focus_id:
         return ""
@@ -943,7 +942,7 @@ def next_child_index(parent: Optional[dict]) -> int:
     并且是**惰性物化**的：没删过子节点的父节点根本不会有这个字段。这样存量
     roadmap 的字节不变，不会撞 `Slice08` 那条"无边路径不被污染"的控制例。
 
-    两个 carrier 必须共用这一份：`next_child_index` 曾经在 bundle 里被各写了
+    两个 carrier 必须共用这一份：`next_child_index` 曾经被各写了
     一遍（`int(children[-1].split("-")[-1]) + 1`），`remove-decision` 在两个
     carrier 上语义漂移是本仓库已经付过学费的一类缺陷，不得重演。
     """
@@ -986,7 +985,7 @@ VALID_INCLUDES = frozenset({INCLUDE_DECISIONS, INCLUDE_TRACE, INCLUDE_CHILDREN})
 def ensure_layer(nodes) -> int:
     """给缺 `layer` 的节点补 `'plan'`；已有则不动。返回补了几条。
 
-    放在写入点（single-file / sqlite 的 `save`、bundle 的 `_write_node_file`）
+    放在写入点（single-file / sqlite 的 `save`）
     做"写入时升级"，与 `ensure_uid` 同一条纪律：读命令无锁，在 load 里写文件
     并发时可能给同一节点生成不一致状态。存量 roadmap 不显式迁移也自然带
     `layer: 'plan'`，新节点在构造时显式写 `layer: 'plan'`。
@@ -1073,11 +1072,11 @@ def looks_like_uid(ref: str) -> bool:
 def resolve_node(ref: str, nodes) -> str:
     """把"显示 id 或 uid"统一解析成显示 id。
 
-    `nodes` 接受 dict（single-file，键为显示 id）或 list（bundle，节点字典列表）。
+    `nodes` 接受 dict（键为显示 id）或 list（节点字典列表）。
     返回解析后的显示 id；uid 形状但不匹配时抛 NodeNotFound。
     """
     items = nodes.values() if isinstance(nodes, dict) else nodes
-    # 显示 id 直查（仅 single-file 有 dict 键；bundle 走下面的 uid 段）。
+    # 显示 id 直查（dict 形态直接命中；list 形态走下面的 uid 段）。
     if isinstance(nodes, dict) and ref in nodes:
         return ref
     if looks_like_uid(ref):
@@ -1099,7 +1098,7 @@ def node_context(node_id: str, nodes, edges, includes=()) -> dict:
       - "trace"：涉及该节点的 trace 边（mainline / reference / derives-from /
         prompted-by），每条带对端 trace 的 kind / body 摘要，供 edge-driven 上下文。
 
-    `nodes` 接受 dict（single-file）或 list（bundle）；`edges` 是边字典列表。
+    `nodes` 接受 dict 或 list；`edges` 是边字典列表。
     结果稳定（id 排序），便于两 carrier 比对与测试。
     """
     by_id = {n["id"]: n for n in nodes} if not isinstance(nodes, dict) else nodes
@@ -1759,7 +1758,7 @@ class Roadmap:
         - accept（Human）：从 proposal 落正式 plan 节点并写 derives-from 边，返回新节点。
         - reject（Human）：记 rejected，保留痕迹不物理删除。
 
-        trace 节点在 single-file 里同处 `data["nodes"]`；bundle 覆写本方法走 traces/ 分片。
+        trace 节点与 plan 节点同处 `data["nodes"]`，靠 `layer` 字段区分。
         """
         trace_id = self.resolve_node(trace_id)
         node = self.get_node(trace_id)
@@ -2225,7 +2224,7 @@ class Roadmap:
                         question: Optional[str] = None) -> int:
         """撤回节点决策（保留原记录，附加 retracted 标记）。
 
-        与 bundle carrier 语义一致：原决策保留，新增一条 retracted:True 记录
+        两个 carrier 语义一致：原决策保留，新增一条 retracted:True 记录
         （含 retracts = sha256(canonical_json(原决策)) 供溯源），不物理删除。
         用于撤销误记或清理重复决策，同时保留审计轨迹。
         index 与 question 都未提供时报错；两者都提供时优先 index。
@@ -2473,8 +2472,8 @@ class Roadmap:
     # ── Markdown 渲染 ──────────────────────────────────
     #
     # 模板只写一份，放在这一节的模块级函数里，两个 carrier 各自只负责**喂数据**
-    # （自己的树、自己的链、自己的焦点）。以前是 Roadmap 抄一份、RoadmapBundle 再抄
-    # 一份，抄出来就必然漂移：bundle 那份少了 `> 当前施工` 行、ROADMAP_TREE 标记与
+    # （自己的树、自己的链、自己的焦点）。以前是两个 carrier 各抄一份，抄出来就必然
+    # 漂移：另一份少了 `> 当前施工` 行、ROADMAP_TREE 标记与
     # "当前施工点"块，light section 里焦点决策的备注也丢了（#117 一并修）。md 是
     # Human 唯一看得到的面子，"两个 carrier 同语义"在这里就得是逐字节同。
     #
@@ -2722,7 +2721,7 @@ class Roadmap:
                 errors.append(f"节点 {nid}: 无效状态 '{node.get('status')}'")
 
         # 悬空边：端点节点已经不在了。来源只有两种——外部手改文件，或
-        # bundle 上"删节点后、删边前"崩溃留下的半态。它必须被检出，不能
+        # 写入中断留下的半态（节点已删、边还在）。它必须被检出，不能
         # 静默参与调度；修法见 `edge remove`（不需要事务来防，检出即可）。
         # 端点落盘是 uid：有效端点要么是某个节点的 uid，要么是（迁移前）显示 id。
         nodes = self.data.get("nodes", {})

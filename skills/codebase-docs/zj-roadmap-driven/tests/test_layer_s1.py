@@ -10,8 +10,7 @@
   - `iter_nodes(layer='plan')` 默认只返回 plan；`iter_nodes(layer='trace')` 返回 trace。
   - 迁移：剥离 `layer` 后 md 输出字节不变；`ensure_layer` 后所有节点 `layer=='plan'`，validate 通过。
   - 每个遍历命令（render / section / stats / validate / ready / critical-path /
-    impact / tree / decisions）写入一批 trace 后输出字节不变（三个 carrier 各跑）。
-  - bundle：往 `traces/` 放内容后 `stats` / `validate` / `rebuild_indexes` 数字不变（L3 物理隔离）。
+    impact / tree / decisions）写入一批 trace 后输出字节不变（single / sqlite 两个 carrier 各跑）。
   - `E_LAYER_VIOLATION`：code 字符串 + 退出码 1，并入 `ERROR_EXIT_CODES`。
   - §2.4 硬前提：`add_node` 把 plan 节点挂到 trace 节点下被拒（两个 carrier 各跑）。
 
@@ -39,11 +38,10 @@ from roadmap import (  # noqa: E402
     LayerViolation,
     ERROR_EXIT_CODES,
 )
-from roadmap_bundle import RoadmapBundle  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 CLI = SKILL_DIR / "roadmap_cli.py"
-TARGETS = {"single": "roadmap.json", "bundle": "roadmap.bundle", "sqlite": "roadmap.sqlite"}
+TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
 
 # 时间戳差异（render / section 的 updated 行）会让逐字节比较假红，统一归一。
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
@@ -56,7 +54,7 @@ def normalize(text: str) -> str:
 def make_trace(tid: str, kind: str = "finding", body: str = "...") -> dict:
     """trace 节点的最小合法形状（§2.6）：无 parent / children / status / decisions。
 
-    bundle 的 `safe_node_id` 要求数字型 id，故 trace id 用数字段（如 '9001'），
+    `safe_node_id` 要求数字型 id，故 trace id 用数字段（如 '9001'），
     不与 plan 的 '1' / '1-1' 冲突即可。
     """
     return {
@@ -77,8 +75,6 @@ def load_carrier(storage: str, path: Path):
     """三个 carrier 的 `load` 都是实例方法：构造后再 load。"""
     if storage == "single":
         rm = Roadmap(str(path))
-    elif storage == "bundle":
-        rm = RoadmapBundle(str(path))
     else:
         rm = RoadmapSqlite(str(path))
     rm.load()
@@ -206,21 +202,13 @@ class LayerTraversalNegativeTest(unittest.TestCase):
         return here
 
     def inject_trace(self, storage: str, path: Path, n: int = 3) -> None:
-        """按 carrier 的物理布局注入 trace：single/sqlite 进 nodes 集合，bundle 进 traces/。"""
+        """按 carrier 的物理布局注入 trace：single/sqlite 进 nodes 集合。"""
         rm = load_carrier(storage, path)
-        if storage == "bundle":
-            traces = path / "traces"
-            traces.mkdir(parents=True, exist_ok=True)
-            for i in range(1, n + 1):
-                (traces / f"t{i}.json").write_text(json.dumps(make_trace(f"900{i}"), ensure_ascii=False), encoding="utf-8")
-        else:
-            for i in range(1, n + 1):
-                rm.data["nodes"][f"900{i}"] = make_trace(f"900{i}")
-            rm.save()
+        for i in range(1, n + 1):
+            rm.data["nodes"][f"900{i}"] = make_trace(f"900{i}")
+        rm.save()
 
     def trace_count(self, storage: str, path: Path) -> int:
-        if storage == "bundle":
-            return len(list((path / "traces").glob("*.json")))
         rm = load_carrier(storage, path)
         return len(rm.iter_nodes(layer=LAYER_TRACE))
 
@@ -261,38 +249,7 @@ class LayerTraversalNegativeTest(unittest.TestCase):
     def test_sqlite_traversals_unchanged_with_trace(self):
         self._run_negative_for("sqlite")
 
-    def test_bundle_traversals_unchanged_with_trace(self):
-        self._run_negative_for("bundle")
 
-    def test_bundle_traces_dir_isolated_from_stats_validate_rebuild(self):
-        """§2.9：bundle 往 traces/ 放内容后，stats / validate / rebuild_indexes 数字不变。"""
-        here = self.build("bundle")
-        path = here / TARGETS["bundle"]
-        before_stats = json.loads(self.run_cli("stats", path, cwd=here).stdout)
-
-        traces = path / "traces"
-        traces.mkdir(parents=True, exist_ok=True)
-        for i in range(1, 4):
-            (traces / f"t{i}.json").write_text(json.dumps(make_trace(f"900{i}"), ensure_ascii=False), encoding="utf-8")
-
-        rb = load_carrier("bundle", path)
-        rb.rebuild_indexes()
-        after_stats = json.loads(self.run_cli("stats", path, cwd=here).stdout)
-        self.assertEqual(after_stats, before_stats, "traces/ 不应改变 materialized stats")
-
-        # validate 仍通过（只扫 nodes/，trace 在 traces/ 不可见）。
-        self.run_cli("validate", path, cwd=here)
-
-    def test_bundle_field_filter_catches_trace_leaking_into_nodes_dir(self):
-        """L2 兜底：即便 trace 分片误落进 nodes/，iter_nodes 仍按 layer 过滤。"""
-        here = self.build("bundle")
-        path = here / TARGETS["bundle"]
-        # 故意把 trace 写进 nodes/（L3 被破坏的场景），验证字段过滤仍能兜住。
-        (path / "nodes" / "9001.json").write_text(json.dumps(make_trace("9001"), ensure_ascii=False), encoding="utf-8")
-        rb = load_carrier("bundle", path)
-        self.assertEqual(len(rb.iter_nodes(layer=LAYER_TRACE)), 1, "iter_nodes(layer='trace') 应找到误落的 trace")
-        self.assertNotIn("9001", rb.node_ids(layer=LAYER_PLAN),
-                         "iter_nodes(layer='plan') 不应包含误落的 trace")
 
 
 class LayerHardPremiseTest(unittest.TestCase):
@@ -323,18 +280,6 @@ class LayerHardPremiseTest(unittest.TestCase):
         rm.save()
         with self.assertRaises(LayerViolation):
             rm.add_node("9001", "不应该成功")
-
-    def test_bundle_add_node_under_trace_is_rejected(self):
-        here = self.workdir / "bundle"
-        here.mkdir(parents=True, exist_ok=True)
-        path = here / TARGETS["bundle"]
-        (here / "plan.md").write_text("# 我的计划\n\n", encoding="utf-8")
-        self._cli("init", path, "--storage", "bundle", "--title", "硬前提", "--md-file", "plan.md", cwd=here)
-        # 把 trace 直接写进 nodes/（L3 被破坏，验证守卫仍生效）。
-        (path / "nodes" / "9001.json").write_text(json.dumps(make_trace("9001"), ensure_ascii=False), encoding="utf-8")
-        rb = load_carrier("bundle", path)
-        with self.assertRaises(LayerViolation):
-            rb.add_node("9001", "不应该成功")
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ CLI = SKILL_DIR / "roadmap_cli.py"
 class AdvisorCliCase(unittest.TestCase):
     """治具与 helper 的共同底座（不含用例本体）。
 
-    两个具体类各自只放自己那一组用例：如果让 sqlite 组去继承 single/bundle
+    两个具体类各自只放自己那一组用例：如果让 sqlite 组去继承 single
     组，unittest 会把父类的用例在子类里重跑一遍——计数虚高，且看不出哪份是哪
     个 carrier 的（#79 那边直接继承时就踩过同一种虚高）。
     """
@@ -23,7 +23,6 @@ class AdvisorCliCase(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.workdir = Path(self.tmp.name)
         self.single = self.workdir / "roadmap.json"
-        self.bundle = self.workdir / "roadmap.bundle"
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -181,7 +180,7 @@ class AdvisorCliCase(unittest.TestCase):
 
 
 class StorageAdvisorCliTest(AdvisorCliCase):
-    """single-file / bundle 两档：checklist 见 #117 之前的既有验收。"""
+    """single / sqlite 两档。"""
 
     def test_small_single_is_keep_and_read_only(self):
         self.run_cli("init", self.single, "--title", "Small roadmap")
@@ -202,34 +201,25 @@ class StorageAdvisorCliTest(AdvisorCliCase):
         self.assertEqual(before, self.file_digest(self.single))
         self.assertEqual(before_mtime, self.single.stat().st_mtime_ns)
 
-    def test_large_single_recommends_bundle(self):
+    def test_medium_single_stays_single_below_sqlite_threshold(self):
+        # 1000/5000 节点都还不到 sqlite 阈值（2万），仍是 keep-single。
         self.write_single_with_children(5000)
         before = self.file_digest(self.single)
 
         result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
 
-        self.assertEqual("recommend-bundle", result["recommendation"]["action"])
+        self.assertEqual("keep-single", result["recommendation"]["action"])
         self.assertGreaterEqual(result["metrics"]["total_nodes"], 5000)
-        self.assertTrue(result["signals"]["recommend_bundle"])
+        self.assertEqual([], result["signals"]["consider_sqlite"])
         self.assertEqual(before, self.file_digest(self.single))
 
-    def test_medium_single_suggests_consider_bundle(self):
-        self.write_single_with_children(1000)
-
-        result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
-
-        self.assertEqual("consider-bundle", result["recommendation"]["action"])
-        self.assertEqual(1000, result["metrics"]["total_nodes"])
-        self.assertEqual("total_nodes", result["signals"]["consider_bundle"][0]["metric"])
-
-    def test_two_moderate_structural_signals_stay_consider_without_measurement(self):
+    def test_two_moderate_structural_signals_stay_single_without_measurement(self):
         self.write_single_with_decisions(23, 694)
 
         result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
 
-        self.assertEqual("consider-bundle", result["recommendation"]["action"])
-        self.assertEqual(2, len(result["signals"]["consider_bundle"]))
-        self.assertEqual([], result["signals"]["recommend_bundle"])
+        self.assertEqual("keep-single", result["recommendation"]["action"])
+        self.assertEqual([], result["signals"]["consider_sqlite"])
 
     def test_non_execution_registry_json_is_rejected(self):
         self.single.write_text(
@@ -241,102 +231,6 @@ class StorageAdvisorCliTest(AdvisorCliCase):
 
         self.assertNotEqual(0, result.returncode)
         self.assertIn("not a valid execution roadmap", result.stderr)
-
-    def test_bundle_is_keep_bundle_and_measurement_is_read_only(self):
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Bundle roadmap")
-        self.run_cli("add", self.bundle, "1", "One branch")
-        before = self.file_digest(self.bundle)
-
-        result = json.loads(self.run_cli("recommend-storage", self.bundle, "--measure").stdout)
-
-        self.assertEqual("bundle", result["storage"])
-        self.assertEqual("keep-bundle", result["recommendation"]["action"])
-        self.assertIn("bounded_tree_ms", result["measurements_ms"])
-        self.assertIn("full_section_ms", result["measurements_ms"])
-        self.assertEqual(before, self.file_digest(self.bundle))
-
-    def test_missing_bundle_index_is_not_rebuilt(self):
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Indexless bundle")
-        stats_path = self.bundle / "indexes/stats.json"
-        stats_path.unlink()
-
-        result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)
-
-        self.assertEqual("bundle", result["storage"])
-        self.assertEqual("keep-bundle", result["recommendation"]["action"])
-        self.assertFalse(stats_path.exists())
-
-
-class SqliteStorageAdvisorCliTest(AdvisorCliCase):
-    """#117 P3 — `recommend-storage` 认识第三种 carrier，且仍然只读。
-
-    Story 39 的验收：建议永远是建议。`.sqlite` 在 #116 之前不存在，在 #116 之后
-    被 advisor 当成单文件 JSON 去解码直接崩（'utf-8' codec can't decode）。
-    这一组锁的是"advisor 对三种 carrier 都有话说，且一次都不伸手写"。
-    """
-
-    def test_sqlite_is_recognized_as_its_own_carrier(self):
-        sqlite = self.workdir / "roadmap.sqlite"
-        self.run_cli("init", sqlite, "--storage", "sqlite", "--title", "SQLite roadmap")
-        self.run_cli("add", sqlite, "1", "One branch")
-        before = self.file_digest(sqlite)
-        before_mtime = sqlite.stat().st_mtime_ns
-
-        result = json.loads(self.run_cli("recommend-storage", sqlite).stdout)
-
-        self.assertEqual("sqlite", result["storage"])
-        self.assertEqual("keep-sqlite", result["recommendation"]["action"])
-        self.assertEqual("sqlite", result["recommendation"]["target_storage"])
-        self.assertTrue(result["read_only"])
-        self.assertEqual(2, result["metrics"]["total_nodes"])
-        # 只读的硬验收：连 mtime 都不许动。
-        self.assertEqual(before, self.file_digest(sqlite))
-        self.assertEqual(before_mtime, sqlite.stat().st_mtime_ns)
-
-    def test_a_heavy_single_file_is_advised_to_consider_sqlite(self):
-        self.write_single_with_bytes(9 * 1024 * 1024)
-        before = self.file_digest(self.single)
-
-        result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
-
-        self.assertEqual("consider-sqlite", result["recommendation"]["action"])
-        self.assertEqual("sqlite", result["recommendation"]["target_storage"])
-        self.assertEqual(before, self.file_digest(self.single))
-
-    def test_the_sqlite_advice_names_the_explicit_migration_command(self):
-        self.write_single_with_bytes(9 * 1024 * 1024)
-
-        result = json.loads(self.run_cli("recommend-storage", self.single).stdout)
-
-        # Story 40：迁移只能靠显式命令。建议里必须给出那条命令，而不是替人跑它。
-        # advisor 会把路径 resolve 过（macOS 上 /var 是 /private/var 的软链），
-        # 期望值跟着 resolve，别让断言变成"两边符号链接不同"这种伪差异。
-        self.assertEqual(
-            f"migrate {self.single.resolve()} --to sqlite",
-            result["recommendation"]["command"],
-        )
-        self.assertTrue(result["read_only"])
-
-    def test_a_heavy_bundle_is_advised_to_consider_sqlite(self):
-        self.write_single_with_bytes(9 * 1024 * 1024)
-        self.run_cli("migrate", self.single, "--to", "bundle", "--output", self.bundle)
-        before = self.file_digest(self.bundle)
-
-        result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)
-
-        self.assertEqual("bundle", result["storage"])
-        self.assertEqual("consider-sqlite", result["recommendation"]["action"])
-        self.assertEqual(before, self.file_digest(self.bundle))
-
-    def test_a_small_bundle_keeps_being_keep_bundle(self):
-        """sqlite 这一档不能把"什么都没触发"的 bundle 也升上去。"""
-        self.run_cli("init", self.bundle, "--storage", "bundle", "--title", "Bundle roadmap")
-        self.run_cli("add", self.bundle, "1", "One branch")
-
-        result = json.loads(self.run_cli("recommend-storage", self.bundle).stdout)
-
-        self.assertEqual("keep-bundle", result["recommendation"]["action"])
-
 
 if __name__ == "__main__":
     unittest.main()

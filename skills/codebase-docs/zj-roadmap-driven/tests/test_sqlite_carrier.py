@@ -3,7 +3,7 @@
 
 Scope (reconstructed from docs/plans/zj-roadmap-dag-concurrency.md §5 + §测试缝):
 implement `RoadmapSqlite` (stdlib `sqlite3`, zero new deps) that satisfies the
-*same adapter contract* as `Roadmap` (single-file) and `RoadmapBundle` — so the
+*same adapter contract* as `Roadmap` (single-file) — so the
 existing contract tests can run a third time against it.
 
 This file is the focused cross-carrier equality proof chosen for #116: build one
@@ -201,7 +201,7 @@ class SqlitePathRouting(unittest.TestCase):
         self.assertTrue(is_sqlite_path("a/roadmap.sqlite"))
         self.assertTrue(is_sqlite_path("a/roadmap.db"))
         self.assertFalse(is_sqlite_path("a/roadmap.json"))
-        self.assertFalse(is_sqlite_path("a/roadmap.bundle"))
+        self.assertFalse(is_sqlite_path("a/roadmap.json"))
 
 
 if __name__ == "__main__":

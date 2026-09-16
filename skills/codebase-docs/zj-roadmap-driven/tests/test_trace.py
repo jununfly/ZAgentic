@@ -7,7 +7,7 @@
 - 红绿双向：抽掉实现会红。
 - 字节级不变断言用于"trace 不泄进视图"。
 
-两个 carrier（single / bundle）各跑一遍；sqlite 继承 single-file 路径。
+两个 carrier（single / sqlite）各跑一遍；sqlite 继承 single-file 路径。
 """
 
 from __future__ import annotations
@@ -35,13 +35,11 @@ from roadmap import (  # noqa: E402
     PromoteTargetInvalid,
     ERROR_EXIT_CODES,
 )
-from roadmap_bundle import RoadmapBundle  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 
 TARGETS = {
     "single": "roadmap.json",
-    "bundle": "roadmap.bundle",
     "sqlite": "roadmap.sqlite",
 }
 
@@ -74,8 +72,6 @@ def normalize(s: str) -> str:
 def load_carrier(storage: str, path: Path):
     if storage == "single":
         rm = Roadmap(str(path))
-    elif storage == "bundle":
-        rm = RoadmapBundle(str(path))
     else:
         rm = RoadmapSqlite(str(path))
     rm.load()
@@ -109,9 +105,7 @@ class TraceAddNegativeTest(unittest.TestCase):
     def _seed(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
         md = tmpd / "view.md"
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", "--md-file", md, cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", "--md-file", md, cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", "--md-file", md, cwd=tmpd)
@@ -149,14 +143,6 @@ class TraceAddNegativeTest(unittest.TestCase):
             after = self._snapshot(path, md)
             self._assert_byte_identical(before, after)
 
-    def test_bundle_traversal_unchanged_after_trace_add(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, md = self._seed("bundle", tmpd)
-            before = self._snapshot(path, md)
-            run_cli("trace", "add", path, "--kind", "finding", "--body", "a thought", cwd=tmpd)
-            after = self._snapshot(path, md)
-            self._assert_byte_identical(before, after)
 
     def test_sqlite_traversal_unchanged_after_trace_add(self):
         with tempfile.TemporaryDirectory() as d:
@@ -174,9 +160,7 @@ class TraceAddStructureTest(unittest.TestCase):
     def _add(self, storage: str, tmpd: Path, extra=None):
         path = tmpd / TARGETS[storage]
         md = tmpd / "view.md"
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", "--md-file", md, cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", "--md-file", md, cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", "--md-file", md, cwd=tmpd)
@@ -204,36 +188,7 @@ class TraceAddStructureTest(unittest.TestCase):
             self.assertNotIn(t["id"], rm.get_node("1-1").get("children", []))
             self.assertIn(t["id"], rm.node_ids(layer=LAYER_TRACE))
 
-    def test_bundle_trace_physically_in_traces_dir(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, _ = self._add("bundle", tmpd)
-            rm = load_carrier("bundle", path)
-            traces = rm.iter_nodes(layer=LAYER_TRACE)
-            self.assertEqual(len(traces), 1)
-            t = traces[0]
-            self.assertEqual(t["layer"], LAYER_TRACE)
-            self.assertIsNone(t["parent"])
-            self.assertEqual(t["prompted_by"], "1-1")
-            # L3 物理隔离：trace 分片在 traces/，不在 nodes/
-            self.assertTrue((path / "traces" / f"{t['id']}.json").is_file())
-            self.assertFalse((path / "nodes" / f"{t['id']}.json").is_file())
-            # 不进 plan 节点的 children
-            self.assertNotIn(t["id"], rm.get_node("1-1").get("children", []))
 
-    def test_bundle_trace_isolated_from_stats_and_validate(self):
-        with tempfile.TemporaryDirectory() as d:
-            tmpd = Path(d)
-            path, _ = self._add("bundle", tmpd)
-            before = run_cli("stats", path, cwd=tmpd).stdout
-            run_cli("trace", "add", path, "--kind", "doubt", "--body", "x", cwd=tmpd)
-            after = run_cli("stats", path, cwd=tmpd).stdout
-            # 两条 trace 都不计入 plan 统计
-            self.assertEqual(json.loads(before)["total_nodes"], json.loads(after)["total_nodes"])
-            self.assertEqual(run_cli("validate", path, cwd=tmpd).returncode, 0)
-            rm = load_carrier("bundle", path)
-            self.assertEqual(len(rm.iter_nodes(layer=LAYER_TRACE)), 2)
-            self.assertEqual(len(rm.iter_nodes(layer=LAYER_PLAN)), 2)  # 1, 1-1
 
     def test_provenance_edge_written_for_from(self):
         with tempfile.TemporaryDirectory() as d:
@@ -259,9 +214,7 @@ class TraceGuardTest(unittest.TestCase):
 
     def _seed(self, storage: str, tmpd: Path):
         path = tmpd / TARGETS[storage]
-        if storage == "bundle":
-            run_cli("init", path, "--storage", "bundle", "--title", "t", cwd=tmpd)
-        elif storage == "sqlite":
+        if storage == "sqlite":
             run_cli("init", path, "--storage", "sqlite", "--title", "t", cwd=tmpd)
         else:
             run_cli("init", path, "--title", "t", cwd=tmpd)
@@ -283,7 +236,7 @@ class TraceGuardTest(unittest.TestCase):
     def test_from_missing_trace_is_rejected(self):
         with tempfile.TemporaryDirectory() as d:
             tmpd = Path(d)
-            path = self._seed("bundle", tmpd)
+            path = self._seed("single", tmpd)
             p = run_cli("trace", "add", path, "--kind", "finding", "--body", "x",
                         "--under", "1-1", "--from", "9-999", check=False, cwd=tmpd)
             self.assertEqual(p.returncode, 1)
