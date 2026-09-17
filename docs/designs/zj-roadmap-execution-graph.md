@@ -5,7 +5,7 @@
 `authority-id: design.roadmap-execution-graph`
 
 > Bounded question: 执行期涌现的发现与上下文需求，zj-roadmap-driven 如何记录与供给而不膨胀 Human 视图、不污染地图？
-> 上游 spec：`docs/plans/zj-roadmap-dag-concurrency.md` §8（方向与边界）；本篇细化 spec：`docs/plans/zj-roadmap-execution-graph.md`（均已归档至 `.zj-out-of-scope/plans/`）。本文只提炼权威结论与决策理由。
+> 上游 spec：`docs/plans/zj-roadmap-dag-concurrency.md` §8（方向与边界）；本篇细化 spec：`docs/plans/zj-roadmap-execution-graph.md`（均已抽取至 designs 后于 2026-09-16 从仓库删除，原稿见 git 历史 `929b4ab^`）。本文只提炼权威结论与决策理由。
 
 ## 要治的病
 

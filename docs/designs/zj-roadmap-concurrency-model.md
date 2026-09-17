@@ -5,7 +5,7 @@
 `authority-id: design.roadmap-concurrency-model`
 
 > Bounded question: 多 Agent 并发写、跨子树依赖、以及跨 carrier 扩展读，zj-roadmap-driven 分别靠什么设计保证安全与一致？
-> 来源 spec：`docs/plans/zj-roadmap-dag-concurrency.md`（已归档至 `.zj-out-of-scope/plans/`）。本文只提炼权威结论与决策理由，完整 user story 与论证见原 plan。
+> 来源 spec：`docs/plans/zj-roadmap-dag-concurrency.md`（已于 2026-09-16 抽取至本 designs 后从仓库删除，原稿见 git 历史 `929b4ab^`）。本文提炼权威结论与决策理由，完整 62 条 user story 与论证以 git 历史中的原 plan 为准。
 
 ## 核心不变式（一切阶段的地基）
 
