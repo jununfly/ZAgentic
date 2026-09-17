@@ -62,7 +62,9 @@ python roadmap_cli.py critical-path <roadmap_path>
 python roadmap_cli.py impact <roadmap_path> <node_id>
 ```
 
-`render` writes the lightweight Markdown view (tree depth=2, current focus, and one level of the focus subtree). `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
+`render` writes the lightweight Markdown view: when there is a current focus it renders a radial view (ancestor chain always visible + focus subtree drilled down + non-focus siblings collapsed to a count), and falls back to a root tree at depth=2 when there is no focus; completed subtrees collapse, in_progress/blocked/open_question nodes force-expand; the tail carries a `ready` preview. `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
+
+`tree <roadmap_path> [node_id] [--depth N]` prints a box tree rooted at `node_id` (default `1`) up to `--depth`. `tree --anchor <id>` renders the radial view anchored at `<id>` (the ancestor chain + focus subtree + sibling counts); `--anchor` without a value anchors at the current focus, falling back to the root when none. For edge context one level deeper, use `context <node_id>` — the radial view's ancestor chain is already the broader context.
 
 `recommend-storage` is a read-only advisory. It reports node/decision counts and
 canonical and view bytes. It returns `keep-single`, `consider-sqlite`, or
