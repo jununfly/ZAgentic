@@ -534,13 +534,23 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
         return "\n".join(output)
 
     def test_markdown_and_section_are_byte_identical_without_edges(self):
-        before = self.run_sequence(self.baseline_dir(), self.root / "w1")
-        current = self.root / "current"
-        self.write_impl(current, SKILL_DIR)
-
-        after = self.run_sequence(current, self.root / "w2")
-
-        self.assertEqual(after, before)
+        # 本 PR（feat/roadmap-radial-render）把 render_light_section 从「固定 depth=2」
+        # 重构为「焦点辐射 + 异常折叠」（见 references/radial-render-plan.md）。本 SEQUENCE
+        # 把 1-2 设为 in_progress → roadmap 存在焦点 → 新实现走径向视图，与历史基线
+        # c2e5a64 的 depth=2 快照逐字节不同。这是**有意的行为变更，不是回归**：拿
+        # pre-radial 历史基线验收 radial 渲染，等于把旧行为钉成标准（#117 同款
+        # anti-pattern——「修渲染器后基线对照必然红，处理是跳过 Human 视野那条、
+        # 守望交给跨 carrier 比对」）。
+        # 故跳过这条「vs 历史基线」硬验收，改由以下不依赖历史基线的守卫接手：
+        #   - test_cross_carrier_render.py::test_the_light_section_is_byte_identical_across_carriers
+        #     （single vs sqlite 轻量视图逐字节相同）
+        #   - test_radial_render.py::RadialCrossCarrier（径向轻量视图跨 carrier 逐字节相同）
+        #   - test_radial_render.py 行为断言（辐射三件套 / ready 小节 / D2 无焦点回退）
+        # 无焦点（D2 回退 depth=2）的字节稳定性由
+        # test_radial_render.RadialLightSection.test_light_section_falls_back_to_depth2_when_no_focus 单独守。
+        self.skipTest(
+            "radial render 有意改变『有焦点 roadmap』的轻量视图；vs 历史基线 c2e5a64 的对照改为跨 carrier 守卫"
+        )
 
     # ── 基线跑不到的场景：有边，但没有东西被阻塞 ──────
 

@@ -27,7 +27,7 @@ python "$SKILL_DIR/roadmap_cli.py" render roadmap.json   # 每次实质工作后
 
 **核心原则：**
 1. **存储载体决定事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（节点 / 决策 / 边 / 租约 / history 各归一表，WAL 并发）。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。
-2. **Markdown 是轻量渐进式视图**——只暴露树形概览（depth=2）+ 当前施工焦点。Human 一眼看清进度，不占满上下文；Markdown 永远不能反向导入事实源。
+2. **Markdown 是轻量渐进式视图**——焦点辐射：有焦点时「祖先链必现 + 焦点子树下钻 + 非焦点兄弟折叠计数」，无焦点回退根树 depth=2；completed 子树折叠、in_progress/blocked/open_question 强制展开；尾部含 ready 小节。Human 一眼看清进度与下一步，不占满上下文；Markdown 永远不能反向导入事实源。
 3. **每个节点有编号**（1, 1-1, 1-1-1, …），方便 Human 和 Agent 快速定位
 4. **每个节点有状态 checkbox**（[ ] / [~] / [x] / [!]），一眼识别进度
 5. **决策随节点落盘**（JSON 中），形成可追溯的决策历史。md 只展示焦点节点的决策。

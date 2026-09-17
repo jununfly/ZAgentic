@@ -58,7 +58,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
                                              # 有未完成 blocks 前驱时附带派生字段
                                              # blocked / blocked_reason（不落盘）
 
-  tree    <json_path> [node_id] [--depth N]  # 树形文本视图
+  tree    <json_path> [node_id] [--depth N] [--anchor <id>]  # 树形文本视图；--anchor 渲染焦点辐射视图（祖先链+焦点子树+兄弟计数）
 
   fail    <json_path> <node_id> --error "..." [--question "..."] [--max-attempts N]
               # 记录一次执行失败：attempts+1 / last_error / retry_backoff（封顶指数退避）
@@ -630,6 +630,14 @@ def cmd_get(args: dict):
 
 def cmd_tree(args: dict):
     r = _load_roadmap(args["positional"][0])
+    anchor = args.get("anchor")
+    if anchor:
+        # D1: `tree --anchor <id>` 以该节点为锚渲染辐射视图（祖先链 + 焦点子树 + 兄弟计数）。
+        # `--anchor` 不带值（= "true"）时以当前焦点为锚；无焦点回退根节点。
+        # 不加 `--context`：辐射视图的祖先链本身就是 context，深一层走 `context <node>`。
+        focus_id = r.resolve_node(anchor) if anchor != "true" else (r.get_current_focus() or "1")
+        print(r.get_tree_radial(focus_id, r.owner_map()))
+        return
     root = r.resolve_node(args["positional"][1]) if len(args["positional"]) > 1 else "1"
     depth = int(args.get("depth", 10))
     print(r.get_tree(root, depth))
