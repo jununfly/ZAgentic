@@ -801,6 +801,17 @@ def focus_light_detail(
     return detail
 
 
+def render_ready_preview(nodes: list) -> str:
+    """md 尾部的 ready 小节：补 Human readiness 缺口。空 → 空串（保「无状态 md 不变」）。"""
+    if not nodes:
+        return ""
+    lines = ["\n### 下一步可开工（ready 前 3）", ""]
+    for n in nodes:
+        lines.append(f"- {n['id']}. {n['label']} {status_icon(n)}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def compose_light_section(
     artifact_name: str,
     updated: str,
@@ -808,6 +819,7 @@ def compose_light_section(
     chain: str,
     open_questions: str,
     focus_detail: str,
+    ready_preview: str = "",
 ) -> str:
     """轻量视图：`render` 写进关联 md 文件的那一块。"""
     section = (
@@ -818,6 +830,8 @@ def compose_light_section(
     )
     if focus_detail:
         section += focus_detail
+    if ready_preview:
+        section += ready_preview
     return section + "<!-- ROADMAP_SECTION_END -->\n"
 
 
@@ -2405,6 +2419,82 @@ class Roadmap:
 
         return "\n".join(lines)
 
+    def get_tree_radial(self, focus_id: str, owners: dict = None, focus_subtree_depth: int = 2) -> str:
+        """焦点辐射视图：祖先链必现 + 焦点子树下钻 + 非焦点兄弟折叠 + completed 子树折叠。
+
+        仅用 nodes/edges/owners 数据访问器，不触 carrier 形态 → 两载体逐字节同。
+        """
+        if focus_id not in self.data["nodes"]:
+            return f"(节点 {focus_id} 不存在)"
+
+        blocked = self.blocked_node_ids()
+        owners = owners or {}
+        path = self.get_path(focus_id)            # [root, ..., focus]
+        path_index = {nid: i for i, nid in enumerate(path)}
+        lines: list[str] = []
+
+        def subtree_node_count(nid: str) -> int:
+            n = 1
+            for c in self.data["nodes"][nid].get("children", []):
+                n += subtree_node_count(c)
+            return n
+
+        def all_completed(nid: str) -> bool:
+            node = self.data["nodes"][nid]
+            if node.get("status") != STATUS_COMPLETED:
+                return False
+            for c in node.get("children", []):
+                if not all_completed(c):
+                    return False
+            return True
+
+        def render(nid: str, prefix: str, is_last: bool, depth: int, mode: str, sub_depth: int):
+            node = self.data["nodes"][nid]
+            lines.append(tree_line(node, prefix, is_last, depth, blocked, owners.get(nid)))
+            children = node.get("children", [])
+            if not children:
+                return
+            child_prefix = prefix + ("    " if is_last else "│   ")
+            if mode == "ancestor":
+                idx = path_index[nid]
+                next_child = path[idx + 1] if idx + 1 < len(path) else None
+                for i, c in enumerate(children):
+                    if c == next_child:
+                        child_mode = "focus" if c == focus_id else "ancestor"
+                        render(c, child_prefix, i == len(children) - 1, depth + 1, child_mode, focus_subtree_depth)
+                off_path = [c for c in children if c != next_child]
+                if off_path:
+                    ip = sum(
+                        1 for c in off_path
+                        if self.data["nodes"][c].get("status") == STATUS_IN_PROGRESS
+                    )
+                    lines.append(
+                        f"{child_prefix}... 该层还有 {len(off_path)} 个兄弟，{ip} 个 in_progress ▸"
+                    )
+            elif mode == "focus":
+                for i, c in enumerate(children):
+                    render(c, child_prefix, i == len(children) - 1, depth + 1, "subtree", focus_subtree_depth)
+            elif mode == "subtree":
+                if sub_depth <= 0:
+                    lines.append(
+                        f"{child_prefix}... 子树过深，run tree {nid} --depth 2 for full view"
+                    )
+                    return
+                for i, c in enumerate(children):
+                    connector_last = i == len(children) - 1
+                    if all_completed(c):
+                        cnt = subtree_node_count(c)
+                        conn = "└── " if connector_last else "├── "
+                        lines.append(
+                            f"{child_prefix}{conn}... {c} 已完成（折叠 {cnt} 项）▸"
+                        )
+                    else:
+                        render(c, child_prefix, connector_last, depth + 1, "subtree", sub_depth - 1)
+
+        entry_mode = "focus" if path[0] == focus_id else "ancestor"
+        render(path[0], "", True, 0, entry_mode, focus_subtree_depth)
+        return "\n".join(lines)
+
     def get_path(self, node_id: str) -> list[str]:
         """获取从根到目标节点的路径（id 列表）。"""
         path = []
@@ -2534,15 +2624,22 @@ class Roadmap:
             max_bytes=max_bytes,
         )
 
-    def render_light_section(self) -> str:
-        """轻量渲染（Human 视图）：树 depth=2 + 焦点节点展开。"""
+    def render_light_section(self, focus_subtree_depth: int = 2) -> str:
+        """轻量渲染（Human 视图）：焦点辐射视图 + ready 小节。
+
+        有焦点 → 祖先链必现的辐射树；无焦点（D2）→ 回退根树 depth=2，与历史快照逐字节一致。
+        """
         now = self.data["metadata"].get("updated", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         owners = self.owner_map()
-        tree_text = self.get_tree(max_depth=2, owners=owners)
-
         focus_id = self.get_current_focus()
         focus_node = self.data["nodes"][focus_id] if focus_id else None
+
+        if focus_id is None:
+            # D2: 无焦点回退根树 depth=2，与历史快照逐字节一致（不动 tree 文本）。
+            tree_text = self.get_tree(max_depth=2, owners=owners)
+        else:
+            tree_text = self.get_tree_radial(focus_id, owners, focus_subtree_depth)
 
         return compose_light_section(
             artifact_name=os.path.basename(self.json_path),
@@ -2559,6 +2656,7 @@ class Roadmap:
                 focus_node.get("decisions", []) if focus_node else [],
                 self.get_focus_subtree(focus_id, max_depth=1, owners=owners) if focus_id else "",
             ),
+            ready_preview=render_ready_preview(self.ready_nodes()[:3]),
         )
 
     def get_focus_subtree(self, root_id: str, max_depth: int = 1, owners: dict = None) -> str:
