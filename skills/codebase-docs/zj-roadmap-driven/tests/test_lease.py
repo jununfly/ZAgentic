@@ -23,7 +23,7 @@ Seams under test
      main seam: `lease` lifecycle exit codes, stale-token write rejection
      (E_LEASE_HELD), and `--if-rev` conflict (E_CONFLICT).
 
-All three carriers run every test.
+Both carriers run every test.
 
 Run: python tests/test_lease.py        (also works under pytest)
 """

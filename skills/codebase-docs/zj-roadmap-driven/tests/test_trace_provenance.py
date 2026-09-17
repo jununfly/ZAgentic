@@ -5,7 +5,7 @@ P5-S2 的 trace add（#133）只落了**因果** provenance（prompted_by + from
 边）。本套件补 #133 没做的**身份** provenance：trace 节点诞生即写
 `agent_id` / `device_id` / `session_ref` / `compressed_from`，CLI 暴露对应参数。
 
-验收（来自 spec §8.3 + 项目「三 carrier 同语义」不变式）：
+验收（来自 spec §8.3 + 项目「两 carrier 同语义」不变式）：
 - `trace add` 接受 --session-ref / --agent-id / --device-id / --compressed-from，
   写进节点；`trace get` 返回。
 - 缺省时字符串字段为 ""，compressed_from 不出现。

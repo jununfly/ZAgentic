@@ -10,7 +10,7 @@ python roadmap_cli.py init <roadmap_path> --title "项目名称" [--description 
 
 # Convert between carriers explicitly; the source is never rewritten
 python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
-    [--output <path>] [--snapshot-interval N]
+    [--output <path>]
 
 # Node CRUD
 python roadmap_cli.py add <json_path> <parent_id> "<label>" [--status pending] [--mode explore]
@@ -31,12 +31,12 @@ python roadmap_cli.py decisions <json_path> [<node_id>]
 python roadmap_cli.py remove-decision <json_path> <node_id> --index N
 python roadmap_cli.py remove-decision <json_path> <node_id> --question "<问题文本>"
 
-# Failure semantics & escalation (P2, #114) — Story 33/34
+# Failure semantics & escalation
 python roadmap_cli.py fail <json_path> <node_id> --error "失败原因" [--question "升级时给 Human 的问题"] [--max-attempts N]
 #   attempts+1 / last_error / retry_backoff(封顶指数退避)；达阈值(默认3)挂 open_question 升级。不改 status。
 #   执行侧元数据，需持租约（同 status）：非持有者写返回 E_LEASE_HELD。
 
-# Dependencies (P1) — edges live outside the tree.
+# Dependencies — edges live outside the tree.
 # Note: `edge` takes the action first and the path second, unlike every other
 # command, because it is a command group (`git remote add` style).
 python roadmap_cli.py edge add <roadmap_path> <from_id> <to_id> --type blocks|informs|supersedes|derives-from
@@ -81,7 +81,7 @@ contract, so the same command works on any of them.
 
 ```bash
 python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
-    [--output <path>] [--snapshot-interval N]
+    [--output <path>]
 ```
 
 Both Markdown views are produced by **one** template in `roadmap.py`
@@ -105,8 +105,8 @@ across; the carried lease still guards writes on the new carrier.
 
 Three read-only queries answer "what can I start next / what is the longest
 outstanding chain / what does a change ripple into". All three are derived
-**on read** from `blocks` edges only — never stored, never counters (Story 24
-is deferred to P3). They share one module-level function in `roadmap.py`; both
+**on read** from `blocks` edges only — never stored, never counters. They share
+one module-level function in `roadmap.py`; both
 carriers feed it their own data, so the two carriers print byte-identical
 output. None of them takes the whole-graph lock: taking it would serialize
 concurrent reads and could trip the lock-timeout exit code 2, which is a
@@ -137,10 +137,11 @@ python roadmap_cli.py impact <roadmap_path> <node_id>
   - `<node_id>` does not exist → `E_NODE_NOT_FOUND` on stderr, exit 1.
 
 All three print `{id}. {label} {status_icon}` per line, so the Human can tell
-finished from unfinished in the impact set at a glance. The lease clause in the
-spec's readiness rule (Story 20) is P2's work and is not yet implemented; today
-the "no valid lease" branch is vacuously true and is intentionally not a flag or
-a hardcoded `True` — when leases land, only that one clause changes.
+finished from unfinished in the impact set at a glance.
+
+**`ready` ignores leases.** Readiness is decided by status and `blocks` edges
+only: whether another agent holds a lease on a node does not remove it from the
+set. A lease claims work; it does not hide it.
 
 ## Edges
 
@@ -189,11 +190,12 @@ Removed edges: 2 (blocks 1, informs 1)
 ```
 
 There is no `--cascade` opt-in: an edge cannot outlive its nodes. The edges are
-removed **before** the node shards, so an interrupted delete leaves "edges gone,
-node still there" — rerunnable — rather than a dangling edge. When no edge was
-removed the extra line is not printed, so `delete` stays byte-identical to its
-pre-P1 output. A dangling edge that does appear (hand-edited file, or an interrupted write) is
-reported by `validate`, not silently scheduled around.
+removed **before** the node records, so an interrupted delete leaves "edges
+gone, node still there" — rerunnable — rather than a dangling edge. When no
+edge was removed the extra line is not printed, so `delete` stays
+byte-identical to its pre-edge output. A dangling edge that does appear
+(hand-edited file, or an interrupted write) is reported by `validate`, not
+silently scheduled around.
 
 ## Exit codes
 
@@ -220,9 +222,9 @@ never disagree on what counts as a start or a child.
 
 All six exit 1. `E_CYCLE` and `E_NODE_NOT_FOUND` are only raised by `edge`;
 pre-existing commands still raise `KeyError`/`ValueError` with their original
-wording, so their output is unchanged by P1.
+wording, so their output is unchanged.
 
-### Scope tokens (P2)
+### Scope tokens
 
 `--scope <node>` confines the write to `<node>` and its subtree (inclusive). A
 write aimed anywhere else fails with `E_SCOPE` **naming the allowed scope**, so
@@ -235,7 +237,7 @@ subagent from a planner or a Human, and "read-only by default" would also block
 the lease holder from writing `status` on the node it holds. Read-only is a
 policy the *parent* agent enforces by always handing down a `--scope`.
 
-### Field-level ownership (P2)
+### Field-level ownership
 
 Which fields a lease actually protects:
 
@@ -250,9 +252,9 @@ The point is that most concurrent edits never conflict: renaming or re-budgeting
 a node while another agent executes it is legal and succeeds. A mixed `update`
 that touches any lease-holder field is rejected whole — no half-written node.
 
-### Failure semantics & escalation (P2, #114)
+### Failure semantics & escalation
 
-`fail` records an execution failure on a node (Story 33/34):
+`fail` records an execution failure on a node:
 
 ```bash
 python roadmap_cli.py fail <json_path> <node_id> --error "..." [--question "..."] [--max-attempts N]
@@ -262,10 +264,10 @@ python roadmap_cli.py fail <json_path> <node_id> --error "..." [--question "..."
   is set to a capped exponential `min(60 * 2^(n-1), 3600)` seconds, recomputed every fail.
 - When `attempts` reaches the threshold (default `3`, overridable per node via
   `--max-attempts`), the node gets an `open_question` field
-  `{question, raised_at, raised_by, attempts}` — the signal #115's md queue renders.
+  `{question, raised_at, raised_by, attempts}` — the marker the md queue renders.
 - **`fail` never writes `status`.** `blocked` stays purely derived from `blocks` edges
-  (§3 decision). Escalation is expressed by the `open_question` marker, not by changing
-  status — so the `[!]` icon keeps meaning "dependency-blocked" only.
+  (blocked is derived, not stored). Escalation is expressed by the `open_question`
+  marker, not by changing status — so the `[!]` icon keeps meaning "dependency-blocked" only.
 - `fail` touches executor-owned metadata, so it passes through the same lease gate as
   `status`: a non-holder write is rejected with `E_LEASE_HELD`.
 

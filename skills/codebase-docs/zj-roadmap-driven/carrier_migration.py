@@ -1,16 +1,14 @@
-"""Explicit, no-loss conversion between the three roadmap carriers (#117, P3).
-
-Spec: ``docs/plans/zj-roadmap-dag-concurrency.md`` §5 + Stories 39/40.
+"""Explicit, no-loss conversion between the two roadmap carriers.
 
 Two rules shape this module:
 
-**Explicit (Story 40).** Nothing here is reachable implicitly. No command
+**Explicit.** Nothing here is reachable implicitly. No command
 auto-upgrades a carrier, and this module never deletes or rewrites the source
 artifact — carrying the fact source across is a decision a Human makes once,
 out loud, with `migrate <source> --to <carrier>`.
 
-**One adapter contract.** All three carriers already satisfy one shared
-contract (that was #116's hard rule). So this module does *not* write three
+**One adapter contract.** Both carriers already satisfy one shared
+contract . So this module does *not* write three
 converters; it exports one canonical shape out of whatever carrier it is given
 and feeds that same shape into whichever carrier it is asked for. Adding a
 fourth carrier later means adding one case to each of two functions, not six
@@ -96,7 +94,7 @@ def write_carrier(
     """Create `path` in `storage` from canonical data, then seed the leases.
 
     Refuses to overwrite anything: silent clobbering of an existing fact source
-    is exactly the failure Story 40 exists to prevent.
+    is exactly the failure explicit migration exists to prevent.
     """
     target = Path(path)
     if target.exists():
@@ -133,7 +131,7 @@ def migrate(
 
     The source is read and left untouched — a migration that rewrites its input
     leaves you unable to answer "which artifact was the fact source a minute
-    ago", which is the question Story 40 is about.
+    ago", which is the question this invariant is about.
     """
     if to not in CARRIERS:
         raise ValueError(f"--to must be one of {', '.join(CARRIERS)}, got: {to}")

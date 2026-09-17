@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""#117 — 三个 carrier 的 Human 视野必须逐字节相等。
+"""跨 carrier 的 Human 视野必须逐字节相等。
 
 为什么单开一个文件
 ------------------

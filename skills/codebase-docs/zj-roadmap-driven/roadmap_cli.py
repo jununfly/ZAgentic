@@ -31,7 +31,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
                                             # 记一条依赖边；只有 blocks 不许成环
   edge    list <json_path> [--node <id>]     # 列出边，可按节点过滤入边与出边
   edge    remove <json_path> <edge_id>       # 删掉一条边
-  edge    migrate <json_path>                # 存量显示 id 边一次性转成 uid（#106 S4）
+  edge    migrate <json_path>                # 存量显示 id 边一次性转成 uid
 
   lease   claim  <json_path> <node_uid> --agent <id> [--ttl 300] [--device <id>]
                                             # 拿节点租约（默认 TTL 300s，fencing=1）
@@ -97,10 +97,10 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   focus   <json_path>                        # 获取当前施工点
 
-  critical-path <json_path>                  # 关键路径：依赖图里最长的未完工链（#81）
+  critical-path <json_path>                  # 关键路径：依赖图里最长的未完工链
                                             # 只读、不拿锁
 
-  impact  <json_path> <node_id>             # 影响集：改 node_id 会波及的下游节点（#81）
+  impact  <json_path> <node_id>             # 影响集：改 node_id 会波及的下游节点
                                             # 只读、不拿锁
 """
 
@@ -245,7 +245,7 @@ def _render_table(rows: list, md: bool):
 
 
 def _emit(data, fmt=None, fields=None, quiet=False):
-    """统一输出发射器（#104 S5）。
+    """统一输出发射器。
 
     - fmt ∈ {json, md, table}，默认 json
     - fields：逗号投影键（对 list 每行 / 单 dict 投影）
@@ -352,7 +352,7 @@ def cmd_fail(args: dict):
     r = _load_roadmap(args["positional"][0])
     node_id = r.resolve_node(args["positional"][1])
     # fail 触碰的是执行侧元数据（attempts/last_error/retry_backoff/open_question），
-    # 与 status 同属执行者字段 → 走租约守卫（#111 依赖；非持有者写被租约挡住）。
+    # 与 status 同属执行者字段 → 走租约守卫。
     _enforce_write_guard(r, node_id, args, {"status"})
     error = args.get("error")
     if not error or error == "true":
@@ -470,7 +470,7 @@ def cmd_trace(args: dict):
 
 
 def cmd_promote(args: dict):
-    """`promote <roadmap_path> <trace_uid> ...` —— 提案状态机（P5-S3，§3.3）。
+    """`promote <roadmap_path> <trace_uid> ...` —— 提案状态机。
 
     默认（无 --accept/--reject）= 提案：写 `promotion.state=proposed`，exit 0，不落节点。
     `--accept`（Human）= 落正式 plan 节点 + derives-from 边。
@@ -496,7 +496,7 @@ def cmd_promote(args: dict):
 
 
 def cmd_prune(args: dict):
-    """`prune <roadmap_path> <trace_uid> [--edge <id>]` —— 删边而非删节点（P5-S4，§3.3）。
+    """`prune <roadmap_path> <trace_uid> [--edge <id>]` —— 删边而非删节点。
 
     thoughtDAG 原则：删一条边即改变上下文。不带 --edge 时默认删该 trace 的 mainline
     边（从上下文移除，节点仍在）。
@@ -509,11 +509,11 @@ def cmd_prune(args: dict):
 
 
 def _enforce_scope(r, node_id: str, args: dict) -> None:
-    """作用域令牌守卫（Story 29/30）：越界写返 E_SCOPE 并报出允许的 scope。
+    """作用域令牌守卫：越界写返 E_SCOPE 并报出允许的 scope。
 
     不给 `--scope` 就完全不限制——"subagent 默认只读"是**父 Agent 派活时必须
     下发 --scope** 来兑现的策略，CLI 区分不出 subagent 与 planner/Human；而且
-    把它做成"给了 --as-agent 没给 --scope 就只读"会让 #111 已交付的验收
+    把它做成"给了 --as-agent 没给 --scope 就只读"会让已交付的验收
     （`update --as-agent a7 --token 1` 写入成功）变红。
     """
     scope = args.get("scope")
@@ -558,7 +558,7 @@ def _enforce_write_guard(r, node_id: str, args: dict, fields=frozenset()) -> Non
     - 节点有有效租约时按**两层**判：
       ◦ 出示的 `--token` 已作废（< fencing）→ 僵尸持有者，任何字段都拒；
       ◦ 否则按字段所有权——status/notes 要出示匹配的 --as-agent，planner 字段
-        与追加型 decisions 放行（Story 32：大多数并发编辑根本不冲突）。
+        与追加型 decisions 放行（大多数并发编辑根本不冲突）。
 
     三者退出码都是 1（都该"改调用或稍后重试"）。`fields` 为空 = 结构性写
     （add / delete / 撤回决策），一律过守卫。
@@ -578,7 +578,7 @@ def _enforce_write_guard(r, node_id: str, args: dict, fields=frozenset()) -> Non
         # fencing 与字段所有权是两个正交的问题，判据顺序不能反：
         # 出示了**已作废**的 token 说明这是被回收的僵尸持有者，它对任何字段的
         # 写都要拒——否则换个 planner 字段就能绕过 fencing；反过来，没出示凭据
-        # 的人只是"不是持有者"，planner 字段照样能写（Story 32）。
+        # 的人只是"不是持有者"，planner 字段照样能写。
         fenced_out = token is not None and token < fencing
         is_holder = args.get("as-agent") == lease["agent_id"] and not fenced_out
         if is_holder or (not fenced_out and not write_requires_lease(fields)):
@@ -619,7 +619,7 @@ def cmd_lease(args: dict):
 def cmd_get(args: dict):
     r = _load_roadmap(args["positional"][0])
     # 读视图：派生字段（blocked / blocked_reason）在这里算出，不落盘。
-    # 用户可用显示 id 或 uid 引用节点（#105 S3）。
+    # 用户可用显示 id 或 uid 引用节点。
     data = r.get_node_view(r.resolve_node(args["positional"][1]))
     fa = _fmt_args(args)
     if fa:
@@ -636,7 +636,7 @@ def cmd_tree(args: dict):
 
 
 def cmd_ready(args: dict):
-    """就绪集（#81）：pending 且没有未完成的 blocks 前驱。
+    """就绪集：pending 且没有未完成的 blocks 前驱。
 
     只读查询，不拿整图锁——为它拿锁会把并发读串行化，还可能撞上锁超时（退出码
     2），那是写命令才该有的失败模式。
@@ -656,7 +656,7 @@ def cmd_ready(args: dict):
 
 
 def cmd_critical_path(args: dict):
-    """关键路径（#81, Story #21）：依赖图里最长的未完工链。
+    """关键路径：依赖图里最长的未完工链。
 
     只读查询，不拿整图锁（与 `ready` 同款：为它拿锁会把并发读串行化，
     还可能撞上锁超时——那是写命令才该有的失败模式）。
@@ -677,7 +677,7 @@ def cmd_critical_path(args: dict):
 
 
 def cmd_impact(args: dict):
-    """影响集（#81, Story #22）：改 node_id 会波及的下游节点（不含自身）。
+    """影响集：改 node_id 会波及的下游节点（不含自身）。
 
     只读查询，不拿整图锁（与 `ready` / `critical-path` 同款）。
     """
@@ -699,7 +699,7 @@ def cmd_impact(args: dict):
 def cmd_decide(args: dict):
     r = _load_roadmap(args["positional"][0])
     node_id = r.resolve_node(args["positional"][1])
-    # decisions 只追加不覆盖：追加永不冲突，所以不按租约拦（Story 32）。
+    # decisions 只追加不覆盖：追加永不冲突，所以不按租约拦。
     _enforce_write_guard(r, node_id, args, {"decisions"})
     d = r.add_decision(
         node_id=node_id,
@@ -834,10 +834,10 @@ def cmd_unlock(args: dict):
 
 
 def cmd_migrate(args: dict):
-    """显式换 carrier：`<source> --to single|sqlite`（#117 Story 40）。
+    """显式换 carrier：`<source> --to single|sqlite`。
 
     源文件读完之后一个字节都不动——迁移改写输入的话，"一分钟前哪个产物是事实源"
-    这个问题就答不出来了，而这正是 Story 40 要 Answer 的那个问题。
+    这个问题就答不出来了，而这正是显式迁移要回答的那个问题。
     """
     source = Path(args["positional"][0]).expanduser().resolve()
     to = args.get("to")
@@ -854,7 +854,7 @@ def cmd_migrate(args: dict):
 
 
 def cmd_context(args: dict):
-    """来龙去脉（#104 S5）+ P5-S4 edge-driven `--include`。
+    """来龙去脉 + edge-driven `--include`。
 
     默认只给 blocks 依赖图；`--include decisions|trace|children` 可重复追加维度，
     trace 维度才暴露 trace 边（否则 md 不膨胀、输出与 S5 逐字节一致）。
@@ -877,7 +877,7 @@ def cmd_context(args: dict):
 
 
 def cmd_next(args: dict):
-    """就绪优先建议（#104 S5）：建议接下来开工的就绪节点。"""
+    """就绪优先建议：建议接下来开工的就绪节点。"""
     r = _load_roadmap(args["positional"][0])
     data = r.next_nodes()
     fa = _fmt_args(args)

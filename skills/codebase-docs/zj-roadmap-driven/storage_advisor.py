@@ -4,7 +4,7 @@ The advisor never changes the roadmap carrier.  It reports structural signals
 first; an optional ``measure`` pass adds local timing observations for
 comparison.
 
-Issue #117 (P3): it speaks about single / sqlite, the two carriers that exist.
+It speaks about single / sqlite, the two carriers that exist.
 Recognition follows the same rule the CLI uses to pick a carrier, so a
 `.sqlite` artifact can never again be handed to the JSON reader.
 """
@@ -25,7 +25,7 @@ ADVISOR_SCHEMA = "zj-roadmap-storage-recommendation/v1"
 # 两档：single 是默认，sqlite 是 scale 档。
 # 这些是建议起点，锚在 benchmark 夹具上，绝非迁移闸门。
 THRESHOLDS: dict[str, dict[str, int | float]] = {
-    # 外推档：benchmark 最大夹具 5000 节点，再往上无实测数据；按 §5 第 3 条
+    # 外推档：benchmark 最大夹具 5000 节点，再往上无实测数据；按整图读放大
     # （整图读放大）上一个数量级估，只作建议起点——advisor 从不替人迁移。
     "consider_sqlite": {
         "total_nodes": 20_000,
@@ -154,7 +154,7 @@ def _recommendation(
     """Pick the tier the metrics justify, with the explicit command to act on it.
 
     Tier order: keep-single < consider-sqlite.  **Nothing here migrates
-    anything** — the advisor's job ends at naming the command (Story 39/40).
+    anything** — the advisor's job ends at naming the command .
     The `command` value is that name, not an action taken.
     """
     if storage == "sqlite":

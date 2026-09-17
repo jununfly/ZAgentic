@@ -118,8 +118,7 @@ Both lists are the same data rendered twice. The difference is deliberate:
 | `render` (written into the linked md file) | collapsed `<details>` | dependency info is there when wanted and out of the way when it isn't — you should not have to read a DAG to see progress |
 | `section` (stdout) | plain `### 阻塞链` | it is consumed by pipes and greps; HTML there is noise |
 
-There is no `--deps` flag. Story 45 asked for "a collapsed section **or** a
-separate `--deps` output"; the collapsed form is the one that shipped, and
+There is no `--deps` flag. The blocked chain ships in the collapsed form, and
 `section --all` is the non-collapsed answer to the same question.
 
 At most 5 blocked nodes are listed (sorted by id, `BLOCKED_CHAIN_LIMIT`); anything
@@ -132,8 +131,8 @@ predecessors with its current icon — omitting the predecessor would send the
 Human back to counting JSON to find out who to chase.
 
 **When nothing is blocked, neither view changes by a single byte.** That is a hard
-acceptance criterion, not a hope; a control case renders the same roadmap with the
-pre-P1 implementation (`git show a8ee1b9:...`) and compares bytes.
+acceptance criterion, not a hope; a control case renders the same roadmap with a
+pinned pre-edge implementation from the test fixtures and compares bytes.
 
 Deriving instead of storing is a deliberate trade: a stored `blocked` needs a
 list of "when to recompute" triggers (add edge, remove edge, predecessor
@@ -144,8 +143,8 @@ load the whole graph.
 ## Scheduling query (read-only, derived)
 
 The three scheduling queries (`ready`, `critical-path`, `impact`) are computed
-from `blocks` edges on every read — no counters, no stored fields (Story 24 is
-deferred to P3; a counter would be a second source of truth next to the edges,
+from `blocks` edges on every read — no counters, no stored fields (a counter would
+be a second source of truth next to the edges,
 exactly the thing the derived-`blocked` decision set out to kill).
 
 - `ready(node)` = `status == pending` **and** no `blocks` predecessor with
@@ -165,9 +164,11 @@ exactly the thing the derived-`blocked` decision set out to kill).
   carry scheduling, so they never appear in an impact set.
 
 In every query, "unfinished" means `status != completed` and "blocks" means the
-`blocks` edge type — the same boundary `blocked` uses. The lease clause in the
-spec's readiness rule (Story 20) is P2's work and is not implemented yet; it is
-left as one explicit branch, not a flag, so adding it later touches one place.
+`blocks` edge type — the same boundary `blocked` uses. `ready` does not consult
+leases: a node another agent has claimed still appears in the ready set, because
+readiness answers "what is unblocked", not "what is unclaimed". That clause is
+left as one explicit branch, not a flag, so adding lease-awareness later touches
+one place.
 
 ## Node naming
 

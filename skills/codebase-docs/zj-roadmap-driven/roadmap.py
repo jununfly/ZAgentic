@@ -24,7 +24,7 @@ from typing import Optional, Any
 # 纯函数：给定租约 dict 与时钟，决定下一次租约长什么样。存储（字节落哪儿）是
 # carrier 的职责，所以两个 carrier 对"一次 claim/heartbeat/steal 意味着什么"
 # 只有一份真相——只能 differ 在落盘位置。时钟注入 `now` 让契约测试确定化。
-# 已决参数（docs/plans/zj-roadmap-dag-concurrency.md §4，2026-09-10 zj）：
+# 已决参数（两个 carrier 共用，改一处即改两处）：
 # TTL 300s + 心跳 60s 成对实现；都不引入提前抢占。
 LEASE_TTL_SECONDS = 300
 LEASE_HEARTBEAT_SECONDS = 60
@@ -83,7 +83,7 @@ STATUS_IN_PROGRESS = "in_progress"
 STATUS_COMPLETED = "completed"
 STATUS_BLOCKED = "blocked"
 
-# 可人工设置的 status。`blocked` 不在其中——它只能由 blocks 边派生（#80）：
+# 可人工设置的 status。`blocked` 不在其中——它只能由 blocks 边派生：
 # 允许人写，就等于让"人设的 blocked"和"边推导的 blocked"并存，那又是一个真相源。
 SETTABLE_STATUSES = (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED)
 
@@ -94,8 +94,8 @@ STATUS_ICONS = {
     STATUS_BLOCKED: "[!]",
 }
 
-# ── 失败语义与升级（#114，Story 33/34）──────────────────
-# 失败 N 次后挂 open question 升级给 Human；不改 status（blocked 仍纯派生，见 §3）。
+# ── 失败语义与升级 ──────────────────
+# 失败 N 次后挂 open question 升级给 Human；不改 status（blocked 仍纯派生，永不落盘）。
 DEFAULT_MAX_ATTEMPTS = 3
 BACKOFF_BASE_SECONDS = 60
 BACKOFF_CAP_SECONDS = 3600
@@ -115,7 +115,7 @@ def should_escalate(attempts: int, max_attempts: int) -> bool:
 
 def apply_failure(node: dict, error: str, now=None, raised_by: str = None,
                   question: str = None, max_attempts: int = None) -> dict:
-    """在节点 dict 上累积一次失败（Story 33/34），两 carrier 共用此核心。
+    """在节点 dict 上累积一次失败，两 carrier 共用此核心。
 
     - attempts +1；last_error / last_failed_at 记录；retry_backoff 封顶指数退避。
     - attempts 达阈值（默认 3，节点可带 max_attempts 覆盖）→ 挂 open_question 升级。
@@ -155,7 +155,7 @@ def apply_failure(node: dict, error: str, now=None, raised_by: str = None,
 
 
 
-# ── 依赖边类型（P1 依赖层）────────────────────────────────
+# ── 依赖边类型（P1 依赖层） ────────────────────────────────
 # 四种边共享同一套存储与命令，差别只在语义与成环规则。
 EDGE_BLOCKS = "blocks"
 EDGE_INFORMS = "informs"
@@ -264,7 +264,7 @@ class InvalidStatus(RoadmapError):
 
 
 class ScopeError(RoadmapError):
-    """写到了 `--scope` 指定的子树之外（Story 29/30）。
+    """写到了 `--scope` 指定的子树之外。
 
     作用域令牌是"父 Agent 派给 subagent 的物理边界"：越界写必须失败并**报出
     允许的 scope**，让调用方改对调用，而不是静默把别人的子树改掉。
@@ -275,7 +275,7 @@ class ScopeError(RoadmapError):
 
 
 class LayerViolation(RoadmapError):
-    """试图把 trace 节点写进 plan 节点的 `children` / `parent`（P5-S1 硬前提，§2.4）。
+    """试图把 trace 节点写进 plan 节点的 `children` / `parent`。
 
     trace 与 plan 共享一张节点表，但 trace 节点**不设 `parent`、不进任何 plan 节点的
     `children`**——它的父子与延续关系只用边（`mainline` / `reference`）表达。把 trace
@@ -289,35 +289,35 @@ class LayerViolation(RoadmapError):
 
 
 class InvalidKind(RoadmapError):
-    """`trace add` 的 kind 不在枚举（P5-S2，§3.4）。"""
+    """`trace add` 的 kind 不在枚举。"""
 
     code = "E_INVALID_KIND"
     exit_code = 1
 
 
 class TraceNotFound(RoadmapError):
-    """引用了不存在的 trace 节点 / uid（P5-S2，§3.4）。"""
+    """引用了不存在的 trace 节点 / uid。"""
 
     code = "E_TRACE_NOT_FOUND"
     exit_code = 1
 
 
 class InvalidLayer(RoadmapError):
-    """对 plan 节点用 trace 命令，或反向（P5-S2，§3.4）。"""
+    """对 plan 节点用 trace 命令，或反向。"""
 
     code = "E_INVALID_LAYER"
     exit_code = 1
 
 
 class PromoteTargetInvalid(RoadmapError):
-    """`trace add --under` 的目标不存在，或不是 plan 节点（P5-S2，§3.4）。"""
+    """`trace add --under` 的目标不存在，或不是 plan 节点。"""
 
     code = "E_PROMOTE_TARGET_INVALID"
     exit_code = 1
 
 
 class PromoteStateInvalid(RoadmapError):
-    """promote 状态机非法转移（P5-S3，§3.2）：例如对已 accepted 的 proposal 再
+    """promote 状态机非法转移：例如对已 accepted 的 proposal 再
     `--reject`，或对没有 proposal 的 trace 直接 `--accept`/`--reject`。"""
 
     code = "E_PROMOTE_STATE_INVALID"
@@ -325,7 +325,7 @@ class PromoteStateInvalid(RoadmapError):
 
 
 class ReferencedError(RoadmapError):
-    """试图删除被引用的节点（P5-S3/S4，§3.4）：已被 `promote --accept` 引用的
+    """试图删除被引用的节点：已被 `promote --accept` 引用的
     trace、或被 `compressed_from` 引用的节点。删除会让指向它的边悬空，故拒绝。"""
 
     code = "E_REFERENCED"
@@ -333,7 +333,7 @@ class ReferencedError(RoadmapError):
 
 
 class PruneNoEdge(RoadmapError):
-    """`prune` 默认删 mainline 边，但该 trace 没有任何 mainline 边可删（P5-S4，§3.3）。"""
+    """`prune` 默认删 mainline 边，但该 trace 没有任何 mainline 边可删。"""
 
     code = "E_PRUNE_NO_EDGE"
     exit_code = 1
@@ -367,7 +367,7 @@ def exit_code_for(exc: BaseException) -> int:
     return ERROR_EXIT_CODES.get(getattr(exc, "code", ""), 1)
 
 
-# ── 作用域令牌与字段级所有权（P2，#113）────────────────────
+# ── 作用域令牌与字段级所有权 ────────────────────
 # 与租约策略同一条纪律：判定只写一处，两个 carrier 只 differ 在字节落哪儿。
 # 两个问题是分开的，别合成一个开关：作用域回答"这次写瞄没瞄错节点"（权限），
 # 字段所有权回答"这次写要不要过租约守卫"（时序）。Agent 的处置完全不同——
@@ -377,10 +377,10 @@ EXECUTOR_FIELDS = frozenset({"status", "notes"})
 """归租约持有者的字段：只有正在施工的人能推进进度、写施工笔记。"""
 
 PLANNER_FIELDS = frozenset({"label", "mode", "budget", "exit_criteria"})
-"""归 planner 的字段（zj 2026-09-14 定：规划元数据，不含 mode 之外的执行态）。
+"""归 planner 的字段（规划元数据，不含 mode 之外的执行态）。
 
-改这些不推进执行进度，所以租约期内谁都能改——"大多数并发编辑根本不冲突"
-（Story 32 的 so that）全靠这一条。
+改这些不推进执行进度，所以租约期内谁都能改——"大多数并发编辑根本不冲突"，
+这条是字段所有权模型的立身之本。
 """
 
 APPEND_ONLY_FIELDS = frozenset({"decisions"})
@@ -419,9 +419,9 @@ def is_within_scope(node_id: str, scope_root: str, parent_of) -> bool:
     return False
 
 
-# ── 派生阻塞的共享语义（#80）────────────────────────────
+# ── 派生阻塞的共享语义 ────────────────────────────
 # 两个 carrier 共用下面四个函数，跟 budget 复用同一套实现的理由相同：
-# #80 的验收之一是"两个载体行为一致"，
+# 验收之一是"两个载体行为一致"，
 # 规则写两遍就有机会各自漂移——而漂移在这里是静默的，因为两边各自都对。
 
 
@@ -453,7 +453,7 @@ def assert_settable_status(status: str) -> None:
         raise InvalidStatus(f"不可设置的状态: {status}（blocked 由 blocks 边派生）")
 
 
-# ── 调度查询（#81）──────────────────────────────────────
+# ── 调度查询 ──────────────────────────────────────
 # ready / critical-path / impact 三个查询共用同一条边界：**只沿 blocks 走**。
 # informs / derives-from 是上下文与来源关系，改它们不影响任何东西的调度，
 # 让它们参与调度等于把"谁和谁有关"当成"谁等谁"。
@@ -462,7 +462,7 @@ def assert_settable_status(status: str) -> None:
 def is_ready(node: dict, blocked: set) -> bool:
     """就绪 = pending 且没有未完成的 blocks 前驱。
 
-    spec §3 的判定还有"无有效租约"一项，但租约是 P2，今天还没有这一层，
+    判定还有"无有效租约"一项，但租约不进就绪集，今天还没有这一层，
     所以它恒真——这里既不写死 True 假装实现了，也不为不存在的东西留参数。
     """
     return node.get("status") == STATUS_PENDING and node["id"] not in blocked
@@ -481,7 +481,7 @@ def ready_node_list(nodes, blocked: set) -> list:
 
 
 def critical_path(nodes, edges) -> list:
-    """关键路径（#81, Story #21）：依赖图里最长的未完工链。
+    """关键路径：依赖图里最长的未完工链。
 
     只沿 `blocks` 边走（与 ready / impact 同一边界）。"未完工" = status != completed：
     已完成节点不阻挡任何东西，链经过它也不贡献长度。返回**一条**链（id 列表，
@@ -544,7 +544,7 @@ def critical_path(nodes, edges) -> list:
 
 
 def impact_node_ids(node_id: str, nodes, edges) -> list:
-    """影响集（#81, Story #22）：改 node_id 会波及的下游节点。
+    """影响集：改 node_id 会波及的下游节点。
 
     只沿 `blocks` 边顺流（与 ready / critical-path 同一边界）：`a blocks b` 意味着
     "改 a 会波及 b"。返回受影响节点的 id 列表（不含自身），按 id 排序保证确定性。
@@ -586,7 +586,7 @@ def tree_line(node: dict, prefix: str, last: bool, depth: int, blocked: set, own
     渲染是给 Human 看的唯一视图。它跟 `get` 打架（一个说被挡、一个说没开工）
     比任何内部实现差异都贵，所以行格式两个 carrier 共用一份。
 
-    `owner` 是 #115 的 owner 列：持有未过期租约的节点在行尾标出 `agent/device`，
+    `owner` 是 owner 列：持有未过期租约的节点在行尾标出 `agent/device`，
     让 Human 一眼看到"谁拿着哪节点"。无租约时传 None → 行尾不动，md 字节不变。
     """
     icon = STATUS_ICONS[STATUS_BLOCKED] if node["id"] in blocked else status_icon(node)
@@ -596,7 +596,7 @@ def tree_line(node: dict, prefix: str, last: bool, depth: int, blocked: set, own
     return f"{prefix}{connector}{icon}{mode_tag} {node['id']}. {node['label']}{owner_suffix}"
 
 
-# ── md 阻塞链（#82）──────────────────────────────────────
+# ── md 阻塞链 ──────────────────────────────────────
 # 同一份数据在两个 md 出口上取不同的折叠取舍，但**条目内容、取舍规则、上限**
 # 必须两边一致，所以写在模块层，两个 carrier 只负责喂各自的边与节点。
 
@@ -685,10 +685,10 @@ def render_chain_collapsed(lines: list) -> str:
     )
 
 
-# ── md 待决问题队列 + owner 列（#115） ──────────────────
+# ── md 待决问题队列 + owner 列 ──────────────────
 # 与阻塞链同源：条目内容 / 取舍 / 上限两边一致，写在模块层，两个 carrier 只喂数据。
 # 两个新元素都是"有状态才出现"——无待决问题、无持有租约时这些函数返回空串，
-# 调用方拼进 md 后输出与改动前逐字节一致（§6 护栏 3 的硬验收）。
+# 调用方拼进 md 后输出与改动前逐字节一致。
 
 OPEN_QUESTION_LIMIT = 5
 """md 待决问题队列的节点上限——与 BLOCKED_CHAIN_LIMIT 同一条"不膨胀"验收。"""
@@ -745,11 +745,11 @@ def render_open_questions_plain(items) -> str:
     return _chain_block(lines, "\n### 待决问题\n\n", "\n")
 
 
-# ── Markdown section 模板（两个 carrier 共用）────────────
+# ── Markdown section 模板（两个 carrier 共用） ────────────
 #
 # 模板从 carrier 里搬到这里，是因为它**被抄成过两份**：两个 carrier 各一份。
 # 抄两份等于承诺它们永远同步，而它们没有——另一份缺 `> 当前施工` 行、ROADMAP_TREE
-# 标记与"当前施工点"块，light section 里焦点决策还丢了备注（#117）。
+# 标记与"当前施工点"块，light section 里焦点决策还丢了备注。
 #
 # 这里所有函数都只吃"已经渲染好的片段"：它们不知道 carrier、节点和边，因此不可能
 # 对某一家的存储形状产生偏好，也就没有第二处可以漂移。
@@ -859,7 +859,7 @@ def compose_full_section(
 
 # ── 结构预算（case 1） ───────────────────────────────────
 # budget 的单位是结构单位（子节点数 / 开工轮次），不是 token：
-# token 不可跨模型比较，也无法在规划期预估（见 docs/plans 的 P5 §8.5）。
+# token 不可跨模型比较，也无法在规划期预估。
 
 def normalize_budget_limit(name: str, value: Any) -> Optional[int]:
     """校验并归一化一个预算上限。None 表示"不设置"，负数是参数错误。"""
@@ -954,28 +954,28 @@ def next_child_index(parent: Optional[dict]) -> int:
     return max(base, high_water)
 
 
-# ── layer 字段（P5-S1，两层图共享一张节点表）──────────────
-# 两个 layer 共享同一张节点表，靠 `layer` 字段区分 plan / trace（§2.1.1）。
+# ── layer 字段 ──────────────
+# 两个 layer 共享同一张节点表，靠 `layer` 字段区分 plan / trace。
 # `layer` 是**必填**字段；缺省一律按 `plan` 处理，这样存量 roadmap（没有
 # `layer` 字段）迁移后仍是 plan，而 trace 节点必须显式写 `layer: 'trace'`。
-# 所有遍历入口（L1/L2 归口，§2.3）默认只看 plan；要看 trace 必须显式传
+# 所有遍历入口默认只看 plan；要看 trace 必须显式传
 # `layer='trace'`。这是 fail-safe：漏写过滤的后果是"看不到 trace"（当场暴露），
 # 而不是"trace 泄进调度与 md"（静默泄漏，与视图膨胀头号风险叠加）。
 LAYER_PLAN = "plan"
 LAYER_TRACE = "trace"
 TRACE_KINDS = frozenset({"turn", "finding", "doubt", "attempt", "artifact"})
 
-# `promotion` 状态机（P5-S3，§3.2）：trace 节点上的一等状态，取代"挂一个待办"，
-# 因为本仓库此刻没有 open-question 设施可挂。proposal 默认由 Agent 产出（proposed），
+# `promotion` 状态机：trace 节点上的一等状态，取代"挂一个待办"——open
+# question 落在节点字段上，不另设待办设施。proposal 默认由 Agent 产出（proposed），
 # Human 用 `--accept` 落正式 plan 节点、用 `--reject` 记录拒绝（保留痕迹，不物理删除）。
 PROMOTE_PROPOSED = "proposed"
 PROMOTE_ACCEPTED = "accepted"
 PROMOTE_REJECTED = "rejected"
 PROMOTE_STATES = frozenset({PROMOTE_PROPOSED, PROMOTE_ACCEPTED, PROMOTE_REJECTED})
-# 权限矩阵（§4.2）：Agent 提案、Human 决定。这里只记角色，不引入自报身份机制。
+# 权限矩阵：Agent 提案、Human 决定。这里只记角色，不引入自报身份机制。
 PROMOTER_AGENT = "agent"
 DECIDER_HUMAN = "human"
-# context --include 的三类取值（P5-S4，§3.3）。
+# context --include 的三类取值。
 INCLUDE_DECISIONS = "decisions"
 INCLUDE_TRACE = "trace"
 INCLUDE_CHILDREN = "children"
@@ -1000,7 +1000,7 @@ def ensure_layer(nodes) -> int:
 
 
 def assert_plan_layer(node: dict) -> None:
-    """§2.4 硬前提：进 `children` / 设 `parent` 的必须是 plan 节点。
+    """硬前提：进 `children` / 设 `parent` 的必须是 plan 节点。
 
     缺 `layer` 的节点按 plan 处理（存量迁移后都是 plan），所以只有显式写了
     `layer: 'trace'` 的节点会被拒。trace 的父子关系只走边（mainline / reference），
@@ -1014,7 +1014,7 @@ def assert_plan_layer(node: dict) -> None:
         )
 
 
-# ── 节点 uid（P0 地基）────────────────────────────────────
+# ── 节点 uid（P0 地基） ────────────────────────────────────
 
 def new_uid() -> str:
     """生成一个不可变的节点 uid —— 时序唯一、永不复用、零新依赖。
@@ -1047,7 +1047,7 @@ def ensure_uids(nodes) -> int:
     return sum(1 for node in items if ensure_uid(node))
 
 
-# ── 节点引用解析（#105 S3）────────────────────────────────
+# ── 节点引用解析 ────────────────────────────────
 # 用户既可以用显示 id（1-3-1）也可以用 uid 引用节点；命令层统一经 resolve_node
 # 把任意一种翻成显示 id，再交给各 carrier 方法（它们只认显示 id）。
 # 解析规则：
@@ -1055,7 +1055,7 @@ def ensure_uids(nodes) -> int:
 #   2. 形如 uid 的字符串 → 扫一遍 nodes 找 uid 命中 → 返回其显示 id。
 #   3. uid 形状但不匹配任何节点 → 抛 NodeNotFound（清晰报错，不静默误命中）。
 #   4. 非 uid 形状（如错的显示 id）→ 原样返回，交给 get_node 抛既有 KeyError
-#      （保持 #99 明令保留的历史错误文案不变）。
+#      （沿用历史错误文案，不要"顺手修正"）。
 # 命名空间天然不重叠：uid 含 hex 字母 a-f，显示 id 只有数字与 -，无法误命中。
 
 UID_RE = re.compile(r"^[0-9a-f]{12}-[0-9a-f]{10}$")
@@ -1089,7 +1089,7 @@ def resolve_node(ref: str, nodes) -> str:
 
 
 def node_context(node_id: str, nodes, edges, includes=()) -> dict:
-    """节点来龙去脉（#104 S5）+ P5-S4 的 edge-driven `--include`（§3.3）。
+    """节点来龙去脉，以及 edge-driven `--include`。
 
     - upstream / downstream / blocked_by：blocks 依赖图（默认始终给出）。
     - includes 控制额外维度，缺省为空（输出与 S5 完全一致，字节级可比对）：
@@ -1159,14 +1159,14 @@ def node_context(node_id: str, nodes, edges, includes=()) -> dict:
     return result
 
 
-# ── 边 uid（#106 S4） ───────────────────────────────────────
-# 边是跨系统引用，按 §1 一律用 uid 存储（from/to 存 uid，不再存显示 id）。
+# ── 边 uid ───────────────────────────────────────
+# 边是跨系统引用，一律用 uid 存储（from/to 存 uid，不再存显示 id）。
 # 但所有读视图（edge list / 派生阻塞 / 关键路径 / 影响集 / 血缘 / 校验）对 Human
 # 仍给显示 id——所以这里集中放"uid↔显示 id"的翻译，避免两个 carrier 各翻一遍漂移。
 #
 # 设计要点：
 # - 落盘形状是唯一真相：from/to == uid。控制例（test_edges_*）钉的是"返回/列表
-#   给 Human 的是显示 id"，不钉落盘字节——落盘 uid 正是 #106 的验收。
+#   给 Human 的是显示 id"，不钉落盘字节——落盘 uid 正是这条纪律的验收。
 # - 同一份翻译函数兼容"uid 边"与"存量显示 id 边"两种形状：迁移前没跑 `edge migrate`
 #   的存量 roadmap 端点仍是显示 id，翻译时查不到 uid 就原样保留，于是老数据不会被
 #   静默误翻。
@@ -1330,12 +1330,10 @@ def _is_lock_contention(lock_dir: str, exc: BaseException) -> bool:
     `os.mkdir` on an existing path is specified to raise FileExistsError, and
     the wait/retry loop below was written against that contract. It is not the
     only thing that happens in practice: some runtimes interpose `os.mkdir`
-    (this repository's own safe-delete shim, and any sitecustomize doing the
-    same) and re-raise EEXIST as PermissionError with `errno` unset. Catching
+    (runtime-injected safe-delete shims, and any sitecustomize doing the same) and re-raise EEXIST as PermissionError with `errno` unset. Catching
     only FileExistsError therefore turns ordinary lock contention into an
-    uncaught crash — which is exactly how the write loss described in
-    `docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 actually manifests:
-    writers die with exit 1 instead of waiting their turn. (It is not a
+    uncaught crash — which is exactly how the write loss actually manifests: writers die
+    with exit 1 instead of waiting their turn. (It is not a
     classic lost update: the whole command runs under the lock, so nothing is
     ever overwritten — the write simply never lands.)
 
@@ -1449,7 +1447,7 @@ def apply_promotion(
     reason: Optional[str] = None,
     now: Optional[str] = None,
 ) -> dict:
-    """把一次 promote 动作应用到 trace 节点的 `promotion` 字段（纯函数，P5-S3，§3.2）。
+    """把一次 promote 动作应用到 trace 节点的 `promotion` 字段。
 
     两 carrier 共用这一份语义——`promotion` 状态机若各写一遍就是 `remove-decision`
     那类漂移。函数只改传入的 `node` dict（trace 节点的物理落盘由调用方负责），返回
@@ -1490,7 +1488,7 @@ def apply_promotion(
         if state == PROMOTE_ACCEPTED:
             return {"create_plan": None}  # 幂等：不落第二个节点 / 不写第二条边。
         # None（从未 proposal）或 rejected 都算"无有效 proposal"，应报状态机错误，
-        # 而不是掉到下面的 target 检查去报 E_PROMOTE_TARGET_INVALID（§3.2）。
+        # 而不是掉到下面的 target 检查去报 E_PROMOTE_TARGET_INVALID。
         if state != PROMOTE_PROPOSED:
             raise PromoteStateInvalid(
                 f"无法 accept 一个处于 {state} 状态的 proposal（trace={node.get('id')}），"
@@ -1625,7 +1623,7 @@ class Roadmap:
         assert_settable_status(status)
 
         parent = self.data["nodes"][parent_id]
-        # §2.4 硬前提：trace 节点不设 parent。任何把 plan 节点挂到 trace 节点下的写入
+        # 硬前提：trace 节点不设 parent。任何把 plan 节点挂到 trace 节点下的写入
         # 路径必须当场被拒，否则 trace 就会混进 children 数组，污染 tree / _sync_parent_status。
         assert_plan_layer(parent)
         check_child_budget(parent)
@@ -1664,10 +1662,10 @@ class Roadmap:
 
         return node
 
-    # ── trace 节点（P5-S2，§3.3）────────────────────────
+    # ── trace 节点 ────────────────────────
     # trace 是执行期涌现的机器记录（turn / finding / doubt / attempt / artifact）。
     # 与 plan 节点共享一张节点表，但：layer=trace、parent=None、不进任何 plan
-    # 节点的 children（§2.4 硬前提）。provenance 诞生即写——`--under` 记
+    # 节点的 children。provenance 诞生即写——`--under` 记
     # prompted-by、`--from` 记一条 mainline 边——无需审批。
 
     def _new_trace_id(self) -> str:
@@ -1697,7 +1695,7 @@ class Roadmap:
         - kind 不在 TRACE_KINDS → E_INVALID_KIND
         - --under 目标不存在 / 不是 plan 节点 → E_PROMOTE_TARGET_INVALID
         - --from 引用的 trace 不存在 → E_TRACE_NOT_FOUND
-        - 身份 provenance（#119）：agent_id / device_id / session_ref 缺省为 ""，
+        - 身份 provenance：agent_id / device_id / session_ref 缺省为 ""，
           compressed_from 缺省不写；CLI 显式给才落。
         """
         if kind not in TRACE_KINDS:
@@ -1752,7 +1750,7 @@ class Roadmap:
         label: Optional[str] = None,
         reason: Optional[str] = None,
     ) -> dict:
-        """promote 状态机（P5-S3，§3.2/§3.3）。
+        """promote 状态机。
 
         - propose（默认）：写 `promotion.state=proposed`，exit 0，不落节点。
         - accept（Human）：从 proposal 落正式 plan 节点并写 derives-from 边，返回新节点。
@@ -1776,7 +1774,7 @@ class Roadmap:
         if result.get("create_plan"):
             spec = result["create_plan"]
             new_node = self.add_node(spec["parent_id"], spec["label"])
-            # derives-from：§2.7 定义是 trace → plan（端点落盘 uid，与既有边同纪律）。
+            # derives-from：定义是 trace → plan（端点落盘 uid，与既有边同纪律）。
             self.add_edge(trace_id, new_node["id"], EDGE_DERIVES_FROM)
             self.save()
             return new_node
@@ -1784,7 +1782,7 @@ class Roadmap:
         return node
 
     def prune(self, trace_id: str, edge_id: str = None) -> dict:
-        """删一条边而非节点（P5-S4，§3.3，借 thoughtDAG：删边即改变上下文）。
+        """删一条边而非节点（借 thoughtDAG：删边即改变上下文）。
 
         - 给定 --edge <id>：删那条边（须是该 trace 的边，否则 E_*）。
         - 不带 --edge：默认删该 trace 的 mainline 边（先找入边，再找它的出边），
@@ -1871,7 +1869,7 @@ class Roadmap:
     def record_failure(self, node_id: str, error: str, now=None,
                        raised_by: str = None, question: str = None,
                        max_attempts: int = None) -> dict:
-        """记录一次节点执行失败（Story 33/34）。见模块级 `apply_failure`。"""
+        """记录一次节点执行失败。见模块级 `apply_failure`。"""
         if node_id not in self.data["nodes"]:
             raise KeyError(f"节点不存在: {node_id}")
         return apply_failure(
@@ -1887,7 +1885,7 @@ class Roadmap:
         if node_id == "1":
             raise ValueError("不能删除根节点")
         # S3 参照完整性：已被 promote --accept 落进地图的 trace 不允许删，否则指向
-        # 它的 derives-from 边会悬空（§3.4 E_REFERENCED）。
+        # 它的 derives-from 边会悬空。
         node = self.data["nodes"][node_id]
         promo = node.get("promotion") or {}
         if node.get("layer") == LAYER_TRACE and promo.get("state") == PROMOTE_ACCEPTED:
@@ -1908,7 +1906,7 @@ class Roadmap:
 
         _collect(node_id)
 
-        # 先删边、后删节点（#79 定的写顺序）。中断后的半态因此是"边没了、
+        # 先删边、后删节点。中断后的半态因此是"边没了、
         # 节点还在"——命令重跑一次即可——而不是悬空边那种要人工修的状态。
         self.last_edge_cascade = self.remove_edges_touching(set(deleted))
 
@@ -1927,7 +1925,7 @@ class Roadmap:
 
         return deleted
 
-    # ── 依赖边（P1 依赖层）──────────────────────────────
+    # ── 依赖边（P1 依赖层） ──────────────────────────────
 
     def _edge_list(self) -> list:
         """惰性建立边表：从未加过边的 roadmap，数据形状与 P1 之前完全一致。"""
@@ -1936,7 +1934,7 @@ class Roadmap:
     def add_edge(self, from_id: str, to_id: str, edge_type: str) -> dict:
         """在两个节点之间记一条边。返回写出的边（端点翻回显示 id，保持旧契约）。
 
-        端点接受显示 id 或 uid（复用 resolve_node）；落盘一律存 uid（#106 S4）。
+        端点接受显示 id 或 uid（复用 resolve_node）；落盘一律存 uid。
         """
         from_display = self.resolve_node(from_id)
         to_display = self.resolve_node(to_id)
@@ -2039,7 +2037,7 @@ class Roadmap:
         return [d for d in disp if d["from"] == node_id or d["to"] == node_id]
 
     def migrate_edges(self) -> int:
-        """把存量显示 id 边一次性转成 uid（#106 S4 的显式迁移命令）。
+        """把存量显示 id 边一次性转成 uid。
 
         直接改 `data["edges"]` 原地；改了几条由 `save()` 落盘。已是 uid 的边不动，
         所以幂等——重跑不会制造写入噪声。
@@ -2050,7 +2048,7 @@ class Roadmap:
         """把显示 id 或 uid 翻成显示 id（见模块级 resolve_node）。"""
         return resolve_node(ref, self.data["nodes"])
 
-    # ── 来龙去脉 / 就绪建议（#104 S5）─────────────────────
+    # ── 来龙去脉 / 就绪建议 ─────────────────────
 
     def context(self, node_id: str, includes=()) -> dict:
         """节点来龙去脉：上游（依赖谁）/下游（谁依赖我）/阻塞链。
@@ -2080,7 +2078,7 @@ class Roadmap:
             raise KeyError(f"节点不存在: {node_id}")
         return self.data["nodes"][node_id]
 
-    # ── 遍历入口收敛（P5-S1，L1/L2 归口，§2.3）──────────────
+    # ── 遍历入口收敛 ──────────────
     # 全图遍历分散在 stats / decisions / focus / validate / 调度查询等多处裸
     # 遍历；把它们收敛成下面两个命名入口，默认 `layer='plan'`，调用方不写过滤
     # 条件即可天然避开 trace（fail-safe：漏写 = 看不到 trace，当场暴露）。
@@ -2092,7 +2090,7 @@ class Roadmap:
 
         缺 `layer` 的节点按 plan 处理（存量 roadmap 迁移后都是 plan）。要看 trace
         必须显式传 `layer=LAYER_TRACE`——trace 不进 `children`、不设 `parent`，
-        所以只会经由这个入口被显式取出，不会混进 plan 调度与 md（§2.4）。
+        所以只会经由这个入口被显式取出，不会混进 plan 调度与 md。
         """
         nodes = self.data.get("nodes", {})
         selected = [n for n in nodes.values() if n.get("layer", LAYER_PLAN) == layer]
@@ -2103,7 +2101,7 @@ class Roadmap:
         """`iter_nodes` 的 id 视图，同样默认只看 plan。"""
         return [n["id"] for n in self.iter_nodes(layer)]
 
-    # ── 派生阻塞（#80）─────────────────────────────────
+    # ── 派生阻塞 ─────────────────────────────────
     # blocked / blocked_reason 只在读视图里出现，永不落盘：唯一权威是 blocks 边。
     # 落盘就必须维护一份"什么时候该重算"的清单（加边、删边、前驱完成、delete、
     # supersedes、carrier 迁移…），漏一个就是静默陈旧。
@@ -2137,7 +2135,7 @@ class Roadmap:
                 blocked.add(de["to"])
         return blocked
 
-    # ── #115 md 视图数据（owner 列 / 待决问题队列） ──────
+    # ── md 视图数据（owner 列 / 待决问题队列） ──────
 
     def owner_map(self) -> dict:
         """display id → `agent[/device]`：当前持有**未过期**租约的节点。
@@ -2175,13 +2173,13 @@ class Roadmap:
         """读视图：节点本体 + 派生的 blocked / blocked_reason。"""
         return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
 
-    # ── 调度查询（#81）─────────────────────────────────
+    # ── 调度查询 ─────────────────────────────────
 
     def ready_nodes(self) -> list:
         """就绪集：pending 且没有未完成的 blocks 前驱。
 
-        按边实时算一遍（O(V+E)），不落 `pending_deps` 计数器——Story 24 已决议
-        推迟到 P3：计数器一旦落盘就得维护"什么时候重算"的清单，那正是
+        按边实时算一遍（O(V+E)），不落 `pending_deps` 计数器：计数器一旦落盘
+        就得维护"什么时候重算"的清单，那正是
         `blocked` 改成派生要消灭的东西。
 
         遍历经 `iter_nodes(layer='plan')`：trace 节点（S2 起）不进就绪集。
@@ -2189,7 +2187,7 @@ class Roadmap:
         return ready_node_list(self.iter_nodes(), self.blocked_node_ids())
 
     def critical_path(self) -> list:
-        """关键路径（#81）：依赖图里最长的未完工链。
+        """关键路径：依赖图里最长的未完工链。
 
         端点落盘是 uid：喂给模块级 critical_path 前翻回显示 id，使其输出显示 id。
         遍历经 `iter_nodes(layer='plan')`：trace 节点不进关键路径。
@@ -2200,7 +2198,7 @@ class Roadmap:
         )
 
     def impact(self, node_id: str) -> list:
-        """影响集（#81）：改 node_id 会波及的下游节点（不含自身）。
+        """影响集：改 node_id 会波及的下游节点（不含自身）。
 
         端点落盘是 uid：喂给模块级 impact_node_ids 前翻回显示 id。
         遍历经 `iter_nodes(layer='plan')`：trace 节点不进影响集。
@@ -2376,7 +2374,7 @@ class Roadmap:
     def get_tree(self, root_id: str = "1", max_depth: int = 10, owners: dict = None) -> str:
         """生成 Unicode 盒状树形文本视图。
 
-        `owners` 是 #115 的 owner 列：display id → `agent[/device]`。传 None 或空
+        `owners` 是 owner 列：display id → `agent[/device]`。传 None 或空
         dict 时树行与改动前逐字节一致（md 不膨胀的硬验收）。
         """
         if root_id not in self.data["nodes"]:
@@ -2474,7 +2472,7 @@ class Roadmap:
     # 模板只写一份，放在这一节的模块级函数里，两个 carrier 各自只负责**喂数据**
     # （自己的树、自己的链、自己的焦点）。以前是两个 carrier 各抄一份，抄出来就必然
     # 漂移：另一份少了 `> 当前施工` 行、ROADMAP_TREE 标记与
-    # "当前施工点"块，light section 里焦点决策的备注也丢了（#117 一并修）。md 是
+    # "当前施工点"块，light section 里焦点决策的备注也丢了。md 是
     # Human 唯一看得到的面子，"两个 carrier 同语义"在这里就得是逐字节同。
     #
     # 参数全是已经渲染好的片段：这些函数不再知道 carrier、节点与边，因此不可能
@@ -2525,7 +2523,7 @@ class Roadmap:
             # 树之后立刻给出"为什么没进展"——Human 的视线顺序是先扫树看见 `[!]`，
             # 再需要一个不用翻 JSON 的答案。
             chain=render_chain_plain(self._blocked_chain_lines()),
-            # #115：待决问题队列（失败达阈值挂起的 open question），只在有状态时出现。
+            # 待决问题队列（失败达阈值挂起的 open question），只在有状态时出现。
             open_questions=render_open_questions_plain(self.open_question_items()),
             decision_table=decision_lines,
             focus_detail=focus_export_detail(
@@ -2550,9 +2548,9 @@ class Roadmap:
             artifact_name=os.path.basename(self.json_path),
             updated=now,
             tree_text=tree_text,
-            # 空链时这里得到空串：下面那个模板因此在无阻塞时与 #82 之前逐字节相同。
+            # 空链时这里得到空串：下面那个模板因此在无阻塞时与引入阻塞链之前逐字节相同。
             chain=render_chain_collapsed(self._blocked_chain_lines()),
-            # #115：待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
+            # 待决问题队列，同样只在有状态时出现（无状态时空串，md 不变）。
             open_questions=render_open_questions_collapsed(self.open_question_items()),
             focus_detail=focus_light_detail(
                 focus_id,
@@ -2566,7 +2564,7 @@ class Roadmap:
     def get_focus_subtree(self, root_id: str, max_depth: int = 1, owners: dict = None) -> str:
         """Render a bounded subtree under the focus node.
 
-        `owners` 是 #115 的 owner 列（display id → `agent[/device]`）；传 None 时
+        `owners` 是 owner 列（display id → `agent[/device]`）；传 None 时
         子树行与改动前逐字节一致。
         """
         if root_id not in self.data["nodes"]:

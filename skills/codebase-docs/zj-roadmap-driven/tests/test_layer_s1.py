@@ -72,7 +72,7 @@ def make_trace(tid: str, kind: str = "finding", body: str = "...") -> dict:
 
 
 def load_carrier(storage: str, path: Path):
-    """三个 carrier 的 `load` 都是实例方法：构造后再 load。"""
+    """两个 carrier 的 `load` 都是实例方法：构造后再 load。"""
     if storage == "single":
         rm = Roadmap(str(path))
     else:
