@@ -1,6 +1,4 @@
-"""Third Roadmap carrier backed by SQLite (stdlib `sqlite3`, zero new deps).
-
-Issue #116 (P3 carrier 演进, see docs/plans/zj-roadmap-dag-concurrency.md §5).
+"""Roadmap carrier backed by SQLite (stdlib `sqlite3`, zero new deps).
 
 Design
 ------
@@ -15,7 +13,7 @@ deliberate: the spec's hard rule is "判定只写一处，两个 carrier 只 dif
 落哪儿" — a subclass keeps the two carriers' semantics in one source of truth and
 can never drift the way two independently-written classes would.
 
-Storage layout (§5: history / decisions / edges / leases 各归一表)
+Storage layout (history / decisions / edges / leases 各归一表)
   meta         key/value  — title, description, version, edge_seq, metadata(JSON)
   nodes        uid PK, display_id, body(JSON)  — one row per node (decisions live
               inside the node body, exactly as in `self.data`)
@@ -26,7 +24,7 @@ Storage layout (§5: history / decisions / edges / leases 各归一表)
 `load()` reconstructs `self.data` to mirror what single-file produces in memory
 (missing `edges`/`edge_seq` keys stay absent when empty, so behavior- and
 revision-equality with the other carriers hold). Persisting the whole `self.data`
-via DELETE+INSERT inside a transaction is the atomic multi-row write that §5
+via DELETE+INSERT inside a transaction is the atomic multi-row write that the normalized layout
 lists as SQLite's first justification.
 """
 

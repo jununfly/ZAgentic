@@ -5,7 +5,7 @@ Spec 来源：docs/plans/zj-roadmap-dag-concurrency.md §5 + Story 39/40。
   Story 39  `recommend-storage` 保持只读建议，任何命令都不许悄悄换掉我的事实源。
   Story 40  换 carrier 只能走一条显式命令，迁移前后我永远知道哪个产物是事实源。
 
-测试缝（2026-09-15 与 zj 确认，两层都覆盖）
+测试缝（两层都覆盖）
 ------------------------------------------
   1. **CLI 命令层** — `roadmap_cli.py migrate <source> --to <carrier>`：Agent 的
      真实入口，唯一能同时钉住 stdout 契约与退出码的缝。

@@ -6,7 +6,7 @@ Read this reference when choosing the roadmap carrier or handing work from `zj-w
 
 `zj-roadmap-driven` is the natural **local/self-contained carrier** in the pair:
 ordinary roadmaps use one local JSON source of truth, while large roadmaps use
-SQLite (sharded, WAL-concurrent) as the scalable carrier. It also
+SQLite (normalized tables, WAL-concurrent) as the scalable carrier. It also
 consumes the route planned by wayfinder's **tracker mode**. `zj-roadmap-driven`
 does not plan on the tracker; it consumes wayfinder's decision map through
 `zj-to-tickets`, which exports decision tickets with blocking edges (local
@@ -44,5 +44,3 @@ the fact source; use `migrate --to single|sqlite` after deciding to move.
 - **The seam is the converter.** wayfinder's route becomes roadmap input (nodes plus decisions) through `zj-to-tickets`; shared vocabulary, ADRs, and conventions cross the seam without a rewrite.
 - **Choose by phase and carrier.** A clear, sized route can use this skill directly. Foggy scope or a large blast radius calls for wayfinder first. Team work uses tracker planning; personal/offline work uses the local carrier. The two layers remain separate and switchable.
 - **Human owns destination and decisions; Agent owns planning, parsing, and tracking.** During planning the Human sees wayfinder's map; during execution the Human sees roadmap-driven progress.
-
-The design is documented in `ZAgentic/docs/designs/zj-wayfinder-roadmap-dual-mode.md`.

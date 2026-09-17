@@ -28,7 +28,7 @@ if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
 
 from roadmap import Roadmap, canonical_json, sha256  # noqa: E402
-from roadmap_sqlite import RoadmapSqlite  # noqa: E402  # 第三个 carrier，验证 retract-and-keep 跨 carrier 一致
+from roadmap_sqlite import RoadmapSqlite  # noqa: E402  # 第二个 carrier，验证 retract-and-keep 跨 carrier 一致
 CLI = SKILL_DIR / "roadmap_cli.py"
 
 NODE = "1-1"  # 根 "1" 下挂的第一个子节点

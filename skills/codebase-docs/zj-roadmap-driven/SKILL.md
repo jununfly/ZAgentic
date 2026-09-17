@@ -1,19 +1,32 @@
 ---
 name: zj-roadmap-driven
-title: "zj-roadmap-driven"
-description: "路线图驱动开发与验收——以树形 roadmap 和决策记录帮助 Agent 与 Human 保持共享地图；在节点执行前区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。支持单文件 JSON 与 SQLite 两种载体，并与 zj-wayfinder、zj-to-tickets 配合。"
-triggers:
-  - 路线图驱动
-  - roadmap driven
-  - 导航式开发
+description: >-
+  路线图驱动开发与验收：以树形 roadmap（编号节点 + 状态 checkbox）和随节点落盘的决策记录，
+  作为 Agent 与 Human 的共享地图；施工进度靠 `render` 出的 md 视图回看。节点执行前先做 scope gate，
+  区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。
+  Use when 用户提到 路线图驱动 / roadmap driven / 导航式开发 / 进度地图 / 节点推进 / plan tree，
+  或需要把长任务拆成可追踪的树形计划并沉淀决策。载体支持单文件 JSON 与 SQLite，
+  与 zj-wayfinder（规划）、zj-to-tickets（转换）配合。
 ---
 
 # zj-roadmap-driven — 路线图驱动开发
 
+## Quick start
+
+```bash
+python "$SKILL_DIR/roadmap_cli.py" init roadmap.json --title "项目名" --md-file "PLAN.md"
+python "$SKILL_DIR/roadmap_cli.py" add roadmap.json 1 "第一步" --status in_progress
+python "$SKILL_DIR/roadmap_cli.py" decide roadmap.json 1 "后端用什么？" "Python + FastAPI"
+python "$SKILL_DIR/roadmap_cli.py" update roadmap.json 1-1 --status completed
+python "$SKILL_DIR/roadmap_cli.py" render roadmap.json   # 每次实质工作后必跑：md 是 Human 唯一窗口
+```
+
+`add` 的父节点是根 `1`，子节点按 `1-1`、`1-1-1` 自动编号。完整命令见 [CLI 参考](references/roadmap-cli.md)。
+
 **目标：** 在复杂任务场景中，用路线图（树形节点 + 决策记录）作为 Agent 和 Human 的共享心智模型。避免持续对话导致的目标偏离——每一步都在地图上留下足迹。
 
 **核心原则：**
-1. **存储载体决定事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（分片 + 稳健的并发/读放大治理），由 manifest、节点/决策 shards 和 append-only history 共同构成事实源。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。
+1. **存储载体决定事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（节点 / 决策 / 边 / 租约 / history 各归一表，WAL 并发）。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。
 2. **Markdown 是轻量渐进式视图**——只暴露树形概览（depth=2）+ 当前施工焦点。Human 一眼看清进度，不占满上下文；Markdown 永远不能反向导入事实源。
 3. **每个节点有编号**（1, 1-1, 1-1-1, …），方便 Human 和 Agent 快速定位
 4. **每个节点有状态 checkbox**（[ ] / [~] / [x] / [!]），一眼识别进度
@@ -54,15 +67,15 @@ Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status 
 丢掉。**没有任何东西被阻塞时，两个视图的输出一个字节都不变**——这条有控制例守着，
 不是"应该差不多"。
 
-调度查询（#81，`ready` / `critical-path` / `impact`）是**读取时从 `blocks` 边派生**的，
+调度查询（`ready` / `critical-path` / `impact`）是**读取时从 `blocks` 边派生**的，
 只读、不拿整图锁：`ready` 是"现在能开工哪些节点"（pending 且无未完成 `blocks` 前驱，
 `in_progress` 不算），`critical-path` 是"最长的未完工 `blocks` 链"（已完成节点不计入、
 平局取最小起点 id），`impact <node>` 是"改这个节点会波及哪些下游"（只沿 `blocks` 顺流、
 不含自身、含已完成下游以预警返工）。三者边界与 `blocked` 一致——只有 `blocks` 参与；
-三个载体输出逐字节相同。
+两个载体输出逐字节相同。
 
 两个载体（single-file JSON、sqlite）对边的行为完全一致，同一套验收跑两遍：`migrate --to <carrier>` 会把边一起带走。
-三个载体的两个 Markdown 视图（`render` 写进 md 的轻量视图与 `section` 的导出视图）
+两个载体的两个 Markdown 视图（`render` 写进 md 的轻量视图与 `section` 的导出视图）
 共用同一份模板，逐字节相同——模板曾各抄一份并漂移，抄两份本身就是缺陷。
 ```
 

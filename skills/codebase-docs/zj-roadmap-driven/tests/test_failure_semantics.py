@@ -11,7 +11,7 @@ Spec (docs/plans/zj-roadmap-dag-concurrency.md §4 + Story 33/34):
 Decisions taken with zj before the loop (ambiguities in the plan itself):
 
   1. **Escalation does NOT write `status`.** The plan is self-contradictory:
-     §4 line 232 says "超过阈值转 `blocked`", but §3 (2026-09-09 decision)
+     §4 line 232 says "超过阈值转 `blocked`", but §3 (the decided semantics)
      says `blocked` is purely *derived* from `blocks` edges and `--status
      blocked` returns `E_INVALID_STATUS`. We keep `blocked` derived-only and
      let escalation set a node-level `open_question` marker instead. `status`
@@ -185,7 +185,7 @@ class SingleFileFailure(FailureContract, unittest.TestCase):
 
 
 class SqliteFailure(FailureContract, unittest.TestCase):
-    """Third-pass carrier for #116: RoadmapSqlite must agree on failure semantics."""
+    """Second-pass carrier: RoadmapSqlite must agree on failure semantics."""
     storage = "sqlite"
 
 
@@ -249,7 +249,7 @@ class SingleFileFailureCli(FailureCliContract, unittest.TestCase):
 
 
 class SqliteFailureCli(FailureCliContract, unittest.TestCase):
-    """Third-pass CLI carrier for #116: `fail` against sqlite-backed roadmap."""
+    """Second-pass CLI carrier: `fail` against sqlite-backed roadmap."""
     storage = "sqlite"
 
 
