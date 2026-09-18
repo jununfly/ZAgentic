@@ -1,33 +1,37 @@
-# Slice 1 · 知识复利工具 Phase 0 最小闭环 — ready-for-agent tickets
+# Slice 1 · 知识复利工具 Phase 0 最小闭环 — ready-for-agent tickets（技能层）
 
 - **编排源**：`ZKnowledgeCompounding/docs/prds/知识复利工具_roadmap_slice1.json`
 - **Spec**：`ZKnowledgeCompounding/docs/prds/知识复利工具_spec_slice1.md`
 
-这些 ticket 是 Slice 1（FR-012 + FR-001~006 + FR-008）的实现切片，按 `zj-to-tickets`
-拆成 tracer-bullet 垂直切片，每个标 `Status: ready-for-agent`，构成从 utopia 地基到
-消费侧闭环的可验证链路。
+本目录现在只保留 **技能层** tickets（方案 B：按层拆）。知识复利工具 Slice 1 拆为两层：
 
-## 依赖顺序（Blocked by）
+## 仓库分层（方案 B：按层拆）
+
+- **ZAgentic（本目录，技能层）**：`zj-deep-research` skill 内部管线。
+  - `02` ingest-local-vector-index（FR-001）
+  - `03` decompose-retrieve-cite-report（FR-002/003/004）
+  - `04` groundedness-check-loop（FR-005）
+- **ZKnowledgeCompounding（产品层）**：utopia 持久层基建 + 产品编排 / 消费侧。
+  - `01` utopia-base（FR-012）
+  - `05` semi-auto-reflow-utopia（FR-006）
+  - `06` zj-active-query-hit-history（FR-008）
+  - `07` seam-e2e-acceptance（验收）
+  - 路径：`ZKnowledgeCompounding/.scratch/knowledge-compounding-slice1/`
+
+## 依赖顺序（技能层内；跨仓库依赖见产品层 tickets）
 
 | Ticket | FR | Blocked by |
 |--------|----|-----------|
-| 01-utopia-base | FR-012 | — |
-| 02-ingest-local-vector-index | FR-001 | 01 |
-| 03-decompose-retrieve-cite-report | FR-002 / 003 / 004 | 02 |
+| 02-ingest-local-vector-index | FR-001 | — |
+| 03-decompose-retrieve-cite-report | FR-002/003/004 | 02 |
 | 04-groundedness-check-loop | FR-005 | 03 |
-| 05-semi-auto-reflow-utopia | FR-006 | 01, 04 |
-| 06-zj-active-query-hit-history | FR-008 | 01, 05 |
-| 07-seam-e2e-acceptance | 验收（§9.1 MVP） | 04, 05, 06 |
 
-## 验收门禁（三项同时达标）
+## 验收门禁（三项同时达标，由产品层 T07 执行）
 
 - **Seam 1**：引用可回溯率 ≥ 90% 且 groundedness ≥ 0.8
 - **Seam 2**：回流率 ≥ 50% 且消费侧 recall ≥ 50%
 
 ## 发布说明
 
-- 因 ZAgentic 的 `zj-repo-init` 未跑、且当前 GitHub MCP 集成缺少此仓库的 issue 写权限
-  （POST issues → 403），本批以 `.scratch` 文件形式发布到 GitHub（zj-to-tickets 的本地形态），
-  而非 GitHub issues。
-- 待 `zj-repo-init` 补齐 canonical labels（含 `ready-for-agent`）+ MCP 重连获得写权限后，
-  可一键将这些 ticket 转为带 `ready-for-agent` label 的 GitHub issues。
+- 因 `zj-repo-init` 未跑、且当前 GitHub MCP 集成缺少此仓库的 issue 写权限（POST issues → 403），本批以 `.scratch` 文件形式发布到 GitHub（zj-to-tickets 本地形态）。
+- 技能层 tickets（02/03/04）留在本仓库；产品层 tickets（01/05/06/07）已迁至 ZKnowledgeCompounding（见上）。
