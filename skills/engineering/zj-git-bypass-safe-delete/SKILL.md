@@ -1,11 +1,15 @@
 ---
 name: zj-git-bypass-safe-delete
 description: >-
-  Diagnose and recover from WorkBuddy's safe-delete shim corrupting git repositories
-  on Windows. Use when `git status` shows all files as A, `git diff` fails with missing
-  tree, `refs/heads/branch-name` is gone, or git operations leave .git broken. Also use
-  proactively before any `rm -rf` in a WorkBuddy shell — the shim can actually delete.
-  SCOPE: Windows + WorkBuddy only. On macOS/Linux the shim defaults to off — do not load.
+  Diagnose and recover from git-repository corruption caused by WorkBuddy on Windows.
+  Two independent mechanisms: (1) the safe-delete shim routes delete syscalls to the
+  Recycle Bin; (2) the LiteSandbox filesystem-protection layer rolls back git's
+  "create nested ref dir + lock→rename" transactions ~70ms after the write, inside the
+  WorkBuddy process tree only. Use when `git status` shows all files as A, `git diff`
+  fails with a missing tree, a branch ref vanishes after `git checkout -b`/`commit`/`push`,
+  or `fetch` reports success but the local ref doesn't move.
+  SCOPE: Windows + WorkBuddy only. On macOS/Linux the shim defaults to off and LiteSandbox
+  does not apply — do not load.
 applies_to:
   os: [windows]
   env: [workbuddy]
@@ -16,9 +20,73 @@ applies_to:
 > defaults to off, so there is nothing to fix and the skill should not load. The bundled
 > `scripts/disable-safe-delete.ps1` self-skips with an explanatory message off-Windows.
 
+## Two distinct failure layers (READ THIS FIRST)
+
+WorkBuddy on Windows has **two independent** components that corrupt a git repo, plus a third, separate sandbox hazard. They look alike (refs missing, `all A` status) but have different causes, triggers, and — critically — only one is fixable with the bundled `disable-safe-delete.ps1`. Identify the layer before applying any fix.
+
+### Layer ① — safe-delete shim (delete → Recycle Bin)
+
+Injected into **every** subprocess via `NODE_OPTIONS` (Node), `sitecustomize.py` (Python), and `BASH_ENV` (bash). It rewrites `fs.unlinkSync` / `rm` / `rmdir` so deletes go to the Recycle Bin instead of really deleting.
+
+- **Trigger**: git operations that *delete* internals — `git rm`, `git clean`, `git stash`, branch pruning, and the bash `rm` / `unlink` / `rmdir` commands.
+- **Effect**: `.git/refs/*`, loose objects, `index`, or whole `refs/` trees get moved to the Recycle Bin → `not a git repository` / `all A` status / `refs/heads/branch` gone.
+- **Fixable**: YES — `scripts/disable-safe-delete.ps1` neutralizes all three sub-layers. Re-run after every WorkBuddy update.
+- **Scope note**: `env -u NODE_OPTIONS git …` only disables the Node sub-layer; the Python and bash sub-layers still bite, and Layer ② below is unaffected.
+
+Symptoms A, B, C, D, D2, H, I, J are Layer ① (or the shim's async reap). See each below.
+
+### Layer ② — LiteSandbox filesystem-protection rollback (ref transactions undone)
+
+An **independent** WorkBuddy filesystem-protection component (distinct from the shim; `disable-safe-delete.ps1` does **not** touch it). It watches the protected project directory and rolls back a specific class of writes `git.exe` makes while git is still running.
+
+- **Trigger**: any git write that creates a **new nested directory under `.git/refs/`** via the `name.lock → rename` pattern — `git checkout -b dir/x`, `git branch dir/x`, `git update-ref refs/.../dir/x`, `git push` creating a nested local-tracking ref, and `git fetch` writing `refs/remotes/origin/<new-dir>/…` (and the `origin/main` loose ref it writes).
+- **Effect**: the new loose ref (and its empty parent dir) vanishes **~70ms after the successful rename, while `git.exe` is still running**. HEAD becomes unborn; the next `git commit` produces a parentless root-commit. The object store is never lost.
+- **Scope**: only inside the WorkBuddy process tree, only within the protected project directory tree. Flat refs (`git branch flatname`), plain `add` / `commit` / `fetch` on existing flat paths, and any write done directly by python/node/cmd survive.
+- **NOT fixable by**: `disable-safe-delete.ps1` (different component), `env -u NODE_OPTIONS` (different layer), or `dangerouslyDisableSandbox` (that switch does not disable this FS-protection layer).
+- **Definitive test**: run the *same* nested git command two ways — (a) inside WorkBuddy, (b) via Windows Task Scheduler (parent = `svchost`, outside the WorkBuddy process tree). Ref survives in (b) but deleted in (a) ⇒ Layer ②. Deleted in *both* ⇒ investigate a third-party minifilter/AV instead.
+
+Symptoms E, F, G are Layer ②. E ("fetch succeeds, local ref stale") and F ("branch ref swallowed → unborn HEAD") are the same rollback on `refs/remotes/origin/*` and `refs/heads/*` respectively.
+
+> **Do not re-attribute Layer ② to third-party antivirus / minifilter drivers.** Many Windows hosts run file-system filter drivers (vendor security suites). The decisive difference: Layer ② fires *only inside the WorkBuddy process tree* and *only* on git's nested-ref rename transaction — a real AV would also hit python/node direct writes and flat refs. Confirm with the Task Scheduler test above before blaming any AV.
+
+**Layer ② attribution matrix** (same git binary, same repo; check `git show-ref --verify refs/heads/<nested>` after the command):
+
+| # | Write | Launcher | Result |
+| --- | --- | --- | --- |
+| 1 | `git branch dir/n` (nested, new subdir) in a TEMP repo | WorkBuddy | survives |
+| 2 | `git branch dir/n` (nested) in protected project dir | WorkBuddy | ~70ms deleted, parent dir gone |
+| 3 | `git branch flatname` (flat, no new subdir) in protected dir | WorkBuddy | survives |
+| 4 | python/node/cmd write same `refs/heads/dir/n` path | WorkBuddy | survives |
+| 5 | `git branch dir/n` in protected dir | WorkBuddy, `dangerouslyDisableSandbox=true` | still deleted (switch ≠ FS protection off) |
+| 6 | `git branch dir/n` with `LSBOX_*` / `IN_DOCKER` env stripped pre-launch | WorkBuddy (still in tree) | still deleted (tagged by process tree, not env) |
+| 7 | pre-create `refs/heads/dir/` then let git write ref | WorkBuddy | file + pre-made dir both rolled back |
+| 8 | same `git branch dir/nest` | **Windows Task Scheduler** (outside tree) | survives |
+
+Rows 1/3/4/8 surviving vs 2/5/6/7 deleted isolate the cause to: scope = protected project tree, hook = git.exe's nested-ref rename transaction, tag = process tree (not env, not sandbox switch), rollback ≈70ms after write.
+
+### Separate hazard — sandbox hides `.git` from git subprocesses
+
+A **third**, distinct failure: after `git checkout -f <branch>` or `git reset --hard` in a session, the sandbox can hide `.git` from git subprocesses entirely (`git rev-parse --git-dir` → `not a git repository`) while PowerShell cmdlets / File Explorer still see it intact. This is neither a delete (Layer ①) nor a rollback (Layer ②) — git is simply blinded. It is session-scoped; it only clears by restarting the session or using a sandbox-free terminal. Recovery in "Mechanism ③ — sandbox hides `.git`" below.
+
+### Canonical symptom → layer map
+
+| Symptom | Layer | One-line cause |
+| --- | --- | --- |
+| A — fetch success, local ref stale | ② | remote-tracking ref rename rolled back |
+| B — `status` under-reports changes | ① | index entries stripped by shim |
+| C — `commit -F <path>` "could not read" | ① | shim intercepts stat syscall |
+| D — `git rm` trashes ancestor tree | ① | shim routes prune to Recycle Bin |
+| D2 — `checkout` drops whole worktree | ① | shim swallows worktree during switch |
+| E — `refs/remotes/origin/*` vanishes | ② | remote ref rename rolled back |
+| F — nested branch ref swallowed → unborn | ② | head ref rename rolled back |
+| G — uncommitted changes to new branch | ② | same as F; use commit-tree to avoid |
+| H — bash `rm` exit 127, file not deleted | ① | safe-bin/rm entry not patched |
+| I — `checkout -f <sha> -- .` reaps ref | ① | shim async-reaps update-ref ref |
+| J — whole `refs/` dir moved | ① | shim moves refs/ to Recycle Bin |
+
 # Root cause & permanent fix (READ THIS FIRST)
 
-**Root cause.** WorkBuddy on Windows injects a 3-layer "safe-delete" (move-to-Recycle-Bin) shim into *every* subprocess it spawns:
+**Root cause (Layer ①).** WorkBuddy on Windows injects a 3-layer "safe-delete" (move-to-Recycle-Bin) shim into *every* subprocess it spawns:
 
 - **Node** — `NODE_OPTIONS=--require node-language-shim.cjs` → `node-safe-delete-shim.cjs` hooks `fs.unlinkSync` / `fs.rmSync` / `fs.rmdirSync`.
 - **Python** — `sitecustomize.py` hooks `os.remove` / `os.rmdir` / `shutil.rmtree` / `pathlib.*`.
@@ -46,7 +114,9 @@ It patches 4 files under `<WorkBuddy install>\resources\app.asar.unpacked\cli\ve
 
 Originals are backed up to `…\shim\disabled-backup\*.bak`. **Trade-off:** WorkBuddy's "delete protection" (files go to Recycle Bin instead of being really deleted) is disabled — acceptable for a developer. The fix survives everything except a WorkBuddy update; just re-run the script after updating.
 
-**Emergency fallback (before you've applied the permanent fix, or on a machine you can't patch).** The Symptom A–G + Mechanism ② playbook below is retained as *first-aid*, not a cure. The wrapper `env -u NODE_OPTIONS git …` stops the **Node** layer for a single command, but it does **not** prevent Symptoms D/D2/E/F (those happen below the node-injection layer) and does nothing for the bash/Python layers. Treat them as recovery, not prevention.
+> **Boundary of this fix — Layer ① only.** `disable-safe-delete.ps1` neutralizes the Node/Python/bash safe-delete shim. It does **NOT** and **cannot** fix Layer ② (LiteSandbox ref rollback) or the sandbox view-hiding hazard (Mechanism ③). After the script reports success (`fs.unlinkSync` is native), do **not** conclude "git is back to normal" — `git checkout -b dir/x` / `git branch dir/x` inside WorkBuddy will still have its ref rolled back ~70ms later. The only ways to make nested-branch git work are: run it in a sandbox-free terminal, use a flat branch name, or use `commit-tree` + `ls-remote` (see Symptoms F/G).
+
+**Emergency fallback (before you've applied the permanent fix, or on a machine you can't patch).** The Symptom A–J + Mechanism ③ playbook below is retained as *first-aid*, not a cure. The wrapper `env -u NODE_OPTIONS git …` stops the **Node** layer for a single command, but it does **not** prevent Symptoms D/D2/E/F/G (those are Layer ①-below-Node or Layer ②) and does nothing for the bash/Python layers. Treat them as recovery, not prevention.
 
 ### Related hazard — delete protection also intercepts workspace-root / `Remove-Item`
 
@@ -80,7 +150,8 @@ For repeated use, wrap that in a small script (a "git bypass wrapper") that unse
 ## Quick start
 
 1. Diagnose: `bash scripts/diagnose.sh <repo-path>` — reports which files are missing, whether reflog is intact, and whether the shim is in scope.
-2. Recover: `bash scripts/recover-refs.sh <repo-path> <branch> [<commit>]` — recreates missing `refs/heads/...` from reflog using direct file IO (not `git update-ref`, which itself is unsafe under the shim).
+2. Attribute Layer ②: `python scripts/probe-litesandbox-ref.py` — creates a TEMP repo and a workspace repo, compares whether git's nested-ref write survives in each, and prints `litesandbox` / `external-av` / `clean`. Run it inside a WorkBuddy tool to confirm whether Symptom F is LiteSandbox (Layer ②) or a third-party minifilter.
+3. Recover: `bash scripts/recover-refs.sh <repo-path> <branch> [<commit>]` — recreates missing `refs/heads/...` from reflog using direct file IO (not `git update-ref`, which itself is unsafe under the shim).
 3. Stop using `rm -rf` for cleanup — use `mv <target> <backup>/` instead (shim does not wrap `mv`).
 
 ## Workflow
@@ -194,7 +265,7 @@ The three symptoms above (refs missing, `all A` status, broken commit/fetch) are
 
 You run `git fetch origin main` (or via the bypass wrapper), the command exits 0, you see `From <remote> * branch main -> FETCH_HEAD`. But `git rev-parse origin/main` still points to the old commit, and `git status -sb` says `## main...origin/main [ahead N]` even though the remote is actually caught up.
 
-**Root cause**: the shim's `fs.unlinkSync` wrapper intercepts the loose-ref rewrite that follows a successful fetch. The fetch itself completes, but the ref file write is routed to the trash. So Git's in-memory state advances, but the on-disk ref is left stale.
+**Root cause (Layer ②).** Same LiteSandbox rollback as Symptom F/E: the loose `origin/main` ref written by `fetch` is rolled back ~70ms after the write, so git's in-memory state advances but the on-disk ref is left stale. `env -u NODE_OPTIONS` does not prevent it. (This is distinct from Symptom B, where the *index* is stripped — B is Layer ①.)
 
 **Detection**:
 ```bash
@@ -274,9 +345,11 @@ Untracked files would be gone for real — check `git status --short` for non-` 
 
 **Prevention**: after **any** `git checkout` / `git switch`, immediately run `git status --short` and expect zero entries. If it shows ` D` you did not create, restore first and investigate second — running more git commands on a half-trashed worktree compounds it.
 
-### Symptom E — `.git/refs/remotes/origin/` vanishes right after `fetch` / `update-ref`
+### Symptom E — `.git/refs/remotes/origin/` vanishes right after `fetch` / `update-ref`  (Layer ② — LiteSandbox)
 
 `git fetch` prints `<old>..<new> main -> origin/main` (success), but `git log origin/main` still resolves to the **old** commit and `git status -sb` says `[ahead N]`. Inspection: `.git/refs/remotes/origin/` doesn't exist; git is falling back to stale `packed-refs`. Worse, `git update-ref refs/remotes/origin/main <sha>` can write the loose ref and have the directory vanish **within the same command chain**.
+
+**Root cause (Layer ②).** Same LiteSandbox rollback as Symptom F, but on the remote-tracking ref: the loose ref written by `fetch`/`push` is rolled back ~70ms after the write. This is **not** the shim — `env -u NODE_OPTIONS` does not prevent it, and `disable-safe-delete.ps1` does not fix it. The fix below (hand-write the loose ref, then verify in a separate invocation) works regardless of which layer, because it sidesteps the rename transaction entirely.
 
 **Ground truth**: `git ls-remote origin main` — trust this over local refs after any fetch/push.
 
@@ -287,11 +360,13 @@ echo -n "<correct-sha>" > .git/refs/remotes/origin/main
 ```
 Then verify in a *separate* invocation (`git log --oneline origin/main -2`). If a git command runs in the same chain, the freshly written ref dir can be trashed again.
 
-### Symptom F — 本地分支 ref（嵌套目录）被吞，分支变 unborn
+### Symptom F — 本地分支 ref（嵌套目录）被吞，分支变 unborn  (Layer ② — LiteSandbox)
+
+**Root cause (Layer ②).** This is *not* the shim. WorkBuddy's LiteSandbox filesystem-protection rolls back git.exe's `new nested dir + name.lock → rename` ref-write transaction. The loose ref lands correctly, then ~70ms later — *while `git.exe` is still running* — LiteSandbox deletes it (and the now-empty parent dir). So HEAD goes unborn even though the commit object exists. `disable-safe-delete.ps1` does **not** help; `env -u NODE_OPTIONS` does **not** help. The only defense is to avoid the nested-ref rename inside WorkBuddy (flat name / `commit-tree` / sandbox-free terminal) — see below.
 
 Typical trigger: you commit on a newly created branch (e.g. `<dir>/<branch>`); git prints `[<dir>/<branch> <sha>] ...` and exits 0. The very next command — even inside the same invocation — says `fatal: your current branch '<dir>/<branch>' does not have any commits yet`, and `git status --short` lists **the whole tree as `A`** (index intact, HEAD empty). Inspection: `.git/refs/heads/` still holds the old branches, but the `<dir>/` directory is gone.
 
-Symptom E's sibling — same swallowing, but on `refs/heads/**`. **The commit object is safe**: `.git/logs/HEAD` still carries the `old new ... commit: <subject>` line, and `git cat-file -t <sha>` says `commit`.
+Symptom E's sibling — same rollback, but on `refs/heads/**`. **The commit object is safe**: `.git/logs/HEAD` still carries the `old new ... commit: <subject>` line, and `git cat-file -t <sha>` says `commit`.
 
 **触发点不止 `commit`。** 实测 `git checkout -b <branch>` 与 `git push` 之后 ref 同样消失，症状完全一致（HEAD unborn、`status` 全 `A`）。后果是：
 
@@ -404,7 +479,7 @@ C:\...\cli\vendor\shim\safe-bin/rm: line 15: /safe-delete-common.sh: No such fil
 C:\...\cli\vendor\shim\safe-bin/rm: line 17: safe_delete_main: command not found
 ```
 
-退出码 **127**，**文件没被删**。坑点：如果它写在 `&&` 链里，链会在此短路——后面的命令一条都不会跑，但你可能误以为它们跑了（2026-09-12 实测：`rm -f ... && echo cleaned && git ...` 只留下 127，`cleaned` 和 git 都没执行）。
+退出码 **127**，**文件没被删**。坑点：如果它写在 `&&` 链里，链会在此短路——后面的命令一条都不会跑，但你可能误以为它们跑了（实测：`rm -f ... && echo cleaned && git ...` 只留下 127，`cleaned` 和 git 都没执行）。
 
 **根因**：Bash 工具的 `PATH` 把 `safe-bin/` 排在前面，`rm` 直接解析到 `safe-bin/rm` 这个**独立入口脚本**。而 `disable-safe-delete.ps1` 打的是另外 4 个文件（`node-language-shim.cjs` / `sitecustomize.py` / `safe-bin/safe-delete-bash-env.sh` / `shell-runtime-bash-env.sh`），**不含 `safe-bin/rm` 本身**——它有自己那套 `dirname` 引导，跟被修好的 `shell-runtime-bash-env.sh` 是两回事。所以**打完永久修复，`rm` 照样坏**。同目录的 `unlink` / `rmdir` 等 PATH 层 shim 同理。
 
@@ -471,7 +546,7 @@ for p in ['HEAD','config','objects','index','packed-refs']:
 
 ### Prevention
 
-Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTIONS git`) for git operations. **Symptoms D/D2/E/F are NOT prevented by `env -u NODE_OPTIONS`** — they happen below the node-injection layer, so the only defense is verification. Five checkpoints, each right after the command that can trigger it:
+`env -u NODE_OPTIONS git …` only disables the **Node** sub-layer of Layer ①. It does **not** prevent Layer ② (LiteSandbox) at all, and does not help the Python/bash sub-layers of Layer ①. Practical rule: the bypass wrapper helps plain `git` commands that would otherwise hit the Node shim, but **verification is mandatory after every ref-moving or delete command** — D/D2 (Layer ①, below the Node layer), E/F/G (Layer ②), and the sandbox view-hiding hazard (Mechanism ③) are all unaffected by it. Five checkpoints, each right after the command that can trigger it:
 
 | After | Check | Bad sign |
 | --- | --- | --- |
@@ -483,9 +558,9 @@ Symptoms A/B/C disappear when you use the bypass wrapper (or `env -u NODE_OPTION
 
 If you must do one of those by hand, expect to hit one of the eight symptoms above and apply the corresponding fix.
 
-## 环境坑：Mechanism ② —— 沙箱把 `.git` 从 git 子进程视图里藏起来（易与机制一混淆）
+## 环境坑：Mechanism ③ —— 沙箱把 `.git` 从 git 子进程视图里藏起来（独立于 Layer ①/②）
 
-前面的 Symptom A–G 都是 **机制一：safe-delete shim**——`.git` 内部件（refs 目录、松散对象）被 shim 路由进回收站，物理内容缺失。这里要记的是**机制二**，完全不同的另一类故障。
+前面的 Symptom A–J 分属 **Layer ①（safe-delete shim）** 与 **Layer ②（LiteSandbox 回滚）**——无论哪种，`.git` 的物理内容都被改过（refs 被移走 / 被回滚）。这里要记的是**机制三**，完全不同的第三类故障：**`.git` 物理完好，只是 git 子进程被沙箱蒙了眼**。
 
 ### 现象
 
@@ -497,7 +572,7 @@ If you must do one of those by hand, expect to hit one of the eight symptoms abo
 
 ### 与机制一的关键区别（拿不准时先读这段）
 
-| | 机制一：shim 移走内部件 | 机制二：沙箱藏 `.git` |
+| | 机制一/Layer①：shim 移走内部件 | 机制三：沙箱藏 `.git` |
 | --- | --- | --- |
 | `.git` 物理内容 | **确实缺失**（refs 目录 / 松散对象被删到回收站） | **完好**，文件管理器 / cmdlets 看得全 |
 | `git init` 新建的干净仓库 | 完全正常 | 视沙箱范围——若沙箱只蒙本仓库则正常，若会话级则同失败 |
@@ -511,12 +586,12 @@ If you must do one of those by hand, expect to hit one of the eight symptoms abo
 git init /tmp/scratch && cd /tmp/scratch && git status   # 若正常 → git 本身没坏
 # 回到原仓库仍 not a git repository：
 #   - 只有这个仓库失败 → 机制一（查 .git/refs、objects/ 有没有缺）
-#   - git 在本会话所有仓库都失败、且 cmdlets 能看到 .git → 机制二
+#   - git 在本会话所有仓库都失败、且 cmdlets 能看到 .git → 机制三
 ```
 
 ### 应对
 
-- **机制二下，agent 会话内不要对本地仓库跑任何 `git`**；把提交 / 同步留给用户在无 WorkBuddy 沙箱的终端执行（普通 PowerShell、文件资源管理器地址栏起 `powershell`、或 Win+R → `powershell`）。
+- **机制三下，agent 会话内不要对本地仓库跑任何 `git`**；把提交 / 同步留给用户在无 WorkBuddy 沙箱的终端执行（普通 PowerShell、文件资源管理器地址栏起 `powershell`、或 Win+R → `powershell`）。
 - 本地仓库同步（main 快进、pack-refs 修正等）照常走既定配方，但必须**在 agent 会话之外**做。
 - **agent 会话内若必须推进（无法离会）：走 `gh` CLI（GitHub API，不依赖本地 git）**。实测 `gh` 本身可用（`gh auth status` 正常、token 有效），但 `gh pr create` 会 `git` 子进程而报 `not a git repository` 失败——改走 `gh api` REST 端点（本会话已用此路径完整建分支 + 推文件 + 开 PR + 删分支）：
   - 建分支：`gh api -X POST repos/<o>/<r>/git/refs -f ref=refs/heads/<b> -f sha=<base-sha>`
@@ -526,12 +601,13 @@ git init /tmp/scratch && cd /tmp/scratch && git status   # 若正常 → git 本
   - 第二次推同一分支时，`body.json` 的 `sha` 要换成该分支当前 tip 上此文件的 blob sha（不是 base 的），否则 422。
 - **规避复现**：agent 会话内绝不对本地仓库跑 `checkout -f <branch>` / `reset --hard`（前者会触发沙箱藏 .git、后者同理）。改用 `git update-ref` + `git pack-refs --all --prune`（改 ref、不动工作树）与 `git checkout -f <sha> -- .`（checkout 提交对象而非分支，不移动 HEAD）来同步与恢复。**注意**：`checkout -f <sha> -- .` 仍会异步冲刷掉本次会话早先 `update-ref` 刚写的 loose ref（见 Symptom I）——`update-ref` 后要么立即复核、要么把 checkout 放到另一会话；打过永久修复则无此虑。
 
-### 实测教训（2026-09-12）
+### 实测教训
 
 本次某仓库的 `not a git repository` **一开始误诊为机制二**，最后在用户真独立终端查明是**机制一**：`.git/refs` 目录缺失 + `main` tip 的松散对象被移走。`git init` 在用户终端正常、唯独本仓库失败——这符合机制一而非机制二。**教训：`not a git repository` 但 `.git` 物理可见时，先查 `.git` 内部结构（refs / objects 是否被 shim 移走），别急于归咎沙箱。** 机制二罕见且只能靠重开会话解决；机制一才是日常主因，且可恢复。
 
 ## Files
 
 - `scripts/diagnose.sh` — read-only inspection of `.git/` state
+- `scripts/probe-litesandbox-ref.py` — attribute Symptom F to Layer ② (LiteSandbox) vs a third-party minifilter. Windows-builtin python only; run inside a WorkBuddy tool.
 - `scripts/recover-refs.sh` — recreate loose refs from reflog
-- `scripts/disable-safe-delete.ps1` — **permanent fix**: neutralizes the 3-layer safe-delete shim at the source. Windows + WorkBuddy only (self-skips elsewhere); resolves the WorkBuddy install path from the environment. Re-run after every WorkBuddy update.
+- `scripts/disable-safe-delete.ps1` — **permanent fix (Layer ① only)**: neutralizes the 3-layer safe-delete shim at the source. Windows + WorkBuddy only (self-skips elsewhere); resolves the WorkBuddy install path from the environment. Re-run after every WorkBuddy update. Does **not** fix Layer ② or Mechanism ③.
