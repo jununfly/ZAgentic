@@ -82,17 +82,31 @@ For each sub-document, according to its **declared required role set**
 (variable, chosen in the preparation phase — **not** hardcoded B/C/A, **not**
 fixed to three agents):
 
-1. `zj-discuss` generates **one briefing per selected role** (主力AI is the
-   integrator and writes its stance in-main, no briefing). Each briefing is
-   stamped with that role's stance + a **mandatory "Read `<sub-doc-path>` original"
-   order**, written to `<讨论文件夹>/briefings/<sub-slug>-briefing-<role>.md`.
-   **Refuse to generate a briefing if the sub-document file is not on disk.**
-2. Human copies each briefing into a **separate cross-session independent Agent**,
+1. `zj-discuss` generates **one launch pack per selected role** (主力AI is the
+   integrator and writes its stance in-main, no pack). **Run the static generator**
+   instead of hand-writing them:
+   ```sh
+   python3 <skill-dir>/scripts/launch_pack.py <sub-doc-path> \
+           --out <讨论文件夹>/briefings
+   ```
+   It reads the sub-doc's own **declared required role set** and writes
+   `<讨论文件夹>/briefings/<sub-slug>-launchpack-<role>.md` per role, each stamped with
+   that role's stance + the **mandatory "Read `<sub-doc-path>` original" order** + the
+   exact `zj-discuss-view --role X <sub-doc-path>` command.
+   **Refuse if the sub-document is not on disk**; role keys outside the pool are
+   refused unless `--allow-custom`. The generator is deliberately **inert** — it only
+   reads/writes Markdown and never starts a session.
+2. Human copies each launch pack into a **separate cross-session independent Agent**,
    loads `zj-discuss-view --role X <sub-doc-path>` (X = that role's key — any key
    from the pool, or a Human-defined custom key); that Agent writes its
    independent viewpoint into `## Agent viewpoints`. Convenience:
    `zj-discuss-view --all <sub-doc-path>` prints the sub-doc's full role set as
    ready-to-paste launch lines.
+   **Formal decision — `--role X,Y` is closed, not pending.** One session carries
+   exactly one viewpoint; accepting several role keys in one invocation would be
+   same-session multi-role, i.e. the collapsed isolation that hard rule 3 forbids.
+   `--all` is the sanctioned substitute: it emits *separate* launch lines, one
+   independent session each. Do not re-open this as a usability gap.
 3. Every viewpoint header marks
    `视角来源: 跨会话独立Agent` or `同会话SubAgent(低权重)`.
 4. The `## Human 拍板` table records each round; Human may challenge on
@@ -166,6 +180,30 @@ set and, after Human confirmation, delete the folder.
 **护栏：** 动态议程永不可跳过 F1/F5 等固定阶段；它只为「加深覆盖」增轮或重排，
 不稀释严谨性。结果导向：一旦收敛 + 可执行结论达成即停，不为多加视角而多加。
 
+## 结构性闸门（机械校验，不是自觉约定）
+
+> 以下不变量由脚本强制，不依赖 Human 或 Agent 的自觉。跑完了、退出码为 0 才算数。
+
+```sh
+python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
+```
+
+它校验三项：
+
+1. **视角来源标注** —— 每个 `### 视角：X` 区块必须标注 `视角来源:`，取值只能是
+   `跨会话独立Agent` 或 `同会话SubAgent(低权重)`。
+2. **预演标签** —— 标注为 `同会话SubAgent(低权重)` 的视角必须同时挂 `⚠ 非独立` 标签。
+3. **结论不变式** —— `## conclusion` 必须带 `状态协议` 字段，取值 ∈
+   {`DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`}；且结论**不得以**
+   `依据` / `采纳` / `参考` 等依赖措辞把 `预演` / `同会话SubAgent` 产出当作权威依据
+   （硬规则 3(b)）。判据是「同一行内出现预演词 + 依赖词」：单纯**提及**这条规则本身
+   （如「conclusion 无预演字段」）不算违约——否则闸门会狼来了、被人关掉。
+
+退出码：`0` 干净 · `1` 存在违约 · `2` 输入不可读。
+
+`状态协议` 把「是否已结论」从含糊的 ✅ 变成可判定枚举，并显式区分
+`BLOCKED`（做不了）与 `NEEDS_CONTEXT`（信息不够）——终局合成时不会被一枚 ✅ 蒙混过关。
+
 ## Hard rules (Q-E — non-skippable)
 
 1. **Read the original.** Every Agent viewpoint must come from an Agent that
@@ -200,6 +238,9 @@ set and, after Human confirmation, delete the folder.
 - `references/master-template.md` — MASTER.md skeleton (incl. disposition contract).
 - `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic).
 - `references/role-matrix.md` — candidate role pool + recommendation heuristic + convergence rule (SSOT for role semantics).
+- `scripts/launch_pack.py` — static per-role launch-pack generator (replaces manual briefing copying).
+- `scripts/check_subdoc.py` — structural gate enforcing the three invariants above.
+- `tests/` — regression guards for both scripts (`python3 <test-file>.py`).
 - `docs/designs/zj-discuss/` — product / architecture / design docs (full spec, durable).
 
 ## Integration with sibling skills
@@ -223,3 +264,19 @@ set and, after Human confirmation, delete the folder.
   完成。discuss 不得运行 docs_governance.py，不得决定最终分类。**
 
 - `zj-grilling` — use beforehand to sharpen the core problem framing.
+
+## 外部能力集成边界（选择性复用）
+
+> 源自 gstack v1.2.0 复盘，全局决策 = **C（选择性复用）**：外部项目只作**组件来源**，
+> `zj-discuss` 方法体系始终是自有主体。边界写进 SKILL 而不只写进 design 文档，
+> 是为了防止「顺手引一个依赖」把方法所有权让渡出去。
+
+| 外部能力 | 边界 | 为何这样划定 |
+| --- | --- | --- |
+| 跨 provider 评审（如 gstack `/codex` 范式） | **组件引用** —— 推荐更强隔离时使用；discuss 内不实现 provider 路由 | 引入路由即引入运行时，会把方法论变成编排器 |
+| learnings / 经验持久化 | **薄层复用** —— 可借鉴其机制，但必须是可移除薄层 | 任何承载方法状态的适配层都等于拥有了主体 |
+| 上游 digest（如 gstack 2KB digest） | **voice-only** —— 只覆盖表达语气，不覆盖方法体系 | 它不表达结构立场 / R×O，覆盖不到本方法的语义点 |
+
+**否决项（不再复议）：** 会话编排运行时 / router / suite 化 —— 会让适配层拥有主体方法
+状态，按决策模型重分类为 D。`scripts/launch_pack.py` 是这条红线的产物边界：它写文件，
+不发起会话。

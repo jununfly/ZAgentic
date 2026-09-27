@@ -20,8 +20,12 @@
 
 > 每个视角必须由 **独立 Agent 会话** `Read` 本文件原文后撰写，禁止接受
 > Human 转述口径、禁止「请反驳 A」式对抗指令。视角来源须显式标注
-> `视角来源: 跨会话独立Agent`。独立视角 = 本子文档**声明必需集**中的角色
+> `视角来源: 跨会话独立Agent`；若是同会话 SubAgent 预演，则必须同时挂
+> `⚠ 非独立` 标签。独立视角 = 本子文档**声明必需集**中的角色
 > （来自 `role-matrix.md` 候选池，**数量与映射不写死**）。
+>
+> 上述「来源标注 + 预演标签」由 `zj-discuss/scripts/check_subdoc.py` 机械校验，
+> 不是自觉约定。
 
 > **本区块由 `zj-discuss` 在生成 stub 时，为声明必需集中的每个角色插入一份
 > 下方模式的 `### 视角：<role-key>（<role-name>）` 区块；下图以默认 base {B,C,A}
@@ -54,10 +58,12 @@
 
 ## 视角 briefing（临时脚手架，阶段 2 删除候选）
 
-> `zj-discuss` 为**声明必需集中每一个**独立视角生成一份 briefing，供 Human 复制到
-> 跨会话独立 Agent 加载 `zj-discuss-view --role X` 使用。本子文档不内嵌 briefing 全文；
-> briefing 落点约定：`<讨论文件夹>/briefings/<sub-slug>-briefing-<role>.md`。
-> briefing 属 transient 脚手架，阶段 2（zj-docs-ontology 沉淀）按删除候选处理。
+> `zj-discuss` 为**声明必需集中每一个**独立视角生成一份启动包，供 Human 原样复制到
+> 跨会话独立 Agent 加载 `zj-discuss-view --role X` 使用。本子文档不内嵌其全文；
+> 启动包落点约定：`<讨论文件夹>/briefings/<sub-slug>-launchpack-<role>.md`。
+> 生成方式（静态，非运行时）：
+> `python3 <skill>/scripts/launch_pack.py <本文件路径> --out <讨论文件夹>/briefings`
+> 启动包属 transient 脚手架，阶段 2（zj-docs-ontology 沉淀）按删除候选处理。
 
 ## Human 对 Agent X 的拍板
 
@@ -70,6 +76,8 @@
 ## conclusion（含沉淀指令）
 
 > 结论必须给出**可执行沉淀指令**，否则不算闭环。
+> **结论不得引用同会话 SubAgent 预演产出作为权威依据**（硬规则 3(b)）——
+> 可引用的只有跨会话独立 Agent 的视角。
 
 - **子问题结论：** <一句话定论>
 - **解法：** <具体方案 / 决策>
@@ -77,4 +85,7 @@
   - 改哪些 PRD / ADR / 文档：<路径 + 改动点>
   - 跨子文档约束登记：<回填 MASTER.md 跨子文档约束>
   - 待删临时脚手架：<若有>
-- **状态：** ✅ 已结论（回填 MASTER.md 索引）
+- **状态协议：** <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>（<人类可读备注，如「已回填 MASTER.md 索引」>）
+
+> `状态协议` 取值、`视角来源` 标注与结论禁引预演，均由
+> `scripts/check_subdoc.py` **机械扫描**（见 SKILL.md「结构性闸门」），不靠人工自觉。
