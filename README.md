@@ -160,6 +160,8 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md) — Write skills, rules, and agent-consumed documents clearly.
 - [zj-teach](./skills/productivity/zj-teach/SKILL.md) — Teach a concept across multiple sessions in a stateful workspace.
 - [zj-to-questionnaire](./skills/productivity/zj-to-questionnaire/SKILL.md) — Turn an unresolved decision into a questionnaire for another person.
+- [zj-discuss](./skills/productivity/zj-discuss/SKILL.md) — Decompose a complex problem into a master doc + independent sub-documents, run multi-agent independent discussion per sub-problem, synthesize, and hand off to zj-docs-ontology.
+- [zj-discuss-view](./skills/productivity/zj-discuss-view/SKILL.md) — Companion to zj-discuss: in a separate independent Agent session, Read a sub-document original and write one role's independent viewpoint.
 
 ### Misc
 
