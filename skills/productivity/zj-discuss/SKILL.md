@@ -1,6 +1,6 @@
 ---
 name: zj-discuss
-description: Decompose a complex problem that flat chat cannot fully resolve into a master doc + independent sub-documents (one issue, one doc); run multi-agent independent discussion per sub-problem, synthesize, and hand off to zj-docs-ontology for durable deposition. Solves the pain of thin chat failing to surface every facet of a hard problem.
+description: Decompose a complex problem that flat chat cannot fully resolve into a master doc + independent sub-documents (one issue, one doc); select roles from a configurable pool with recommendations, run multi-agent independent discussion per sub-problem via a fixed+dynamic agenda, synthesize, and hand off to zj-docs-ontology for durable deposition. Solves the pain of thin chat failing to surface every facet of a hard problem.
 argument-hint: "<complex problem description, or an existing discussions/<slug>/ path to resume>"
 ---
 
@@ -51,41 +51,63 @@ This resolves the tension between "keep the complete solution" (phase 1) and
 Confirm this is a problem flat chat cannot handle. If it is a *single* issue,
 use `zj-discuss-view` + `zj-steelman` directly; do not spin up the full set.
 
-### Phase 1 — Decompose (Q-A, hybrid)
+### Phase 1 — Decompose + prepare roles (Q-A, hybrid)
 
 1. Dispatch a **SubAgent** (low-isolation is acceptable here) to draft a
    candidate decomposition: a master outline + a list of sub-documents. Each
    candidate sub-document has: one-line problem statement, independence
-   rationale, success criteria, and suggested roles from `role-matrix.md`.
-2. **Human + lead AI review and finalize** the decomposition. Lock it.
-3. Create the folder `discussions/<self-explain-slug>/` — kebab-case,
+   rationale, success criteria, and **suggested roles** derived from
+   `role-matrix.md`'s recommendation heuristic (base {B,C,A} + any optional
+   roles whose trigger signal the sub-problem hits).
+2. **Role selection (preparation phase — hard interaction):** present to Human —
+   (a) **推荐参与角色**: each with a one-line intro + why recommended (which
+   signal matched / why base); (b) **其他可选角色**: the rest of the pool, each
+   with a one-line intro, for Human to add/remove. Human confirms/adjusts → the
+   locked set becomes the **declared required set** (per discussion, or per
+   sub-document). See `role-matrix.md`.
+3. **Human + lead AI review and finalize** the decomposition + role sets. Lock them.
+4. Create the folder `discussions/<self-explain-slug>/` — kebab-case,
    self-explanatory, **no** `discuss-` prefix (the parent dir already says it).
    Default base dir is the repo root; configurable.
-4. Generate `MASTER.md` from `references/master-template.md` and each
-   sub-document stub from `references/subdoc-template.md`.
+5. Generate `MASTER.md` from `references/master-template.md` and each
+   sub-document stub from `references/subdoc-template.md`. The stub's viewpoint
+   blocks are generated **per the sub-doc's selected role set** — variable count,
+   not hardcoded B/C/A.
 
 ### Phase 2 — Per-sub-document independent discussion (Q-C + Q-E)
 
-For each sub-document:
+每个子文档的讨论轮次受下方「## 研讨会议程（固定 + 动态）」约束：固定议程 F1–F5 是不可跳过的底线，动态议程决策函数（状态评估 → 决策 → 执行 → 再评估）驱动每轮下一步，并在本阶段各步骤间闭环执行。
 
-1. `zj-discuss` 为每子文档的**独立视角（默认集 B/C/A，可按子问题增删）**各生成一份
-   briefing（主力AI 为整合者，在主会话直接写整合立场，不走 briefing）。每份 briefing
-   盖章角色立场 + **强制「Read `<sub-doc-path>` 原文」令**，落点约定
-   `<讨论文件夹>/briefings/<sub-slug>-briefing-<role>.md`。**子文档不在磁盘则拒生成 briefing。**
-2. Human copies each briefing into a **separate cross-session independent
-   Agent**, loads `zj-discuss-view --role X <sub-doc-path>`; that Agent writes
-   its independent viewpoint into `## Agent viewpoints`.
+For each sub-document, according to its **declared required role set**
+(variable, chosen in the preparation phase — **not** hardcoded B/C/A, **not**
+fixed to three agents):
+
+1. `zj-discuss` generates **one briefing per selected role** (主力AI is the
+   integrator and writes its stance in-main, no briefing). Each briefing is
+   stamped with that role's stance + a **mandatory "Read `<sub-doc-path>` original"
+   order**, written to `<讨论文件夹>/briefings/<sub-slug>-briefing-<role>.md`.
+   **Refuse to generate a briefing if the sub-document file is not on disk.**
+2. Human copies each briefing into a **separate cross-session independent Agent**,
+   loads `zj-discuss-view --role X <sub-doc-path>` (X = that role's key — any key
+   from the pool, or a Human-defined custom key); that Agent writes its
+   independent viewpoint into `## Agent viewpoints`. Convenience:
+   `zj-discuss-view --all <sub-doc-path>` prints the sub-doc's full role set as
+   ready-to-paste launch lines.
 3. Every viewpoint header marks
    `视角来源: 跨会话独立Agent` or `同会话SubAgent(低权重)`.
 4. The `## Human 拍板` table records each round; Human may challenge on
    evidence; technical deviations are **never** silently swallowed.
-5. **跨会话启动包（默认输出，非可选开关）：** 在 Phase 2 产出末尾，追加一段可一键
-   粘贴的文本——每个必需角色一行 `zj-discuss-view --role X <sub-doc-path>`（X ∈ 本次必需集），
-   外加 sub-doc 路径与角色名。模板**只生成跨会话调用**，禁止任何「同会话内即可完成隔离」
-   的捷径字样（见硬规则 3 承重警告）。这把「Human 手抄 briefing 易漏行/错路径」的出错率压到近零。
-6. **Convergence:** once the **declared required set** (default B(执行)/C(产品·市场)/A(架构))
-   is covered, stop adding roles and synthesize a conclusion. More views is a
-   means, not a goal.
+5. **跨会话启动包（默认输出，非可选开关）：** at the end of Phase 2 output, append
+   a one-click-paste block — one line per required role:
+   `zj-discuss-view --role X <sub-doc-path>` (X ∈ 声明必需集), plus the sub-doc
+   path and role name. The template **only** generates cross-session
+   invocations; no "same-session suffices for isolation" shortcut wording (see
+   hard rule 3). This drives the Human-copied-briefing error rate to near zero.
+6. **Convergence:** once the **declared required set** is covered (every selected
+   role has contributed an effective viewpoint), stop adding roles and synthesize
+   a conclusion. The dynamic agenda may insert focused extra rounds for unresolved
+   questions or sharp tensions, but never to pad headcount. More views is a means,
+   not a goal.
 
 ### Phase 3 — Synthesize & roll up (Q-D)
 
@@ -102,17 +124,61 @@ For each sub-document:
 When the whole problem is resolved, invoke `zj-docs-ontology` to classify the
 set and, after Human confirmation, delete the folder.
 
+## 研讨会议程（固定 + 动态）
+
+讨论的质量由一套**固定议程**保证底线，由**动态议程**在最需要时加深覆盖。
+两者组合的目标：主旨简单清晰、结果导向；同时让复杂问题被充分解构与讨论，
+使生成的解决方案**完整、严谨、可操作**。
+
+### 固定议程（底线不变式，任何讨论都必须跑完）
+
+- **F1 — 定义核心问题**：MASTER 的「核心问题 + 成功判据」必须清晰、可验证；
+  含糊则回到解构，不进入讨论。
+- **F2 — 角色确认与分发**：准备阶段锁定角色集；为每个角色生成 briefing（启动包），
+  **由 Human 复制到**跨会话独立 Agent（见 Phase 2 步骤 2 / 5，**非自动分发**）。
+- **F3 — 各角色独立提出有效观点**：每个声明角色都须 `Read` 原文、写出结构错位的
+  有效观点；出现回声 / 低质则按硬规则 3 处置。
+- **F4 — Human 逐轮拍板**：每轮 `## Human 拍板` 留痕，允许凭证据 challenge，
+  技术偏差不静默吞。
+- **F5 — 合成共识并沉淀**：每个子文档 conclusion 含可执行沉淀指令；终局合成
+  MASTER 解决思路；产出 = 完整文档组（解决方案）。
+
+固定议程是**不可跳过**的骨架：动态议程只能在 F1–F5 内部重排 / 增轮，不得删减任一阶段。
+
+### 动态议程（自适应编排，依据讨论进程）
+
+动态议程以**状态评估 → 决策下一轮 → 执行 → 再评估**的闭环，在固定议程框架内
+按需加深，而非固定顺序走完。它借鉴动态规划 / 自适应控制的「依据当前状态决定下一步」思想。
+
+**状态模型（每子文档跟踪）：**
+- 开放问题是否已解（scope 草案 Q1/Q2/… 的闭合度）
+- 各声明角色是否已贡献**有效**观点（低质 / 回声标记）
+- 是否存在**张力 / 分歧**（两角色结论冲突）
+- 是否达成收敛（声明集全覆盖 + 可执行 conclusion）
+
+**每轮决策函数（输出下一轮动作）：**
+- 存在未解开放问题 → 派发针对该问题的聚焦轮（相关角色）。
+- 两角色观点尖锐分歧（张力）→ 针对该分歧**重开真隔离会话对齐分歧**（相关角色各开独立 Agent 重新 `Read` 原文对齐），而非各说各话；**不引入候选池（`role-matrix.md`）之外的角色**。
+- 某观点低质 / 回声 → 标记为 `同会话SubAgent(低权重)` 并要求**重开真隔离会话**。
+- 覆盖不全 → 继续剩余角色。
+- 已达收敛且 conclusion 可执行 → 触发 F5 合成，结束该子文档。
+
+**护栏：** 动态议程永不可跳过 F1/F5 等固定阶段；它只为「加深覆盖」增轮或重排，
+不稀释严谨性。结果导向：一旦收敛 + 可执行结论达成即停，不为多加视角而多加。
+
 ## Hard rules (Q-E — non-skippable)
 
 1. **Read the original.** Every Agent viewpoint must come from an Agent that
    `Read` the file itself. No human-relayed summaries of A's stance to B. No
    "please refute A" adversarial instructions — assign structurally different
    roles instead.
-2. **Structurally different roles.** The independent viewpoints are **B / C / A**
-   from `role-matrix.md` — genuinely different structural stances, not the same
-   lens relabeled. **主力AI is the integrator** (main session, low weight), not
-   one of the isolated viewpoints. Role semantics are defined *only* in
-   `role-matrix.md` (SSOT) — this file references it, never re-describes it.
+2. **Structurally different roles.** The independent viewpoints are the **declared
+   required role set** selected in the preparation phase — any subset of the
+   candidate pool in `role-matrix.md` (default base {B,C,A}), each a genuinely
+   different structural stance, not the same lens relabeled. **主力AI is the
+   integrator** (main session, low weight), not one of the isolated viewpoints.
+   Role count and role→agent mapping are **NOT** hardcoded — they follow the
+   selected set. Role semantics are defined *only* in `role-matrix.md` (SSOT).
 3. **Anti-echo-chamber + load-bearing warning.** Same-session roleplay is *not*
    runtime isolation; mark it `同会话SubAgent(低权重)` and treat its weight
    accordingly. **This warning is load-bearing:** the SubAgent 预演 口子 may stay
@@ -121,8 +187,10 @@ set and, after Human confirmation, delete the folder.
    constraints **must never cite SubAgent 预演 output as authority** — only
    cross-session B/C/A are trustworthy. If the 口子 is observed to systematically
    lure Humans into skipping real isolation, delete it.
-4. **Convergence.** Cover the **declared required set** (default B(执行)/C(产品·市场)/A(架构)),
-   then stop adding perspectives. More views is a means, not a goal.
+4. **Convergence.** Cover the **declared required set** (whatever was selected in
+   the preparation phase), then stop adding perspectives. The dynamic agenda may
+   insert focused rounds for unresolved questions or sharp tensions, but never to
+   pad headcount. More views is a means, not a goal.
 5. **Conclusion must be executable.** A sub-doc conclusion must include
    deposition instructions (which PRD/ADR to change, which temp doc to delete)
    — otherwise it is not a closed loop.
@@ -130,8 +198,9 @@ set and, after Human confirmation, delete the folder.
 ## References
 
 - `references/master-template.md` — MASTER.md skeleton (incl. disposition contract).
-- `references/subdoc-template.md` — per-sub-problem discussion doc skeleton.
-- `references/role-matrix.md` — reusable role matrix (编排者 + B/C/A 独立视角) + convergence rule.
+- `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic).
+- `references/role-matrix.md` — candidate role pool + recommendation heuristic + convergence rule (SSOT for role semantics).
+- `docs/designs/zj-discuss/` — product / architecture / design docs (full spec, durable).
 
 ## Integration with sibling skills
 

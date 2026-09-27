@@ -771,6 +771,38 @@ _Avoid_: trace through, simulate (too general), risk analysis (different goal)
 The rule for adding a new skill: it must name a specific existing skill it complements, and the complement must be on a clear axis — time (before/after/during), direction (defense/attack), or scope (micro/macro). A skill that doesn't name its complement is rejected as duplicating existing capability.
 _Avoid_: useful in principle, fills a gap, nice to have
 
+### Discussion methodology
+
+Vocabulary for the `zj-discuss` / `zj-discuss-view` discussion-methodology skill pair under `skills/productivity/` — decompose a hard problem into a master + independent sub-documents, run multi-role independent discussion, synthesize, and hand off to `zj-docs-ontology`.
+
+**zj-discuss / zj-discuss-view**:
+The discussion-methodology skill pair. `zj-discuss` owns the lifecycle (decompose, prepare roles, generate briefings, orchestrate the fixed+dynamic agenda, synthesize, point to phase-2 deposition); `zj-discuss-view` is its companion, loaded in a **separate independent Agent session** to take one role on one sub-document. One skill, one role, one session — never a same-session roleplay.
+_Avoid_: discussion tool, chat, meeting skill, multi-role-in-one-session
+
+**过程性质权威依据 (process-nature authority basis)**:
+The `discussions/<slug>/` folder during the solve phase. It is the authoritative record of the multi-role discussion *process*, but it is process material, not a long-lived authority. After the problem is solved it is proposed for deletion by `zj-docs-ontology`.
+_Avoid_: durable doc, permanent record, knowledge-base entry, always-keep
+
+**两阶段生命周期 (two-stage lifecycle)**:
+zj-discuss's folder lifecycle: phase 1 keep-during-solving (the folder is the process authority) and phase 2 ontology-deposit-and-delete (after solving, `zj-docs-ontology` extracts durable value, then the folder is deleted). The keeper and the deleter are different stages, never conflated.
+_Avoid_: always-keep, permanent archive, delete-while-solving
+
+**声明必需集 (declared required role set)**:
+The variable set of roles locked in the preparation phase for a discussion or sub-document — any subset of the candidate pool (default base {B,C,A}), drives viewpoint generation and convergence. Role count and the role→agent mapping are **never** hardcoded.
+_Avoid_: role list, B/C/A-only, fixed-three-role-set, hardcoded mapping
+
+**角色候选池 (role candidate pool)**:
+The SSOT set of structurally-different role stances in `references/role-matrix.md` — base {B,C,A} plus optional T/S/O/D/L/F/U/R/P/E, each with a one-line intro and trigger signal. The preparation phase recommends a subset; the Human adjusts.
+_Avoid_: fixed roles, persona list, role matrix (overloaded)
+
+**固定议程 / 动态议程 (fixed / dynamic agenda)**:
+F1–F5 bottom-line invariants every discussion must complete (define problem / confirm+dispatch roles / independent effective viewpoints / human round-by-round decision / synthesize+deposit), plus a state-driven dynamic loop that only adds focused rounds or reorders *within* F1–F5 — it never skips a fixed stage.
+_Avoid_: agenda template, meeting agenda, phases, optional stages
+
+**跨会话独立 Agent (cross-session independent Agent)**:
+A separate Agent session (different model/provider preferred) that loads `zj-discuss-view --role X <sub-doc>` and writes one structurally-different viewpoint — the only trustworthy isolation. Same-session SubAgent previews are low-weight and **never** authority.
+_Avoid_: roleplay, same-session agent, subagent-as-isolation
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

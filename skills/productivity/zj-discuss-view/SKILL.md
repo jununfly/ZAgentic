@@ -1,7 +1,7 @@
 ---
 name: zj-discuss-view
 description: Companion to zj-discuss. Loaded in a SEPARATE independent Agent session to take one role on a sub-problem: Read the sub-document original, write an independent viewpoint into ## Agent viewpoints, and resist echo-chamber collapse. Used once per role, per sub-document.
-argument-hint: "--role <主力AI|B|C|A|自定义> <sub-doc-path>"
+argument-hint: "--role <role-key-from-pool|自定义> <sub-doc-path>  (or --all <sub-doc-path>)"
 ---
 
 # zj-discuss-view
@@ -25,15 +25,14 @@ genuinely runtime-isolated from the others — not a same-session roleplay.
 
 ## Workflow
 
-1. Receive from the Human: the `<sub-doc-path>` and your `--role`.
+1. Receive from the Human: the `<sub-doc-path>` and your `--role` (a key from
+   the `zj-discuss` role pool, or a Human-defined custom key). With `--all`, print
+   the sub-document's full declared role set as ready-to-paste launch lines and stop.
 2. `Read <sub-doc-path>` in full.
-3. Take the assigned role's structural stance (see `references` in
-   `zj-discuss/references/role-matrix.md`):
-   - `主力AI` — product pragmatism + architecture integration
-   - `B` — engineering reality / deliverability
-   - `C` — product/market/user value
-   - `A` — constraints / long-term consistency
-   - custom — apply the same "structurally different stance" discipline.
+3. Take the assigned role's structural stance (see `zj-discuss/references/role-matrix.md`,
+   the SSOT for role semantics — B/C/A are the default base; T/S/O/D/L/F/U/R/P/E are
+   optional pool members; a custom key must still apply the same "structurally
+   different stance" discipline). Argue from your own stance's difference anchor.
 4. Write your independent viewpoint under `## Agent viewpoints` in the
    sub-document, with the `视角来源` header. Answer the open questions
    (scope 草案) from your stance. Do **not** echo the file's prior content as
