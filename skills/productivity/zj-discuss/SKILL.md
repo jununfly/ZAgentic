@@ -65,10 +65,10 @@ use `zj-discuss-view` + `zj-steelman` directly; do not spin up the full set.
 
 For each sub-document:
 
-1. `zj-discuss` generates **N briefings**, one per role from `role-matrix.md`.
-   Each briefing is stamped with the role's stance plus a **mandatory "Read
-   `<sub-doc-path>` original" order**. **Refuse to generate a briefing if the
-   sub-document file is not on disk.**
+1. `zj-discuss` 为每子文档的**独立视角（B/C/A）**各生成一份 briefing（主力AI 为
+   整合者，在主会话直接写整合立场，不走 briefing）。每份 briefing 盖章角色立场 +
+   **强制「Read `<sub-doc-path>` 原文」令**，落点约定
+   `<讨论文件夹>/briefings/<sub-slug>-briefing-<role>.md`。**子文档不在磁盘则拒生成 briefing。**
 2. Human copies each briefing into a **separate cross-session independent
    Agent**, loads `zj-discuss-view --role X <sub-doc-path>`; that Agent writes
    its independent viewpoint into `## Agent viewpoints`.
@@ -100,8 +100,10 @@ set and, after Human confirmation, delete the folder.
    `Read` the file itself. No human-relayed summaries of A's stance to B. No
    "please refute A" adversarial instructions — assign structurally different
    roles instead.
-2. **Structurally different roles.** Assign roles from `role-matrix.md` with
-   genuinely different structural stances, not the same lens relabeled.
+2. **Structurally different roles.** The independent viewpoints are **B / C / A**
+   from `role-matrix.md` — genuinely different structural stances, not the same
+   lens relabeled. **主力AI is the integrator** (main session, low weight), not
+   one of the isolated viewpoints.
 3. **Anti-echo-chamber.** Same-session roleplay is *not* runtime isolation;
    mark it `同会话SubAgent(低权重)` and treat its weight accordingly.
 4. **Convergence.** Cover 执行 / 产品 / 市场 / 架构, then stop adding
