@@ -76,6 +76,8 @@ use `zj-discuss-view` + `zj-steelman` directly; do not spin up the full set.
 
 ### Phase 2 — Per-sub-document independent discussion (Q-C + Q-E)
 
+每个子文档的讨论轮次受下方「## 研讨会议程（固定 + 动态）」约束：固定议程 F1–F5 是不可跳过的底线，动态议程决策函数（状态评估 → 决策 → 执行 → 再评估）驱动每轮下一步，并在本阶段各步骤间闭环执行。
+
 For each sub-document, according to its **declared required role set**
 (variable, chosen in the preparation phase — **not** hardcoded B/C/A, **not**
 fixed to three agents):
@@ -132,8 +134,8 @@ set and, after Human confirmation, delete the folder.
 
 - **F1 — 定义核心问题**：MASTER 的「核心问题 + 成功判据」必须清晰、可验证；
   含糊则回到解构，不进入讨论。
-- **F2 — 角色确认与分发**：准备阶段锁定角色集；为每个角色生成 briefing 并分发
-  到跨会话独立 Agent（启动包）。
+- **F2 — 角色确认与分发**：准备阶段锁定角色集；为每个角色生成 briefing（启动包），
+  **由 Human 复制到**跨会话独立 Agent（见 Phase 2 步骤 2 / 5，**非自动分发**）。
 - **F3 — 各角色独立提出有效观点**：每个声明角色都须 `Read` 原文、写出结构错位的
   有效观点；出现回声 / 低质则按硬规则 3 处置。
 - **F4 — Human 逐轮拍板**：每轮 `## Human 拍板` 留痕，允许凭证据 challenge，
@@ -156,8 +158,7 @@ set and, after Human confirmation, delete the folder.
 
 **每轮决策函数（输出下一轮动作）：**
 - 存在未解开放问题 → 派发针对该问题的聚焦轮（相关角色）。
-- 两角色观点尖锐分歧（张力）→ 可加一轮**协调 / 调解**（或引入一个中性的补充角色）
-  显式对齐分歧，而非各说各话。
+- 两角色观点尖锐分歧（张力）→ 针对该分歧**重开真隔离会话对齐分歧**（相关角色各开独立 Agent 重新 `Read` 原文对齐），而非各说各话；**不引入候选池（`role-matrix.md`）之外的角色**。
 - 某观点低质 / 回声 → 标记为 `同会话SubAgent(低权重)` 并要求**重开真隔离会话**。
 - 覆盖不全 → 继续剩余角色。
 - 已达收敛且 conclusion 可执行 → 触发 F5 合成，结束该子文档。

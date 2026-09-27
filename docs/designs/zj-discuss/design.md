@@ -53,7 +53,7 @@
 
 | # | 改进 | 对应 gstack 证据 | 状态 |
 | --- | --- | --- | --- |
-| R1 | `zj-discuss-view --all`（默认 {B,C,A}）+ `--role X,Y` 按需增删 | 一键触发 vs 手动 | 已回写（启动包 + `--all`；见 §3.2 / architecture §1） |
+| R1 | `zj-discuss-view --all`（默认 {B,C,A}）+ 单角色 `--role X`（候选池任一 key 或自定义）；多角色由 `--all` 一次性打印启动包 | 一键触发 vs 手动 | 已回写（启动包 + `--all` + 单角色 `--role`；见 §3.2 / architecture §1） |
 | R2 | 静态 launch-pack 生成器（替代手工拷贝，不建运行时） | ACP 程序化派生 | 已回写（Phase 2 启动包静态生成；见 §3.2） |
 | R3 | subdoc-template 增状态协议字段 + 预演结构性闸门（conclusion 无预演字段）+ 预演可见标签 | Completion Status 协议 | 待回写（本轮未覆盖） |
 | R4 | 轻量可重算度量注册表（单一 schema，被 sub-01/02 同构引用） | compression 度量 | 已定义 schema（见 §9，未激活，待 PoC） |
