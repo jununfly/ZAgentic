@@ -10,3 +10,5 @@ General workflow tools, not code-specific.
 - **[zj-writing-for-agents](./zj-writing-for-agents/SKILL.md)** — Reference for writing any document an agent consumes (skills, AGENTS.md/CLAUDE.md, pointer-reached docs): context pointers, progressive disclosure, leading words, pruning.
 - **[zj-teach](./zj-teach/SKILL.md)** — Teach the user a new skill or concept over multiple sessions via a stateful teaching workspace (mission, resources, lessons, reference, glossary, learning records).
 - **[zj-to-questionnaire](./zj-to-questionnaire/SKILL.md)** — Turn a decision the user can't answer alone into a Markdown questionnaire for one person to fill in (async or in a meeting). User-only.
+- **[zj-discuss](./zj-discuss/SKILL.md)** — Decompose a complex problem into a master doc + independent sub-documents (one issue, one doc), run per-sub-problem multi-agent independent discussion, synthesize, and hand off to zj-docs-ontology for deposition.
+- **[zj-discuss-view](./zj-discuss-view/SKILL.md)** — Companion to zj-discuss: in a separate independent Agent session, Read a sub-document original and write one structurally-different role's independent viewpoint (anti-echo-chamber).
