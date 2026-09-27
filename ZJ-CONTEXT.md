@@ -800,8 +800,24 @@ F1–F5 bottom-line invariants every discussion must complete (define problem / 
 _Avoid_: agenda template, meeting agenda, phases, optional stages
 
 **跨会话独立 Agent (cross-session independent Agent)**:
-A separate Agent session (different model/provider preferred) that loads `zj-discuss-view --role X <sub-doc>` and writes one structurally-different viewpoint — the only trustworthy isolation. Same-session SubAgent previews are low-weight and **never** authority.
-_Avoid_: roleplay, same-session agent, subagent-as-isolation
+A separate Agent session (different model/provider preferred) that loads `zj-discuss-view --role X <sub-doc>` and writes one structurally-different viewpoint — the only trustworthy isolation. Same-session SubAgent previews are low-weight and **never** authority. Corollary: one session carries exactly one viewpoint, which is why the `--role X,Y` comma syntax was **formally closed** rather than implemented (see R1 in `docs/designs/zj-discuss/design.md`); `--all` emits separate launch lines instead.
+_Avoid_: roleplay, same-session agent, subagent-as-isolation, multi-role-in-one-session
+
+**启动包 (launch pack)**:
+The one ready-to-paste Markdown file written per declared role by `scripts/launch_pack.py`, under `<讨论文件夹>/briefings/<sub-slug>-launchpack-<role>.md`. It carries the role's structural stance, the mandatory "Read the original" order, and the exact `zj-discuss-view --role X <path>` command, replacing hand-written per-role copies.
+_Avoid_: briefing, prompt template, handoff packet (that is `zj-handoff`'s term)
+
+**静态生成器 (static generator)**:
+`scripts/launch_pack.py`'s mandated shape: it reads Markdown and writes Markdown, and never starts, orchestrates, or contacts a session. A regression guard (`NoRuntimeInvariant`) mechanically forbids runtime primitives, because a session runtime would reclassify the approach under the capability-fit decision model.
+_Avoid_: launcher service, orchestrator, runtime, session spawner
+
+**状态协议 (status protocol)**:
+The machine-checkable enum on a sub-document conclusion — `DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT` — replacing a vague ✅. `BLOCKED` and `NEEDS_CONTEXT` are deliberately distinct: cannot-be-done versus not-enough-information.
+_Avoid_: done flag, ✅ status, completed marker, open/closed
+
+**结构性闸门 (structural gate)**:
+`scripts/check_subdoc.py` — the mechanical enforcer of source-marker, preview-label, and conclusion invariants (exit 0 clean / 1 violation / 2 unreadable). Named as a gate precisely because the previous round proved that stating these rules in prose does not make them happen.
+_Avoid_: convention, guideline, best practice, self-discipline
 
 ## Flagged ambiguities
 
