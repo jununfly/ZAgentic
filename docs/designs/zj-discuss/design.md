@@ -59,6 +59,7 @@
 | R4 | 轻量可重算度量注册表（单一 schema，被 sub-01/02 同构引用） | compression 度量 | 已定义 schema（见 §9，未激活，待 PoC） |
 | R5 | 集成边界文本：跨 provider 评审=组件引用、learnings=薄层复用、digest=voice-only | suite/reuse ladder | 已回写 —— **按处方落点进 `SKILL.md`「外部能力集成边界（选择性复用）」**（此前仅存于 §8 导致 SKILL 侧零命中），完整论证仍见 §8 |
 | R6 | ZJ-CONTEXT.md 领域词注册 | — | 已回写（ZJ-CONTEXT.md `## Discussion methodology`） |
+| R7 | 独立性阶梯「非降级自检项」成为 SKILL 硬规则 + 机械闸门 | gstack 跨 provider 范式 | 已回写 —— SKILL.md 硬规则 6 + `check_subdoc.py` 第 4 项检查。注：本项属**处方第 4 条的子条款**，未被 R3/R4 覆盖；按「六条」计数时会漏判，核账到子条款才暴露 |
 
 ---
 

@@ -21,8 +21,13 @@ import sys
 from pathlib import Path
 
 VALID_STATUS = {"DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT"}
-ALLOWED_MARKERS = {"跨会话独立Agent", "同会话SubAgent(低权重)"}
+CROSS_SESSION_MARKER = "跨会话独立Agent"
 PREVIEW_MARKER = "同会话SubAgent(低权重)"
+ALLOWED_MARKERS = {CROSS_SESSION_MARKER, PREVIEW_MARKER}
+# Statuses that *claim* the sub-problem is resolved. They are the only ones the
+# non-degradation rule polices: BLOCKED / NEEDS_CONTEXT make no such claim and
+# are therefore exempt (a doc honestly reporting "not done" is not degrading).
+CLAIMED_STATUS = {"DONE", "DONE_WITH_CONCERNS"}
 PREVIEW_LABEL = "⚠ 非独立"
 
 STATUS_ENUM_TEXT = " / ".join(sorted(VALID_STATUS))
@@ -97,6 +102,7 @@ def _check_conclusion(body):
 
 
 def _check_viewpoint(heading, body):
+    """Validate one viewpoint block's source marker (and its preview label)."""
     role = _role_of(heading)
     marker_match = SOURCE_RE.search(body)
     if not marker_match:
@@ -115,19 +121,47 @@ def _check_viewpoint(heading, body):
     return []
 
 
+def _check_non_degradation(conclusion_body, has_cross_session_anchor):
+    """Hard rule 3's operational form: a claimed conclusion needs a real anchor.
+
+    The independence ladder is cross-provider > cross-session > same-session.
+    Same-session is a floor to pass through, never a place to settle, so a
+    conclusion claiming DONE / DONE_WITH_CONCERNS must rest on at least one
+    cross-session viewpoint.
+    """
+    if has_cross_session_anchor:
+        return []
+    status_match = STATUS_RE.search(conclusion_body)
+    status = status_match.group(1).strip() if status_match else None
+    if status not in CLAIMED_STATUS:
+        return []
+    return [
+        "非降级红线：「{}」声称已收敛，但本子文档没有任何 `{}` 视角作为锚点"
+        "（仅有同会话预演，或根本没有视角）。同会话是下限而非终点——"
+        "须重开真隔离会话取得至少一个独立视角后方可标为已结论。".format(
+            status, CROSS_SESSION_MARKER
+        )
+    ]
+
+
 def check(text):
     """Return the list of violations in one sub-document body."""
     violations = []
     conclusion_body = None
+    has_cross_session_anchor = False
     for heading, body in split_sections(text):
         if VIEWPOINT_RE.match(heading):
             violations.extend(_check_viewpoint(heading, body))
+            marker_match = SOURCE_RE.search(body)
+            if marker_match and marker_match.group(1).strip(STRIP_CHARS) == CROSS_SESSION_MARKER:
+                has_cross_session_anchor = True
         elif heading.lower().startswith("## conclusion"):
             conclusion_body = body
     if conclusion_body is None:
         violations.append("缺少 `## conclusion` 段")
     else:
         violations.extend(_check_conclusion(conclusion_body))
+        violations.extend(_check_non_degradation(conclusion_body, has_cross_session_anchor))
     return violations
 
 

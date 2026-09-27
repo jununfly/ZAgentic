@@ -819,6 +819,10 @@ _Avoid_: done flag, ✅ status, completed marker, open/closed
 `scripts/check_subdoc.py` — the mechanical enforcer of source-marker, preview-label, and conclusion invariants (exit 0 clean / 1 violation / 2 unreadable). Named as a gate precisely because the previous round proved that stating these rules in prose does not make them happen.
 _Avoid_: convention, guideline, best practice, self-discipline
 
+**独立性阶梯 (independence ladder)**:
+The ordered isolation strengths a viewpoint can come from — cross-provider session > same-provider cross-session > same-session SubAgent preview. The method only ever moves *up* it, never down: same-session is a floor you pass through, not a place to settle. Operational form is the **非降级自检项** — a conclusion claiming `DONE` / `DONE_WITH_CONCERNS` must rest on at least one cross-session viewpoint, enforced by the structural gate. A doc honestly reporting `BLOCKED` makes no such claim and is exempt.
+_Avoid_: optional isolation, roleplay, "cross-session when convenient", provider choice as mere style
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:
