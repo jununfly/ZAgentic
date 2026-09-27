@@ -61,6 +61,45 @@
 | R6 | ZJ-CONTEXT.md 领域词注册 | — | 已回写（ZJ-CONTEXT.md `## Discussion methodology`） |
 | R7 | 独立性阶梯「非降级自检项」成为 SKILL 硬规则 + 机械闸门 | gstack 跨 provider 范式 | 已回写 —— SKILL.md 硬规则 6 + `check_subdoc.py` 第 4 项检查。注：本项属**处方第 4 条的子条款**，未被 R3/R4 覆盖；按「六条」计数时会漏判，核账到子条款才暴露 |
 
+### 决策记录（决策模型要求项）
+
+> 本小节自 discussions 过程文件夹抽取而来，**在阶段 2 删除该文件夹之前**完成沉淀。
+> 缺了它的后果：后人无法在上游变更时重新评估分类，只能盲信结论。
+
+**候选项目及固定版本 O**：`github.com/garrytan/gstack` **v1.2.0**。能力清单：
+O-u1 ACP 程序化派生、O-u2 router+preamble、O-r1 跨 provider 外部评审（`/codex`）、
+O-r2 Completion Status、O-f1 compression 度量、O-c1 suite 协同、O-c2 2KB digest、
+O-c3 跨 provider 选择性复用范式。
+
+**R × O 证据矩阵（全局收敛）**
+
+| R | 命中的 gstack O | 判定 | 约束来源 |
+| --- | --- | --- | --- |
+| R-u1 派发自动化 | O-u1 ACP 派生 | C 复用（产物形状 → 静态生成器） | 不引运行时，约束 1 |
+| R-u2 角色零认知 | O-u2 router 思路 | C 复用（`--all` 参数化） | 不做常驻 router |
+| R-r1 独立性升级 | O-r1 `/codex` | C 复用（推荐非强制） | 不引 gstack/base |
+| R-r2 防回声室 | O-r2 状态协议 | C 复用（sub-doc 契约） | 极简 |
+| R-f1 可度量价值 | O-f1 compression | C 复用（轻量日志度量） | 单一注册表 |
+| R-c1 集成边界 | O-c1 suite | **否决（→ D 风险）** | suite 化会拥有主体状态 |
+| R-c2 总所有权成本 | O-c2 digest | C 复用（voice-only） | 不覆盖方法体系 |
+
+**自有责任 E 与成本估计**：digest 注入 ≈0.5 人日；`/codex` 跨 provider 评审 ≈3–5 人日；
+launch-pack 生成器 ≈1–2 人日；状态协议 / 度量注册表 ≈1 人日；learnings 复用 ≈1 人日。
+**总 E ≈ 7–10 人日**，全部为可移除薄层，无运行时 / 基座 ownership。
+对照：自建 suite ≈2–4 周 + 长期运维 → D，已被红线排除。
+
+**采用理由**：gstack 仅作组件来源，zj-discuss 方法体系（role-matrix / briefing / R×O）
+为自有主体，无逻辑漂移；E 可控、可退。
+
+**主要风险**：① 语义兼容未知（digest / learnings 注入不破坏 zj 子文档结构）→ 最小 PoC 验证；
+② 跨 provider 派生依赖 Human 手动开启非主力 provider 会话，harness 无一键能力 → 不阻断（手动零成本）。
+
+**退出路径**：任一 C 组件失效可独立替换，无 suite 级锁定；若 gstack 未来提供非破坏性的
+外部方法体系接入不变式，可重评为 B1。
+
+**重新评估触发**：① gstack 大版本变更 suite 接入不变式；② WorkBuddy harness 原生支持
+spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可升级）。
+
 ---
 
 ## 3. 本轮追加的 4 项改进（已实现于技能文件）
