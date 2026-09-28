@@ -250,8 +250,8 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 
 ## References
 
-- `references/master-template.md` — MASTER.md skeleton (incl. disposition contract).
-- `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic).
+- `references/master-template.md` — MASTER.md skeleton (incl. disposition contract + 可选 voice-only digest 块).
+- `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic; 末尾含可选 voice-only digest 块).
 - `references/role-matrix.md` — candidate role pool + recommendation heuristic + convergence rule (SSOT for role semantics).
 - `scripts/launch_pack.py` — static per-role launch-pack generator (replaces manual briefing copying).
 - `scripts/check_subdoc.py` — structural gate enforcing the four invariants above.

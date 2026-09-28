@@ -61,3 +61,17 @@
 > ```json
 > <在此粘贴 metrics.py 输出>
 > ```
+
+## AI 上下文 digest（可选，voice-only）
+
+> 本块**可选**。零安装复用 zj 的 ethos/voice，让新开会话的 Agent 进入正确立场
+> （gstack 2KB reuse ladder 的 voice-only 同构）。**不自动注入讨论状态 digest**
+> （见 `design.md` §8 集成边界），仅作人工/agent 可填的落点。
+>
+> **解析惰性契约**：度量计算机（`metrics.py`）按 `## 解决思路` 段精确取
+> solution 字符量；本块放在其后的独立 `##` 段、且内容置于下方 ``` 代码块内，
+> 绝不会污染 solution 度量，也不影响子文档级 raw/solution 重算。
+
+```text
+<在此粘贴本讨论的 voice-only digest：zj-discuss 的立场/语气简述，或留空>
+```
