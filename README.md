@@ -178,3 +178,4 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-code-research](./skills/research/zj-code-research/SKILL.md) — Build a commit-scoped repository map and bounded architecture study.
 - [zj-tech-research-report](./skills/research/zj-tech-research-report/SKILL.md) — Turn findings and sealed ledgers into a technical-solution research report.
 - [zj-systematic-research](./skills/research/zj-systematic-research/SKILL.md) — Systematically study a product, company, concept, technology, or person.
+- [zj-open-source-capability-fit](./skills/research/zj-open-source-capability-fit/SKILL.md) — Apply the ZInitiatives capability-fit decision model to an external OSS candidate (R×O matrix → A/B/C/D, with mechanical gates).

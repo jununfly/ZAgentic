@@ -87,7 +87,11 @@ discussions/<self-explain-slug>/        # 仓库根，无 discuss- 前缀
 | `zj-docs-ontology` | 阶段 2 只吐 `<conclusion>+<suggested-category>+<pointer>`，绝不运行 docs_governance.py |
 | `zj-grilling` | 进入 discuss 前用于锐化核心问题 framing |
 
-## 7. 决策模型分类（ZInitiatives）
+## 7. 决策模型分类（ZInitiatives → 本仓库 SSOT）
+
+> 模型定义见 `docs/agreements/open-source-capability-fit-decision-model.md`
+> （权威源 [ZInitiatives](https://github.com/jununfly/ZInitiatives/blob/main/docs/agreements/open-source-capability-fit-decision-model.md)，
+> 用户废弃项目、模型状态：已接受；本仓库 SSOT）。
 
 全局分类 = **C（选择性复用）**：gstack 作组件来源（启动包形态、`--all`、跨 provider 评审范式、
 状态协议、轻量度量注册表、digest 的 voice 部分），zj-discuss 方法体系为自有主体。

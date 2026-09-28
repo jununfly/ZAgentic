@@ -10,9 +10,12 @@
 
 ## 0. 决策模型与证据来源（复盘基准）
 
-- **决策模型**：ZInitiatives `docs/agreements/open-source-capability-fit-decision-model.md`
-  —— `R × O` 证据矩阵 → 有效拟合度（覆盖×语义匹配×可组合性）→ 总所有权成本 E →
-  A/B/C/D 分类（优先级 A > B1 > B2 > C > B3）。
+- **决策模型**：`docs/agreements/open-source-capability-fit-decision-model.md`（本仓库 SSOT；
+  权威源 [ZInitiatives](https://github.com/jununfly/ZInitiatives/blob/main/docs/agreements/open-source-capability-fit-decision-model.md)，
+  用户废弃项目，模型状态：已接受）。定义 `R × O` 证据矩阵 →
+  有效拟合度（功能覆盖×语义匹配×可组合性）→ 总所有权成本 E →
+  决策分类 `A`（直接采用）/ `B`（扩展采用，细分 B1/B2/B3）/ `C`（选择性复用）/ `D`（继续搜索）；
+  默认优先级 `A > B1 > B2 > C > B3`（`D` 为搜索循环回环态，非终态否决；见 §2 待核对偏离）。
 - **证据源**：`github.com/garrytan/gstack` 本地副本（v1.2.0）。抽取的可迁移模式：
   1. 跨 provider 异构独立性（`/codex` 外部评审 = 不同模型，权重高于同 provider 跨会话）
   2. user-sovereignty「呈现而非断言」（输出多视角与选项，不替 Human 下定论）
@@ -197,6 +200,12 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
   PoC 同时硬化了一个普遍解析 bug。R4 度量计算机只读重算、不注入，仍不受此影响。
 - [ ] 跨 provider 评审（gstack `/codex` 范式）在 WorkBuddy harness 的可行性待验证——
   当前「跨会话独立 Agent」由隔离子 Agent 模拟，生产真隔离仍靠 Human 另开会话。
+- [ ] **设计补丁：角色实现范式升级（ingest gstack 范式）** — PROPOSED，待评审。
+  根因 = §0 立项意图（ingest 成熟角色实现）与 §2/§8 实际落地（C 模式抽取 + thin prompt
+  角色）矛盾；方案 = 给 13 视角角色补 gated method（带闸门的可执行 method）+ 混合 ingest
+  gstack domain 无关过程角色；决策模型重评 gstack 可迁移部分 C→B1、suite/运行时维持 D。
+  详见 `patch-role-impl-paradigm-ingest.md`。**前置（阻塞）**：修复 §0 ZInitiatives 悬空引用
+  （`docs/agreements/open-source-capability-fit-decision-model.md` 仓库内不存在、无 URL）。
 
 ---
 

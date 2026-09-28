@@ -79,11 +79,20 @@ recognises as the routing surface rather than a primary view page.
 - [Research bucket](architecture/ta-skill-bucket-research.md) — What does the `research/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.research`.
 - [Personal skill tree](architecture/ta-zagentic-personal-tree.md) — What does the root-level `personal/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.personal-tree`.
 
+## Agreements
+
+Long-lived agreement documents that bind cross-document methodology decisions.
+Each is a methodology SSOT ingested from an external source or ratified in-repo.
+
+| Document | Bounded question | Authority boundary |
+| --- | --- | --- |
+| [open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) | How do we decide whether to ingest / merge an external OSS capability (`R × O` matrix → `A/B/C/D`)? | Methodology SSOT, faithfully ingested from [ZInitiatives](https://github.com/jununfly/ZInitiatives/blob/main/docs/agreements/open-source-capability-fit-decision-model.md) (user's retired project; model status: accepted). Applied by `zj-discuss` §0/§2 and operationalized by the `zj-open-source-capability-fit` skill (`skills/research/zj-open-source-capability-fit/`). A `D`-semantics reconciliation note (canonical `D` = continue-searching, not terminal veto) is tracked in the document's ZAgentic annotation section. |
+
 ## Lazy categories
 
 Create a category only when the repository has a concrete document for its
 bounded question. The current empty categories are `methods/`,
-`agreements/`, `testing/`, `benchmarks/`, and `references/`.
-When created, each must state its lifecycle, bounded question, and authority
-boundary here. New architecture pages also follow `zj-docs-architecture`'s
+`testing/`, `benchmarks/`, and `references/` (`agreements/` is now active — see
+its section above). When created, each must state its lifecycle, bounded question, and
+authority boundary here. New architecture pages also follow `zj-docs-architecture`'s
 view contract.
