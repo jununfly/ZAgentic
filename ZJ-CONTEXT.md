@@ -831,6 +831,30 @@ _Avoid_: dashboard, metrics server, runtime analytics, injected digest
 §8 — digest is **voice-only** (inject zj's ethos/voice, NOT auto-inject discussion-state digest); the optional `## AI 上下文 digest` block in the subdoc / MASTER templates is a *landing spot* a Human/agent may fill, not an auto-injection mechanism. The minimum PoC (`tests/test_digest_poc.py`) proved digest injection is **semantically compatible** — `check_subdoc.py` and `metrics.py` treat the block as inert (no phantom viewpoint, no inflated raw/solution volume, no gate violation). The PoC surfaced and fixed a general parsing bug: `split_sections` in both scripts is now **fence-aware** (code-fence ``` / ~~~ lines never split as headings), so any digest that echoes `### 视角：X` inside a fence is inert. Decision reaffirmed: remain voice-only; structural (state) digest stays off, but the parsing door is open if ever wanted.
 _Avoid_: auto-injected discussion-state digest, bare `#` headings inside a digest block, runtime digest server
 
+### Decision methodology (open-source capability fit)
+
+Vocabulary for the `zj-open-source-capability-fit` decision instrument under `skills/research/` — applying the ZAgentic open-source capability-fit model to decide whether to ingest / merge an external OSS capability.
+
+**开源能力拟合决策模型 (open-source capability-fit decision model)**:
+开源能力拟合决策模型（SSOT：`docs/agreements/open-source-capability-fit-decision-model.md`）。以目标需求 `R` 与候选项目 `O` 为单位能力，算 `有效拟合度 = 覆盖×语义匹配×可组合性` 与 `总所有权成本 E`，判 A/B/C/D。
+_Avoid_: 自创选型框架, 通用评分卡, 主观打分
+
+**zj-open-source-capability-fit**:
+把上述模型操作化成**带机械闸门**的决策仪器（`skills/research/zj-open-source-capability-fit/`）；计算与判定由 `scripts/capability_fit.py` 确定性执行，闸门(G1–G4)不过就拒绝自信分类。与 `zj-tech-research-report` 的边界：本技能只产 R×O 矩阵 + A/B/C/D 判定，report 写完整选型报告并引用本技能结论，二者不重做判定逻辑。
+_Avoid_: 薄 prompt 角色, 通用研究报告技能, 选型报告(那是 tech-research-report)
+
+**A/B/C/D 分类 (fit classification)**:
+A 直接采用(关键完整、G 与 E 可忽略) / B 扩展采用(缺口小且可控、开源为母体、自有是薄适配层，细分 B1 adapter·B2 upstream-contrib·B3 fork) / C 选择性复用(自有架构为主体、只复用组件) / D 继续搜索(关键缺失、拟合低、成本非线性或 E 超范围)。默认优先 A>B1>B2>C>B3，非强制，偏离须记录理由。
+_Avoid_: 简单打分排序, 终态否决(误读 D), 忽略可控 B 边界
+
+**可控 B 边界 (controlled-B boundary)**:
+扩展采用要求自有部分是可移除薄层（身份映射 / 查询适配 / 状态转换 / claim·lease 协调语义 / 来源可追溯适配）；若适配层开始拥有主体数据模型或业务状态（存储同步 / 完整检索记忆 / ACL 权限 / 完整工作流平台），须降为 C 或 D。这是 zj-discuss 红线"适配层不得拥有主体方法状态"的同源依据。
+_Avoid_: 把适配层做成主体, 误判为 A, 忽视红线
+
+**D = 继续搜索 (D is continue-searching, not terminal veto)**:
+canonical 语义：`D` 是搜索循环的**回环态**——该候选不满足、引入新候选后回到拆解重评，不是"永不采用"的终态否决。单候选评估时功能接近"不选"，但语义不同；zj-discuss design.md §2 曾误读为"否决/拒绝"，已在 SSOT 标注偏离。
+_Avoid_: 把 D 当否决, 在单候选下混用两语义
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

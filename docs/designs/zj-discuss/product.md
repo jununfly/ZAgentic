@@ -29,7 +29,8 @@
 
 ## 4. 三轴目标（来自 gstack + 决策模型复盘）
 
-用 ZInitiatives 的「开源能力拟合决策模型」框定，并结合 gstack v1.2.0 证据，
+用本仓库 `docs/agreements/open-source-capability-fit-decision-model.md`
+（开源能力拟合决策模型）框定，并结合 gstack v1.2.0 证据，
 把改进收敛为三个轴：
 
 | 轴 | 含义 | 关键证据（gstack） | 达成手段 |
