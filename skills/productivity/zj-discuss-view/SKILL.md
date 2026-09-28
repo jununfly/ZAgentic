@@ -1,6 +1,6 @@
 ---
 name: zj-discuss-view
-description: Companion to zj-discuss. Loaded in a SEPARATE independent Agent session to take one role on a sub-problem: Read the sub-document original, write an independent viewpoint into ## Agent viewpoints, and resist echo-chamber collapse. Used once per role, per sub-document.
+description: Load zj-discuss-view when a Human pastes a sub-document path and asks a separate independent Agent to take one role. It reads the original, writes one isolated viewpoint into ## Agent viewpoints, and refuses echo-chamber collapse. Use once per role, per sub-document.
 argument-hint: "--role <role-key-from-pool|自定义> <sub-doc-path>  (or --all <sub-doc-path>)"
 ---
 
