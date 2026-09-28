@@ -10,9 +10,7 @@
 
 ## 0. 决策模型与证据来源（复盘基准）
 
-- **决策模型**：`docs/agreements/open-source-capability-fit-decision-model.md`（本仓库 SSOT；
-  权威源 [ZInitiatives](https://github.com/jununfly/ZInitiatives/blob/main/docs/agreements/open-source-capability-fit-decision-model.md)，
-  用户废弃项目，模型状态：已接受）。定义 `R × O` 证据矩阵 →
+- **决策模型**：本仓库自创方法论 `docs/agreements/open-source-capability-fit-decision-model.md`（SSOT）。定义 `R × O` 证据矩阵 →
   有效拟合度（功能覆盖×语义匹配×可组合性）→ 总所有权成本 E →
   决策分类 `A`（直接采用）/ `B`（扩展采用，细分 B1/B2/B3）/ `C`（选择性复用）/ `D`（继续搜索）；
   默认优先级 `A > B1 > B2 > C > B3`（`D` 为搜索循环回环态，非终态否决；见 §2 待核对偏离）。
@@ -204,8 +202,7 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
   根因 = §0 立项意图（ingest 成熟角色实现）与 §2/§8 实际落地（C 模式抽取 + thin prompt
   角色）矛盾；方案 = 给 13 视角角色补 gated method（带闸门的可执行 method）+ 混合 ingest
   gstack domain 无关过程角色；决策模型重评 gstack 可迁移部分 C→B1、suite/运行时维持 D。
-  详见 `patch-role-impl-paradigm-ingest.md`。**前置（阻塞）**：修复 §0 ZInitiatives 悬空引用
-  （`docs/agreements/open-source-capability-fit-decision-model.md` 仓库内不存在、无 URL）。
+  详见 `patch-role-impl-paradigm-ingest.md`（决策模型已落为本仓库自创方法论 SSOT，重评可直接引用）。
 
 ---
 

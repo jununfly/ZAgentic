@@ -833,10 +833,10 @@ _Avoid_: auto-injected discussion-state digest, bare `#` headings inside a diges
 
 ### Decision methodology (open-source capability fit)
 
-Vocabulary for the `zj-open-source-capability-fit` decision instrument under `skills/research/` — applying the ZInitiatives capability-fit model to decide whether to ingest / merge an external OSS capability.
+Vocabulary for the `zj-open-source-capability-fit` decision instrument under `skills/research/` — applying the ZAgentic open-source capability-fit model to decide whether to ingest / merge an external OSS capability.
 
 **开源能力拟合决策模型 (open-source capability-fit decision model)**:
-ZInitiatives 的模型，ingested 为本仓库 SSOT（`docs/agreements/open-source-capability-fit-decision-model.md`，原仓库状态：已接受）。以目标需求 `R` 与候选项目 `O` 为单位能力，算 `有效拟合度 = 覆盖×语义匹配×可组合性` 与 `总所有权成本 E`，判 A/B/C/D。它不是本仓库自创方法论，本仓库只作忠实转录 + 本地注解。
+ZAgentic 自创的开源能力拟合决策模型（SSOT：`docs/agreements/open-source-capability-fit-decision-model.md`）。以目标需求 `R` 与候选项目 `O` 为单位能力，算 `有效拟合度 = 覆盖×语义匹配×可组合性` 与 `总所有权成本 E`，判 A/B/C/D。本仓库自创方法论，非外部转录。
 _Avoid_: 自创选型框架, 通用评分卡, 主观打分
 
 **zj-open-source-capability-fit**:

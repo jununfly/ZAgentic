@@ -1,10 +1,9 @@
 # 模型应用指南 (zj-open-source-capability-fit)
 
 > 本文件是《开源能力拟合决策模型》的**应用映射**，不是模型副本。
-> 模型本体与权威定义见
+> 模型本体与权威定义见本仓库
 > [docs/agreements/open-source-capability-fit-decision-model.md](../../../docs/agreements/open-source-capability-fit-decision-model.md)
-> （ingested from `jununfly/ZInitiatives`，状态：已接受）。
-> 任何与模型本体的分歧一律回到 SSOT，不在本文件改写定义。
+> （ZAgentic 自创方法论 SSOT）。任何与模型本体的分歧一律回到 SSOT，不在本文件改写定义。
 
 本指南把模型的七个环节映射到 `scripts/capability_fit.py` 的输入与计算，确保操作化忠实于模型。
 

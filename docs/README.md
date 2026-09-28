@@ -82,11 +82,11 @@ recognises as the routing surface rather than a primary view page.
 ## Agreements
 
 Long-lived agreement documents that bind cross-document methodology decisions.
-Each is a methodology SSOT ingested from an external source or ratified in-repo.
+Each is a methodology SSOT authored in-repo or ratified in-repo.
 
 | Document | Bounded question | Authority boundary |
 | --- | --- | --- |
-| [open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) | How do we decide whether to ingest / merge an external OSS capability (`R × O` matrix → `A/B/C/D`)? | Methodology SSOT, faithfully ingested from [ZInitiatives](https://github.com/jununfly/ZInitiatives/blob/main/docs/agreements/open-source-capability-fit-decision-model.md) (user's retired project; model status: accepted). Applied by `zj-discuss` §0/§2 and operationalized by the `zj-open-source-capability-fit` skill (`skills/research/zj-open-source-capability-fit/`). A `D`-semantics reconciliation note (canonical `D` = continue-searching, not terminal veto) is tracked in the document's ZAgentic annotation section. |
+| [open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) | How do we decide whether to ingest / merge an external OSS capability (`R × O` matrix → `A/B/C/D`)? | ZAgentic's own methodology SSOT. Applied by `zj-discuss` §0/§2 and operationalized by the `zj-open-source-capability-fit` skill (`skills/research/zj-open-source-capability-fit/`). |
 
 ## Lazy categories
 

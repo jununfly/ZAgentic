@@ -13,7 +13,7 @@
 
 ## 1. 背景：§0 意图与实际产出的矛盾（根因）
 
-`design.md` §0 的立项意图是：借 **ZInitiatives** 的「开源能力拟合决策模型」，从 `github.com/garrytan/gstack` 这类 OSS **ingest 成熟的角色实现**，让角色有真实行为，而不是靠「简单且单薄的 prompt 令 Agent 扮演角色」。
+`design.md` §0 的立项意图是：借本仓库自创的「开源能力拟合决策模型」，从 `github.com/garrytan/gstack` 这类 OSS **ingest 成熟的角色实现**，让角色有真实行为，而不是靠「简单且单薄的 prompt 令 Agent 扮演角色」。
 
 但文档主体用同一决策模型做了相反的事：
 
@@ -45,8 +45,8 @@
 **目标**
 1. 消除 §0 意图与实际落地的矛盾，让设计文档自洽。
 2. 给 13 个视角角色补「可执行 method + 闸门 + 状态」，使其不再是 thin prompt。
-3. 用 ZInitiatives 决策模型**重评** gstack：可迁移的「方法 / 范式」部分从 C 升到 **B1（ingest + adapt）**，但 suite / 运行时维持 **D（红线不变）**。
-4. 修复 §0 的 ZInitiatives 悬空引用（前置依赖）。
+3. 用本仓库自创决策模型**重评** gstack：可迁移的「方法 / 范式」部分从 C 升到 **B1（ingest + adapt）**，但 suite / 运行时维持 **D（红线不变）**。
+4. 决策模型已落为本仓库自创方法论 SSOT（`docs/agreements/open-source-capability-fit-decision-model.md`），重评 gstack 时直接引用本仓库模型，无需外部来源。
 
 **不做**
 - 不引入 gstack 运行时 / router / suite（维持 D 红线；范式级 ingest 只借范式重写自有角色，不引外部运行时）。
@@ -90,9 +90,9 @@
 
 这些落进主力Ai 编排层，不进入 13 个视角角色集，保持「视角角色 = 讨论视角、过程角色 = 编排流程」的语义边界。
 
-### 4.3 决策模型重评（ZInitiatives R×O）
+### 4.3 决策模型重评（本仓库 R×O 模型）
 
-在 ZInitiatives 决策模型下，对 gstack 的可迁移部分重新打分（维持 D 红线）：
+在本仓库自创决策模型下，对 gstack 的可迁移部分重新打分（维持 D 红线）：
 
 | gstack 能力 | 原判定（§2） | 本补丁重评 | 理由 |
 | --- | --- | --- | --- |
@@ -108,13 +108,13 @@
 
 ## 5. 前置依赖（阻塞）
 
-1. **修复 §0 ZInitiatives 悬空引用**：`docs/agreements/open-source-capability-fit-decision-model.md` 在仓库内不存在、全文无 URL。无论走哪条路线都必须先补一个可解析来源——要么把该 decision-model 落到本仓库某处，要么在 §0 改成 ZInitiatives 仓库的完整外链。否则「决策模型重评」无从溯源。
+1. **决策模型来源已闭合**：模型已落为本仓库自创方法论 SSOT（`docs/agreements/open-source-capability-fit-decision-model.md`），重评 gstack 直接引用本仓库模型，无需外部来源。
 
 ---
 
 ## 6. 执行步骤（ratify 后）
 
-1. 修 §0 ZInitiatives 引用（前置，§5.1）→ 使决策模型可溯源。
+1. 决策模型已为本仓库自创方法论 SSOT，重评直接引用本仓库模型（§5.1 已闭合）。
 2. 在 `role-matrix.md` 给 13 个视角角色各补 §4.1 四件套（先 base {B,C,A}，再 T/S/O/D/L/F/U/R/P/E）。
 3. 新增过程角色（`/office-hours`、`/plan-*`、`/retro` adapt），落主力Ai 编排层（改 `SKILL.md` 准备 / 合成阶段 + `references/`）。
 4. 更新 `design.md` §2 决策矩阵：gstack 可迁移部分 C→B1，并记录本补丁的意图-实际矛盾勘误。
@@ -125,7 +125,7 @@
 
 ## 7. 验收标准（Definition of Done）
 
-- [ ] §0 ZInitiatives 引用可解析（文件存在或外链可达）。
+- [ ] 决策模型为可解析的本仓库自创方法论 SSOT（文件存在）。
 - [ ] 13 个视角角色均含「核查清单 + 强制输出 + 闸门」，不再只有一句话简介。
 - [ ] base 角色 {B,C,A} 的 gated method 经一次真实子文档走查验证「有牙齿」（能产出带证据的结构错位观点，而非复述 persona）。
 - [ ] 过程角色（问题重构 / 评审闸门 / 复盘）已 adapt 并接入编排层。
@@ -147,5 +147,5 @@
 
 1. 角色 gated method 是继续内联在 `role-matrix.md`，还是拆为 `references/role-methods/<key>.md`？（倾向后者，保持 SSOT 可读性。）
 2. 过程角色 adapt 是否只取「闸门结构」，还是连 gstack 的具体评审项一起借鉴？（倾向只取结构。）
-3. 决策模型重评升 B1 后，是否需要把 ZInitiatives 决策模型的「fit 计算」「E 成本」也落到本仓库某处以便后人复评？（关联前置 §5.1。）
+3. 决策模型重评升 B1 后，「fit 计算」「E 成本」已由 `zj-open-source-capability-fit` skill 落为本仓库可复核工具，是否还需补充示例决策记录？（关联 §5.1。）
 4. 是否要把本补丁直接转为 `zj-roadmap-driven` 的 roadmap 节点（而非仅 design patch）？当前以 design patch 形态交付以便评审；ratify 后可转节点。

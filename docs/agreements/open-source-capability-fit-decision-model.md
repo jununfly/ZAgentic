@@ -1,20 +1,10 @@
 # 开源能力拟合决策模型（Open-Source Capability-Fit Decision Model）
 
-> **来源（权威）**：[ZInitiatives · docs/agreements/open-source-capability-fit-decision-model.md](https://github.com/jununfly/ZInitiatives/blob/main/docs/agreements/open-source-capability-fit-decision-model.md)
-> （`jununfly/ZInitiatives`，模型在其原仓库**状态：已接受**）。
-> 本文件于 2026-09-28 从该项目 ingest 进 ZAgentic，作为该模型在 ZAgentic 内的
-> **唯一权威源（SSOT）**。
-> 下方正文为对原模型的**忠实转录**；任何 ZAgentic 侧裁剪 / 适配不得改写本模型核心定义，
-> 只能在文末「ZAgentic 应用注解」中追加标注。
->
-> **用途**：评估是否将某个外部开源项目（或其部分能力）直接采用 / 扩展采用 / 选择性复用 /
-> 继续搜索，产出可复核的 `R × O` 证据矩阵与 `A/B/C/D` 分类。
+> ZAgentic 自创方法论（SSOT），用于评估是否将某个外部开源项目（或其部分能力）
+> 直接采用 / 扩展采用 / 选择性复用 / 继续搜索，产出可复核的 `R × O` 证据矩阵与
+> `A/B/C/D` 分类。
 
 ---
-
-# 开源能力拟合决策模型
-
-状态：已接受
 
 适用范围：评估一个或多个开源项目能否满足既定需求，以及决定直接采用、扩展采用、选择性复用或继续搜索。
 
@@ -140,19 +130,3 @@ A > B1 > B2 > C > B3
 
 **完成标准**：第三方 Agent 仅凭该决策记录，即可复核分类依据，并能识别哪些结论来自证据、哪些仍是假设。
 
----
-
-## ZAgentic 应用注解（非模型本体，仅本地裁剪 / 偏离标注）
-
-- **应用位置**：zj-discuss `design.md` §0 / §2、`architecture.md` §7、`product.md` §4 引用本模型；
-  操作化封装由 `zj-open-source-capability-fit` skill 承担
-  （`skills/research/zj-open-source-capability-fit/`；输入候选 O + 需求 R → 输出 `R × O` 矩阵与判定）。
-- **⚠ 待核对偏离（重要）**：design.md §2 仍将 `D` 表述为「否决 / 拒绝」
-  （如 "对照：自建 suite → D，已被红线排除"、"否决（→ D 风险）"），而本模型 `D = 继续搜索`
-  （即该候选不满足、引入新候选后回到第 2 步重评）。§0 已于 2026-09-28 校正为「继续搜索」。
-  二者在**单候选评估**时功能接近（都意味着不选该候选），但语义不同：canonical `D` 是
-  **搜索循环的回环态，不是终态否决**。建议在 zj-discuss 重评 gstack 时显式统一口径（见
-  `docs/designs/zj-discuss/patch-role-impl-paradigm-ingest.md`）。
-- **B 边界纪律复用**：本模型「可控 B = 可移除薄层」直接支撑 zj-discuss 红线——
-  若适配层开始拥有主体数据模型 / 业务状态（如 suite 化拥有主体状态），应降为 C 或 D。
-  这正是 design.md §2 把 suite / 运行时判 D 的依据；口径统一时须一并校正为「降为 C 或 D」。
