@@ -52,12 +52,25 @@ STRIP_CHARS = " \t`\"'*_\u00a0"
 
 
 def split_sections(text):
-    """Split Markdown into (heading, body) pairs by ATX headings."""
+    """Split Markdown into (heading, body) pairs by ATX headings.
+
+    Fence-aware: lines inside a ``` / ~~~ code fence are never treated as
+    headings, even if they start with ``#``. This keeps a digest block (or any
+    code block) inert to viewpoint/conclusion detection — a digest that echoes a
+    ``### 视角：X`` line inside a fence must not be parsed as a real viewpoint
+    (see design.md §8 digest-injection PoC).
+    """
     sections = []
     heading = None
     body = []
+    in_fence = False
     for line in text.splitlines():
-        if line.startswith("#"):
+        stripped = line.strip()
+        if stripped.startswith(("```", "~~~")):
+            in_fence = not in_fence
+            body.append(line)  # a fence delimiter is content of the section
+            continue
+        if not in_fence and line.startswith("#"):
             if heading is not None:
                 sections.append((heading, "\n".join(body)))
             heading = line.strip()

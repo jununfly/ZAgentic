@@ -827,6 +827,10 @@ _Avoid_: optional isolation, roleplay, "cross-session when convenient", provider
 R4 — `scripts/metrics.py`, a read-only recomputable metric computer. Given a `discussions/<slug>/` folder (or one sub-doc path) it recomputes the §9 schema: `roles_used`, `viewpoint_count` (valid cross-session only), `raw_volume_chars` (all viewpoint blocks), `solution_volume_chars` (MASTER 解决思路 / sub-doc conclusion), `compression_ratio`, and closure (sub-doc-level: total=1, closed iff conclusion ∈ {DONE, DONE_WITH_CONCERNS}; discussion-level aggregates sub-docs). `recomputable` is always `true` — no hidden state. It reads disk and never writes or injects digest/learnings, so it is orthogonal to the §8 structural-digest decision and needs no PoC to activate.
 _Avoid_: dashboard, metrics server, runtime analytics, injected digest
 
+**digest 注入 / 围栏感知解析 (digest injection / fence-aware parsing)**:
+§8 — digest is **voice-only** (inject zj's ethos/voice, NOT auto-inject discussion-state digest); the optional `## AI 上下文 digest` block in the subdoc / MASTER templates is a *landing spot* a Human/agent may fill, not an auto-injection mechanism. The minimum PoC (`tests/test_digest_poc.py`) proved digest injection is **semantically compatible** — `check_subdoc.py` and `metrics.py` treat the block as inert (no phantom viewpoint, no inflated raw/solution volume, no gate violation). The PoC surfaced and fixed a general parsing bug: `split_sections` in both scripts is now **fence-aware** (code-fence ``` / ~~~ lines never split as headings), so any digest that echoes `### 视角：X` inside a fence is inert. Decision reaffirmed: remain voice-only; structural (state) digest stays off, but the parsing door is open if ever wanted.
+_Avoid_: auto-injected discussion-state digest, bare `#` headings inside a digest block, runtime digest server
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

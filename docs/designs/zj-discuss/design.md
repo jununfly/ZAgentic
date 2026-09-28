@@ -191,8 +191,10 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 
 - [x] R1–R7 七条 gstack 派生修订全部落地：R1/R2/R3/R5/R6/R7 已回写（见 §2 + §8）；
   **R4 已激活**（`scripts/metrics.py` + `tests/test_metrics.py`，§9）。
-- [ ] 语义兼容未知项（**独立于 R4**，§8 关联）：若未来决定加「结构性 digest 注入」，
-  需最小 PoC 验证其不破坏子文档解析。R4 度量计算机只读重算、不注入，不受此阻塞。
+- [x] 语义兼容未知项（**独立于 R4**，§8 关联）：**最小 PoC 已通过**——digest 注入
+  不破坏子文档 / MASTER 解析。结论见 §8「digest 注入 PoC」段：闸门与度量对 digest
+  区块惰性，且 `split_sections` 已围栏感知（digest 围栏内嵌 `### 视角` 回声也不误判）。
+  PoC 同时硬化了一个普遍解析 bug。R4 度量计算机只读重算、不注入，仍不受此影响。
 - [ ] 跨 provider 评审（gstack `/codex` 范式）在 WorkBuddy harness 的可行性待验证——
   当前「跨会话独立 Agent」由隔离子 Agent 模拟，生产真隔离仍靠 Human 另开会话。
 
@@ -215,6 +217,27 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 
 > 边界判据：任何「引入运行时 / 共享状态 / 自动注入」的诉求，先回到 C-vs-D 决策——
 > 若它让适配层拥有 zj-discuss 的主体状态，则落入 D，否决。
+
+### digest 注入 PoC（语义兼容未知项已验证）
+
+**PoC 目标**：验证在子文档 / MASTER 中加 digest 区块后，`check_subdoc.py`（结构性
+闸门）与 `metrics.py`（度量计算机）把它当**惰性**处理——不计为独立视角、不污染
+raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
+
+**PoC 结果（PASS）**：
+- 新增可选 `## AI 上下文 digest（voice-only）` 区块（subdoc / MASTER 模板各一处），
+  内容须置于 ``` 代码块内；闸门与度量对其完全惰性。
+- **暴露并修复了一个普遍解析 bug**：原 `split_sections` 按行首 `#` 切分、**不认
+  代码围栏**，导致 digest 围栏内嵌的 `### 视角：X` 回声会被误判为真实视角
+  （视角计数 +1、raw 字符量虚增、闸门报缺来源）。两脚本的 `split_sections` 改为
+  **围栏感知**后，围栏内 `#` 标题全部惰性；现有测试无回归。
+- 回归守卫 `tests/test_digest_poc.py`（5 用例）：含 digest 的子文档度量与基线逐字段
+  一致、闸门退出 0、MASTER digest 不污染 solution 字符量、且围栏内 `### 视角` 回声
+  不计为视角。
+
+**决策重申**：PoC 仅消除「注入会破坏解析」的未知，不改变 §8 的 voice-only 边界——
+**仍不自动注入讨论状态 digest**。digest 区块是可选落点（人工 / agent 可填），不是
+自动注入机制。若未来要加结构性（讨论状态）digest，本 PoC 已证明解析层兼容，门已开。
 
 ## 9. 复盘度量注册表（R4，已激活）
 
