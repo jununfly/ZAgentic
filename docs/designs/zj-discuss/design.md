@@ -189,12 +189,12 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 
 ## 7. 开放项 / Backlog
 
-- [x] R1–R6 六条 gstack 派生修订：R1/R2/R5/R6 已回写（见 §2 + §8）；**R4 已定义 schema、未激活**（§9）；
-  **R3（subdoc-template 状态协议字段 + 预演结构性闸门）仍待回写**，本轮未覆盖。
-- [ ] 语义兼容未知项：digest/learnings 注入不破坏 zj 子文档结构，需最小 PoC 验证（§9 关联）。
+- [x] R1–R7 七条 gstack 派生修订全部落地：R1/R2/R3/R5/R6/R7 已回写（见 §2 + §8）；
+  **R4 已激活**（`scripts/metrics.py` + `tests/test_metrics.py`，§9）。
+- [ ] 语义兼容未知项（**独立于 R4**，§8 关联）：若未来决定加「结构性 digest 注入」，
+  需最小 PoC 验证其不破坏子文档解析。R4 度量计算机只读重算、不注入，不受此阻塞。
 - [ ] 跨 provider 评审（gstack `/codex` 范式）在 WorkBuddy harness 的可行性待验证——
   当前「跨会话独立 Agent」由隔离子 Agent 模拟，生产真隔离仍靠 Human 另开会话。
-- [ ] R4 度量注册表激活：PoC 通过后在 MASTER 处置契约增「复盘度量」可选块（§9）。
 
 ---
 
@@ -216,7 +216,7 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 > 边界判据：任何「引入运行时 / 共享状态 / 自动注入」的诉求，先回到 C-vs-D 决策——
 > 若它让适配层拥有 zj-discuss 的主体状态，则落入 D，否决。
 
-## 9. 复盘度量注册表（R4，已定义 schema / 未激活）
+## 9. 复盘度量注册表（R4，已激活）
 
 对应 gstack 的 compression 度量（逻辑行/提交 → 3x–100x 压缩比）。zj-discuss 的
 同构度量：一场讨论把 N 字的多角色辩论，压缩进 MASTER 解决思路的 M 字——比值即
@@ -236,6 +236,13 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 | `compression_ratio` | `raw_volume_chars / solution_volume_chars`（gstack 式压缩比） |
 | `recomputable` | 恒 `true`——全部字段从磁盘文件随时可重算，无隐藏状态 |
 
-**激活状态**：**定义完成，未激活**。尚未接线进模板（不强制 MASTER / subdoc 写该字段），
-因 §9 关联的「digest / learnings 注入不破坏子文档结构」语义兼容仍是未知项，需最小 PoC。
-PoC 通过后再决定是否在 MASTER 处置契约增「复盘度量」可选块。
+**激活状态**：**已激活**（`scripts/metrics.py` 只读度量计算机 + `tests/test_metrics.py`
+守卫；MASTER 处置契约增「复盘度量」可选块，见 `master-template.md`）。
+
+> **关于此前「未激活」决议的修正（诚实勘误）：** 原 §9 把 R4 激活挂在「digest /
+> learnings 注入不破坏子文档结构」的语义兼容 PoC 上，经复核这是**误挂的依赖**。度量
+> 计算机**只读磁盘文件、不写入、不注入任何 digest / learnings**——它解析的是现有稳定
+> 结构（视角区块、`视角来源` 标注、`## conclusion`、`## 解决思路`），与 §8 已显式推迟的
+> 「结构性 digest 注入」是**正交**特性。后者仍按 §8 保持未决；前者独立激活，不受其阻断。
+> closure 口径采用「子文档级闭合」（见 §7）：discussion 级 `total`=子文档数、
+> `closed`=结论 claim（DONE/DONE_WITH_CONCERNS）的子文档数，零模板改动。
