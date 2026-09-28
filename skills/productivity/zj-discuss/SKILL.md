@@ -140,15 +140,45 @@ set and, after Human confirmation, delete the folder.
 
 ## 研讨会议程（固定 + 动态）
 
-> 完整议程规范（F1–F5 固定议程 + 状态模型 / 决策函数 / 护栏）下沉到
-> `references/agenda.md`，此处只保留锚点与调用关系。
+讨论的质量由一套**固定议程**保证底线，由**动态议程**在最需要时加深覆盖。
+两者组合的目标：主旨简单清晰、结果导向；同时让复杂问题被充分解构与讨论，
+使生成的解决方案**完整、严谨、可操作**。
 
-讨论的质量由一套**固定议程**保证底线（F1–F5，不可跳过），由**动态议程**在最需要时加深
-覆盖（状态评估 → 决策 → 执行 → 再评估闭环）。两者组合的目标：主旨简单清晰、结果导向；
-同时让复杂问题被充分解构与讨论，使生成的解决方案**完整、严谨、可操作**。
+### 固定议程（底线不变式，任何讨论都必须跑完）
 
-每子文档的讨论轮次受此议程约束：固定议程是底线骨架，动态议程只能在 F1–F5 内部重排 / 增轮，
-不得删减任一阶段。详见 `references/agenda.md`。
+- **F1 — 定义核心问题**：MASTER 的「核心问题 + 成功判据」必须清晰、可验证；
+  含糊则回到解构，不进入讨论。
+- **F2 — 角色确认与分发**：准备阶段锁定角色集；为每个角色生成 briefing（启动包），
+  **由 Human 复制到**跨会话独立 Agent（见 Phase 2 步骤 2 / 5，**非自动分发**）。
+- **F3 — 各角色独立提出有效观点**：每个声明角色都须 `Read` 原文、写出结构错位的
+  有效观点；出现回声 / 低质则按硬规则 3 处置。
+- **F4 — Human 逐轮拍板**：每轮 `## Human 拍板` 留痕，允许凭证据 challenge，
+  技术偏差不静默吞。
+- **F5 — 合成共识并沉淀**：每个子文档 conclusion 含可执行沉淀指令；终局合成
+  MASTER 解决思路；产出 = 完整文档组（解决方案）。
+
+固定议程是**不可跳过**的骨架：动态议程只能在 F1–F5 内部重排 / 增轮，不得删减任一阶段。
+
+### 动态议程（自适应编排，依据讨论进程）
+
+动态议程以**状态评估 → 决策下一轮 → 执行 → 再评估**的闭环，在固定议程框架内
+按需加深，而非固定顺序走完。它借鉴动态规划 / 自适应控制的「依据当前状态决定下一步」思想。
+
+**状态模型（每子文档跟踪）：**
+- 开放问题是否已解（scope 草案 Q1/Q2/… 的闭合度）
+- 各声明角色是否已贡献**有效**观点（低质 / 回声标记）
+- 是否存在**张力 / 分歧**（两角色结论冲突）
+- 是否达成收敛（声明集全覆盖 + 可执行 conclusion）
+
+**每轮决策函数（输出下一轮动作）：**
+- 存在未解开放问题 → 派发针对该问题的聚焦轮（相关角色）。
+- 两角色观点尖锐分歧（张力）→ 针对该分歧**重开真隔离会话对齐分歧**（相关角色各开独立 Agent 重新 `Read` 原文对齐），而非各说各话；**不引入候选池（`role-matrix.md`）之外的角色**。
+- 某观点低质 / 回声 → 标记为 `同会话SubAgent(低权重)` 并要求**重开真隔离会话**。
+- 覆盖不全 → 继续剩余角色。
+- 已达收敛且 conclusion 可执行 → 触发 F5 合成，结束该子文档。
+
+**护栏：** 动态议程永不可跳过 F1/F5 等固定阶段；它只为「加深覆盖」增轮或重排，
+不稀释严谨性。结果导向：一旦收敛 + 可执行结论达成即停，不为多加视角而多加。
 
 ## 结构性闸门（机械校验，不是自觉约定）
 
@@ -223,7 +253,6 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 - `references/master-template.md` — MASTER.md skeleton (incl. disposition contract + 可选 voice-only digest 块).
 - `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic; 末尾含可选 voice-only digest 块).
 - `references/role-matrix.md` — candidate role pool + recommendation heuristic + convergence rule (SSOT for role semantics).
-- `references/agenda.md` — full agenda spec (F1–F5 fixed + dynamic state-model / decision-fn) — sunk from SKILL.md.
 - `references/sibling-boundary.md` — sibling-skill invariants + external selective-reuse (C) boundary — sunk from SKILL.md.
 - `scripts/launch_pack.py` — static per-role launch-pack generator (replaces manual briefing copying).
 - `scripts/check_subdoc.py` — structural gate enforcing the four invariants above.
@@ -231,10 +260,10 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 - `tests/` — regression guards for all scripts (`python3 <test-file>.py`).
 - `docs/designs/zj-discuss/` — product / architecture / design docs (full spec, durable).
 
-## 兄弟技能集成与外部能力边界
+## 兄弟技能集成（引用而非重做）
 
-> 完整边界规范（sibling 不变式互斥 / handoff 子集 / docs-ontology 治理红线 / 外部能力
-> 选择性复用 C 决策）下沉到 `references/sibling-boundary.md`，此处只保留锚点。
+> 兄弟技能不变式（steelman / handoff / docs-ontology 治理红线）完整规范下沉到
+> `references/sibling-boundary.md`，此处只保留锚点。
 
 discuss 做**薄编排层**：兄弟技能已覆盖的能力一律调用、不在内重实现（引用而非重做）。
 关键边界：
@@ -244,7 +273,21 @@ discuss 做**薄编排层**：兄弟技能已覆盖的能力一律调用、不�
 - **`zj-handoff` 压缩契约 ⊇ discuss-briefing** —— 不重造压缩逻辑，仅追加角色立场两行头。
 - **`zj-docs-ontology` 阶段 2 只吐指针** —— 分类 / 迁移 / 权威校验由其 Human 确认闭环完成，
   discuss 不得运行 `docs_governance.py`、不得决定最终分类。
-- **外部能力全局决策 = C（选择性复用）** —— 外部项目只作组件来源，方法体系始终是自有主体；
-  否决会话编排运行时 / router / suite 化（会让适配层拥有主体状态）。
 
 详见 `references/sibling-boundary.md`。
+
+## 外部能力集成边界（选择性复用）
+
+> 源自 gstack v1.2.0 复盘，全局决策 = **C（选择性复用）**：外部项目只作**组件来源**，
+> `zj-discuss` 方法体系始终是自有主体。边界写进 SKILL 而不只写进 design 文档，
+> 是为了防止「顺手引一个依赖」把方法所有权让渡出去。
+
+| 外部能力 | 边界 | 为何这样划定 |
+| --- | --- | --- |
+| 跨 provider 评审（如 gstack `/codex` 范式） | **组件引用** —— 推荐更强隔离时使用；discuss 内不实现 provider 路由 | 引入路由即引入运行时，会把方法论变成编排器 |
+| learnings / 经验持久化 | **薄层复用** —— 可借鉴其机制，但必须是可移除薄层 | 任何承载方法状态的适配层都等于拥有了主体 |
+| 上游 digest（如 gstack 2KB digest） | **voice-only** —— 只覆盖表达语气，不覆盖方法体系 | 它不表达结构立场 / R×O，覆盖不到本方法的语义点 |
+
+**否决项（不再复议）：** 会话编排运行时 / router / suite 化 —— 会让适配层拥有主体方法
+状态，按决策模型重分类为 D。`scripts/launch_pack.py` 是这条红线的产物边界：它写文件，
+不发起会话。
