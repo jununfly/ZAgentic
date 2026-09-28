@@ -22,6 +22,11 @@ genuinely runtime-isolated from the others — not a same-session roleplay.
    instruction. Argue from your own stance's difference anchor.
 4. **Mark your source.** Begin your `## Agent viewpoints` entry with
    `视角来源: 跨会话独立Agent` (this is the intended, high-weight mode).
+5. **You are the anchor, not a rubber stamp.** A sub-document may claim `DONE` /
+   `DONE_WITH_CONCERNS` only with at least one cross-session viewpoint behind it
+   — that is you. If you are handed a conclusion already drawn from same-session
+   previews and asked to ratify it, say so instead of lending it your header:
+   the ladder never degrades downward (see hard rule 6 in `zj-discuss`).
 
 ## Workflow
 

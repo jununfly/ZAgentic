@@ -53,13 +53,13 @@ class WellFormedPasses(unittest.TestCase):
             self.assertEqual(check_subdoc.check(body), [], "status {} rejected".format(status))
 
     def test_preview_viewpoint_labelled_is_accepted(self):
-        vp = (
-            "### 视角：X（自定义 / 预演）\n"
-            "`视角来源: 同会话SubAgent(低权重)`\n"
-            "⚠ 非独立\n"
-            "<内容>\n\n"
+        # A properly-labelled preview is legal *alongside* a real cross-session
+        # anchor. Preview-only is illegal, and is asserted separately in
+        # IndependenceNonDegradation.
+        self.assertEqual(
+            check_subdoc.check(doc(CROSS_SESSION_ANCHOR + PREVIEW_VIEWPOINT, GOOD_CONCLUSION)),
+            [],
         )
-        self.assertEqual(check_subdoc.check(doc(vp, GOOD_CONCLUSION)), [])
 
 
 class SourceMarkerEnforcement(unittest.TestCase):
@@ -119,6 +119,54 @@ class ConclusionProtocolEnforcement(unittest.TestCase):
         )
         violations = check_subdoc.check(doc(GOOD_VIEWPOINT, conclusion))
         self.assertTrue(any("预演" in v or "权威" in v or "结论" in v for v in violations), violations)
+
+
+CROSS_SESSION_ANCHOR = "### 视角：B（技术经理 / 可落地）\n`视角来源: 跨会话独立Agent`\n<独立撰写>\n\n"
+
+PREVIEW_VIEWPOINT = (
+    "### 视角：X（自定义 / 预演）\n"
+    "`视角来源: 同会话SubAgent(低权重)`\n"
+    "⚠ 非独立\n"
+    "<内容>\n\n"
+)
+
+
+class IndependenceNonDegradation(unittest.TestCase):
+    """The operational form of "never degrade to same-session".
+
+    The independence ladder is cross-provider > cross-session > same-session.
+    Same-session is a floor you must not settle at, so a conclusion *claiming*
+    resolution (DONE / DONE_WITH_CONCERNS) must be anchored by at least one
+    genuinely cross-session viewpoint. A document that honestly reports BLOCKED
+    is not claiming resolution, so it is exempt.
+    """
+
+    def test_conclusion_supported_only_by_previews_is_rejected(self):
+        violations = check_subdoc.check(doc(PREVIEW_VIEWPOINT, GOOD_CONCLUSION))
+        self.assertTrue(
+            any("非降级" in v for v in violations),
+            "preview-only conclusion was accepted (silent degradation): {}".format(violations),
+        )
+
+    def test_conclusion_with_no_viewpoints_is_rejected(self):
+        violations = check_subdoc.check(doc("", GOOD_CONCLUSION))
+        self.assertTrue(
+            any("非降级" in v for v in violations),
+            "conclusion with zero viewpoints was accepted: {}".format(violations),
+        )
+
+    def test_cross_session_anchor_makes_it_clean(self):
+        both = CROSS_SESSION_ANCHOR + PREVIEW_VIEWPOINT
+        self.assertEqual(check_subdoc.check(doc(both, GOOD_CONCLUSION)), [])
+
+    def test_blocked_is_exempt(self):
+        for status in ("BLOCKED", "NEEDS_CONTEXT"):
+            conclusion = "- **状态协议：** {}\n".format(status)
+            violations = check_subdoc.check(doc(PREVIEW_VIEWPOINT, conclusion))
+            self.assertFalse(
+                any("非降级" in v for v in violations),
+                "{} should be exempt: it makes no resolution claim".format(status),
+            )
 
 
 class CommandLineSeam(unittest.TestCase):

@@ -188,7 +188,7 @@ set and, after Human confirmation, delete the folder.
 python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 ```
 
-它校验三项：
+它校验四项：
 
 1. **视角来源标注** —— 每个 `### 视角：X` 区块必须标注 `视角来源:`，取值只能是
    `跨会话独立Agent` 或 `同会话SubAgent(低权重)`。
@@ -198,6 +198,11 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
    `依据` / `采纳` / `参考` 等依赖措辞把 `预演` / `同会话SubAgent` 产出当作权威依据
    （硬规则 3(b)）。判据是「同一行内出现预演词 + 依赖词」：单纯**提及**这条规则本身
    （如「conclusion 无预演字段」）不算违约——否则闸门会狼来了、被人关掉。
+
+4. **非降级锚点（硬规则 6）** —— 标为 `DONE` / `DONE_WITH_CONCERNS` 的结论必须有至少
+   一条 `跨会话独立Agent` 视角作为锚点；只有同会话预演（或零视角）却宣称已结论 =
+   静默降级，拒。`BLOCKED` / `NEEDS_CONTEXT` 未作收敛声明，**不受此约束**——诚实报
+   「没做完」不是降级，把它误判才是误伤（同样出于「狼来了的闸门会被关掉」的考虑）。
 
 退出码：`0` 干净 · `1` 存在违约 · `2` 输入不可读。
 
@@ -232,6 +237,16 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 5. **Conclusion must be executable.** A sub-doc conclusion must include
    deposition instructions (which PRD/ADR to change, which temp doc to delete)
    — otherwise it is not a closed loop.
+6. **独立性阶梯不许向下 —— 非降级自检项 (never degrade down the ladder).**
+   The ladder runs **跨 provider 独立会话 > 同 provider 跨会话 > 同会话 SubAgent 预演**.
+   Same-session preview is an onboarding door and **a floor you pass through, never a
+   place to settle**. Self-check before marking any sub-document concluded:
+   - 跨 provider（不同 model / provider 的独立会话）—— **推荐**，非强制；
+   - 同 provider 跨会话 —— 零降级基线，**最低可接受**；
+   - 同会话 SubAgent 预演 —— 仅脚手架，**永不可作为结论依据**（见硬规则 3）。
+
+   判据：标为 `DONE` / `DONE_WITH_CONCERNS` 的子文档**必须**有至少一条
+   `跨会话独立Agent` 视角作为锚点。此条由结构性闸门第 4 项机械执行，不是倡议。
 
 ## References
 

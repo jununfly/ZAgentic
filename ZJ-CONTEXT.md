@@ -819,6 +819,10 @@ _Avoid_: done flag, ✅ status, completed marker, open/closed
 `scripts/check_subdoc.py` — the mechanical enforcer of source-marker, preview-label, and conclusion invariants (exit 0 clean / 1 violation / 2 unreadable). Named as a gate precisely because the previous round proved that stating these rules in prose does not make them happen.
 _Avoid_: convention, guideline, best practice, self-discipline
 
+**独立性阶梯 (independence ladder)**:
+The ordered isolation strengths a viewpoint can come from — cross-provider session > same-provider cross-session > same-session SubAgent preview. The method only ever moves *up* it, never down: same-session is a floor you pass through, not a place to settle. Operational form is the **非降级自检项** — a conclusion claiming `DONE` / `DONE_WITH_CONCERNS` must rest on at least one cross-session viewpoint, enforced by the structural gate. A doc honestly reporting `BLOCKED` makes no such claim and is exempt.
+_Avoid_: optional isolation, roleplay, "cross-session when convenient", provider choice as mere style
+
 **度量注册表 / 复盘度量 (metric registry)**:
 R4 — `scripts/metrics.py`, a read-only recomputable metric computer. Given a `discussions/<slug>/` folder (or one sub-doc path) it recomputes the §9 schema: `roles_used`, `viewpoint_count` (valid cross-session only), `raw_volume_chars` (all viewpoint blocks), `solution_volume_chars` (MASTER 解决思路 / sub-doc conclusion), `compression_ratio`, and closure (sub-doc-level: total=1, closed iff conclusion ∈ {DONE, DONE_WITH_CONCERNS}; discussion-level aggregates sub-docs). `recomputable` is always `true` — no hidden state. It reads disk and never writes or injects digest/learnings, so it is orthogonal to the §8 structural-digest decision and needs no PoC to activate.
 _Avoid_: dashboard, metrics server, runtime analytics, injected digest

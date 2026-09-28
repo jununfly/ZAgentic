@@ -100,5 +100,24 @@ class LandedInSkillNotJustDocs(unittest.TestCase):
             )
 
 
+    def test_r7_non_degradation_self_check_landed_in_skill(self):
+        """R7 is a sub-clause of prescription 4, found only by counting finely."""
+        body = _read(SKILL)
+        for token in ("独立性阶梯", "非降级自检项", "跨 provider", "锚点"):
+            self.assertIn(
+                token,
+                body,
+                "R7 regressed: SKILL.md lost {} from the non-degradation self-check.".format(
+                    token
+                ),
+            )
+        # The companion must refuse to rubber-stamp a degraded conclusion.
+        self.assertIn(
+            "anchor, not a rubber stamp",
+            _read(VIEW),
+            "R7 regressed: zj-discuss-view lost the anchor clause from its hard contract.",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
