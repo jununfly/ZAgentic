@@ -239,8 +239,9 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 - `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic).
 - `references/role-matrix.md` — candidate role pool + recommendation heuristic + convergence rule (SSOT for role semantics).
 - `scripts/launch_pack.py` — static per-role launch-pack generator (replaces manual briefing copying).
-- `scripts/check_subdoc.py` — structural gate enforcing the three invariants above.
-- `tests/` — regression guards for both scripts (`python3 <test-file>.py`).
+- `scripts/check_subdoc.py` — structural gate enforcing the four invariants above.
+- `scripts/metrics.py` — R4 recomputable metrics registry (compression ratio etc.); read-only, prints JSON for a discussions/ folder or one sub-doc.
+- `tests/` — regression guards for all scripts (`python3 <test-file>.py`).
 - `docs/designs/zj-discuss/` — product / architecture / design docs (full spec, durable).
 
 ## Integration with sibling skills
