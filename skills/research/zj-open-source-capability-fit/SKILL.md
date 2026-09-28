@@ -1,7 +1,7 @@
 ---
 name: zj-open-source-capability-fit
 description: >-
-  用本仓库自创的《开源能力拟合决策模型》评估是否直接采用 / 扩展采用 / 选择性复用 /
+  用本仓库《开源能力拟合决策模型》评估是否直接采用 / 扩展采用 / 选择性复用 /
   继续搜索某个外部开源项目，产出可复核的 R×O 证据矩阵与 A/B1/B2/B3/C/D 分类。
   带机械闸门（矩阵完整性、版本固定、证据非空、关键能力缺失→D、可控 B 边界校验），
   不是薄 prompt。Use when deciding whether to ingest/merge an external OSS capability,
@@ -14,9 +14,13 @@ argument-hint: "<目标需求描述，或一个已填好的 capability_fit 输�
 
 # zj-open-source-capability-fit
 
-把本仓库自创的《开源能力拟合决策模型》从**方法论文档**操作化成**带机械闸门的决策仪器**。
+把本仓库《开源能力拟合决策模型》从**方法论文档**操作化成**带机械闸门的决策仪器**。
 它不是薄 prompt：所有计算与判定由 `scripts/capability_fit.py` 确定性执行，闸门不过就拒绝给出
 自信分类——任何结论都可被第三 Agent 凭决策记录复核。
+
+> 模型来源（自创或外部 ingest）对本 skill 的计算逻辑与机械闸门**不产生增量价值**——
+> 本 skill 完全由 `docs/agreements/open-source-capability-fit-decision-model.md` 的模型定义驱动，
+> 与模型出自何处无关。
 
 ## 与兄弟技能的边界
 

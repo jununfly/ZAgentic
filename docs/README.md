@@ -82,7 +82,7 @@ recognises as the routing surface rather than a primary view page.
 ## Agreements
 
 Long-lived agreement documents that bind cross-document methodology decisions.
-Each is a methodology SSOT authored in-repo or ratified in-repo.
+Each is a methodology SSOT maintained in-repo.
 
 | Document | Bounded question | Authority boundary |
 | --- | --- | --- |

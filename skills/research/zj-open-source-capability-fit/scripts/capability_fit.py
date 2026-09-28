@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """zj-open-source-capability-fit — 开源能力拟合决策模型的操作化仪器。
 
-把本仓库自创的《开源能力拟合决策模型》从方法论文档操作化成带机械闸门的决策工具。
+把本仓库《开源能力拟合决策模型》从方法论文档操作化成带机械闸门的决策工具。
 
 权威模型 SSOT: docs/agreements/open-source-capability-fit-decision-model.md
-（ZAgentic 自创方法论）。
+（本仓库 SSOT）。
 
 本脚本只做确定性计算与闸门校验，不做主观判断；最终分类由 Human/Agent 拍板，
 但脚本必须给出**可复核的推荐分类 + 依据**，满足模型「完成标准」：
@@ -465,7 +465,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="开源能力拟合决策仪器 (ZAgentic 自创方法论操作化)")
+    p = argparse.ArgumentParser(description="开源能力拟合决策仪器 (本仓库决策模型操作化)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     pi = sub.add_parser("init", help="写出空白输入模板")

@@ -29,7 +29,7 @@
 
 ## 4. 三轴目标（来自 gstack + 决策模型复盘）
 
-用本仓库自创方法论 `docs/agreements/open-source-capability-fit-decision-model.md`
+用本仓库 `docs/agreements/open-source-capability-fit-decision-model.md`
 （开源能力拟合决策模型）框定，并结合 gstack v1.2.0 证据，
 把改进收敛为三个轴：
 
