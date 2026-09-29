@@ -1,0 +1,152 @@
+{
+  "title": "R1 闸门阈值校准闭环（消自指偏差）",
+  "description": "把 D(机械护栏)+B(盲评)+C(预先注册) 转成可驱动节点，闭环 §10.6 R1 自指偏差风险",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "uid": "01a0eba28791-bfc5b72de0",
+      "label": "R1 闸门阈值校准闭环（消自指偏差）",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3",
+        "1-4",
+        "1-5"
+      ],
+      "decisions": [
+        {
+          "q": "roadmap 角色分类？",
+          "answer": "混合：D 与 1-5 改项目文件(Product execution)，1-4 跑真 PoC 验证(Acceptance)，B/C 为纪律/协议",
+          "note": "改动走分支+PR，不直推 main"
+        },
+        {
+          "q": "起点阈值？",
+          "answer": "沿用 PoC 初值：B/A 维持 N=3，C solo 降 N=2",
+          "note": "初值不变；本 roadmap 产出已校准事实后再锁"
+        }
+      ],
+      "notes": "对应 design.md §10.6 R1（PoC 初值来源）；本 roadmap 是闭环追踪地图。自模拟 PoC 已落 skills-outputs/zj-discuss/n-threshold-poc/。",
+      "layer": "plan",
+      "rounds": 1
+    },
+    "1-1": {
+      "id": "1-1",
+      "uid": "01a0eba2885c-4c5abf8d19",
+      "label": "C：预先注册 acceptance 标准（锁 N 前约判据）",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-2": {
+      "id": "1-2",
+      "uid": "01a0eba28935-1c70e9f100",
+      "label": "D：机械护栏——check_subdoc.py 加 N 机械校验",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "N-gate 机械约定？",
+          "answer": "视角块以 **观点 N 或 #### 观点 N 起头；证据定位 = 原文 Lxx 类；N 从 references/role-methods/<key>.md 读取（B/A=3，C solo=2）；同会话预演视角豁免 N-gate（不计入有效覆盖），非降级红线仍由结论级检查把关",
+          "note": ""
+        }
+      ],
+      "notes": "最高杠杆单步：把 ≥N 从 prompt 请求变机器可验硬约束，判定者出局。",
+      "layer": "plan",
+      "exit_criteria": [
+        "check_subdoc 能机械校验 ≥N 带证据引用的观点块",
+        "新增 test 覆盖该校验",
+        "现有 6 套件零回归"
+      ]
+    },
+    "1-3": {
+      "id": "1-3",
+      "uid": "01a0eba28a05-f6012d8956",
+      "label": "B：盲评协议与执行（剥标注盲标+一致率）",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "产出观的人 ≠ 定阈值的人；盲标 probe-views.md 后比对一致率。",
+      "layer": "plan",
+      "exit_criteria": [
+        "有盲评协议文档",
+        "对 probe-views.md 盲标后记录一致率"
+      ]
+    },
+    "1-4": {
+      "id": "1-4",
+      "uid": "01a0eba28ad3-2819a48574",
+      "label": "真·跨会话 PoC 校准（用 D 门 + B 盲评 + C 判据）",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "生态效度抽查：真跨会话独立 Agent 跑 base {B,C,A}，应用 D 机械门 + B 盲评 + C 判据。",
+      "layer": "plan",
+      "exit_criteria": [
+        "真跨会话独立 Agent 跑通 base {B,C,A}",
+        "按 C 判据达成后记录真有效观点数"
+      ]
+    },
+    "1-5": {
+      "id": "1-5",
+      "uid": "01a0eba28ba3-185e8a9f29",
+      "label": "锁 N + 写回 role-methods/design.md + 回归",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [],
+      "notes": "把已校准事实写回 role-methods/*.md 与 design.md §10.6 R1，并跑回归。",
+      "layer": "plan",
+      "exit_criteria": [
+        "role-methods/design.md 写回校准后 N",
+        "回归零"
+      ]
+    }
+  },
+  "metadata": {
+    "created": "2026-09-29 13:28:12",
+    "updated": "2026-09-29 13:43:28",
+    "md_file": "docs/designs/zj-discuss/r1-closure.md"
+  },
+  "edges": [
+    {
+      "id": "e1",
+      "from": "01a0eba2885c-4c5abf8d19",
+      "to": "01a0eba28ad3-2819a48574",
+      "type": "blocks"
+    },
+    {
+      "id": "e2",
+      "from": "01a0eba28935-1c70e9f100",
+      "to": "01a0eba28ad3-2819a48574",
+      "type": "blocks"
+    },
+    {
+      "id": "e3",
+      "from": "01a0eba28a05-f6012d8956",
+      "to": "01a0eba28ad3-2819a48574",
+      "type": "blocks"
+    },
+    {
+      "id": "e4",
+      "from": "01a0eba28ad3-2819a48574",
+      "to": "01a0eba28ba3-185e8a9f29",
+      "type": "blocks"
+    }
+  ],
+  "edge_seq": 4
+}
