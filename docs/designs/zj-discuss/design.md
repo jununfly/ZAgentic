@@ -1,7 +1,7 @@
 # zj-discuss — 设计文档（Design / 完整规格）
 
 > 本文件是 `zj-discuss` / `zj-discuss-view` 的**权威详细规格**，沉淀自一段长对话
-> （立项 grill → 共识 → 落 skill → 自举验证 → 合并 → 阶段 2 处置 → gstack/决策模型复盘
+> （立项 grill → 共识 → 落 skill → 自举验证 → 合并 → 阶段 2 处置 → 开源范式复盘/决策模型复盘
 > → 本轮 4 项追加改进）。目的是**避免对话进程丢失完整 context**。
 > 产品定义见 `product.md`，组件与生命周期见 `architecture.md`。
 > 角色语义唯一真源：`references/role-matrix.md`。
@@ -14,7 +14,7 @@
   有效拟合度（功能覆盖×语义匹配×可组合性）→ 总所有权成本 E →
   决策分类 `A`（直接采用）/ `B`（扩展采用，细分 B1/B2/B3）/ `C`（选择性复用）/ `D`（继续搜索）；
   默认优先级 `A > B1 > B2 > C > B3`（`D` 为搜索循环回环态，非终态否决；见 §2 待核对偏离）。
-- **证据源**：`github.com/garrytan/gstack` 本地副本（v1.2.0）。抽取的可迁移模式：
+- **可迁移模式（范式级借鉴，无 vendored 副本）**：抽取自开源「角色 = 带闸门的过程」范式，
   1. 跨 provider 异构独立性（`/codex` 外部评审 = 不同模型，权重高于同 provider 跨会话）
   2. user-sovereignty「呈现而非断言」（输出多视角与选项，不替 Human 下定论）
   3. Completion Status 协议（DONE / DONE_WITH_CONCERNS / BLOCKED / NEEDS_CONTEXT）
@@ -46,18 +46,18 @@
 
 ---
 
-## 2. gstack + 决策模型复盘：6 项待回写改进（分类 C；gstack 可迁移部分经 §10 重评为 B1，已 RATIFIED）
+## 2. 开源范式 + 决策模型复盘：6 项待回写改进（分类 C；可迁移部分经 §10 重评为 B1，已 RATIFIED）
 
 > 来源：用方法论自举讨论「如何深度改进 zj-discuss」的结论。分类 = C（选择性复用），
-> 即 gstack 作组件来源、zj-discuss 方法体系为自有主体；否决运行时编排器/suite-化
+> 即外部范式作结构借鉴、zj-discuss 方法体系为自有主体；否决运行时编排器/suite-化
 > （触发约束 1 → D，且适配层会拥有主体状态）。
 >
-> **C→B1 重评已 RATIFIED（见 §10）**：gstack 的「方法 / 范式」可迁移部分（跨 provider
+> **C→B1 重评已 RATIFIED（见 §10）**：开源「方法 / 范式」可迁移部分（跨 provider
 > 独立评审、闸门+状态纪律、learnings/retro 回路）经决策模型重评为 **B1**（范式级 ingest
 > + adapt，不引外部运行时）；**suite / 运行时 / router 维持 D 红线不变**，digest 维持 C。
 > 下表「判定」列已同步重评；意图-实际矛盾勘误见 §10.1。
 
-| # | 改进 | 对应 gstack 证据 | 状态 |
+| # | 改进 | 对应范式借鉴 | 状态 |
 | --- | --- | --- | --- |
 | R1 | `zj-discuss-view --all`（默认 {B,C,A}）+ 单角色 `--role X`（候选池任一 key 或自定义）；多角色由 `--all` 一次性打印启动包 | 一键触发 vs 手动 | 已回写（`--all` + 单角色 `--role`；见 §3.2 / architecture §1）。**`--role X,Y` 逗号语法已正式关闭**——单会话多角色即违反隔离，理由写入 SKILL.md Phase 2 步骤 2 |
 | R2 | 静态 launch-pack 生成器（替代手工拷贝，不建运行时） | ACP 程序化派生 | 已回写 —— `scripts/launch_pack.py`（读声明必需集 → 每角色一份 `<slug>-launchpack-<role>.md`）；回归守卫 `tests/test_launch_pack.py`，其中 `NoRuntimeInvariant` 机械禁止其退化为运行时 |
@@ -65,21 +65,21 @@
 | R4 | 轻量可重算度量注册表（单一 schema，被 sub-01/02 同构引用） | compression 度量 | 已定义 schema（见 §9，未激活，待 PoC） |
 | R5 | 集成边界文本：跨 provider 评审=组件引用、learnings=薄层复用、digest=voice-only | suite/reuse ladder | 已回写 —— **按处方落点进 `SKILL.md`「外部能力集成边界（选择性复用）」**（此前仅存于 §8 导致 SKILL 侧零命中），完整论证仍见 §8 |
 | R6 | ZJ-CONTEXT.md 领域词注册 | — | 已回写（ZJ-CONTEXT.md `## Discussion methodology`） |
-| R7 | 独立性阶梯「非降级自检项」成为 SKILL 硬规则 + 机械闸门 | gstack 跨 provider 范式 | 已回写 —— SKILL.md 硬规则 6 + `check_subdoc.py` 第 4 项检查。注：本项属**处方第 4 条的子条款**，未被 R3/R4 覆盖；按「六条」计数时会漏判，核账到子条款才暴露 |
+| R7 | 独立性阶梯「非降级自检项」成为 SKILL 硬规则 + 机械闸门 | 开源跨 provider 范式 | 已回写 —— SKILL.md 硬规则 6 + `check_subdoc.py` 第 4 项检查。注：本项属**处方第 4 条的子条款**，未被 R3/R4 覆盖；按「六条」计数时会漏判，核账到子条款才暴露 |
 
 ### 决策记录（决策模型要求项）
 
 > 本小节自 discussions 过程文件夹抽取而来，**在阶段 2 删除该文件夹之前**完成沉淀。
 > 缺了它的后果：后人无法在上游变更时重新评估分类，只能盲信结论。
 
-**候选项目及固定版本 O**：`github.com/garrytan/gstack` **v1.2.0**。能力清单：
+**候选项目及固定版本 O**：开源「角色 = 带闸门的过程」范式参考实现 **v1.2.0**。能力清单：
 O-u1 ACP 程序化派生、O-u2 router+preamble、O-r1 跨 provider 外部评审（`/codex`）、
 O-r2 Completion Status、O-f1 compression 度量、O-c1 suite 协同、O-c2 2KB digest、
 O-c3 跨 provider 选择性复用范式。
 
 **R × O 证据矩阵（全局收敛）** — *判定列已按 §10.3 重评（C→B1 可迁移部分，D 红线维持）*
 
-| R | 命中的 gstack O | 判定 | 约束来源 |
+| R | 命中的开源候选 O | 判定 | 约束来源 |
 | --- | --- | --- | --- |
 | R-u1 派发自动化 | O-u1 ACP 派生 | C 复用（产物形状 → 静态生成器，维持） | 不引运行时，约束 1 |
 | R-u2 角色零认知 | O-u2 router 思路 | **D（维持）** | router 即运行时，红线不变（§10.3） |
@@ -94,16 +94,16 @@ launch-pack 生成器 ≈1–2 人日；状态协议 / 度量注册表 ≈1 人�
 **总 E ≈ 7–10 人日**，全部为可移除薄层，无运行时 / 基座 ownership。
 对照：自建 suite ≈2–4 周 + 长期运维 → D，已被红线排除。
 
-**采用理由**：gstack 仅作组件来源，zj-discuss 方法体系（role-matrix / briefing / R×O）
+**采用理由**：外部范式仅作结构借鉴，zj-discuss 方法体系（role-matrix / briefing / R×O）
 为自有主体，无逻辑漂移；E 可控、可退。
 
 **主要风险**：① 语义兼容未知（digest / learnings 注入不破坏 zj 子文档结构）→ 最小 PoC 验证；
 ② 跨 provider 派生依赖 Human 手动开启非主力 provider 会话，harness 无一键能力 → 不阻断（手动零成本）。
 
-**退出路径**：任一 C 组件失效可独立替换，无 suite 级锁定；若 gstack 未来提供非破坏性的
+**退出路径**：任一 C 组件失效可独立替换，无 suite 级锁定；若该开源项目未来提供非破坏性的
 外部方法体系接入不变式，可重评为 B1。
 
-**重新评估触发**：① gstack 大版本变更 suite 接入不变式；② WorkBuddy harness 原生支持
+**重新评估触发**：① 该开源项目大版本变更 suite 接入不变式；② WorkBuddy harness 原生支持
 spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可升级）。
 
 ### 2.1 示例决策记录（B1 重评，可复核）
@@ -113,19 +113,19 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 > 仅示范一项（O-r2 状态协议 / 闸门纪律），其余 B1 项（R-r1、R-f1）同构。
 
 - **目标需求与关键能力**：复杂讨论的「是否已收敛 / 是否有效」须可机械判定（状态协议枚举 + 非降级锚点）。
-- **候选项目及固定版本**：`github.com/garrytan/gstack` **v1.2.0**（R-r2 命中的 O-r2 = Completion Status 协议）。
+- **候选项目及固定版本**：开源「Completion Status 协议」参考实现 **v1.2.0**（R-r2 命中的 O-r2）。
 - **R × O 证据矩阵（本项）**：
   | R | 命中 O | 证据 | 原判定 | 重评 |
   | --- | --- | --- | --- | --- |
-  | R-r2 防回声室 | O-r2 状态协议 | gstack 状态枚举 DONE/DONE_WITH_CONCERNS/BLOCKED/NEEDS_CONTEXT | C | **B1** |
-- **选定组合 C 与缺口 G**：C = 状态枚举 + 闸门结构；G = 0（无需引 gstack 文件/运行时）。
+  | R-r2 防回声室 | O-r2 状态协议 | 借鉴的状态枚举 DONE/DONE_WITH_CONCERNS/BLOCKED/NEEDS_CONTEXT | C | **B1** |
+- **选定组合 C 与缺口 G**：C = 状态枚举 + 闸门结构；G = 0（无需引外部文件/运行时）。
 - **自有责任 E 及成本**：≈0.5 人日（把枚举下沉为 `check_subdoc.py` 闸门 + 每角色 gated method）；可移除薄层。
 - **PoC 结论**：`check_subdoc.py` 已机械执行状态协议 + 非降级锚点（见 §8 / SKILL.md 结构性闸门），退出码 0 即有效。
 - **最终分类**：**B1**（通过范式级 ingest，不维护 fork、不引运行时）。
 - **采用理由 / 主要风险 / 退出路径 / 重评触发**：理由 = 与 zj-discuss 独立性阶梯语义高度匹配；风险 = 闸门过严致角色产出萎缩（§10.6 R1，阈值 PoC 校准）；退出 = 任一闸门失效可独立退回纯 C 引用；重评触发 = 同 §2「重新评估触发」。
 
 > **范式级勘误（2026-09-28 ratified）**：本节 §2 的「分类 C」针对 R1–R7 六条具体改进
-> （已落地），维持有效。但 §0 立项意图（ingest gstack 成熟角色实现）与角色实际落地
+> （已落地），维持有效。但 §0 立项意图（ingest 外部成熟角色实现）与角色实际落地
 > （thin prompt persona）的矛盾，已在 **§10** 勘误并将「角色实现范式」重评为 **B1**
 > （范式级 ingest + adapt）。二者不冲突：R1–R7 = C 级薄层集成；角色实现范式 = B1 级
 > 范式 ingest。维度不同，勿混读。
@@ -219,28 +219,28 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 
 ## 7. 开放项 / Backlog
 
-- [x] R1–R7 七条 gstack 派生修订全部落地：R1/R2/R3/R5/R6/R7 已回写（见 §2 + §8）；
+- [x] R1–R7 七条开源派生修订全部落地：R1/R2/R3/R5/R6/R7 已回写（见 §2 + §8）；
   **R4 已激活**（`scripts/metrics.py` + `tests/test_metrics.py`，§9）。
 - [x] 语义兼容未知项（**独立于 R4**，§8 关联）：**最小 PoC 已通过**——digest 注入
   不破坏子文档 / MASTER 解析。结论见 §8「digest 注入 PoC」段：闸门与度量对 digest
   区块惰性，且 `split_sections` 已围栏感知（digest 围栏内嵌 `### 视角` 回声也不误判）。
   PoC 同时硬化了一个普遍解析 bug。R4 度量计算机只读重算、不注入，仍不受此影响。
-- [ ] 跨 provider 评审（gstack `/codex` 范式）在 WorkBuddy harness 的可行性待验证——
+- [ ] 跨 provider 评审（外部 `/codex` 式范式）在 WorkBuddy harness 的可行性待验证——
   当前「跨会话独立 Agent」由隔离子 Agent 模拟，生产真隔离仍靠 Human 另开会话。
-- [x] **设计补丁：角色实现范式升级（ingest gstack 范式）** — **已 RATIFIED（2026-09-28，by zj）**。
+- [x] **设计补丁：角色实现范式升级（ingest 开源范式）** — **已 RATIFIED（2026-09-28，by zj）**。
   根因 = §0 立项意图（ingest 成熟角色实现）与 §2/§8 实际落地（C 模式抽取 + thin prompt
   角色）矛盾；方案 = 给 13 视角角色补 gated method（带闸门的可执行 method）+ 混合 ingest
-  gstack domain 无关过程角色；决策模型重评 gstack 可迁移部分 C→B1、suite/运行时维持 D。
+  开源 domain 无关过程角色；决策模型重评可迁移部分 C→B1、suite/运行时维持 D。
   **内容已回流 §10，独立补丁文件已删除**（保持设计文档单一真源；执行阶段见 §10.4）。
 
 ---
 
-## 8. gstack 派生集成边界（R5，已回写）
+## 8. 开源范式派生集成边界（R5，已回写）
 
-分类 C 的硬边界：gstack 只作**组件来源 / 引用**，zj-discuss 方法体系为**自有主体**；
+分类 C 的硬边界：外部范式只作**结构借鉴 / 引用**，zj-discuss 方法体系为**自有主体**；
 否决运行时编排器 / suite-化（触发约束 1 → D，且适配层会拥有主体状态）。三条具体边界：
 
-- **跨 provider 评审（gstack `/codex` 范式）= 组件引用，非运行时**：zj-discuss 的
+- **跨 provider 评审（外部 `/codex` 式范式）= 组件引用，非运行时**：zj-discuss 的
   「跨会话独立 Agent」是本地近似；真跨 provider 隔离仍靠 Human 另开会话，不建编排器。
   外部多模型评审作为*可选增强*，不作为 zj-discuss 的依赖。
 - **learnings 持久化 = 薄层复用**：zj-discuss 的「learnings」落地为本文档三件套
@@ -276,7 +276,7 @@ raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
 
 ## 9. 复盘度量注册表（R4，已激活）
 
-对应 gstack 的 compression 度量（逻辑行/提交 → 3x–100x 压缩比）。zj-discuss 的
+对应开源的 compression 度量（逻辑行/提交 → 3x–100x 压缩比）。zj-discuss 的
 同构度量：一场讨论把 N 字的多角色辩论，压缩进 MASTER 解决思路的 M 字——比值即
 「完整性近零成本」的量化证据（呼应 R9 Boil the Ocean / completeness is cheap）。
 
@@ -291,7 +291,7 @@ raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
 | `closure_rate` | `closed / total` |
 | `raw_volume_chars` | 全部子文档视角 + 辩论的字符总量 |
 | `solution_volume_chars` | MASTER 解决思路终版字符量 |
-| `compression_ratio` | `raw_volume_chars / solution_volume_chars`（gstack 式压缩比） |
+| `compression_ratio` | `raw_volume_chars / solution_volume_chars`（开源式压缩比） |
 | `recomputable` | 恒 `true`——全部字段从磁盘文件随时可重算，无隐藏状态 |
 
 **激活状态**：**已激活**（`scripts/metrics.py` 只读度量计算机 + `tests/test_metrics.py`
@@ -315,8 +315,8 @@ raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
 
 ### 10.1 根因勘误：§0 意图与实际落地的矛盾
 
-`design.md` §0 立项意图是 **ingest gstack 的成熟角色实现**（让角色有真实行为，而非
-thin prompt persona）。但文档主体用同一决策模型做了反方向：§2 将 gstack 判为 C
+`design.md` §0 立项意图是 **ingest 外部成熟角色实现**（让角色有真实行为，而非
+thin prompt persona）。但文档主体用同一决策模型做了反方向：§2 将外部范式判为 C
 （选择性复用，只作组件来源 / 模式抽取）、suite / 运行时判为 D（否决）；§8「外部能力集成边界」
 重申红线；`role-matrix.md` 的 13 个角色只是「一句话立场 + 差异锚点 + 一句话简介」的
 thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0「奇怪」感的根源（此前
@@ -326,17 +326,17 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
 
 ### 10.2 两种 ingest 路径的取舍（已定）
 
-- **范式级 ingest（已选）**：借 gstack「角色 = 带闸门的过程」范式重写自有角色，不碰
-  gstack 文件、不引运行时。domain 匹配度高（套在 zj-discuss 讨论视角上）。
-- **整包 ingest（否决）**：搬 gstack 软件交付角色文件（`/ceo` `/qa` `/ship` …）进讨论
+- **范式级 ingest（已选）**：借开源「角色 = 带闸门的过程」范式重写自有角色，不碰
+  外部文件、不引运行时。domain 匹配度高（套在 zj-discuss 讨论视角上）。
+- **整包 ingest（否决）**：搬外部软件交付角色文件（`/ceo` `/qa` `/ship` …）进讨论
   视角，90% 软件专用，错位。
-- **混合项（已选）**：gstack *domain 无关* 的流程角色（`/office-hours` 问题重构、
+- **混合项（已选）**：开源 *domain 无关* 的流程角色（`/office-hours` 问题重构、
   `/plan-*` 评审闸门、`/retro` 复盘）作为「过程角色」整包-adapt，落**主力AI 编排层**
   （非 13 视角角色集），与现有「分解 / 准备 / 合成」阶段同源，适配成本最低。
 
-### 10.3 决策模型重评（gstack 可迁移部分 C→B1，suite / 运行时维持 D）
+### 10.3 决策模型重评（可迁移部分 C→B1，suite / 运行时维持 D）
 
-| gstack 能力 | 原判定（§2） | 本补丁重评 | 理由 |
+| 开源能力 | 原判定（§2） | 本补丁重评 | 理由 |
 | --- | --- | --- | --- |
 | 跨 provider 独立评审（`/codex`） | C | **B1** | 与 zj-discuss 独立性阶梯语义高度匹配，ingest 为验证 / 过程角色 |
 | 闸门 + 状态纪律（Completion Status、结构性 gate） | C（仅 R3 部分落地） | **B1** | 深化为每角色 gated method |
@@ -345,7 +345,7 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
 | suite / 运行时 / router | D | **D（维持）** | 红线不变；范式级 ingest 不引外部运行时 |
 
 > B1 仅针对「方法 / 范式」；suite / 运行时 D 红线**不变**。§8 集成边界文本中
-> 「gstack 仅作组件来源，不引运行时」仍保留，但其语义从「推开成模式参考」修正为
+> 「外部范式仅作结构借鉴，不引运行时」仍保留，但其语义从「推开成模式参考」修正为
 > 「范式级 ingest 后仍以自有角色为主体、不引外部运行时」。
 
 ### 10.4 执行方案（ratify 后进入，待实现；不修改 skill 文件于本流转阶段）
@@ -357,7 +357,7 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
    （N 阈值已于 2026-09-29 PoC 校准：base N=3，C 在 solo/内部场景降 N=2，见 §10.6 R1。）
 2. **过程角色 adapt**（§4.2）：`/office-hours`→准备阶段问题重构；`/plan-*`→scope / 架构
    / UX 评审闸门；`/retro`→收尾复盘（呼应 R4 度量注册表）。落主力AI 编排层，不进视角角色集。
-3. **§2 决策矩阵更新**：gstack 可迁移部分 C→B1，并显式记录 10.1 意图-实际矛盾勘误。
+3. **§2 决策矩阵更新**：可迁移部分 C→B1，并显式记录 10.1 意图-实际矛盾勘误。
 4. **回归**：`check_subdoc.py` / `metrics.py` / `launch_pack.py` 现有测试零回归；
    必要时给 gated method 增补机械校验。
 
@@ -366,7 +366,7 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
 | # | 问题 | 决议 |
 | --- | --- | --- |
 | 1 | gated method 内联 `role-matrix.md` 还是拆 `references/role-methods/<key>.md`？ | **拆文件**（保持 SSOT 可读性） |
-| 2 | 过程角色 adapt 只取闸门结构还是连 gstack 具体评审项？ | **只取结构**，剥离软件专用措辞 |
+| 2 | 过程角色 adapt 只取闸门结构还是连具体评审项？ | **只取结构**，剥离软件专用措辞 |
 | 3 | B1 重评后是否补示例决策记录？ | 由 `zj-open-source-capability-fit` skill 落为可复核工具，执行阶段补 1 条示例决策记录 |
 | 4 | 本补丁是否转 `zj-roadmap-driven` 节点？ | 维持 design patch 形态；ratify 后可转录为 roadmap 节点驱动执行 |
 

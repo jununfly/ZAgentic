@@ -91,7 +91,7 @@ discussions/<self-explain-slug>/        # 仓库根，无 discuss- 前缀
 
 > 模型定义见本仓库 `docs/agreements/open-source-capability-fit-decision-model.md`（SSOT）。
 
-全局分类 = **C（选择性复用）**：gstack 作组件来源（启动包形态、`--all`、跨 provider 评审范式、
+全局分类 = **C（选择性复用）**：外部范式作结构借鉴（启动包形态、`--all`、跨 provider 评审范式、
 状态协议、轻量度量注册表、digest 的 voice 部分），zj-discuss 方法体系为自有主体。
 **否决** 运行时编排器 / suite-化（触发约束 1 → D）。
 

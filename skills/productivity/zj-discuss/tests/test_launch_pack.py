@@ -2,7 +2,7 @@
 
 Guard for discussion item 2 (``zj-discuss launch <sub-doc>`` static generator),
 prescribed by
-``discussions/improve-zj-discuss-with-decision-model-and-gstack/MASTER.md``
+``discussions/improve-zj-discuss-with-decision-model-and-oss-adaptation/MASTER.md``
 but only *documented* in the previous round. These tests fail loudly if the
 generator stops being a real, runnable artifact.
 

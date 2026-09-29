@@ -65,7 +65,7 @@
 ## AI 上下文 digest（可选，voice-only）
 
 > 本块**可选**。零安装复用 zj 的 ethos/voice，让新开会话的 Agent 进入正确立场
-> （gstack 2KB reuse ladder 的 voice-only 同构）。**不自动注入讨论状态 digest**
+> （voice-only 同构，借鉴 reuse ladder 范式）。**不自动注入讨论状态 digest**
 > （见 `design.md` §8 集成边界），仅作人工/agent 可填的落点。
 >
 > **解析惰性契约**：度量计算机（`metrics.py`）按 `## 解决思路` 段精确取

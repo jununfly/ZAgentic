@@ -145,7 +145,7 @@
 ## AI 上下文 digest（可选，voice-only）
 
 > 本块**可选**。零安装复用 zj 的 ethos/voice（直接、结构化、第一性原理、敢反驳），
-> 让新开会话的 Agent 快速进入正确立场——对应 gstack 2KB reuse ladder，但**仅注入
+> 让新开会话的 Agent 快速进入正确立场——对应「reuse ladder」范式，但**仅注入
 > 立场/语气，不自动注入讨论状态 digest**（见 `design.md` §8 集成边界）。
 > 它不是自动注入机制，只是人工/agent 可填的落点。
 >

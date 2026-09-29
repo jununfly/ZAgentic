@@ -32,7 +32,7 @@ surfaces; navigation order does not establish global truth precedence.
 | `design.roadmap-execution-graph` | How are execution-time discoveries recorded and context supplied without bloating the human view? | [Roadmap execution graph (trace layer)](designs/zj-roadmap-execution-graph.md) |
 | `design.zj-discuss-product` | What problem does the zj-discuss discussion-methodology skill solve, for whom, and against which usability/rigor/usefulness axes? | [zj-discuss product](designs/zj-discuss/product.md) |
 | `design.zj-discuss-architecture` | Which components, lifecycle, file layout, role pool, and agenda engine make up zj-discuss? | [zj-discuss architecture](designs/zj-discuss/architecture.md) |
-| `design.zj-discuss-spec` | What is the full, durable specification of zj-discuss (consensus, gstack-derived revisions, role pool, hard rules, templates)? | [zj-discuss design/spec](designs/zj-discuss/design.md) |
+| `design.zj-discuss-spec` | What is the full, durable specification of zj-discuss (consensus, paradigm-derived revisions, role pool, hard rules, templates)? | [zj-discuss design/spec](designs/zj-discuss/design.md) |
 
 ### Accepted decision records
 
