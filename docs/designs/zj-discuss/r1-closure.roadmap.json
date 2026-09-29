@@ -7,7 +7,7 @@
       "id": "1",
       "uid": "01a0eba28791-bfc5b72de0",
       "label": "R1 闸门阈值校准闭环（消自指偏差）",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": null,
       "children": [
@@ -190,22 +190,50 @@
       "id": "1-5",
       "uid": "01a0eba28ba3-185e8a9f29",
       "label": "锁 N + 写回 role-methods/design.md + 回归",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "写回范围与口径",
+          "answer": "仅锁 N 标注 + 补 design.md §10.6.1 锁定节；不改 gated method 逻辑。N 值 B/A=3、C solo=2/市场=3 已于 #157/#158 落地，本次只把「初值」升级为「锁定」并补跨会话元数据，遵循节点 1-1 决策 E（保留校准来源+复核视角+日期+κ）。",
+          "note": ""
+        },
+        {
+          "q": "§10.6.1 锁定值",
+          "answer": "B=3、A=3、C solo/内部子问题=2（触及外部用户/竞品/生态信号回 N=3）。锁值元数据：来源 R1 PoC(PR #158, 2026-09-29)；跨会话复核=节点1-4 fresh-context 独立子Agent(agent-4f80418b21664bdd)；日期 2026-09-29；一致性 独立vs1-3盲标 κ=1.000、独立vs原标二值 κ=0.667(substantial)。",
+          "note": ""
+        },
+        {
+          "q": "诚实声明闭合",
+          "answer": "原 §10.6「同会话自指偏差、初值建议、待真实跨会话复核」悬空状态已消除：1-3 盲评一致率86.7% + 1-4 Cohen κ=0.667 共同确认 B/A=3、C solo=2 稳健，未触发节点1-1 决策D。自指偏差风险已防御，初值建议升级为锁定值（写回各 role-methods 闸门④）。",
+          "note": ""
+        },
+        {
+          "q": "回归结果",
+          "answer": "5 套件 48 测试全绿（test_check_subdoc / test_gate_threshold_poc / test_role_methods / test_digest_poc / 根 test_zj_discuss_r1_r6_landing），零回归；本次改动纯文档标注，未触 check_subdoc 逻辑。",
+          "note": ""
+        },
+        {
+          "q": "边界案例保留",
+          "answer": "B3(停止规则)、C3(目标适用范围) 为 borderline，按节点1-4 诚实局限，role-methods 不把 borderline 自动计入 N；落点已含此注记于 design.md §10.6.1 元数据行。",
+          "note": ""
+        }
+      ],
       "notes": "把已校准事实写回 role-methods/*.md 与 design.md §10.6 R1，并跑回归。",
       "layer": "plan",
       "exit_criteria": [
         "role-methods/design.md 写回校准后 N",
-        "回归零"
-      ]
+        "回归零",
+        "role-methods 闸门④ N 标注「初值→锁定」+ design.md §10.6.1 锁定节已写回；5套件48测试零回归"
+      ],
+      "rounds": 1
     }
   },
   "metadata": {
     "created": "2026-09-29 13:28:12",
-    "updated": "2026-09-29 15:09:38",
+    "updated": "2026-09-29 15:31:09",
     "md_file": "docs/designs/zj-discuss/r1-closure.md"
   },
   "edges": [

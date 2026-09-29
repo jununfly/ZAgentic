@@ -37,7 +37,7 @@
 > C 的「市场」原义对 **solo 使用者（无真实市场/竞品压力）几乎空转**——故改写为
 > 「用户价值 / 生态·竞品参照」，贴合 zj 的语境，避免产生空洞视角。
 > 因此 **C 的闸门阈值在 solo/内部子问题降为 N=2**（有真实市场信号回 N=3），避免视角注水萎缩；
-> 详见 `role-methods/C.md` ⑤ 与 `design.md` §10.6 R1（已 PoC 校准）。
+> 详见 `role-methods/C.md` ⑤ 与 `design.md` §10.6.1 R1（跨会话复核 2026-09-29 已锁定）。
 
 > **每个角色均有 gated method（带闸门的 executable 方法）**：`references/role-methods/<key>.md`
 > （`<key>` ∈ {B,C,A,T,S,O,D,L,F,U,R,P,E}）。角色语义（立场 / 差异锚点）以本文件为唯一真源；
