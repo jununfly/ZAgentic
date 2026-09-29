@@ -167,5 +167,57 @@ class NoRuntimeInvariant(unittest.TestCase):
             self.assertNotIn(banned, src, "generator regressed into a runtime: " + banned)
 
 
+class PrepList(unittest.TestCase):
+    """bug1 guard: the prep-phase role list must be script-driven and carry an
+    intro for every role (base + optional), so Human never sees a bare key."""
+
+    def test_base_rows_carry_intro_and_reason(self):
+        text = launch_pack.generate_prep(REAL_MATRIX)
+        for role in ("B", "C", "A"):
+            self.assertIn("| {} |".format(role), text)
+            # every base row line must contain its one-line intro (non-empty)
+            line = next(l for l in text.splitlines() if l.startswith("| {} |".format(role)))
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            self.assertTrue(cells[2], "base role {} missing intro".format(role))
+            self.assertIn("base 必需集", cells[3])
+
+    def test_optional_rows_carry_intro_and_signal(self):
+        text = launch_pack.generate_prep(REAL_MATRIX)
+        for role in ("T", "S", "O", "D", "L", "F", "U", "R", "P", "E"):
+            line = next(l for l in text.splitlines() if l.startswith("| {} |".format(role)))
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            self.assertTrue(cells[2], "optional role {} missing intro".format(role))
+            self.assertTrue(cells[3], "optional role {} missing trigger signal".format(role))
+
+    def test_no_role_without_intro(self):
+        pool = launch_pack.load_role_pool(REAL_MATRIX)
+        text = launch_pack.generate_prep(REAL_MATRIX)
+        for role in pool:
+            line = next(l for l in text.splitlines() if l.startswith("| {} |".format(role)))
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            self.assertNotEqual(cells[2], "（见 role-matrix.md）",
+                                "role {} has no real intro in matrix".format(role))
+
+    def test_signals_filter_limits_optional_rows(self):
+        text = launch_pack.generate_prep(REAL_MATRIX, limit={"T", "S"})
+        self.assertIn("| T |", text)
+        self.assertIn("| S |", text)
+        self.assertNotIn("| O |", text)
+
+    def test_cli_prep_exit_zero_and_lists_roles(self):
+        import io
+        import contextlib
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = launch_pack.main(["--prep"])
+        self.assertEqual(code, 0)
+        out = buf.getvalue()
+        self.assertIn("推荐参与角色", out)
+        self.assertIn("其他可选角色", out)
+        for role in ("B", "C", "A", "T", "O"):
+            self.assertIn("| {} |".format(role), out)
+
+
 if __name__ == "__main__":
     unittest.main()

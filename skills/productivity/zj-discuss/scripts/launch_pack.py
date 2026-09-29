@@ -18,6 +18,7 @@ Usage:
 
     python3 launch_pack.py <sub-doc-path> [--roles B,C,A] [--out DIR]
                            [--matrix PATH] [--allow-custom]
+    python3 launch_pack.py --prep [--matrix PATH] [--signals T,S,O] [--out FILE]
 """
 
 import argparse
@@ -75,10 +76,108 @@ def load_role_pool(matrix_path):
             "name": name,
             "stance": cells[3].strip(STRIP_CHARS) if len(cells) > 3 else "",
             "intro": cells[5].strip(STRIP_CHARS) if len(cells) > 5 else "",
+            "is_base": "✅" in cells[2] if len(cells) > 2 else False,
         }
     if not pool:
         raise Refusal("no roles parsed from {}".format(matrix_path))
     return pool
+
+
+SIGNAL_HEADER_RE = re.compile(r"信号\s*[（(]?\s*子问题触及")
+ROLE_KEY_IN_CELL_RE = re.compile(r"^\s*([A-Za-z]+)\s*[（(]")
+
+
+def load_signals(matrix_path):
+    """Map role key -> trigger-signal text from role-matrix's signal table.
+
+    The signal table (``| 信号（子问题触及…） | 建议追加角色 |``) lives below the
+    main role table; parsing it keeps the prep list's "推荐理由" column a single
+    source (role-matrix), so the prep command cannot drift from the matrix.
+    """
+    matrix_path = Path(matrix_path)
+    if not matrix_path.exists():
+        raise Refusal("role matrix not found: {}".format(matrix_path))
+    signals = {}
+    in_signal_table = False
+    for raw_line in matrix_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line.startswith("|"):
+            if in_signal_table:
+                break
+            continue
+        if SIGNAL_HEADER_RE.search(line):
+            in_signal_table = True
+            continue
+        if not in_signal_table:
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) < 2 or set(cells[0]) <= set("-: "):
+            continue  # separator or malformed row
+        m = ROLE_KEY_IN_CELL_RE.match(cells[-1])
+        if not m:
+            continue
+        signals[m.group(1)] = cells[0]
+    return signals
+
+
+PREP_TEMPLATE = """# 准备阶段角色推荐（zj-discuss 静态生成 · 单一数据源 = role-matrix.md）
+
+> 本清单由 `launch_pack.py --prep` 从 `references/role-matrix.md` 程序化生成，
+> 每个角色强制带「一句话简介」——准备阶段 AI 自由文本不再是无强制缺口（bug1 修复）。
+> Human 确认/调整后，锁定集合成为该子文档的 **declared required set**。
+
+## 推荐参与角色（base 必需集，永远推荐）
+| key | 角色 | 一句话简介 | 推荐理由 |
+| --- | --- | --- | --- |
+{base_rows}
+
+## 其他可选角色（候选池，按子问题信号增删）
+| key | 角色 | 一句话简介 | 触发信号（命中即建议加入） |
+| --- | --- | --- | --- |
+{opt_rows}
+
+> 用法：把本清单原样粘贴进子文档「准备阶段」区块；base 集默认全选，可选角色按
+> 子问题触及的信号由 Human 增删。不要靠 AI 自觉补简介——本表即唯一真相源。
+"""
+
+
+BASE_REASON = {
+    "B": "base 必需集：覆盖执行 / 落地",
+    "C": "base 必需集：覆盖用户价值 / 生态·竞品",
+    "A": "base 必需集：覆盖约束 / 长期一致",
+}
+
+
+def _build_prep_row(role, info, extra):
+    return "| {key} | {name} | {intro} | {extra} |".format(
+        key=role,
+        name=info.get("name") or role,
+        intro=info.get("intro") or "（见 role-matrix.md）",
+        extra=extra,
+    )
+
+
+def generate_prep(matrix_path, signals=None, limit=None):
+    """Render the preparation-phase role list from the role matrix (single source).
+
+    Returns Markdown with two tables: the base required set (each carrying a
+    one-line intro + why-base) and the rest of the candidate pool (each carrying
+    a one-line intro + its trigger signal). This is the script-driven replacement
+    for the AI-free-text prep list that dropped role intros (bug1).
+    """
+    pool = load_role_pool(matrix_path)
+    signals = signals if signals is not None else load_signals(matrix_path)
+    base_rows, opt_rows = [], []
+    for role, info in pool.items():
+        if info.get("is_base"):
+            base_rows.append(_build_prep_row(role, info, BASE_REASON.get(role, "base 必需集成员")))
+        elif limit is None or role in limit:
+            opt_rows.append(_build_prep_row(role, info, signals.get(role, "（见 role-matrix.md 信号表）")))
+    if not opt_rows:
+        opt_rows.append("| — | （无候选池角色） | — | — |")
+    return PREP_TEMPLATE.format(
+        base_rows="\n".join(base_rows), opt_rows="\n".join(opt_rows)
+    )
 
 
 PACK_TEMPLATE = """# 启动包：角色 {{key}}（{{name}}）
@@ -182,16 +281,43 @@ def generate(subdoc_path, roles, out_dir, matrix_path, allow_custom=False):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Generate one ready-to-paste launch pack per declared role."
+        description="Static launch-pack / prep-list generator for zj-discuss."
     )
-    parser.add_argument("subdoc", help="path to the sub-document")
+    parser.add_argument("subdoc", nargs="?", help="path to the sub-document (pack mode)")
+    parser.add_argument(
+        "--prep", action="store_true",
+        help="render the preparation-phase role list (single source) instead of packs",
+    )
     parser.add_argument("--roles", help="override the declared required set, comma separated")
-    parser.add_argument("--out", help="output directory (default: <subdoc dir>/briefings)")
+    parser.add_argument("--out", help="pack mode: output dir; prep mode: output file")
     parser.add_argument("--matrix", default=str(DEFAULT_MATRIX), help="role matrix path")
     parser.add_argument(
         "--allow-custom", action="store_true", help="accept role keys outside the pool"
     )
+    parser.add_argument(
+        "--signals", help="prep mode: limit optional roles to these keys (comma separated)"
+    )
     args = parser.parse_args(argv)
+
+    if args.prep:
+        limit = None
+        if args.signals:
+            limit = {r.strip() for r in SPLIT_RE.split(args.signals) if r.strip()}
+        try:
+            text = generate_prep(args.matrix, limit=limit)
+        except Refusal as exc:
+            print("refused: {}".format(exc), file=sys.stderr)
+            return 2
+        if args.out:
+            Path(args.out).write_text(text, encoding="utf-8")
+            print("wrote prep list: {}".format(args.out))
+        else:
+            print(text)
+        return 0
+
+    if not args.subdoc:
+        parser.print_help()
+        return 1
 
     roles = None
     if args.roles:

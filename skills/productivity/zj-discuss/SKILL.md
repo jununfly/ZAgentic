@@ -253,6 +253,13 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
    判据：标为 `DONE` / `DONE_WITH_CONCERNS` 的子文档**必须**有至少一条
    `跨会话独立Agent` 视角作为锚点。此条由结构性闸门第 4 项机械执行，不是倡议。
 
+   > **边界说明（meta-run 实证）：** `视角来源: 跨会话独立Agent` 是**自证式断言**，
+   > 机器无法验证该视角是否真跨会话（同会话预演若误标即可骗过锚点判据）。收敛拍板表（见
+   > `subdoc-template.md` 的 `## Human 对 Agent X 的拍板`）应记录每视角的**隔离方式**
+   > （跨 provider / 同 provider 跨会话 / 同会话），使真实隔离层级可见，避免把同会话预演
+   > 误计入有效覆盖。跨 provider 不可强制（仅推荐），故该标记属结构性信任边界，非已验证
+   > 不变式——不要把它误读为「机器已确认隔离」。
+
 ## References
 
 - `references/master-template.md` — MASTER.md skeleton (incl. disposition contract + 可选 voice-only digest 块).
