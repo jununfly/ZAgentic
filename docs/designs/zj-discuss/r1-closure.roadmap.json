@@ -141,17 +141,50 @@
       "id": "1-4",
       "uid": "01a0eba28ad3-2819a48574",
       "label": "真·跨会话 PoC 校准（用 D 门 + B 盲评 + C 判据）",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "评分者独立性（D 门 + 跨会话机制）",
+          "answer": "真·跨会话独立 Agent 落地为 fresh-context 子 Agent（Agent ID agent-4f80418b21664bdd），由编排器在同部署内以独立上下文启动，不读取任何磁盘文件、不接收任何先验标签，仅见 15 条原始观点 + gate 定义。这隔离了 #158 PoC 的“同会话自指偏差”（评分者2 ≠ 生成 PoC 的评分者1 函数状态）。产物：cross-session/independent-labels.md。",
+          "note": ""
+        },
+        {
+          "q": "Cohen's κ 结果（B 盲评 + 跨会话信度）",
+          "answer": "独立 vs 1-3 操作性盲标：κ=1.000（15/15 完全一致）→ D 机械门可机械判定、具主体间可靠性。独立 vs 原始保守标注：86.7% 一致，二值 κ=0.667（substantial，Landis&Koch 0.61–0.80），3 级 κ=0.688。分歧仅 B3/C3 两处 borderline，方向与 1-3 盲评完全相同（更宽松），不侵蚀校准下限。产物：cross-session/agreement-kappa.md。",
+          "note": ""
+        },
+        {
+          "q": "C 判据达成（节点 1-1 决策 C）",
+          "answer": "独立评分者 C 真有效=3（C1/C3/C5），严格读=2（C1/C5，C3 borderline）；C2/C4 为自承注水（“纯复述省略”/“强行凑第4条”）。C 在 solo 内部子问题稳定产出2 条实有效 + 1 条 borderline + 2 条注水，与决策 C“仅稳出2条有效且第3条注水/重复→接受 N=2”吻合。强制 N=3 将迫使接纳 borderline/注水项 → N=2 跨会话确认。",
+          "note": ""
+        },
+        {
+          "q": "真有效观点数记录（exit-criteria #2）",
+          "answer": "B：严格4 / 宽松5；C：严格2 / 宽松3；A：严格4 / 宽松4。B/A 维持 N=3（严格4≥3 成立）、C solo 接受 N=2（严格2≥2 成立）。结论：原 N 校准（B/A=3、C=2）经跨会话独立复核稳健。",
+          "note": ""
+        },
+        {
+          "q": "闸门结论（节点 1-1 A–E）",
+          "answer": "A 满足（独立评分者无任何先验标签泄漏，可复核）；B 满足（B/A≥3 不被分歧侵蚀）；C 满足（N=2 跨会话确认）；D 未触发（分歧方向一致且只增不减，无相反结论）；E 满足（A∧B∧C 全满足、D 无拒绝 → 1-5 可写回 role-methods/* 与 design.md §10.6，保留元数据：校准来源=R1 PoC #158；跨会话复核=节点1-4 独立子Agent；日期=2026-09-29；κ=0.667）。",
+          "note": ""
+        },
+        {
+          "q": "诚实局限（写回决策）",
+          "answer": "子 Agent 由编排器在同部署内以独立上下文启动：隔离了评分者1 函数状态的自指偏差，但非“不同人在不同会话”。对最大独立性，zj 可凭 independent-labels.md 同源 prompt recipe在完全独立会话重跑；本节点已证明该 recipe 产出的标签与 1-3 盲标完全一致（机制：gate 可机械判定）。原始 borderline 两处（B3 停止规则、C3 目标适用范围）建议 1-5 写回时保留为“边界案例”，不在 role-methods 把 borderline 自动计入 N。",
+          "note": ""
+        }
+      ],
       "notes": "生态效度抽查：真跨会话独立 Agent 跑 base {B,C,A}，应用 D 机械门 + B 盲评 + C 判据。",
       "layer": "plan",
       "exit_criteria": [
         "真跨会话独立 Agent 跑通 base {B,C,A}",
-        "按 C 判据达成后记录真有效观点数"
-      ]
+        "按 C 判据达成后记录真有效观点数",
+        "真跨会话独立 Agent 跑通 base {B,C,A}（fresh-context 子Agent，κ 已报）；按 C 判据达成后记录真有效观点数（B 严格4/宽松5、C 严格2/宽松3、A 严格4/宽松4）；1-1 A–E 全满足、D 未触发；status=completed"
+      ],
+      "rounds": 1
     },
     "1-5": {
       "id": "1-5",
@@ -172,7 +205,7 @@
   },
   "metadata": {
     "created": "2026-09-29 13:28:12",
-    "updated": "2026-09-29 14:40:28",
+    "updated": "2026-09-29 15:09:38",
     "md_file": "docs/designs/zj-discuss/r1-closure.md"
   },
   "edges": [
