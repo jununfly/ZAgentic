@@ -46,11 +46,16 @@
 
 ---
 
-## 2. gstack + 决策模型复盘：6 项待回写改进（分类 C，尚未 ratification）
+## 2. gstack + 决策模型复盘：6 项待回写改进（分类 C；gstack 可迁移部分经 §10 重评为 B1，已 RATIFIED）
 
 > 来源：用方法论自举讨论「如何深度改进 zj-discuss」的结论。分类 = C（选择性复用），
 > 即 gstack 作组件来源、zj-discuss 方法体系为自有主体；否决运行时编排器/suite-化
 > （触发约束 1 → D，且适配层会拥有主体状态）。
+>
+> **C→B1 重评已 RATIFIED（见 §10）**：gstack 的「方法 / 范式」可迁移部分（跨 provider
+> 独立评审、闸门+状态纪律、learnings/retro 回路）经决策模型重评为 **B1**（范式级 ingest
+> + adapt，不引外部运行时）；**suite / 运行时 / router 维持 D 红线不变**，digest 维持 C。
+> 下表「判定」列已同步重评；意图-实际矛盾勘误见 §10.1。
 
 | # | 改进 | 对应 gstack 证据 | 状态 |
 | --- | --- | --- | --- |
@@ -72,17 +77,17 @@ O-u1 ACP 程序化派生、O-u2 router+preamble、O-r1 跨 provider 外部评审
 O-r2 Completion Status、O-f1 compression 度量、O-c1 suite 协同、O-c2 2KB digest、
 O-c3 跨 provider 选择性复用范式。
 
-**R × O 证据矩阵（全局收敛）**
+**R × O 证据矩阵（全局收敛）** — *判定列已按 §10.3 重评（C→B1 可迁移部分，D 红线维持）*
 
 | R | 命中的 gstack O | 判定 | 约束来源 |
 | --- | --- | --- | --- |
-| R-u1 派发自动化 | O-u1 ACP 派生 | C 复用（产物形状 → 静态生成器） | 不引运行时，约束 1 |
-| R-u2 角色零认知 | O-u2 router 思路 | C 复用（`--all` 参数化） | 不做常驻 router |
-| R-r1 独立性升级 | O-r1 `/codex` | C 复用（推荐非强制） | 不引 gstack/base |
-| R-r2 防回声室 | O-r2 状态协议 | C 复用（sub-doc 契约） | 极简 |
-| R-f1 可度量价值 | O-f1 compression | C 复用（轻量日志度量） | 单一注册表 |
-| R-c1 集成边界 | O-c1 suite | **否决（→ D 风险）** | suite 化会拥有主体状态 |
-| R-c2 总所有权成本 | O-c2 digest | C 复用（voice-only） | 不覆盖方法体系 |
+| R-u1 派发自动化 | O-u1 ACP 派生 | C 复用（产物形状 → 静态生成器，维持） | 不引运行时，约束 1 |
+| R-u2 角色零认知 | O-u2 router 思路 | **D（维持）** | router 即运行时，红线不变（§10.3） |
+| R-r1 独立性升级 | O-r1 `/codex` | **B1（重评）** | 范式级 ingest 为验证/过程角色，不引 base |
+| R-r2 防回声室 | O-r2 状态协议 | **B1（重评）** | 深化为每角色 gated method（§10.4 项1） |
+| R-f1 可度量价值 | O-f1 compression | **B1（重评）** | learnings/retro 回路 + R4 度量（§10.4 项2） |
+| R-c1 集成边界 | O-c1 suite | **D（维持）** | suite 化会拥有主体状态，否决 |
+| R-c2 总所有权成本 | O-c2 digest | C 复用（voice-only，维持） | 不覆盖方法体系 |
 
 **自有责任 E 与成本估计**：digest 注入 ≈0.5 人日；`/codex` 跨 provider 评审 ≈3–5 人日；
 launch-pack 生成器 ≈1–2 人日；状态协议 / 度量注册表 ≈1 人日；learnings 复用 ≈1 人日。
@@ -100,6 +105,24 @@ launch-pack 生成器 ≈1–2 人日；状态协议 / 度量注册表 ≈1 人�
 
 **重新评估触发**：① gstack 大版本变更 suite 接入不变式；② WorkBuddy harness 原生支持
 spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可升级）。
+
+### 2.1 示例决策记录（B1 重评，可复核）
+
+> 按 `docs/agreements/open-source-capability-fit-decision-model.md` 的「决策记录要求」字段，
+> 落一条最小可复核示例，证明 B1 重评不是拍脑袋。第三方 Agent 凭此即可复核分类依据。
+> 仅示范一项（O-r2 状态协议 / 闸门纪律），其余 B1 项（R-r1、R-f1）同构。
+
+- **目标需求与关键能力**：复杂讨论的「是否已收敛 / 是否有效」须可机械判定（状态协议枚举 + 非降级锚点）。
+- **候选项目及固定版本**：`github.com/garrytan/gstack` **v1.2.0**（R-r2 命中的 O-r2 = Completion Status 协议）。
+- **R × O 证据矩阵（本项）**：
+  | R | 命中 O | 证据 | 原判定 | 重评 |
+  | --- | --- | --- | --- | --- |
+  | R-r2 防回声室 | O-r2 状态协议 | gstack 状态枚举 DONE/DONE_WITH_CONCERNS/BLOCKED/NEEDS_CONTEXT | C | **B1** |
+- **选定组合 C 与缺口 G**：C = 状态枚举 + 闸门结构；G = 0（无需引 gstack 文件/运行时）。
+- **自有责任 E 及成本**：≈0.5 人日（把枚举下沉为 `check_subdoc.py` 闸门 + 每角色 gated method）；可移除薄层。
+- **PoC 结论**：`check_subdoc.py` 已机械执行状态协议 + 非降级锚点（见 §8 / SKILL.md 结构性闸门），退出码 0 即有效。
+- **最终分类**：**B1**（通过范式级 ingest，不维护 fork、不引运行时）。
+- **采用理由 / 主要风险 / 退出路径 / 重评触发**：理由 = 与 zj-discuss 独立性阶梯语义高度匹配；风险 = 闸门过严致角色产出萎缩（§10.6 R1，阈值 PoC 校准）；退出 = 任一闸门失效可独立退回纯 C 引用；重评触发 = 同 §2「重新评估触发」。
 
 > **范式级勘误（2026-09-28 ratified）**：本节 §2 的「分类 C」针对 R1–R7 六条具体改进
 > （已落地），维持有效。但 §0 立项意图（ingest gstack 成熟角色实现）与角色实际落地

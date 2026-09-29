@@ -37,6 +37,12 @@
 > C 的「市场」原义对 **solo 使用者（无真实市场/竞品压力）几乎空转**——故改写为
 > 「用户价值 / 生态·竞品参照」，贴合 zj 的语境，避免产生空洞视角。
 
+> **每个角色均有 gated method（带闸门的 executable 方法）**：`references/role-methods/<key>.md`
+> （`<key>` ∈ {B,C,A,T,S,O,D,L,F,U,R,P,E}）。角色语义（立场 / 差异锚点）以本文件为唯一真源；
+> 方法文件是「牙齿」——把一句话立场变成可机械判定的核查契约（① Read 原文 ② 角色专属核查清单
+> ③ 强制输出结构 ④ 闸门）。角色 Agent 动笔前应 `Read` 对应方法文件。过程角色（非视角角色）见
+> `references/process-roles.md`。
+
 ## 推荐启发式（准备阶段用）
 
 `zj-discuss` 在**准备阶段**依据复杂问题 / 子问题的**意涵信号**推荐角色集，
@@ -89,4 +95,5 @@
 角色立场 + 强制 `Read` 原文令；Human 复制到跨会话独立 Agent 加载
 `zj-discuss-view --role X <sub-doc路径>` 撰写（X ∈ 声明必需集，可为候选池中任一 key
 或 Human 自定义 key）。**主力Ai 整合立场在主会话直接写，不走 briefing。** 角色语义
-一律以本文件为**唯一真源**。
+一律以本文件为**唯一真源**；每个独立视角角色还须按 `references/role-methods/<key>.md`
+的 gated method 产出（核查清单 + 三字段观点 + 闸门），否则不计入有效覆盖。
