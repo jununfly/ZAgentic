@@ -33,7 +33,18 @@ def doc(viewpoints: str = "", conclusion: str = "") -> str:
 GOOD_VIEWPOINT = (
     "### 视角：B（技术经理 / 可落地）\n"
     "`视角来源: 跨会话独立Agent`\n"
-    "<独立撰写>\n\n"
+    "**观点 1** — 排期\n"
+    "- 发现：原文 L10 要求排期可行\n"
+    "- 影响：否则延期\n"
+    "- 建议：显式关键路径\n\n"
+    "**观点 2** — 风险\n"
+    "- 发现：原文 L20 列出主风险\n"
+    "- 影响：无回退\n"
+    "- 建议：补回退方案\n\n"
+    "**观点 3** — 验收\n"
+    "- 发现：原文 L30 验收口径缺失\n"
+    "- 影响：做到算完模糊\n"
+    "- 建议：量化验收\n\n"
 )
 
 GOOD_CONCLUSION = (
@@ -121,7 +132,22 @@ class ConclusionProtocolEnforcement(unittest.TestCase):
         self.assertTrue(any("预演" in v or "权威" in v or "结论" in v for v in violations), violations)
 
 
-CROSS_SESSION_ANCHOR = "### 视角：B（技术经理 / 可落地）\n`视角来源: 跨会话独立Agent`\n<独立撰写>\n\n"
+CROSS_SESSION_ANCHOR = (
+    "### 视角：B（技术经理 / 可落地）\n"
+    "`视角来源: 跨会话独立Agent`\n"
+    "**观点 1** — 排期\n"
+    "- 发现：原文 L10 要求排期可行\n"
+    "- 影响：否则延期\n"
+    "- 建议：显式关键路径\n\n"
+    "**观点 2** — 风险\n"
+    "- 发现：原文 L20 列出主风险\n"
+    "- 影响：无回退\n"
+    "- 建议：补回退方案\n\n"
+    "**观点 3** — 验收\n"
+    "- 发现：原文 L30 验收口径缺失\n"
+    "- 影响：做到算完模糊\n"
+    "- 建议：量化验收\n\n"
+)
 
 PREVIEW_VIEWPOINT = (
     "### 视角：X（自定义 / 预演）\n"
@@ -188,6 +214,88 @@ class CommandLineSeam(unittest.TestCase):
 
     def test_missing_file_exits_nonzero(self):
         self.assertNotEqual(check_subdoc.main(["/nope/does-not-exist.md"]), 0)
+
+
+def viewpoint_with_blocks(role="B", n=3, evidence=True, marker="跨会话独立Agent"):
+    """Build a cross-session viewpoint body with ``n`` viewpoint blocks.
+
+    When ``evidence`` is False the blocks carry no ``原文`` locator, so they
+    should fail the gated-method evidence requirement.
+    """
+    lines = [
+        "### 视角：{}（技术经理 / 可落地）".format(role),
+        "`视角来源: {}`".format(marker),
+        "",
+    ]
+    for i in range(1, n + 1):
+        ev = "原文 L{}".format(10 * i) if evidence else "无证据占位"
+        lines.append("**观点 {}** — 主题{}".format(i, i))
+        lines.append("- 发现：{} 某事实".format(ev))
+        lines.append("- 影响：某影响")
+        lines.append("- 建议：某建议")
+        lines.append("")
+    return "\n".join(lines)
+
+
+class ViewpointGateNCheck(unittest.TestCase):
+    """The mechanical form of gated-method ④ (roadmap node 1-2).
+
+    Turns "≥N viewpoint blocks, each citing original evidence" from a prompt
+    request into a hard, machine-verifiable constraint — the D lever against
+    the self-reference bias risk (design.md §10.6 R1).
+    """
+
+    def test_three_evidence_blocks_pass(self):
+        self.assertEqual(
+            check_subdoc.check(doc(viewpoint_with_blocks(n=3), GOOD_CONCLUSION)), []
+        )
+
+    def test_four_blocks_pass(self):
+        self.assertEqual(
+            check_subdoc.check(doc(viewpoint_with_blocks(n=4), GOOD_CONCLUSION)), []
+        )
+
+    def test_two_blocks_below_n3_fails(self):
+        violations = check_subdoc.check(doc(viewpoint_with_blocks(n=2), GOOD_CONCLUSION))
+        self.assertTrue(
+            any("闸门" in v or "低于" in v for v in violations), violations
+        )
+
+    def test_blocks_without_evidence_fail(self):
+        violations = check_subdoc.check(
+            doc(viewpoint_with_blocks(n=3, evidence=False), GOOD_CONCLUSION)
+        )
+        self.assertTrue(
+            any("原文证据" in v or "低于闸门" in v for v in violations), violations
+        )
+
+    def test_preview_viewpoint_exempt_from_gate(self):
+        # A same-session preview viewpoint is exempt from the N-gate itself
+        # (it carries no viewpoint blocks and is not counted as coverage). The
+        # non-degradation rule is a conclusion-level check and is covered
+        # separately by IndependenceNonDegradation — it is NOT asserted here.
+        body = (
+            "`视角来源: 同会话SubAgent(低权重)`\n"
+            "⚠ 非独立\n<内容>\n\n"
+        )
+        self.assertEqual(
+            check_subdoc._check_viewpoint("### 视角：X（自定义 / 预演）", body), []
+        )
+
+    def test_stub_viewpoint_without_blocks_fails(self):
+        # The legacy "<独立撰写>" stub carries no viewpoint blocks → must fail.
+        stub = "### 视角：B（技术经理 / 可落地）\n`视角来源: 跨会话独立Agent`\n<独立撰写>\n\n"
+        violations = check_subdoc.check(doc(stub, GOOD_CONCLUSION))
+        self.assertTrue(any("闸门" in v for v in violations), violations)
+
+    def test_gate_n_for_role_reads_ssot(self):
+        # N is the single source of truth in role-methods/*.md (design.md §10.6 R1).
+        self.assertEqual(check_subdoc.gate_n_for_role("B（技术经理）"), 3)
+        self.assertEqual(check_subdoc.gate_n_for_role("A（架构师）"), 3)
+        # C solo baseline is N=2 (first "N = " in C.md).
+        self.assertEqual(check_subdoc.gate_n_for_role("C（产品专家）"), 2)
+        # Unknown / custom key falls back to the default.
+        self.assertEqual(check_subdoc.gate_n_for_role("Z（不存在）"), 3)
 
 
 if __name__ == "__main__":

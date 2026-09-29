@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """Structural gate for zj-discuss sub-documents.
 
-Turns three previously prose-only invariants into mechanically enforced checks:
+Turns previously prose-only invariants into mechanically enforced checks:
 
 1. every viewpoint declares a valid ``视角来源`` marker;
 2. a same-session preview viewpoint carries the ``⚠ 非独立`` label;
 3. the conclusion carries a valid ``状态协议`` value and never cites
-   same-session preview output as authority (hard rule 3(b) of the skill).
+   same-session preview output as authority (hard rule 3(b) of the skill);
+4. a cross-session independent viewpoint carries **≥N viewpoint blocks, each
+   citing original evidence** (the gated-method ④ gate, calibrated in
+   ``design.md §10.6 R1``). N is read from each role's
+   ``references/role-methods/<key>.md`` so the ratified value stays the single
+   source of truth — this file needs no per-role edit when calibration changes.
 
 Usage:
 
@@ -49,6 +54,21 @@ PREVIEW_TOKENS = ("预演", "同会话SubAgent")
 # output counts as citing it, so require a reliance cue on the same line.
 RELIANCE_CUES = ("依据", "采纳", "参考", "基于", "来自", "取自", "据")
 STRIP_CHARS = " \t`\"'*_\u00a0"
+
+# A viewpoint body is composed of one or more "viewpoint blocks". Each block is
+# introduced by a ``#### 观点`` heading or a bold ``**观点`` line, and must carry
+# an evidence citation back to the source the Agent Read (gated method ④). The
+# delimiter is fence-aware via split_sections (a ``**观点`` line inside a code
+# fence is inert).
+VIEWPOINT_BLOCK_RE = re.compile(r"^(#{4}\s*观点|\*\*观点)")
+# Evidence = a "原文" reference carrying a locator (line / section / paren), e.g.
+# "原文 L96", "原文 L118-131", "（原文 L9-13）". This is the canonical form the
+# gated method mandates ("发现 字段须能回溯到 Read 到的原文").
+EVIDENCE_RE = re.compile(r"原文\s*[L（(]")
+ROLE_METHODS_DIR = Path(__file__).resolve().parent.parent / "references" / "role-methods"
+# Fallback when a role has no gated-method file (custom / unknown role key).
+GATE_N_DEFAULT = 3
+GATE_N_RE = re.compile(r"N\s*=\s*(\d+)")
 
 
 def split_sections(text):
@@ -115,7 +135,8 @@ def _check_conclusion(body):
 
 
 def _check_viewpoint(heading, body):
-    """Validate one viewpoint block's source marker (and its preview label)."""
+    """Validate one viewpoint block: source marker, preview label, and the
+    gated-method N-gate (cross-session independent viewpoints only)."""
     role = _role_of(heading)
     marker_match = SOURCE_RE.search(body)
     if not marker_match:
@@ -127,9 +148,79 @@ def _check_viewpoint(heading, body):
                 role, marker, " / ".join(sorted(ALLOWED_MARKERS))
             )
         ]
-    if marker == PREVIEW_MARKER and PREVIEW_LABEL not in body:
+    # A same-session preview is explicitly low-weight and is *not* counted as
+    # effective coverage, so the N-gate does not apply to it.
+    if marker == PREVIEW_MARKER:
+        if PREVIEW_LABEL not in body:
+            return [
+                "视角 {} 是同会话预演视角，缺少 `{}` 标签".format(role, PREVIEW_LABEL)
+            ]
+        return []
+    # Cross-session independent viewpoint → enforce the gated-method N-gate.
+    return _check_viewpoint_gate(role, body)
+
+
+def _split_viewpoint_blocks(body):
+    """Split a viewpoint body into viewpoint blocks by their delimiter.
+
+    A block starts at a line matching ``#### 观点`` (h4) or ``**观点`` (bold),
+    and runs until the next delimiter or the end of the body. A body with no
+    delimiter is treated as a single (likely non-compliant) block.
+    """
+    blocks = []
+    current = []
+    for line in body.splitlines():
+        if VIEWPOINT_BLOCK_RE.match(line.strip()):
+            if current:
+                blocks.append("\n".join(current))
+            current = [line]
+        else:
+            current.append(line)
+    if current:
+        blocks.append("\n".join(current))
+    return blocks
+
+
+def gate_n_for_role(role_key):
+    """Return the gated-method viewpoint count N for a role key.
+
+    N is read from the role's gated-method file (``references/role-methods/
+    <key>.md``), so the ratified calibration in ``design.md §10.6 R1`` stays the
+    single source of truth — node 1-5 only edits those files, this gate needs
+    no code change. Falls back to ``GATE_N_DEFAULT`` when the role file (or an
+    ``N =`` line) is absent.
+    """
+    key = role_key.strip()
+    for sep in ("（", "(", "（"):
+        if sep in key:
+            key = key.split(sep)[0].strip()
+    if not key:
+        return GATE_N_DEFAULT
+    cand = ROLE_METHODS_DIR / "{}.md".format(key)
+    if cand.is_file():
+        m = GATE_N_RE.search(cand.read_text(encoding="utf-8"))
+        if m:
+            return int(m.group(1))
+    return GATE_N_DEFAULT
+
+
+def _check_viewpoint_gate(role, body):
+    """Enforce gated-method ④: ≥N viewpoint blocks, each citing original evidence.
+
+    Only criteria 1 (count) and 2 (evidence citation) of the gated method are
+    mechanically checkable here; criterion 3 (anti-echo / independence) is left
+    to the blind-adjudication protocol (roadmap node 1-3 B).
+    """
+    n = gate_n_for_role(role)
+    blocks = _split_viewpoint_blocks(body)
+    evidence_blocks = [b for b in blocks if EVIDENCE_RE.search(b)]
+    if len(evidence_blocks) < n:
         return [
-            "视角 {} 是同会话预演视角，缺少 `{}` 标签".format(role, PREVIEW_LABEL)
+            "视角 {} 的有效观点（带原文证据引用）仅 {} 条，低于闸门 N={}"
+            "（须 ≥N 条带证据引用的观点块：每块以「**观点 N**」或「#### 观点 N」"
+            " 起头，并含「原文 Lxx」类证据定位）".format(
+                role, len(evidence_blocks), n
+            )
         ]
     return []
 
