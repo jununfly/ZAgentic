@@ -7,6 +7,13 @@ description: >-
   Use when 用户提到 路线图驱动 / roadmap driven / 导航式开发 / 进度地图 / 节点推进 / plan tree，
   或需要把长任务拆成可追踪的树形计划并沉淀决策。载体支持单文件 JSON 与 SQLite，
   与 zj-wayfinder（规划）、zj-to-tickets（转换）配合。
+triggers:
+  - "路线图驱动"
+  - "roadmap driven"
+  - "导航式开发"
+  - "进度地图"
+  - "节点推进"
+  - "plan tree"
 ---
 
 # zj-roadmap-driven — 路线图驱动开发

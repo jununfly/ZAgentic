@@ -1,7 +1,7 @@
 ---
 name: zj-discuss
-description: Run zj-discuss when the user faces a genuinely complex problem that flat chat cannot fully resolve, or points to an existing discussions/<slug>/ to resume. It decomposes the problem into a master doc + independent sub-documents, runs role-based multi-agent discussion via a fixed+dynamic agenda, synthesizes, and hands off to zj-docs-ontology. For a single issue, use zj-discuss-view + zj-steelman directly instead.
-argument-hint: "<complex problem description, or an existing discussions/<slug>/ path to resume>"
+description: Run zj-discuss when the user faces a genuinely complex problem that flat chat cannot fully resolve, or points to an existing discussions/ (slug) directory to resume. It decomposes the problem into a master doc + independent sub-documents, runs role-based multi-agent discussion via a fixed+dynamic agenda, synthesizes, and hands off to zj-docs-ontology. For a single issue, use zj-discuss-view + zj-steelman directly instead.
+argument-hint: "<complex problem description, or an existing discussions/ (slug) path to resume>"
 ---
 
 # zj-discuss
