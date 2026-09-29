@@ -101,6 +101,12 @@ launch-pack 生成器 ≈1–2 人日；状态协议 / 度量注册表 ≈1 人�
 **重新评估触发**：① gstack 大版本变更 suite 接入不变式；② WorkBuddy harness 原生支持
 spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可升级）。
 
+> **范式级勘误（2026-09-28 ratified）**：本节 §2 的「分类 C」针对 R1–R7 六条具体改进
+> （已落地），维持有效。但 §0 立项意图（ingest gstack 成熟角色实现）与角色实际落地
+> （thin prompt persona）的矛盾，已在 **§10** 勘误并将「角色实现范式」重评为 **B1**
+> （范式级 ingest + adapt）。二者不冲突：R1–R7 = C 级薄层集成；角色实现范式 = B1 级
+> 范式 ingest。维度不同，勿混读。
+
 ---
 
 ## 3. 本轮追加的 4 项改进（已实现于技能文件）
@@ -198,11 +204,11 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
   PoC 同时硬化了一个普遍解析 bug。R4 度量计算机只读重算、不注入，仍不受此影响。
 - [ ] 跨 provider 评审（gstack `/codex` 范式）在 WorkBuddy harness 的可行性待验证——
   当前「跨会话独立 Agent」由隔离子 Agent 模拟，生产真隔离仍靠 Human 另开会话。
-- [ ] **设计补丁：角色实现范式升级（ingest gstack 范式）** — PROPOSED，待评审。
+- [x] **设计补丁：角色实现范式升级（ingest gstack 范式）** — **已 RATIFIED（2026-09-28，by zj）**。
   根因 = §0 立项意图（ingest 成熟角色实现）与 §2/§8 实际落地（C 模式抽取 + thin prompt
   角色）矛盾；方案 = 给 13 视角角色补 gated method（带闸门的可执行 method）+ 混合 ingest
   gstack domain 无关过程角色；决策模型重评 gstack 可迁移部分 C→B1、suite/运行时维持 D。
-  详见 `patch-role-impl-paradigm-ingest.md`（决策模型已落为本仓库 SSOT，重评可直接引用）。
+  **内容已回流 §10，独立补丁文件已删除**（保持设计文档单一真源；执行阶段见 §10.4）。
 
 ---
 
@@ -275,3 +281,73 @@ raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
 > 「结构性 digest 注入」是**正交**特性。后者仍按 §8 保持未决；前者独立激活，不受其阻断。
 > closure 口径采用「子文档级闭合」（见 §7）：discussion 级 `total`=子文档数、
 > `closed`=结论 claim（DONE/DONE_WITH_CONCERNS）的子文档数，零模板改动。
+
+---
+
+## 10. 设计补丁流转：角色实现范式升级（已 RATIFIED）
+
+> 来源：原 `patch-role-impl-paradigm-ingest.md`（PROPOSED → **RATIFIED 2026-09-28，by zj**）。
+> 内容已回流本文件后，独立补丁文件已删除，保持设计文档单一真源。决策模型已落为本仓库
+> SSOT（`docs/agreements/open-source-capability-fit-decision-model.md`），重评直接引用其定义。
+
+### 10.1 根因勘误：§0 意图与实际落地的矛盾
+
+`design.md` §0 立项意图是 **ingest gstack 的成熟角色实现**（让角色有真实行为，而非
+thin prompt persona）。但文档主体用同一决策模型做了反方向：§2 将 gstack 判为 C
+（选择性复用，只作组件来源 / 模式抽取）、suite / 运行时判为 D（否决）；§8「外部能力集成边界」
+重申红线；`role-matrix.md` 的 13 个角色只是「一句话立场 + 差异锚点 + 一句话简介」的
+thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0「奇怪」感的根源（此前
+「悬空引用」判断是表层）。
+
+**结论**：§0 意图与 §2/§8 落地矛盾是真实根因，须显式勘误并纠正，而非当作既有结论接受。
+
+### 10.2 两种 ingest 路径的取舍（已定）
+
+- **范式级 ingest（已选）**：借 gstack「角色 = 带闸门的过程」范式重写自有角色，不碰
+  gstack 文件、不引运行时。domain 匹配度高（套在 zj-discuss 讨论视角上）。
+- **整包 ingest（否决）**：搬 gstack 软件交付角色文件（`/ceo` `/qa` `/ship` …）进讨论
+  视角，90% 软件专用，错位。
+- **混合项（已选）**：gstack *domain 无关* 的流程角色（`/office-hours` 问题重构、
+  `/plan-*` 评审闸门、`/retro` 复盘）作为「过程角色」整包-adapt，落**主力AI 编排层**
+  （非 13 视角角色集），与现有「分解 / 准备 / 合成」阶段同源，适配成本最低。
+
+### 10.3 决策模型重评（gstack 可迁移部分 C→B1，suite / 运行时维持 D）
+
+| gstack 能力 | 原判定（§2） | 本补丁重评 | 理由 |
+| --- | --- | --- | --- |
+| 跨 provider 独立评审（`/codex`） | C | **B1** | 与 zj-discuss 独立性阶梯语义高度匹配，ingest 为验证 / 过程角色 |
+| 闸门 + 状态纪律（Completion Status、结构性 gate） | C（仅 R3 部分落地） | **B1** | 深化为每角色 gated method |
+| learnings 回路（`/retro`） | C | **B1** | ingest 为收尾复盘过程角色 |
+| reuse ladder / 2KB digest（voice-only） | C | C（维持） | 仍只覆盖表达语气，不改方法体系 |
+| suite / 运行时 / router | D | **D（维持）** | 红线不变；范式级 ingest 不引外部运行时 |
+
+> B1 仅针对「方法 / 范式」；suite / 运行时 D 红线**不变**。§8 集成边界文本中
+> 「gstack 仅作组件来源，不引运行时」仍保留，但其语义从「推开成模式参考」修正为
+> 「范式级 ingest 后仍以自有角色为主体、不引外部运行时」。
+
+### 10.4 执行方案（ratify 后进入，待实现；不修改 skill 文件于本流转阶段）
+
+1. **13 视角角色补 gated method**（范式 §4.1 四件套）：① 强制起点 `Read` 原文；
+   ② 角色专属核查清单（取代一句话简介，这是「牙齿」）；③ 强制输出结构（≥N 条带证据
+   有效观点，每条「发现 + 影响 + 建议」）；④ 闸门（≥N 条结构错位有效观点 + 引用原文证据
+   + 不得与自身首轮锚定）。先 base {B,C,A}，再 T/S/O/D/L/F/U/R/P/E。
+2. **过程角色 adapt**（§4.2）：`/office-hours`→准备阶段问题重构；`/plan-*`→scope / 架构
+   / UX 评审闸门；`/retro`→收尾复盘（呼应 R4 度量注册表）。落主力AI 编排层，不进视角角色集。
+3. **§2 决策矩阵更新**：gstack 可迁移部分 C→B1，并显式记录 10.1 意图-实际矛盾勘误。
+4. **回归**：`check_subdoc.py` / `metrics.py` / `launch_pack.py` 现有测试零回归；
+   必要时给 gated method 增补机械校验。
+
+### 10.5 待评审问题决议（reviewer 已拍板，按 patch 倾向）
+
+| # | 问题 | 决议 |
+| --- | --- | --- |
+| 1 | gated method 内联 `role-matrix.md` 还是拆 `references/role-methods/<key>.md`？ | **拆文件**（保持 SSOT 可读性） |
+| 2 | 过程角色 adapt 只取闸门结构还是连 gstack 具体评审项？ | **只取结构**，剥离软件专用措辞 |
+| 3 | B1 重评后是否补示例决策记录？ | 由 `zj-open-source-capability-fit` skill 落为可复核工具，执行阶段补 1 条示例决策记录 |
+| 4 | 本补丁是否转 `zj-roadmap-driven` 节点？ | 维持 design patch 形态；ratify 后可转录为 roadmap 节点驱动执行 |
+
+### 10.6 风险（维持 patch §8）
+
+- **R1 闸门过严导致角色产出萎缩**：阈值需 PoC 校准；先在 base 角色 PoC 一轮。
+- **R2 过程角色 adapt 过度**：`/plan-*` 带入软件交付语境，adapt 时剥离代码专用措辞，只取评审闸门结构。
+- **R3 决策模型重评被误读为放开 D 红线**：B1 仅方法 / 范式，suite / 运行时 D 不变；重评表显式标注 D 维持。
