@@ -61,10 +61,18 @@ STRIP_CHARS = " \t`\"'*_\u00a0"
 # delimiter is fence-aware via split_sections (a ``**观点`` line inside a code
 # fence is inert).
 VIEWPOINT_BLOCK_RE = re.compile(r"^(#{4}\s*观点|\*\*观点)")
-# Evidence = a "原文" reference carrying a locator (line / section / paren), e.g.
-# "原文 L96", "原文 L118-131", "（原文 L9-13）". This is the canonical form the
-# gated method mandates ("发现 字段须能回溯到 Read 到的原文").
-EVIDENCE_RE = re.compile(r"原文\s*[L（(]")
+# Evidence = a "原文" reference carrying a locator (file+line / line / section /
+# paren), e.g. "原文 L96", "原文 sub-02 L85-88", "原文 SKILL.md L140-144",
+# "原文 ## 上下文", "原文 §结论不变式", "（原文 L9-13）", "原文 第9-13行".
+# The gated method mandates "发现 字段须能回溯到 Read 到的原文" — a locator,
+# not a specific spelling. The previous regex `原文\s*[L（(]` ONLY matched a bare
+# `原文 Lxx` and silently rejected the dominant real form `原文 <path> Lxx`,
+# which (proven by the improve-zj-discuss meta-run) makes every viewpoint that
+# cites by file+line fail the gate → mass false rejections → gate disabled
+# (the exact "狼来了" failure mode SKILL.md warns about). The `[\w./\-]+\s+`
+# group optionally consumes a path/identifier token between 原文 and the L/§/#
+# anchor; the trailing `第` covers the "原文 第9-13行" spelling.
+EVIDENCE_RE = re.compile(r"原文\s*(?:[\w./\-]+\s+)?[Ll#§（(第]")
 ROLE_METHODS_DIR = Path(__file__).resolve().parent.parent / "references" / "role-methods"
 # Fallback when a role has no gated-method file (custom / unknown role key).
 GATE_N_DEFAULT = 3
@@ -123,6 +131,11 @@ def _check_conclusion(body):
     for line in body.splitlines():
         if not any(token in line for token in PREVIEW_TOKENS):
             continue
+        # 规则陈述句（如「结论不得引用同会话 SubAgent 预演产出作为权威依据」）只是指
+        # 出约束，并非把预演当权威依据 —— 跳过，否则闸门会对每篇结论误报，触发
+        # SKILL.md 预警的「狼来了」失效模式（闸门被关掉）。
+        if "不得引用" in line:
+            continue
         cues = [cue for cue in RELIANCE_CUES if cue in line]
         if cues:
             violations.append(
@@ -132,6 +145,39 @@ def _check_conclusion(body):
             )
             break
     return violations
+
+
+def _check_deposition(body):
+    """Hard rule 5 closure guard (sub-02 Q3 finding).
+
+    A conclusion that carries a `沉淀指令` block must list at least one
+    substantive deposition item; an empty `沉淀指令` (status DONE but nothing to
+    deposit / nothing to delete) is a non-loop that slips past the older gate.
+    Docs that omit the block entirely are not gated here (legacy / not-yet-using
+    the template), so this only fires on the real "claimed loop but empty" case.
+    """
+    idx = body.find("沉淀指令")
+    if idx == -1:
+        return []
+    tail = body[idx:]
+    lines = tail.splitlines()
+    # Bound the scan at the status-protocol field; never scan the marker line
+    # itself (lines[0]) or the 状态协议 line, or an empty block would falsely pass.
+    stop = len(lines)
+    for i, line in enumerate(lines):
+        if "状态协议" in line:
+            stop = i
+            break
+    for line in lines[1:stop]:
+        s = line.strip()
+        if not s:
+            continue
+        if s[0] in "-*" or s.startswith("**"):
+            return []
+    return [
+        "conclusion 含 `沉淀指令` 段但无实质条目（须列至少 1 条改的文档 / 待删临时物），"
+        "否则不算闭环（硬规则 5）"
+    ]
 
 
 def _check_viewpoint(heading, body):
@@ -218,7 +264,8 @@ def _check_viewpoint_gate(role, body):
         return [
             "视角 {} 的有效观点（带原文证据引用）仅 {} 条，低于闸门 N={}"
             "（须 ≥N 条带证据引用的观点块：每块以「**观点 N**」或「#### 观点 N」"
-            " 起头，并含「原文 Lxx」类证据定位）".format(
+            " 起头，并含「原文 <file> Lxx / 原文 ## 章节 / 原文 §…」类证据定位"
+            "（行号或章节锚点均可））".format(
                 role, len(evidence_blocks), n
             )
         ]
@@ -266,6 +313,7 @@ def check(text):
     else:
         violations.extend(_check_conclusion(conclusion_body))
         violations.extend(_check_non_degradation(conclusion_body, has_cross_session_anchor))
+        violations.extend(_check_deposition(conclusion_body))
     return violations
 
 

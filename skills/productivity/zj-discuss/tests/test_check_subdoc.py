@@ -298,5 +298,35 @@ class ViewpointGateNCheck(unittest.TestCase):
         self.assertEqual(check_subdoc.gate_n_for_role("Z（不存在）"), 3)
 
 
+class DepositionGate(unittest.TestCase):
+    """Hard rule 5 closure guard (sub-02 Q3 finding): a conclusion carrying a
+    `沉淀指令` block must list at least one substantive item."""
+
+    def test_deposition_with_items_passes(self):
+        conclusion = (
+            "- **子问题结论：** 定了\n"
+            "- **沉淀指令：**\n"
+            "  - 改哪些文档：`scripts/check_subdoc.py`\n"
+            "  - 待删临时脚手架：briefings/\n"
+            "- **状态协议：** DONE\n"
+        )
+        self.assertEqual(check_subdoc.check(doc(GOOD_VIEWPOINT, conclusion)), [])
+
+    def test_empty_deposition_block_fails(self):
+        conclusion = (
+            "- **子问题结论：** 定了\n"
+            "- **沉淀指令：**\n"
+            "- **状态协议：** DONE\n"
+        )
+        violations = check_subdoc.check(doc(GOOD_VIEWPOINT, conclusion))
+        self.assertTrue(
+            any("沉淀指令" in v or "闭环" in v for v in violations), violations
+        )
+
+    def test_missing_deposition_block_not_gated(self):
+        # Legacy docs without the block are not flagged (backward compatible).
+        self.assertEqual(check_subdoc.check(doc(GOOD_VIEWPOINT, GOOD_CONCLUSION)), [])
+
+
 if __name__ == "__main__":
     unittest.main()
