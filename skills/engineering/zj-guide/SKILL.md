@@ -108,11 +108,19 @@ Not feature work — upkeep.
 - **`/zj-research`** — collect high-trust primary-source findings or compile commit-pinned evidence for a technical comparison. It stops at evidence and explicit unknowns.
 - **`/zj-code-research`** — build a Repository Map, then perform a bounded Architecture Study of selected repository modules or flows.
 - **`/zj-tech-research-report`** — turn technical findings into a technical-solution research report. Use it after `/zj-research` or `/zj-code-research`; technical comparisons use the sealed ledger and Report IR.
+- **`/zj-open-source-capability-fit`** — apply the open-source capability-fit decision model to an external OSS candidate: produce a reviewable R×O evidence matrix and an A/B/C/D classification with mechanical gates (not a thin prompt). It outputs only the fit verdict and decision record; `/zj-tech-research-report` wraps it into the full selection narrative.
 - **`/zj-tech-design-review`** — review a proposed technical design from problem framing through architecture, metrics, risk, rollout, testing, and follow-up.
 
 Keep the distinction sharp: systematic research explains an object; research
 collects evidence; research-report synthesizes evidence; design-review tests a
 proposed solution.
+
+## Collaborative problem decomposition
+
+For a problem too complex for flat chat: decompose it, discuss it in parallel, then synthesize.
+
+- **`/zj-discuss`** — when flat prompt-and-answer chat cannot resolve the problem: decompose it into a master doc plus independent sub-documents, run role-based multi-agent discussion per sub-problem through a fixed+dynamic agenda, synthesize, and hand off to `/zj-docs-ontology` for durable deposition. For a single issue, use `/zj-discuss-view` + `/zj-steelman` directly instead.
+- **`/zj-discuss-view`** — companion to `/zj-discuss`: in a separate, independent Agent session, read a sub-document original and write one structurally different role's isolated viewpoint (anti-echo-chamber). Run once per role, per sub-document.
 
 ## Vocabulary underneath
 
