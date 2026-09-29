@@ -102,17 +102,40 @@
       "id": "1-3",
       "uid": "01a0eba28a05-f6012d8956",
       "label": "B：盲评协议与执行（剥标注盲标+一致率）",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "盲评协议文档",
+          "answer": "skills-outputs/zj-discuss/n-threshold-poc/blind-eval-protocol.md：定义剥标注/打乱/分类方案/一致率度量/接受判据(>=80%支持原校准,60-80%警告,<60%触发1-1D)，与节点1-1 A-E 对齐",
+          "note": ""
+        },
+        {
+          "q": "盲版产物",
+          "answer": "strip_blind.py(确定性,seed=20260929) 生成 blind-eval/probe-views.blind.md(剥标注+角色内打乱重排)；blind-eval/blind-labels.md 为盲标逐条独立判定(仅读盲版)",
+          "note": ""
+        },
+        {
+          "q": "一致率结果",
+          "answer": "二值一致率 13/15=86.7% >=80% 阈值 -> 支持原校准(B/A=3、C=2 稳健)；2处分歧均在borderline层且方向为原标更保守(少算真有效)，不挑战N结论，未触发节点1-1 D拒绝/升级",
+          "note": ""
+        },
+        {
+          "q": "诚实局限",
+          "answer": "本执行是同Agent操作性盲评(剥标注+打乱+隐标)，检验规则自洽性，不替代跨标注者信度(inter-rater reliability)；真独立复核属于节点1-4(真·跨会话PoC，应报Cohen kappa)；建议1-4额外验证C solo第3条borderline稳定性",
+          "note": ""
+        }
+      ],
       "notes": "产出观的人 ≠ 定阈值的人；盲标 probe-views.md 后比对一致率。",
       "layer": "plan",
       "exit_criteria": [
         "有盲评协议文档",
-        "对 probe-views.md 盲标后记录一致率"
-      ]
+        "对 probe-views.md 盲标后记录一致率",
+        "有盲评协议文档(blind-eval-protocol.md) 且 对 probe-views.md 盲标后记录一致率(agreement.md: 13/15=86.7% 支持原校准) 且 status=completed"
+      ],
+      "rounds": 1
     },
     "1-4": {
       "id": "1-4",
@@ -149,7 +172,7 @@
   },
   "metadata": {
     "created": "2026-09-29 13:28:12",
-    "updated": "2026-09-29 14:12:21",
+    "updated": "2026-09-29 14:40:28",
     "md_file": "docs/designs/zj-discuss/r1-closure.md"
   },
   "edges": [
