@@ -58,7 +58,9 @@ use `zj-discuss-view` + `zj-steelman` directly; do not spin up the full set.
    candidate sub-document has: one-line problem statement, independence
    rationale, success criteria, and **suggested roles** derived from
    `role-matrix.md`'s recommendation heuristic (base {B,C,A} + any optional
-   roles whose trigger signal the sub-problem hits).
+   roles whose trigger signal the sub-problem hits). 重构后的子问题须过
+   `references/process-roles.md` ① 的「问题重构闸门」（一事一议 / 独立可解 /
+   成功判据可验证），不过则回到解构、不进入讨论。
 2. **Role selection (preparation phase — hard interaction):** present to Human —
    (a) **推荐参与角色**: each with a one-line intro + why recommended (which
    signal matched / why base); (b) **其他可选角色**: the rest of the pool, each
@@ -121,7 +123,8 @@ fixed to three agents):
    role has contributed an effective viewpoint), stop adding roles and synthesize
    a conclusion. The dynamic agenda may insert focused extra rounds for unresolved
    questions or sharp tensions, but never to pad headcount. More views is a means,
-   not a goal.
+   not a goal. **收敛前须过 `references/process-roles.md` ② 的三道评审闸门
+   （scope / 架构 / UX），不过不准标 `conclusion`。**
 
 ### Phase 3 — Synthesize & roll up (Q-D)
 
@@ -130,7 +133,9 @@ fixed to three agents):
   cross-cutting constraints).
 - **Final:** when all sub-docs are concluded (or Human stops per convergence),
   run one final synthesis — rewrite `MASTER.md`'s "解决思路" as an integrated
-  narrative. A SubAgent may draft it (low-risk); Human reviews.
+  narrative. A SubAgent may draft it (low-risk); Human reviews. 终局合成后跑一次
+  `references/process-roles.md` ③ 收尾复盘（对照 R4 度量注册表，沉淀进设计文档三件套，
+  不引共享运行时）。
 
 ### Phase 4 — Disposition contract (Q2')
 
@@ -253,6 +258,8 @@ python3 <skill-dir>/scripts/check_subdoc.py <sub-doc-path> [...]
 - `references/master-template.md` — MASTER.md skeleton (incl. disposition contract + 可选 voice-only digest 块).
 - `references/subdoc-template.md` — per-sub-problem discussion doc skeleton (role-count-agnostic; 末尾含可选 voice-only digest 块).
 - `references/role-matrix.md` — candidate role pool + recommendation heuristic + convergence rule (SSOT for role semantics).
+- `references/role-methods/<key>.md` — per-role **gated method**（① Read 原文 ② 角色专属核查清单 ③ 强制输出结构 ④ 闸门）；每个视角角色一份，是角色语义的「牙齿」（design.md §10.4 项1）。
+- `references/process-roles.md` — **过程角色**（非视角角色）的范式 adapt：`office-hours` 问题重构 / `plan-*` 评审闸门 / `retro` 收尾复盘，落主力Ai 编排层（design.md §10.4 项2）。
 - `references/sibling-boundary.md` — sibling-skill invariants + external selective-reuse (C) boundary — sunk from SKILL.md.
 - `scripts/launch_pack.py` — static per-role launch-pack generator (replaces manual briefing copying).
 - `scripts/check_subdoc.py` — structural gate enforcing the four invariants above.

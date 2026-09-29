@@ -92,6 +92,7 @@ PACK_TEMPLATE = """# 启动包：角色 {{key}}（{{name}}）
 - **角色：** {{name}}
 - **结构立场：** {{stance}}
 - **一句话简介：** {{intro}}
+- **gated method（牙齿）：** `references/role-methods/{{key}}.md` —— 动笔前 `Read` 它，按其中的「角色专属核查清单 + 三字段输出 + 闸门」产出。
 
 > 角色语义以 `references/role-matrix.md` 为唯一真源。你不复述别人，也不反驳别人 ——
 > 你从上面这个「结构立场 / 差异锚点」出发独立论证。
@@ -100,9 +101,11 @@ PACK_TEMPLATE = """# 启动包：角色 {{key}}（{{name}}）
 
 ```
 Read `{{subdoc}}`
+Read `references/role-methods/{{key}}.md`
 ```
 
-你必须自己 `Read` 这份原文并形成立场。若没被给出文件，停下来向 Human 要路径。
+你必须自己 `Read` 这两份原文并形成立场。若没被给出文件，停下来向 Human 要路径。
+方法文件规定了本角色的可机械判定核查契约（见 design.md §10.4 项1）。
 
 ## 第二步：加载 companion 并写视角
 

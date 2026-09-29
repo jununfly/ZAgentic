@@ -38,6 +38,9 @@ genuinely runtime-isolated from the others — not a same-session roleplay.
    the SSOT for role semantics — B/C/A are the default base; T/S/O/D/L/F/U/R/P/E are
    optional pool members; a custom key must still apply the same "structurally
    different stance" discipline). Argue from your own stance's difference anchor.
+   **Also `Read` `zj-discuss/references/role-methods/<your-role-key>.md`** — it is the
+   role's gated method (核查清单 + 三字段输出结构 + 闸门); follow its checklist so your
+   viewpoint carries real "teeth" (see `zj-discuss` design.md §10.4 项1).
 4. Write your independent viewpoint under `## Agent viewpoints` in the
    sub-document, with the `视角来源` header. Answer the open questions
    (scope 草案) from your stance. Do **not** echo the file's prior content as
