@@ -37,13 +37,43 @@
       "id": "1-1",
       "uid": "01a0eba2885c-4c5abf8d19",
       "label": "C：预先注册 acceptance 标准（锁 N 前约判据）",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "A. 证据门槛",
+          "answer": "每条N判定须有可复核probe证据(原文行号/外部信号来源),禁「感觉够」;跨会话视角须过check_subdoc N-gate(≥N带证据观点块),否则结论无效不计入接受",
+          "note": ""
+        },
+        {
+          "q": "B. B/A 维持N=3 接受条件",
+          "answer": "N=3下第4条边际增量≈0(饱和未注水)才接受;若N=4/5须证注水才维持N=3,不得上调;若跨会话显示仅稳出≤2条有效→触发降级重校,不锁N=3",
+          "note": ""
+        },
+        {
+          "q": "C. C solo 降N=2 接受条件",
+          "answer": "跨会话复核确认C在该内部子问题仅稳出2条有效且第3条注水/重复→接受N=2;一旦触外部市场信号须回N=3(预设分支,非偏离)",
+          "note": ""
+        },
+        {
+          "q": "D. 拒绝/升级条件",
+          "answer": "跨会话与原PoC同会话结论相反→不锁原值,回1-4重做或升新一轮;任角色缺N-gate通过记录→不锁,阻塞1-5",
+          "note": ""
+        },
+        {
+          "q": "E. 锁值前置(交1-5)",
+          "answer": "仅当A全满足∧B/C对应满足∧D无拒绝时,1-5方可写回role-methods/*与design.md§10.6,并保留「校准来源+跨会话复核日期+复核视角」元数据",
+          "note": ""
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "节点 decisions 含 A-E 五维 acceptance 标准(证据门槛/B-A接受/C接受/拒绝升级/锁值前置)且 status=completed"
+      ]
     },
     "1-2": {
       "id": "1-2",
@@ -119,7 +149,7 @@
   },
   "metadata": {
     "created": "2026-09-29 13:28:12",
-    "updated": "2026-09-29 13:43:28",
+    "updated": "2026-09-29 14:12:21",
     "md_file": "docs/designs/zj-discuss/r1-closure.md"
   },
   "edges": [
