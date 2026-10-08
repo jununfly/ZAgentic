@@ -233,6 +233,8 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ⏳ 待拍板 |
 | `HD-6` | PoC 通过/失败后的长期沉淀或删除路径 | ⏳ 待拍板 |
 
+> **HD-5 测量修正：** B/C/T/U 角色观点中的 30% 提速、控制组或解释率数字属于独立视角提出的候选测量，不是已确认门槛。由于人工组装基线受任务和操作者差异影响，当前整合方案将这些数字降为描述性观测，机械验收只采用 Plan 契约、场景 oracle、安全硬门槛和删除后回归。
+
 ## Human 对 `HD-1` 的拍板记录
 
 - **日期：** 2026-10-08
@@ -286,7 +288,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   4. **状态：** `planned → approved → running → blocked/failed → verified → recorded`，另有 `cancelled` 与 `rolled_back`；生成器只拥有 `planned` 方案和解释，不拥有执行权限或长期治理 authority。
   5. **Human 决策点：** 批准方案、批准高风险能力、处理冲突/过期依赖、接受验证结果、决定是否固化经验。
   6. **最小纵切 PoC：** 选择“外部仓库研究”和“一套工具组合设计”两个真实任务，与当前人工组装基线对照；只写入 `skills-outputs/` 下版本化方案包，不改 skill 定义、不自动执行不可逆动作。
-  7. **继续阈值：** 首次生成有效方案时间相对基线下降 ≥30%；独立用户能解释选择理由的比例 ≥80%；执行成功率不低于基线；零 authority bypass、零未声明副作用；删除生成器后原有路径可复现。任一高风险副作用、权限绕过、持续性 runtime 依赖或基线回归超过 20% 即停止并删除适配层。
+  7. **继续/停止证据：** 不把相对人工组装提速或人工基线执行成功率当作客观硬门槛。在固定 fixture、固定 skill 索引和固定输入约束下，记录 wall-clock、主动交互步骤、人工修改次数、拒绝/重试次数、失败恢复次数和 Plan 采纳情况，作为描述性证据。机械通过条件为：Plan schema/provenance 完整；每个能力选择有理由；缺口按 `required skill：...` 输出；场景 oracle 通过；authority bypass、未声明副作用、未批准写入或外联、秘密明文泄露均为 0；删除实验层后原路径回归通过。是否继续由 Human 根据这些固定场景证据和实际反馈作产品判断。
 - **沉淀指令：**
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，新增产品契约/PoC 设计页，记录 Plan/Run 输入输出、状态机、权限与回退；对“生成器不得成为第二 authority/runtime”新增 ADR，并同步 `README`/`zj-guide` 的用户入口说明。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 1 的可迁移边界是子文档 2 的候选筛选闸门；任何后续 merge wave 必须先通过方案包契约和 PoC 指标”。
