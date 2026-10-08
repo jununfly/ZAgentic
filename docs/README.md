@@ -51,8 +51,9 @@ architecture or rules.
 
 | Question | Location | Lifecycle |
 | --- | --- | --- |
-| What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. The 2026-09-09 / 2026-09-12 retros had their durable concepts extracted into `ZJ-CONTEXT.md` and were archived to `.zj-out-of-scope/zj-retros/` (staged deletion, awaiting separate Human confirmation). |
+| What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. The 2026-09-09 / 2026-09-12 retros had their durable concepts extracted into `ZJ-CONTEXT.md` and were deleted on 2026-09-17 after user-confirmed cleanup (recoverable via git history `929b4ab`). |
 | What is specified and ready for an Agent to build? | [docs/plans/](plans/) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. The roadmap concurrency / execution-graph specs (`zj-roadmap-dag-concurrency.md`, `zj-roadmap-execution-graph.md`) were durably extracted into [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) and [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md); their source files were deleted from `.zj-out-of-scope/plans/` on 2026-09-17 after user-confirmed cleanup (recoverable via git history `929b4ab`). |
+| Which active cross-repository tickets are ready for an Agent? | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | Target-defined process material: the ZAgentic skill-layer tickets (T02–T04) for the cross-repository Slice 1 roadmap. Keep them as the local execution source until that roadmap closes; the product-level source lives in the sibling ZKnowledgeCompounding repository. |
 
 ## Evidence boundaries
 
@@ -84,9 +85,7 @@ recognises as the routing surface rather than a primary view page.
 Long-lived agreement documents that bind cross-document methodology decisions.
 Each is a methodology SSOT maintained in-repo.
 
-| Document | Bounded question | Authority boundary |
-| --- | --- | --- |
-| [open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) | How do we decide whether to ingest / merge an external OSS capability (`R × O` matrix → `A/B/C/D`)? | ZAgentic's own methodology SSOT. Applied by `zj-discuss` §0/§2 and operationalized by the `zj-open-source-capability-fit` skill (`skills/research/zj-open-source-capability-fit/`). |
+- [Open-source capability-fit decision model](agreements/open-source-capability-fit-decision-model.md) — How do we decide whether to ingest / merge an external OSS capability (`R × O` matrix → `A/B/C/D`)? It is ZAgentic's own methodology SSOT, applied by `zj-discuss` §0/§2 and operationalized by the `zj-open-source-capability-fit` skill (`skills/research/zj-open-source-capability-fit/`).
 
 ## Lazy categories
 

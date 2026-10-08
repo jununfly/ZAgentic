@@ -871,7 +871,7 @@ _Avoid_: 把 D 当否决, 在单候选下混用两语义
 
 ## Retros
 
-🔄 判断 push 是否成功一律用 `git ls-remote`，不信客户端退出码 — docs/zj-retros/2026-09-12-retro.md#1650
-🔄 Bash coreutils 可能整体不在 PATH（`ls`/`head`/`which` 缺失）→ 文件操作改 Python，删文件走 `[System.IO.File]::Delete` — docs/zj-retros/2026-09-12-retro.md#2315
-- 补文档前先 grep 本地确认基线，别假设已合并 PR 的文档一定在本地 — docs/zj-retros/2026-09-12-retro.md#1650
-- 更新 / 重装 skill 前先探测已装副本（SKILL.md 字节数 + `scripts/` 清单），防已装副本漂移 — docs/zj-retros/2026-09-12-retro.md#2315
+🔄 判断 push 是否成功一律用 `git ls-remote`，不信客户端退出码 — durable lesson from the 2026-09-12 retro; the source is retained in git history (`5fd2d4a`).
+🔄 Bash coreutils 可能整体不在 PATH（`ls`/`head`/`which` 缺失）→ 文件操作改 Python，删文件走 `[System.IO.File]::Delete` — durable lesson from the 2026-09-12 retro; the source is retained in git history (`5fd2d4a`).
+- 补文档前先 grep 本地确认基线，别假设已合并 PR 的文档一定在本地 — durable lesson from the 2026-09-12 retro; the source is retained in git history (`5fd2d4a`).
+- 更新 / 重装 skill 前先探测已装副本（SKILL.md 字节数 + `scripts/` 清单），防已装副本漂移 — durable lesson from the 2026-09-12 retro; the source is retained in git history (`5fd2d4a`).
