@@ -199,4 +199,4 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，将统一比较矩阵、迁移试验卡字段和五条设计张力沉淀到 `docs/designs/` 的产品形态设计页，并在涉及 authority/runtime 的决定上新增 ADR；不把本讨论文件夹当长期 authority。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 2 只能选择不引入第二 authority/runtime 的候选；任何 pstack 机制须带迁移证据和回退路径”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹。
-- **状态协议：** NEEDS_CONTEXT（`HD-1`、`HD-2` 已确认；目标产品形态与最终沉淀仍待拍板）
+- **状态协议：** NEEDS_CONTEXT（`HD-1`、`HD-2`、`HD-3` 已确认；PoC 与最终沉淀仍待拍板）
