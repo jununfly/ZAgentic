@@ -33,6 +33,7 @@ surfaces; navigation order does not establish global truth precedence.
 | `design.zj-discuss-product` | What problem does the zj-discuss discussion-methodology skill solve, for whom, and against which usability/rigor/usefulness axes? | [zj-discuss product](designs/zj-discuss/product.md) |
 | `design.zj-discuss-architecture` | Which components, lifecycle, file layout, role pool, and agenda engine make up zj-discuss? | [zj-discuss architecture](designs/zj-discuss/architecture.md) |
 | `design.zj-discuss-spec` | What is the full, durable specification of zj-discuss (consensus, paradigm-derived revisions, role pool, hard rules, templates)? | [zj-discuss design/spec](designs/zj-discuss/design.md) |
+| `design.composer-plan-product-form` | What product boundary governs Composer, Plan, capability gaps, Human approval, and removable validation? | [Composer and Plan product form](designs/zj-composer-plan-product-form.md) |
 
 ### Accepted decision records
 
@@ -46,6 +47,7 @@ architecture or rules.
 | [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) | How is one skill-pair between two repositories processed, named and filed? | accepted |
 | [0003](zj-adr/0003-khazix-wave-absorb-key-decisions.md) | Under which rules do we absorb third-party skills wholesale? | accepted |
 | [0004](zj-adr/0004-research-report-improvement-scope.md) | What scope was ratified for the research-skills rearchitecture? | accepted |
+| [0005](zj-adr/0005-composer-authority-and-plan-contract.md) | What authority and Plan contract govern the Composer product form? | accepted |
 
 ## Process material
 

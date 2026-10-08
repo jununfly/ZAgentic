@@ -231,7 +231,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | `HD-3` | 保持现状、可解释组合器、薄编排层、强 router/runtime 的目标形态选择 | ✅ 已确认（2026-10-08） |
 | `HD-4` | 首个 PoC 的任务白名单、产物位置、Human 批准点与不可逆动作边界 | ✅ 已确认（2026-10-08） |
 | `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ✅ 已确认（2026-10-08） |
-| `HD-6` | PoC 通过/失败后的长期沉淀或删除路径 | ⏳ 待拍板 |
+| `HD-6` | PoC 通过/失败后的长期沉淀或删除路径 | ✅ 已确认（2026-10-08） |
 
 > **HD-5 测量修正：** B/C/T/U 角色观点中的 30% 提速、控制组或解释率数字属于独立视角提出的候选测量，不是已确认门槛。由于人工组装基线受任务和操作者差异影响，当前整合方案将这些数字降为描述性观测，机械验收只采用 Plan 契约、场景 oracle、安全硬门槛和删除后回归。
 
@@ -276,6 +276,8 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **机械门槛：** Plan schema/provenance 完整；能力选择有理由；缺口按 `required skill：...` 输出；场景 oracle 通过；authority bypass、未声明副作用、未批准写入或外联、秘密明文泄露均为 0；删除实验层后原路径回归通过。
 - **下一轮：** `HD-6`（长期沉淀和退出路径）。
 
+> 角色表记录独立观点来源；本次 Human 拍板按跨文档 `HD-1` 至 `HD-6` 议题完成，不再逐角色重复拍板。
+
 ## Human 对 Agent X 的拍板
 
 | 轮次 | 视角 | 隔离方式 | Human 拍板 | 是否 conclusion | 备注 |
@@ -299,7 +301,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   6. **最小纵切 PoC：** 选择“外部仓库研究”和“一套工具组合设计”两个真实任务，与当前人工组装基线对照；只写入 `skills-outputs/` 下版本化方案包，不改 skill 定义、不自动执行不可逆动作。
   7. **继续/停止证据：** 不把相对人工组装提速或人工基线执行成功率当作客观硬门槛。在固定 fixture、固定 skill 索引和固定输入约束下，记录 wall-clock、主动交互步骤、人工修改次数、拒绝/重试次数、失败恢复次数和 Plan 采纳情况，作为描述性证据。机械通过条件为：Plan schema/provenance 完整；每个能力选择有理由；缺口按 `required skill：...` 输出；场景 oracle 通过；authority bypass、未声明副作用、未批准写入或外联、秘密明文泄露均为 0；删除实验层后原路径回归通过。是否继续由 Human 根据这些固定场景证据和实际反馈作产品判断。
 - **沉淀指令：**
-  - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，新增产品契约/PoC 设计页，记录 Plan/Run 输入输出、状态机、权限与回退；对“生成器不得成为第二 authority/runtime”新增 ADR，并同步 `README`/`zj-guide` 的用户入口说明。
+  - 改哪些 PRD / ADR / 文档：向 `zj-docs-ontology` 提案新增 `docs/designs/zj-composer-plan-product-form.md`、`docs/zj-adr/0005-composer-authority-and-plan-contract.md`，并同步 `README.md` 与 `skills/engineering/zj-guide/SKILL.md`；最终路径和写入动作以治理提案确认结果为准。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 1 的可迁移边界是子文档 2 的候选筛选闸门；任何后续 merge wave 必须先通过方案包契约和 PoC 指标”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹；PoC 失败时删除生成器适配层并保留基线。
-- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过；`HD-1` 至 `HD-5` 已确认，仅长期沉淀和退出路径仍待拍板）
+- **状态协议：** DONE（六个角色已覆盖、结构闸门通过且 `HD-1` 至 `HD-6` 已确认；待按 `zj-docs-ontology` 提案执行长期沉淀和过程材料处置）

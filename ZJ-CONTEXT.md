@@ -128,6 +128,22 @@ It remains installable through the local scripts but is outside plugin discovery
 and public README indexes.
 _Avoid_: personal bucket, public skill
 
+**Composer / 组合器**:
+The thin intent-to-Plan capability approved for ZAgentic. It reads a user's goal,
+constraints, available skill/workflow metadata, evidence requirements, and
+permission boundary; it returns a reasoned candidate composition, bounded
+suggestions, or one `required skill：...` line per missing capability. It does
+not own approved execution, irreversible side effects, or durable governance.
+_Avoid_: global router, executor, session runtime
+
+**Task Plan / Plan**:
+A versioned, reviewable task contract generated from the Composer skill's
+built-in template. It records selected capabilities, reasons, order,
+dependencies, Human checkpoints, verification, failure exits, rollback, and
+provenance. It is distinct from a roadmap Node and does not own execution or
+long-term authority.
+_Avoid_: roadmap node, executor, runtime state
+
 **Skill**:
 A single unit of agent capability under
 `skills/<bucket>/zj-<name>/SKILL.md` or `personal/zj-<name>/SKILL.md`.

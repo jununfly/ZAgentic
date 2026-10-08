@@ -166,7 +166,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | --- | --- | --- |
 | `HD-1` | 产品单元与唯一 authority：skill/workflow、证据协议、组合器、执行链的语义、状态、权限 owner | ✅ 已确认（2026-10-08） |
 | `HD-2` | pstack 阶段化方法、验收契约、证据包、复盘与宿主 runtime 的迁移边界 | ✅ 已确认（2026-10-08） |
-| `HD-6` | 比较结论进入长期设计/ADR 的沉淀与过程目录删除条件 | ⏳ 待拍板 |
+| `HD-6` | 比较结论进入长期设计/ADR 的沉淀与过程目录删除条件 | ✅ 已确认（2026-10-08） |
 
 ## Human 对 `HD-1` 的拍板记录
 
@@ -182,6 +182,8 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **确定内容：** 吸收阶段化工作流、验收契约、证据包和复盘记录；按“直接迁移 / 薄适配验证 / 拒绝迁移”逐项落地；拒绝直接引入全局 router、hooks、transcript/model sheet、宿主 runtime 状态和 shipping glue。
 - **下一轮：** `HD-3`（ZAgentic 目标产品形态）。
 
+> 角色表记录独立观点来源；本次 Human 拍板按跨文档 `HD-1` 至 `HD-6` 议题完成，不再逐角色重复拍板。
+
 ## Human 对 Agent X 的拍板
 
 | 轮次 | 视角 | 隔离方式 | Human 拍板 | 是否 conclusion | 备注 |
@@ -196,7 +198,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **子问题结论：** 两项目都把“阶段化任务推进 + 可验证产出”作为复利来源，但产品单元和 authority 不同：pstack 以 suite/router 驱动连续执行，ZAgentic 以可拆卸 skill、证据协议和 Human 治理维持长期可组合性。pstack 的阶段化方法、验收契约、证据包和复盘记录可作为薄层原则；其全局 router、宿主运行时、hooks、模型/转录状态和 shipping glue 不应直接成为 ZAgentic 的第二 authority/runtime。本文采用的产品单元边界是：组合器负责从能力目录生成建议和 Plan，能力缺口无可靠建议时逐行输出 `required skill：<缺失 skill 形状>`；Plan 的模板由组合器 skill 内置并版本化。
 - **解法：** 采用统一比较矩阵与迁移试验卡：每项机制记录输入/输出、状态、权限、语义 owner、宿主依赖、证据、删除与回退；只允许“可直接迁移 / 薄适配验证 / 拒绝迁移”三类结果。把下列设计张力交给子文档 2 的产品形态决策：强路由与单一 authority、自动化速度与可审计退出、suite 一致性与 skill 可移除性、运行时便利与宿主可移植性、经验复用与治理唯一性。
 - **沉淀指令：**
-  - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，将统一比较矩阵、迁移试验卡字段和五条设计张力沉淀到 `docs/designs/` 的产品形态设计页，并在涉及 authority/runtime 的决定上新增 ADR；不把本讨论文件夹当长期 authority。
+  - 改哪些 PRD / ADR / 文档：向 `zj-docs-ontology` 提案新增 `docs/designs/zj-composer-plan-product-form.md`、`docs/zj-adr/0005-composer-authority-and-plan-contract.md`，并同步 `README.md` 与 `skills/engineering/zj-guide/SKILL.md`；最终路径和写入动作以治理提案确认结果为准。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 2 只能选择不引入第二 authority/runtime 的候选；任何 pstack 机制须带迁移证据和回退路径”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹。
-- **状态协议：** NEEDS_CONTEXT（`HD-1` 至 `HD-5` 已确认；最终沉淀仍待拍板）
+- **状态协议：** DONE（`HD-1` 至 `HD-6` 已确认；待按 `zj-docs-ontology` 提案执行长期沉淀和过程材料处置）

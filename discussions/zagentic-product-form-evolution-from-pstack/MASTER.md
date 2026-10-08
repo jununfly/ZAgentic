@@ -10,14 +10,19 @@
 
 ## 解决思路（整合叙事）
 
-先用统一维度比较 pstack-claude 与 ZAgentic 的产品单元、路由、组合、执行、验证、复盘、authority、状态和宿主假设；再从用户旅程出发比较保持现状、可解释组合器、有限状态薄编排层和强 router/runtime。最终推荐必须同时满足用户组装成本下降、证据和 Human authority 可审计、组件可移除以及不引入第二 runtime。结论将以最小可逆纵切验证，随后由 `zj-docs-ontology` 分类并沉淀到长期 PRD/ADR/设计文档。
+先把 pstack-claude 与 ZAgentic 放入同一比较框架：pstack 的复利来自阶段化任务推进、连续工作流、并行候选、验收和复盘；ZAgentic 的长期优势来自可拆卸 skill、证据协议、Human authority、文档治理和可移除组合。两者的可迁移边界由输入输出、状态、权限、语义 owner、宿主依赖、证据、删除和回退字段表达。
 
+终局产品形态确定为“可解释组合方案生成器（Composer）+ 既有 skill/roadmap 执行”。Composer 是意图到 Plan 的方案生成能力：它读取用户目标、约束和能力目录，输出带选择理由、顺序、依赖、验收和缺口说明的 Plan；能力未命中但有可信候选时给出建议，无可靠建议时逐行输出 `required skill：简短地描述缺失skill的形状`。Plan 是由 Composer skill 内置版本化模板生成的可审查方案契约，经过 Human 审查后才交给既有执行链。
+
+首个可逆 PoC 只覆盖外部仓库研究和工具组合设计，产物写入 `skills-outputs/` 下的版本化 Markdown Plan，不修改 skill 定义，不自动执行不可逆动作。PoC 的机械验收使用固定 fixture、场景 oracle、Plan schema/provenance、安全硬门槛和删除实验层后的原路径回归；时间、交互步骤、人工修改和恢复次数只作描述性观测，人工组装基线不作为客观因果基线。强 router/runtime、hooks、transcript/model sheet、宿主 runtime 状态和 shipping glue 暂不进入默认路径。
+
+终局后进入 `zj-docs-ontology`：提案阶段分类长期设计、ADR、入口说明、研究证据和讨论过程；只执行 Human 确认的沉淀与删除；讨论目录在沉淀完成且确认后删除。
 ## 文档索引
 
 | 子文档 | 独立子问题 | 状态 | 解法摘要 |
 | --- | --- | --- | --- |
-| [sub-01-design-philosophy-and-methodology.md](./sub-01-design-philosophy-and-methodology.md) | 用统一框架比较 pstack-claude 与 ZAgentic 的设计哲学、方法论及可迁移边界 | 🔲 观点完成，待 Human 拍板 | 初步倾向：迁移阶段化方法、验收契约、证据包和薄适配；拒绝宿主 runtime 直引 |
-| [sub-02-target-product-form-and-evolution.md](./sub-02-target-product-form-and-evolution.md) | 为 ZAgentic 选择目标产品形态、演进边界与最小验证路径 | 🔲 观点完成，待 Human 拍板 | 初步推荐：可解释组合方案生成器 + 既有 skill/roadmap 执行，先不引入强 router/runtime |
+| [sub-01-design-philosophy-and-methodology.md](./sub-01-design-philosophy-and-methodology.md) | 用统一框架比较 pstack-claude 与 ZAgentic 的设计哲学、方法论及可迁移边界 | ✅ 已结论 | 吸收阶段化方法、验收契约、证据包和复盘；拒绝宿主 runtime 直引，确立 Composer/Plan authority 边界 |
+| [sub-02-target-product-form-and-evolution.md](./sub-02-target-product-form-and-evolution.md) | 为 ZAgentic 选择目标产品形态、演进边界与最小验证路径 | ✅ 已结论 | 采用可解释 Composer + 版本化 Plan；以固定 fixture、场景 oracle、安全硬门槛和删除后回归验证，不以人工基线提速作硬门槛 |
 
 状态图例：🔲 进行中 · ✅ 已结论
 
@@ -32,7 +37,7 @@
 | `HD-3` | **目标产品形态：** 保持目录、可解释组合器、有限状态薄编排层、强 router/runtime 四选一或分阶段？ | 子文档 2 Q1–Q2 | 采用“可解释组合方案生成器 + 既有 skill/roadmap 执行”；组合器 skill 内置版本化 Plan 模板；找不到能力时先给建议，无法建议时逐行输出 `required skill：<缺失 skill 形状>`；强 router/runtime 暂不进入默认路径。 | HD-1、HD-2 | ✅ 已确认（2026-10-08） |
 | `HD-4` | **最小纵切契约：** 首个 PoC 做什么、写什么、何处必须 Human 批准？ | 子文档 2 Q3–Q4 | 用“外部仓库研究”和“工具组合设计”两任务；只生成 `skills-outputs/` 下版本化 Markdown Plan，不改 skill 定义、不自动执行不可逆动作；Human 审查后才进入既有执行链。 | HD-3 | ✅ 已确认（2026-10-08） |
 | `HD-5` | **继续/停止阈值：** 如何判断 PoC 值得继续、修改或删除？ | 子文档 2 Q5；T/S/U 观点 | 不把“相对人工组装提速”或“执行成功率不低于人工基线”当作客观硬门槛；固定 fixture 只做描述性观测。机械门槛改为：Plan 契约和 provenance 完整、能力缺口格式正确、场景 oracle 通过、authority bypass/未声明副作用/未批准写入或外联/秘密明文泄露均为 0，删除实验层后原路径回归通过。 | HD-4 | ✅ 已确认（2026-10-08） |
-| `HD-6` | **耐久沉淀与退出：** 通过后改哪些长期文档，失败后删什么？ | 两个子文档 conclusion 的沉淀指令 | 通过后由 `zj-docs-ontology` 把产品契约/ADR/入口说明沉淀到长期文档；失败则删除实验适配层、保留原路径；Human 确认后删除 `discussions/` 与 briefings。 | HD-1–HD-5 | ⏳ 待拍板 |
+| `HD-6` | **耐久沉淀与退出：** 通过后改哪些长期文档，失败后删什么？ | 两个子文档 conclusion 的沉淀指令 | 通过后由 `zj-docs-ontology` 把产品契约/ADR/入口说明沉淀到长期文档；失败则删除实验适配层、保留原路径；Human 确认后删除 `discussions/` 与 briefings。 | HD-1–HD-5 | ✅ 已确认（2026-10-08） |
 
 ### HD-1 的补充契约
 
@@ -87,7 +92,15 @@
 - **保留观测：** 在固定 fixture 下记录时间、交互步骤、人工修改、拒绝/重试、恢复和 Plan 采纳情况；这些数据只作描述性材料。
 - **机械通过条件：** Plan schema/provenance 完整；能力选择有理由；缺口按 `required skill：...` 输出；固定场景 oracle 通过；authority bypass、未声明副作用、未批准写入或外联、秘密明文泄露均为 0；删除实验层后原路径回归通过。
 
-**当前轮次：`HD-6`。** `HD-1` 至 `HD-5` 已确认；下一步只处理长期沉淀和退出路径。
+### Human 对 `HD-6` 的确认记录
+
+- **日期：** 2026-10-08
+- **决定：** 接受长期沉淀与退出路径。
+- **通过路径：** 调用 `zj-docs-ontology` 提案并执行确认后的沉淀，把产品契约、Plan 模板 owner、authority 边界和入口说明放入长期设计/ADR/入口文档。
+- **失败路径：** 删除 Composer 实验适配层和临时 Plan 产物，保留原有 skill/roadmap 路径；保留必要失败证据供治理审计。
+- **过程材料：** ontology 沉淀完成、Human 确认后，删除本讨论目录和 `briefings/`；在此之前它们仍是本问题的过程性质权威依据。
+
+**终局状态：** `HD-1` 至 `HD-6` 全部确认；两个子文档进入 `DONE`，下一步执行文档治理提案与长期沉淀。
 
 ## 跨子文档约束
 
@@ -97,7 +110,7 @@
 - 子文档 2 必须把上轮逐 skill capability-fit 报告作为约束输入，不重复生成 58 项 merge 排名。
 - 任一候选方案都不得引入与 ZAgentic 现有 Human authority、证据协议和文档治理并列的第二 authority/runtime。
 - 产品形态结论必须先由可逆 PoC 验证，技能 merge 属于后续执行规划，不替代产品验证。
-- 当前两篇子文档的角色观点与结构闸门已完成；`HD-1` 至 `HD-5` 已由 Human 确认，仅 `HD-6` 仍待拍板，结论状态保持 `NEEDS_CONTEXT`。
+- 两篇子文档的角色观点、结构闸门和六项 Human 拍板均已完成；讨论结论为 `DONE`，长期沉淀和过程材料删除按 `zj-docs-ontology` 提案与确认执行。
 
 ## 本文件夹的性质与处置契约
 
@@ -111,5 +124,16 @@
 ## 复盘度量（可选，删除前填）
 
 ```json
-<待终局前运行 metrics.py 后填入>
+{
+  "discussion_slug": "zagentic-product-form-evolution-from-pstack",
+  "roles_used": ["A", "B", "C", "R", "S", "T", "U"],
+  "viewpoint_count": 10,
+  "open_questions_total": 2,
+  "open_questions_closed": 2,
+  "closure_rate": 1.0,
+  "raw_volume_chars": 20923,
+  "solution_volume_chars": 814,
+  "compression_ratio": 25.703931203931205,
+  "recomputable": true
+}
 ```
