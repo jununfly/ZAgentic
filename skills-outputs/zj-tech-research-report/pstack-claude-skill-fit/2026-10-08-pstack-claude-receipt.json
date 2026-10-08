@@ -1,0 +1,67 @@
+{
+  "markdownPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/zj-tech-research-report/pstack-claude-skill-fit/2026-10-08-pstack-claude-report.md",
+  "htmlPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/zj-tech-research-report/pstack-claude-skill-fit/2026-10-08-pstack-claude-report.html",
+  "reportHash": "e0a6c48f7464de8b489c4c4311c3cdd8c91c40645fbd1c38930afc6ae1a0255c",
+  "publishCount": 1,
+  "evaluation": {
+    "reportHash": "e0a6c48f7464de8b489c4c4311c3cdd8c91c40645fbd1c38930afc6ae1a0255c",
+    "reportFamily": "technical-c4/v1",
+    "compilerVersion": "research/v1",
+    "healthy": true,
+    "correctness": {
+      "revisionPinned": true,
+      "provenanceComplete": true,
+      "criticalClaimsEvidence": true,
+      "scoringAxesSeparated": true,
+      "publishExactlyOnce": true,
+      "receiptConsistent": true
+    },
+    "evidenceCount": 5,
+    "unknownCount": 0,
+    "navigationFailureCount": 0,
+    "collection": {
+      "filesRead": 5,
+      "sourceBytesRead": 11708,
+      "durationMs": 3952,
+      "cacheHit": false
+    }
+  },
+  "qualityGate": {
+    "healthy": true,
+    "schema": "technical-research-quality-gate/v1",
+    "briefSchema": "technical-decision-brief/v1",
+    "reportFamily": "technical-c4/v1",
+    "checks": {
+      "decisionFrame": true,
+      "diagramCoverage": true,
+      "candidateScoresFromLedger": true,
+      "criticalClaimsEvidence": true,
+      "comparisonTraceability": true,
+      "recommendationTraceability": true,
+      "metricCoverage": true,
+      "riskRegisterCoverage": true,
+      "unknownsSurfaced": true
+    },
+    "counts": {
+      "concepts": 6,
+      "candidates": 1,
+      "cards": 1,
+      "claims": 10,
+      "comparisons": 5,
+      "recommendations": 7,
+      "metrics": 8,
+      "riskRegister": 6,
+      "ledgerEvidence": 5,
+      "ledgerUnknownCriteria": 0,
+      "graduationCriteria": 0,
+      "versionSkew": false
+    },
+    "brief": {
+      "schema": "technical-decision-brief/v1",
+      "stage": "problem-discovery",
+      "constraintCount": 6,
+      "optionCount": 4,
+      "goalCount": 4
+    }
+  }
+}

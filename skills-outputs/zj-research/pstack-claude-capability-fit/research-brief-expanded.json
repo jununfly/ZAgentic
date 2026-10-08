@@ -1,0 +1,599 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "How can pstack-claude's reusable Claude Code skills be understood and selectively merged into ZAgentic's compounding skill system?",
+    "criteria": [
+      {
+        "id": "methodology",
+        "question": "What workflow, decomposition, and decision methodology does the repository prescribe?",
+        "critical": true,
+        "keywords": [
+          "method",
+          "workflow",
+          "stack",
+          "skill"
+        ]
+      },
+      {
+        "id": "usage",
+        "question": "How is the repository installed, invoked, configured, and used in a real Claude Code workflow?",
+        "critical": true,
+        "keywords": [
+          "install",
+          "usage",
+          "command",
+          "claude"
+        ]
+      },
+      {
+        "id": "skill-capabilities",
+        "question": "What independently reusable skills, resources, scripts, and outputs are present, and what capability does each provide?",
+        "critical": true,
+        "keywords": [
+          "SKILL.md",
+          "references",
+          "scripts",
+          "workflow"
+        ]
+      },
+      {
+        "id": "merge-fit",
+        "question": "For each skill, what is the semantic match, composability, adapter surface, and ownership burden when merged into ZAgentic?",
+        "critical": true,
+        "keywords": [
+          "merge",
+          "adapter",
+          "compose",
+          "maintenance"
+        ]
+      },
+      {
+        "id": "governance-risk",
+        "question": "What license, external dependencies, host coupling, security boundaries, and lifecycle risks affect selective reuse?",
+        "critical": true,
+        "keywords": [
+          "license",
+          "dependency",
+          "security",
+          "risk"
+        ]
+      },
+      {
+        "id": "skill-architect",
+        "question": "What does the architect skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "architect",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-arena",
+        "question": "What does the arena skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "arena",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-automate-me",
+        "question": "What does the automate-me skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "automate-me",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-babysit",
+        "question": "What does the babysit skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "babysit",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-benchmark-checklist",
+        "question": "What does the benchmark-checklist skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "benchmark-checklist",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-blast-radius",
+        "question": "What does the blast-radius skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "blast-radius",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-bro",
+        "question": "What does the bro skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "bro",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-correct",
+        "question": "What does the correct skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "correct",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-create-verification-skill",
+        "question": "What does the create-verification-skill skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "create-verification-skill",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-deslop",
+        "question": "What does the deslop skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "deslop",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-figure-it-out",
+        "question": "What does the figure-it-out skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "figure-it-out",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-fix-ci",
+        "question": "What does the fix-ci skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "fix-ci",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-fix-merge-conflicts",
+        "question": "What does the fix-merge-conflicts skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "fix-merge-conflicts",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-get-pr-comments",
+        "question": "What does the get-pr-comments skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "get-pr-comments",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-how",
+        "question": "What does the how skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "how",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-interrogate",
+        "question": "What does the interrogate skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "interrogate",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-maintain-verification-skill",
+        "question": "What does the maintain-verification-skill skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "maintain-verification-skill",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-make-pr-easy-to-review",
+        "question": "What does the make-pr-easy-to-review skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "make-pr-easy-to-review",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-no-comments",
+        "question": "What does the no-comments skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "no-comments",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-poteto-help",
+        "question": "What does the poteto-help skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "poteto-help",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-poteto-mode",
+        "question": "What does the poteto-mode skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "poteto-mode",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-attack-the-premise",
+        "question": "What does the principle-attack-the-premise skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-attack-the-premise",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-boundary-discipline",
+        "question": "What does the principle-boundary-discipline skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-boundary-discipline",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-build-the-lever",
+        "question": "What does the principle-build-the-lever skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-build-the-lever",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-encode-lessons-in-structure",
+        "question": "What does the principle-encode-lessons-in-structure skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-encode-lessons-in-structure",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-exhaust-the-design-space",
+        "question": "What does the principle-exhaust-the-design-space skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-exhaust-the-design-space",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-experience-first",
+        "question": "What does the principle-experience-first skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-experience-first",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-explain-the-number",
+        "question": "What does the principle-explain-the-number skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-explain-the-number",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-fix-root-causes",
+        "question": "What does the principle-fix-root-causes skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-fix-root-causes",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-foundational-thinking",
+        "question": "What does the principle-foundational-thinking skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-foundational-thinking",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-guard-the-context-window",
+        "question": "What does the principle-guard-the-context-window skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-guard-the-context-window",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-laziness-protocol",
+        "question": "What does the principle-laziness-protocol skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-laziness-protocol",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-make-operations-idempotent",
+        "question": "What does the principle-make-operations-idempotent skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-make-operations-idempotent",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-migrate-callers-then-delete-legacy-apis",
+        "question": "What does the principle-migrate-callers-then-delete-legacy-apis skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-migrate-callers-then-delete-legacy-apis",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-minimize-reader-load",
+        "question": "What does the principle-minimize-reader-load skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-minimize-reader-load",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-model-the-domain",
+        "question": "What does the principle-model-the-domain skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-model-the-domain",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-never-block-on-the-human",
+        "question": "What does the principle-never-block-on-the-human skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-never-block-on-the-human",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-outcome-oriented-execution",
+        "question": "What does the principle-outcome-oriented-execution skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-outcome-oriented-execution",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-prove-it-works",
+        "question": "What does the principle-prove-it-works skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-prove-it-works",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-redesign-from-first-principles",
+        "question": "What does the principle-redesign-from-first-principles skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-redesign-from-first-principles",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-separate-before-serializing-shared-state",
+        "question": "What does the principle-separate-before-serializing-shared-state skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-separate-before-serializing-shared-state",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-sequence-verifiable-units",
+        "question": "What does the principle-sequence-verifiable-units skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-sequence-verifiable-units",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-subtract-before-you-add",
+        "question": "What does the principle-subtract-before-you-add skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-subtract-before-you-add",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-test-behavior-not-implementation",
+        "question": "What does the principle-test-behavior-not-implementation skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-test-behavior-not-implementation",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-principle-type-system-discipline",
+        "question": "What does the principle-type-system-discipline skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "principle-type-system-discipline",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-recall",
+        "question": "What does the recall skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "recall",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-reflect",
+        "question": "What does the reflect skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "reflect",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-setup-pstack",
+        "question": "What does the setup-pstack skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "setup-pstack",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-show-me-your-work",
+        "question": "What does the show-me-your-work skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "show-me-your-work",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-swarm",
+        "question": "What does the swarm skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "swarm",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-tdd",
+        "question": "What does the tdd skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "tdd",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-teach",
+        "question": "What does the teach skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "teach",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-technical-writing",
+        "question": "What does the technical-writing skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "technical-writing",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-thermo-nuclear-code-quality-review",
+        "question": "What does the thermo-nuclear-code-quality-review skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "thermo-nuclear-code-quality-review",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-typescript-best-practices",
+        "question": "What does the typescript-best-practices skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "typescript-best-practices",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-unslop",
+        "question": "What does the unslop skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "unslop",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-what-did-i-get-done",
+        "question": "What does the what-did-i-get-done skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "what-did-i-get-done",
+          "SKILL.md"
+        ]
+      },
+      {
+        "id": "skill-why",
+        "question": "What does the why skill prescribe, and what are its inputs, outputs, dependencies, host assumptions, and reusable capability?",
+        "critical": true,
+        "keywords": [
+          "why",
+          "SKILL.md"
+        ]
+      }
+    ],
+    "repositories": [
+      {
+        "owner": "michael-denyer",
+        "name": "pstack-claude"
+      }
+    ],
+    "policyVersion": "pstack-claude-skill-fit/v1",
+    "budget": {
+      "maxFiles": 180,
+      "maxBytes": 5000000,
+      "deadlineMs": 300000
+    }
+  }
+}

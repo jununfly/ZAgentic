@@ -1,0 +1,89 @@
+{
+  "schema": "zj-research-collection-status/v1",
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "state": "reused-sealed-ledger",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "How can pstack-claude's reusable Claude Code skills be understood and selectively merged into ZAgentic's compounding skill system?",
+    "criteria": [
+      {
+        "id": "methodology",
+        "question": "What workflow, decomposition, and decision methodology does the repository prescribe?",
+        "critical": true,
+        "keywords": [
+          "method",
+          "workflow",
+          "stack",
+          "skill"
+        ]
+      },
+      {
+        "id": "usage",
+        "question": "How is the repository installed, invoked, configured, and used in a real Claude Code workflow?",
+        "critical": true,
+        "keywords": [
+          "install",
+          "usage",
+          "command",
+          "claude"
+        ]
+      },
+      {
+        "id": "skill-capabilities",
+        "question": "What independently reusable skills, resources, scripts, and outputs are present, and what capability does each provide?",
+        "critical": true,
+        "keywords": [
+          "SKILL.md",
+          "references",
+          "scripts",
+          "workflow"
+        ]
+      },
+      {
+        "id": "merge-fit",
+        "question": "For each skill, what is the semantic match, composability, adapter surface, and ownership burden when merged into ZAgentic?",
+        "critical": true,
+        "keywords": [
+          "merge",
+          "adapter",
+          "compose",
+          "maintenance"
+        ]
+      },
+      {
+        "id": "governance-risk",
+        "question": "What license, external dependencies, host coupling, security boundaries, and lifecycle risks affect selective reuse?",
+        "critical": true,
+        "keywords": [
+          "license",
+          "dependency",
+          "security",
+          "risk"
+        ]
+      }
+    ],
+    "repositories": [
+      {
+        "owner": "michael-denyer",
+        "name": "pstack-claude"
+      }
+    ],
+    "policyVersion": "pstack-claude-skill-fit/v1",
+    "budget": {
+      "maxFiles": 120,
+      "maxBytes": 3000000,
+      "deadlineMs": 240000
+    }
+  },
+  "briefFingerprint": "a1aa83d3252b3ab4117de871d4f1648a98f16616bfb8ddb7cea842489a1dd580",
+  "preflight": null,
+  "ledger": {
+    "relationship": "explicit-reuse",
+    "source": "skills-outputs/zj-research/pstack-claude-capability-fit/ledger-response.json"
+  },
+  "fallback": {
+    "automatic": false,
+    "oldLedgerUsed": true
+  }
+}

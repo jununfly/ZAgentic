@@ -1,0 +1,2631 @@
+{
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "result": {
+    "schema": "zj-verified-evidence-ledger/v1",
+    "compilerVersion": "research/v1",
+    "briefFingerprint": "a1aa83d3252b3ab4117de871d4f1648a98f16616bfb8ddb7cea842489a1dd580",
+    "policyVersion": "pstack-claude-skill-fit/v1",
+    "observedAt": "2026-10-08T07:18:39.944Z",
+    "repositories": [
+      {
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "revision": {
+          "sha": "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+          "branch": "main",
+          "url": "https://github.com/michael-denyer/pstack-claude/commit/3b0bc62e13f507c426997ba472e3430dd3e4ef05"
+        },
+        "tree": [
+          {
+            "path": ".agents",
+            "sha": "c5ed603e98684e70369dd1ed8d789d2b6054f3ad",
+            "type": "tree"
+          },
+          {
+            "path": ".agents/plugins",
+            "sha": "5d5a281b4ce969354a3949b4e05867fa9ca8deb9",
+            "type": "tree"
+          },
+          {
+            "path": ".agents/plugins/marketplace.json",
+            "sha": "7e10083d518337e5c250a0dd898499201f30d6d5",
+            "type": "blob",
+            "size": 395
+          },
+          {
+            "path": ".claude-plugin",
+            "sha": "5507da4df5897ebefe9e55e38be30f58d028482a",
+            "type": "tree"
+          },
+          {
+            "path": ".claude-plugin/marketplace.json",
+            "sha": "25d153ea4ed8c15b4c756630a5ed3233441ef826",
+            "type": "blob",
+            "size": 606
+          },
+          {
+            "path": ".github",
+            "sha": "8f49fe3df3f2c21803e4de335015528316946f31",
+            "type": "tree"
+          },
+          {
+            "path": ".github/FUNDING.yml",
+            "sha": "50b555b28ec1779283d5d054a5b4223b824ed541",
+            "type": "blob",
+            "size": 26
+          },
+          {
+            "path": ".github/dependabot.yml",
+            "sha": "485ce77d6e119b07b62e3ac5d08f201bee052622",
+            "type": "blob",
+            "size": 461
+          },
+          {
+            "path": ".github/workflows",
+            "sha": "7af975351fa680899365d7218674ad03c36e8410",
+            "type": "tree"
+          },
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha": "c22d47076da306e02653f3ed0b782c0e621e49e8",
+            "type": "blob",
+            "size": 11210
+          },
+          {
+            "path": ".github/workflows/security.yml",
+            "sha": "b3eea13982e59dd46952acc950badeb382d75ffb",
+            "type": "blob",
+            "size": 2357
+          },
+          {
+            "path": ".gitignore",
+            "sha": "bd1e9cf8c4f5910807410346a46166bc3ce1244a",
+            "type": "blob",
+            "size": 426
+          },
+          {
+            "path": ".markdownlint-cli2.jsonc",
+            "sha": "88e8bc463f422e154520990bd6e7e7c01921ea88",
+            "type": "blob",
+            "size": 426
+          },
+          {
+            "path": ".pre-commit-config.yaml",
+            "sha": "b86fa095a0f77f647f01997620d130e1855ddbd4",
+            "type": "blob",
+            "size": 496
+          },
+          {
+            "path": "CHANGES.md",
+            "sha": "39dbf3d14bb0a2f2b5c35b5be8060aa61d3bdcdc",
+            "type": "blob",
+            "size": 146580
+          },
+          {
+            "path": "CONTEXT.md",
+            "sha": "4df36fe90de581b5edb6680e9b2980df8efaf51f",
+            "type": "blob",
+            "size": 4362
+          },
+          {
+            "path": "CONTRIBUTING.md",
+            "sha": "1e639d89de6c893fca9d9a7c58a7d682848d25a9",
+            "type": "blob",
+            "size": 20200
+          },
+          {
+            "path": "LICENSE",
+            "sha": "3ebb69c2234f26ce81fa7fb3c67d783f9228bf25",
+            "type": "blob",
+            "size": 1101
+          },
+          {
+            "path": "LICENSE-cursor-team-kit",
+            "sha": "ca2bba771cd39dbef6acf96b52481133983451f3",
+            "type": "blob",
+            "size": 1063
+          },
+          {
+            "path": "NOTICE-skills.md",
+            "sha": "23c0ed803a92e1b92c44ec2d44732293b4735382",
+            "type": "blob",
+            "size": 1687
+          },
+          {
+            "path": "NOTICE.md",
+            "sha": "95c2f173a9060d0486af3937cd2b68b18fa54d04",
+            "type": "blob",
+            "size": 9514
+          },
+          {
+            "path": "README.md",
+            "sha": "39f86abda6e8773e1481df3e929be2db0eb05205",
+            "type": "blob",
+            "size": 5498
+          },
+          {
+            "path": "SECURITY.md",
+            "sha": "ed35edfe8b223fc374f1a35eed1180abe1e5f89e",
+            "type": "blob",
+            "size": 1150
+          },
+          {
+            "path": "VERSION",
+            "sha": "dda193330965c48132d35b8e4c401cc8ab825185",
+            "type": "blob",
+            "size": 7
+          },
+          {
+            "path": "assets",
+            "sha": "e626bf7b9c59c3e6fd3d385b8dbc3f4ad8065571",
+            "type": "tree"
+          },
+          {
+            "path": "assets/pstack-overview.png",
+            "sha": "1a6c4d21e410854db0c1c76ed8e64459f83fa151",
+            "type": "blob",
+            "size": 1313954
+          },
+          {
+            "path": "assets/pstack-overview.prompt.txt",
+            "sha": "06b89f6b19fc5e705397f9b819ea957a6f91fde0",
+            "type": "blob",
+            "size": 2872
+          },
+          {
+            "path": "bun.lock",
+            "sha": "235f5fd284705144cfc8441fc51a75a008aadd15",
+            "type": "blob",
+            "size": 462
+          },
+          {
+            "path": "bunfig.toml",
+            "sha": "5f4379c2e51d0029dd4b08c53a799b3327fee749",
+            "type": "blob",
+            "size": 169
+          },
+          {
+            "path": "docs",
+            "sha": "4587374c67607f46c802348baf5b65ac2ca1328c",
+            "type": "tree"
+          },
+          {
+            "path": "docs/pi-equivalence.md",
+            "sha": "a7d54114016e54e5d399c410def0f31ee5007763",
+            "type": "blob",
+            "size": 14416
+          },
+          {
+            "path": "docs/reference.md",
+            "sha": "159aacab26180083c5c2d5f815d08142f5e71b66",
+            "type": "blob",
+            "size": 24731
+          },
+          {
+            "path": "package.json",
+            "sha": "ac9c89eeab43a9deda466bfa29ea16447cfdd7d5",
+            "type": "blob",
+            "size": 1286
+          },
+          {
+            "path": "plugins",
+            "sha": "fd2cd639c6e89068051c3abc221293d9244115e7",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack",
+            "sha": "523a52f3974041dbbe8b6918c7c7b1a65fed9b3e",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/.claude-plugin",
+            "sha": "b4af66c9deb16c14a743ec827fa39ed6f48d7034",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/.claude-plugin/icon.png",
+            "sha": "93b16adfd88b7ef54752ed0e648b8bd77836bded",
+            "type": "blob",
+            "size": 977799
+          },
+          {
+            "path": "plugins/pstack/.claude-plugin/plugin.json",
+            "sha": "d898567969984b6c1a9a081f003fec7750ac895b",
+            "type": "blob",
+            "size": 1389
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin",
+            "sha": "dfe876dae9cb3080b026df77a62812e6900c2d93",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/plugin.json",
+            "sha": "fb4a1b0e23742b68d857f7355d299146e6c1c745",
+            "type": "blob",
+            "size": 1985
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts",
+            "sha": "03682670e8e24edcedd0b669233b1b4a0d5d770f",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/architect.md",
+            "sha": "57320b1ed3167ae94f785dcda218d2fcbe05d299",
+            "type": "blob",
+            "size": 196
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/arena.md",
+            "sha": "6f94b68b6ea6d161ab236dff9837c5f45636aee7",
+            "type": "blob",
+            "size": 170
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/automate-me.md",
+            "sha": "fc70c42542920dbea79f5412c3e966865e640f72",
+            "type": "blob",
+            "size": 177
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/babysit.md",
+            "sha": "e7a7beede790069b67daa74cd246c9c44902352a",
+            "type": "blob",
+            "size": 166
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/benchmark-checklist.md",
+            "sha": "b42cc6ebd08039301b75eaa9ac8c554cdf2ca1a1",
+            "type": "blob",
+            "size": 416
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/blast-radius.md",
+            "sha": "09a16234fef995f4afd27740bb02d1393a460c74",
+            "type": "blob",
+            "size": 353
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/bro.md",
+            "sha": "445112e61505d86629e2012b77bddad8573b64ae",
+            "type": "blob",
+            "size": 315
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/correct.md",
+            "sha": "8ec06d2ff797937e975d0dad96e52a761fa4132d",
+            "type": "blob",
+            "size": 384
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/create-verification-skill.md",
+            "sha": "60e1a3585241e7a15793971cac9a8691f697510c",
+            "type": "blob",
+            "size": 205
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/deslop.md",
+            "sha": "0e6ae9e97dba49c9c8da87b86b69dc87d4a372cf",
+            "type": "blob",
+            "size": 289
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/figure-it-out.md",
+            "sha": "fa385e06e607eeba830a77b6da6799722ddcbe20",
+            "type": "blob",
+            "size": 349
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/fix-ci.md",
+            "sha": "08d2b2c36f71b5bc17f5a4811493a17073b48b15",
+            "type": "blob",
+            "size": 319
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/fix-merge-conflicts.md",
+            "sha": "b23273cd50a1051d0f86ea41b35edd6bb7782b17",
+            "type": "blob",
+            "size": 349
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/get-pr-comments.md",
+            "sha": "802111b0e3b05c90f68a45cc93d98901b0420d2d",
+            "type": "blob",
+            "size": 334
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/how.md",
+            "sha": "64efbdb633530848b7f3e379dbcb68f47cf888e8",
+            "type": "blob",
+            "size": 136
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/interrogate.md",
+            "sha": "9de7cdbff2ad6c3110b7ffc9f23d296755fdf72a",
+            "type": "blob",
+            "size": 165
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/maintain-verification-skill.md",
+            "sha": "c23784c0f4d852af0f69ecebca4a94429f5c6c72",
+            "type": "blob",
+            "size": 206
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/make-pr-easy-to-review.md",
+            "sha": "a98af79685a96f8c58d2673b2daadca97b8d8f25",
+            "type": "blob",
+            "size": 354
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/no-comments.md",
+            "sha": "a6f0dbfa677307978dc58021ac126504e540f932",
+            "type": "blob",
+            "size": 201
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/poteto-help.md",
+            "sha": "e6a57a89e4ea7e23405f1c8ff65809835aebb00d",
+            "type": "blob",
+            "size": 360
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/poteto-mode.md",
+            "sha": "687fa60dba326a28fa98d09cdc1638da3279cbf8",
+            "type": "blob",
+            "size": 316
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/recall.md",
+            "sha": "25667f66aa1ed7686830d80cfc71d23b416ba1e4",
+            "type": "blob",
+            "size": 349
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/reflect.md",
+            "sha": "795364da79e51f82f08c6af88690cfca45c39990",
+            "type": "blob",
+            "size": 155
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/setup-pstack.md",
+            "sha": "498e9deec72866c1f045056d962a44fd3d6400eb",
+            "type": "blob",
+            "size": 159
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/show-me-your-work.md",
+            "sha": "040e92bb6c97d3b15e556988e1d7493da8bc42d7",
+            "type": "blob",
+            "size": 332
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/swarm.md",
+            "sha": "e6fa558f04208e8a5d31c7a148366077b25c7598",
+            "type": "blob",
+            "size": 190
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/tdd.md",
+            "sha": "58259e8702c0c51c334d66fea8d8b7b261909d3c",
+            "type": "blob",
+            "size": 313
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/teach.md",
+            "sha": "bda77a479a425c5bfbdaf0e5fa6e1ece1242f21e",
+            "type": "blob",
+            "size": 156
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/technical-writing.md",
+            "sha": "98d2221f41fb17e163cd32e4192367b899382014",
+            "type": "blob",
+            "size": 371
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/thermo-nuclear-code-quality-review.md",
+            "sha": "1c0cd6bf2be66fe513bbf9e64ab1a35ee8562d9c",
+            "type": "blob",
+            "size": 356
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/typescript-best-practices.md",
+            "sha": "bb7a319196381e2eadde536041d034d7f488b3e8",
+            "type": "blob",
+            "size": 350
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/unslop.md",
+            "sha": "21905d444b22010ede0b0892487aa4cc1ab13378",
+            "type": "blob",
+            "size": 299
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/what-did-i-get-done.md",
+            "sha": "a0fdf74a763daba762b2717f5c718af1678633d5",
+            "type": "blob",
+            "size": 340
+          },
+          {
+            "path": "plugins/pstack/.codex-plugin/prompts/why.md",
+            "sha": "d3ce91478fd5770d273ca4f7f7255286ebb81467",
+            "type": "blob",
+            "size": 176
+          },
+          {
+            "path": "plugins/pstack/.github",
+            "sha": "b9fae8a45b90492cae40f63915256a873e87df62",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/.github/plugin",
+            "sha": "bf9f46debc1c0c9074d8ae302e5aab234f7565d5",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/.github/plugin/plugin.json",
+            "sha": "d7468de62888990898f0b9053152660caef9313d",
+            "type": "blob",
+            "size": 756
+          },
+          {
+            "path": "plugins/pstack/README.md",
+            "sha": "4582a6c5088f7b8612dd64f9c323070035655a3e",
+            "type": "blob",
+            "size": 1998
+          },
+          {
+            "path": "plugins/pstack/agents",
+            "sha": "60485a0e6019e2a11d147fb846b23da31996cec7",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/agents/comment-sicko.md",
+            "sha": "209e3704dfa75022060c936bd3f3362fa3bbe254",
+            "type": "blob",
+            "size": 2230
+          },
+          {
+            "path": "plugins/pstack/agents/poteto-agent.md",
+            "sha": "13201c20dd74121cb78e72a395c5bded3f21c40a",
+            "type": "blob",
+            "size": 667
+          },
+          {
+            "path": "plugins/pstack/assets",
+            "sha": "f49517f4f41908d3bcef96fe61f39c2c7f1dab4b",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/assets/pstack-icon.png",
+            "sha": "93b16adfd88b7ef54752ed0e648b8bd77836bded",
+            "type": "blob",
+            "size": 977799
+          },
+          {
+            "path": "plugins/pstack/assets/pstack-icon.prompt.txt",
+            "sha": "97859ae0a2170c3577545b695d05eea4c6993784",
+            "type": "blob",
+            "size": 1221
+          },
+          {
+            "path": "plugins/pstack/effort-agents",
+            "sha": "2717b01c09e9cb9143649de7d7f99430975acb5e",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/effort-agents/effort-high.md",
+            "sha": "dafa7fd0fd9ceb26cb6679470b0aedb0a1d14422",
+            "type": "blob",
+            "size": 467
+          },
+          {
+            "path": "plugins/pstack/effort-agents/effort-low.md",
+            "sha": "bb76008f5b5758d90b151733a9b9c185922cec05",
+            "type": "blob",
+            "size": 462
+          },
+          {
+            "path": "plugins/pstack/effort-agents/effort-max.md",
+            "sha": "04c01fd127d0dfd3c4b2e9b45915fc354078d50e",
+            "type": "blob",
+            "size": 462
+          },
+          {
+            "path": "plugins/pstack/effort-agents/effort-medium.md",
+            "sha": "99a9bd54f0bffef53ce084b0a40c7a115d5b9d21",
+            "type": "blob",
+            "size": 477
+          },
+          {
+            "path": "plugins/pstack/effort-agents/effort-xhigh.md",
+            "sha": "4e666e259e43d11acba2488f9b8201b30a1c5fff",
+            "type": "blob",
+            "size": 472
+          },
+          {
+            "path": "plugins/pstack/effort-agents/poteto-agent-high.md",
+            "sha": "cc87133b8305d8edaac7cc5ccbb63b5c82d41279",
+            "type": "blob",
+            "size": 489
+          },
+          {
+            "path": "plugins/pstack/effort-agents/poteto-agent-low.md",
+            "sha": "247c3ff306a46119603b5c63468709c493e07dd5",
+            "type": "blob",
+            "size": 485
+          },
+          {
+            "path": "plugins/pstack/effort-agents/poteto-agent-max.md",
+            "sha": "712903a6289afd8cf1c7cd6199aa9201b132fb46",
+            "type": "blob",
+            "size": 485
+          },
+          {
+            "path": "plugins/pstack/effort-agents/poteto-agent-medium.md",
+            "sha": "9244e90517a9b835fe4536b916978d01d8501949",
+            "type": "blob",
+            "size": 497
+          },
+          {
+            "path": "plugins/pstack/effort-agents/poteto-agent-xhigh.md",
+            "sha": "e4a89acb4afc4ca108a7d1ab7f94b7812c64bd38",
+            "type": "blob",
+            "size": 493
+          },
+          {
+            "path": "plugins/pstack/hooks",
+            "sha": "252a1cc8d31ea0fc876b0b825de19c20434215ca",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/hooks/codex-hooks.json",
+            "sha": "ddf270a18da2e9a3d6d99d528c9e9159a84a7d79",
+            "type": "blob",
+            "size": 419
+          },
+          {
+            "path": "plugins/pstack/hooks/copilot-context.awk",
+            "sha": "72e01a06e35dfd096811cbe74725d1c8650d5ffb",
+            "type": "blob",
+            "size": 1621
+          },
+          {
+            "path": "plugins/pstack/hooks/copilot-hooks.json",
+            "sha": "426895f683e8c0c0f6ae5b38eb4d96e1273e7649",
+            "type": "blob",
+            "size": 547
+          },
+          {
+            "path": "plugins/pstack/hooks/hooks.json",
+            "sha": "c03530c523dc9195e5e4999e6fa322ae8110f0d2",
+            "type": "blob",
+            "size": 281
+          },
+          {
+            "path": "plugins/pstack/hooks/json.awk",
+            "sha": "0a4427258e00f204aa40a3249838b2ee13256c7f",
+            "type": "blob",
+            "size": 4197
+          },
+          {
+            "path": "plugins/pstack/hooks/pre-tool-use.awk",
+            "sha": "a99f37fe60f2b100ed1af555bd0e46b7e487f505",
+            "type": "blob",
+            "size": 5751
+          },
+          {
+            "path": "plugins/pstack/hooks/pre-tool-use.sh",
+            "sha": "69d1317a1f34437a0bf9b6b1d12ad5f647f0c143",
+            "type": "blob",
+            "size": 1019
+          },
+          {
+            "path": "plugins/pstack/hooks/script-contracts.awk",
+            "sha": "018ec9bda7adeba8de0b63976e91cd14791da282",
+            "type": "blob",
+            "size": 2334
+          },
+          {
+            "path": "plugins/pstack/hooks/session-start-context.md",
+            "sha": "9c622cf09081fc51e4a0fb8fe4d3de404f66fafe",
+            "type": "blob",
+            "size": 983
+          },
+          {
+            "path": "plugins/pstack/hooks/session-start-copilot-setup.md",
+            "sha": "6479799535492c18376cd4632a7b5ed794104565",
+            "type": "blob",
+            "size": 549
+          },
+          {
+            "path": "plugins/pstack/hooks/session-start-copilot-sheet.md",
+            "sha": "8c556610535592586becd2d87ca944144e208fb8",
+            "type": "blob",
+            "size": 249
+          },
+          {
+            "path": "plugins/pstack/hooks/session-start-copilot.md",
+            "sha": "7186cc03c686280108125f81e1a73ccb69b9514a",
+            "type": "blob",
+            "size": 1211
+          },
+          {
+            "path": "plugins/pstack/hooks/session-start.ps1",
+            "sha": "79ec595c1fdc100cd8f2014b7d81ff08082cece1",
+            "type": "blob",
+            "size": 1072
+          },
+          {
+            "path": "plugins/pstack/hooks/session-start.sh",
+            "sha": "84d873ce29d768bcbc9a40020578b997df038244",
+            "type": "blob",
+            "size": 1624
+          },
+          {
+            "path": "plugins/pstack/models.json",
+            "sha": "c0b08bed34b6dc228bf7ed22e7709c07828a2719",
+            "type": "blob",
+            "size": 2396
+          },
+          {
+            "path": "plugins/pstack/pi",
+            "sha": "73bab07bab241e6047f4a9f3bd0b938e87f93a2d",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/pi/agent-text.ts",
+            "sha": "44307a46057d94ddfae52e7b85b0e38669d2b26a",
+            "type": "blob",
+            "size": 2321
+          },
+          {
+            "path": "plugins/pstack/pi/agent-tools.ts",
+            "sha": "404e89b2db4689ea793775080d6217f8a1bea868",
+            "type": "blob",
+            "size": 6735
+          },
+          {
+            "path": "plugins/pstack/pi/agents.ts",
+            "sha": "b1a26825e7f8b7777ed8e604849f029d97f0f4ba",
+            "type": "blob",
+            "size": 18814
+          },
+          {
+            "path": "plugins/pstack/pi/ask.ts",
+            "sha": "c410c1958d75c8f7f3b19920521a60b7ead5cdef",
+            "type": "blob",
+            "size": 4180
+          },
+          {
+            "path": "plugins/pstack/pi/child.ts",
+            "sha": "58749456210e89df24564db8cc153fc3f17fbbf7",
+            "type": "blob",
+            "size": 10398
+          },
+          {
+            "path": "plugins/pstack/pi/config.ts",
+            "sha": "b1931717c10e81c03c1dc22b17c0e1125416d020",
+            "type": "blob",
+            "size": 6881
+          },
+          {
+            "path": "plugins/pstack/pi/index.ts",
+            "sha": "ab8173d18c6042d5a82cb8f27669f22cd952058f",
+            "type": "blob",
+            "size": 1881
+          },
+          {
+            "path": "plugins/pstack/pi/one-shot.ts",
+            "sha": "56f2fb0e1345d7db5c024d144bc610e9a459e4bd",
+            "type": "blob",
+            "size": 3968
+          },
+          {
+            "path": "plugins/pstack/pi/path-skills.ts",
+            "sha": "df906da2b3485129f1376d2fdfbde69dd34f2c92",
+            "type": "blob",
+            "size": 2372
+          },
+          {
+            "path": "plugins/pstack/pi/prompt.ts",
+            "sha": "809693f22a5d3ba485ead6564d3aa5b5086a6a12",
+            "type": "blob",
+            "size": 2314
+          },
+          {
+            "path": "plugins/pstack/pi/schedule.ts",
+            "sha": "fa0d2567639a760216f4373950f0acbaec583a76",
+            "type": "blob",
+            "size": 9066
+          },
+          {
+            "path": "plugins/pstack/pi/sleep-wait.ts",
+            "sha": "91b33c0392e3d2fdf573568dba24916391fd2d93",
+            "type": "blob",
+            "size": 3205
+          },
+          {
+            "path": "plugins/pstack/pi/worktree.ts",
+            "sha": "12a51ec08a86731f6ee983c3d73a7087db715daa",
+            "type": "blob",
+            "size": 3695
+          },
+          {
+            "path": "plugins/pstack/skills",
+            "sha": "63cdf22314ceb27160d44c2b089500a63753ff38",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/architect",
+            "sha": "61edbf443bec59de1c8ca19fde958125dc83c7ab",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/architect/SKILL.md",
+            "sha": "5a88db22825c3f7d11f0bee986e3bbd68f40efb4",
+            "type": "blob",
+            "size": 8210
+          },
+          {
+            "path": "plugins/pstack/skills/architect/references",
+            "sha": "699f865727a9c08f60ca49e1e40fd1aa7ee8fb3f",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/architect/references/design-red-flags.md",
+            "sha": "f8503c9595b289c607ff5088f82b21197edf94ec",
+            "type": "blob",
+            "size": 3009
+          },
+          {
+            "path": "plugins/pstack/skills/architect/references/rationale-template.md",
+            "sha": "9ccea423df568bbedeea0c371b9ca6990f1d6b07",
+            "type": "blob",
+            "size": 3437
+          },
+          {
+            "path": "plugins/pstack/skills/architect/references/runner-prompt.md",
+            "sha": "580ec47a5df4259a6a9ace5c452e33092053bb90",
+            "type": "blob",
+            "size": 3087
+          },
+          {
+            "path": "plugins/pstack/skills/arena",
+            "sha": "70cade192b42377722ce8bf9aa728331c86572da",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/arena/SKILL.md",
+            "sha": "7941564cf777a114204164d825c9691203f446e6",
+            "type": "blob",
+            "size": 6534
+          },
+          {
+            "path": "plugins/pstack/skills/automate-me",
+            "sha": "db43d95655ff5dbfbce8bf5fcad2686ca85c7254",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/automate-me/SKILL.md",
+            "sha": "3b462d82316c74b7cd1ac7202c9042f90e6695eb",
+            "type": "blob",
+            "size": 7604
+          },
+          {
+            "path": "plugins/pstack/skills/babysit",
+            "sha": "5ae4a1126858d6566b826c2cc657f80952379223",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/babysit/SKILL.md",
+            "sha": "1aaa0796b26fcf543f568084d00efc77438f5f24",
+            "type": "blob",
+            "size": 4611
+          },
+          {
+            "path": "plugins/pstack/skills/benchmark-checklist",
+            "sha": "6cd8d29120fb3f1f7cc8ef794bca0830bc07f437",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/benchmark-checklist/SKILL.md",
+            "sha": "d92d20e75e67fec25db713e866f3ab2bba9aa7e7",
+            "type": "blob",
+            "size": 5378
+          },
+          {
+            "path": "plugins/pstack/skills/blast-radius",
+            "sha": "b954a43f5a661eefff9428ff2cbc616c96afbefc",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/blast-radius/SKILL.md",
+            "sha": "b44b5e81399469b0f7b7a957e7af2e027bb44b3d",
+            "type": "blob",
+            "size": 4164
+          },
+          {
+            "path": "plugins/pstack/skills/bro",
+            "sha": "dfcc3113bd7ec0a923c3be0797788fb62cc62975",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/bro/SKILL.md",
+            "sha": "c21e6a4070325a7540f4c1ef4b3b8aac43676138",
+            "type": "blob",
+            "size": 282
+          },
+          {
+            "path": "plugins/pstack/skills/correct",
+            "sha": "e5470d1f4bfafdf100a7915a281ebdd3c567c257",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/correct/SKILL.md",
+            "sha": "a7ccc5e083d52c7a0af555e6a20df3b41c06b72c",
+            "type": "blob",
+            "size": 2414
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill",
+            "sha": "2609b0e3a2de6cd86ddab8d49c44485efeb998d0",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill/SKILL.md",
+            "sha": "e0ff025e805363d76296ae1d192a25e72a1bff50",
+            "type": "blob",
+            "size": 6593
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill/references",
+            "sha": "306bf0ea6b94dea39d8ea731f0c4450454143fd0",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill/references/feature-map-example",
+            "sha": "c2568fa6bd55922d707be2bd741361ada73aa0ef",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill/references/feature-map-example/README.md",
+            "sha": "fb64570cfab3bbe672fe80925651933ebd57aa33",
+            "type": "blob",
+            "size": 2601
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill/references/feature-map-example/create-note.md",
+            "sha": "21357566b69223a503d6780a04fb90ce540eae22",
+            "type": "blob",
+            "size": 2926
+          },
+          {
+            "path": "plugins/pstack/skills/create-verification-skill/references/feature-map-example/search.md",
+            "sha": "1f8e57d3aaf19cf27a9464d55fa72e46bcbc8b0f",
+            "type": "blob",
+            "size": 3478
+          },
+          {
+            "path": "plugins/pstack/skills/deslop",
+            "sha": "ac9ba043f9dd3b3a8850de6624ec5bc12e375599",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/deslop/SKILL.md",
+            "sha": "1b3827c7f991182149a7abda696af43ff8f17a12",
+            "type": "blob",
+            "size": 719
+          },
+          {
+            "path": "plugins/pstack/skills/figure-it-out",
+            "sha": "e7c2207225aec5d5b6370d8100a127fc42ecb749",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/figure-it-out/SKILL.md",
+            "sha": "30cc95c71ebc44c0054617fa6545a7861c9f270e",
+            "type": "blob",
+            "size": 4028
+          },
+          {
+            "path": "plugins/pstack/skills/fix-ci",
+            "sha": "22d79ed45a382df99b95e1135f13ad0170500511",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/fix-ci/SKILL.md",
+            "sha": "60adbdde5b63ee95cea8180df8080498680e338d",
+            "type": "blob",
+            "size": 901
+          },
+          {
+            "path": "plugins/pstack/skills/fix-merge-conflicts",
+            "sha": "9a539a5c5359e25c9a57df5a741e42524f2fe3c8",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/fix-merge-conflicts/SKILL.md",
+            "sha": "2940fe4c7f2ada9c119b5726bf276b834e6754b6",
+            "type": "blob",
+            "size": 988
+          },
+          {
+            "path": "plugins/pstack/skills/get-pr-comments",
+            "sha": "5664b99671eeabafef1159cdb663cb162ace770d",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/get-pr-comments/SKILL.md",
+            "sha": "396aad5ff7cbe981124e9540ae786a120af77149",
+            "type": "blob",
+            "size": 529
+          },
+          {
+            "path": "plugins/pstack/skills/how",
+            "sha": "070291a2f60c0443e7987442e90fff1f7f52cd7f",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/how/SKILL.md",
+            "sha": "d373f904a7d81b6850bb84452afc278ee1b79e64",
+            "type": "blob",
+            "size": 4676
+          },
+          {
+            "path": "plugins/pstack/skills/how/references",
+            "sha": "eb145c02e4e81d79101a20e6e9192c72e9cb9f56",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/how/references/explainer-prompt.md",
+            "sha": "3a36fb6736c5b74ac2774350841e332a019dec94",
+            "type": "blob",
+            "size": 3085
+          },
+          {
+            "path": "plugins/pstack/skills/how/references/explorer-prompt.md",
+            "sha": "9b4b0594bfd779015616e9d280369aba939583b4",
+            "type": "blob",
+            "size": 2684
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate",
+            "sha": "3ed900d43e6544cc06176798de1274e021268684",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate/SKILL.md",
+            "sha": "704e3ab231fc0eff8376b5b1859a8d49b545a997",
+            "type": "blob",
+            "size": 6347
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate/references",
+            "sha": "402741c32de6e2766176cfffd2557cccacfb28f0",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate/references/code-quality-review.md",
+            "sha": "16581250d81044c7e80fe234c4970a3f7b7fc98a",
+            "type": "blob",
+            "size": 5217
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate/references/lead-judgment.md",
+            "sha": "5ce526097fdd3dfeaf4cd3b126a3f486c3ee36ae",
+            "type": "blob",
+            "size": 3465
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate/references/reviewer-prompt.md",
+            "sha": "13a252b2c3cd18522d4c8dc39a7030477037b249",
+            "type": "blob",
+            "size": 2491
+          },
+          {
+            "path": "plugins/pstack/skills/interrogate/references/rubric.md",
+            "sha": "2d92f1b83e13be03fb10f20cba12639a1406a2da",
+            "type": "blob",
+            "size": 5025
+          },
+          {
+            "path": "plugins/pstack/skills/maintain-verification-skill",
+            "sha": "13ac60a37125f942aaed5fcea98596879f0b7d41",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/maintain-verification-skill/SKILL.md",
+            "sha": "4b07034c490b7cc922850dfbb8ddbf0677e62260",
+            "type": "blob",
+            "size": 5231
+          },
+          {
+            "path": "plugins/pstack/skills/make-pr-easy-to-review",
+            "sha": "30493c1d9b061827149f0caafca027a9016f67c6",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/make-pr-easy-to-review/SKILL.md",
+            "sha": "f5343c095b6a2196b1474aa5013d82b8ceaa2120",
+            "type": "blob",
+            "size": 2275
+          },
+          {
+            "path": "plugins/pstack/skills/no-comments",
+            "sha": "0cd53f86ae66d255879b0bf16781108a66299525",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/no-comments/SKILL.md",
+            "sha": "9880b1dbcb850ae463341ab2b04195d8c89de4e3",
+            "type": "blob",
+            "size": 2848
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-help",
+            "sha": "7d7395288dcf810e3f7c78ef68b46b97e19d3667",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-help/SKILL.md",
+            "sha": "48fd02a3f14e51a422d0a3a9d555875a8f6d4a55",
+            "type": "blob",
+            "size": 13552
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-help/references",
+            "sha": "d1dc6e535e432203f991e231fd7cda295911a66b",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-help/references/prompting.md",
+            "sha": "6b72b2e6081fdb78a3261bd77cf7334596d1ee20",
+            "type": "blob",
+            "size": 3166
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-help/references/recipes.md",
+            "sha": "5aa26fb76fe97f7db81401290d7dd939373427bd",
+            "type": "blob",
+            "size": 3281
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode",
+            "sha": "662732ab6ab031ae542f9891be5770456b663796",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/SKILL.md",
+            "sha": "2979cb2924a79bba35be606c3ad54a315b3b711a",
+            "type": "blob",
+            "size": 26705
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks",
+            "sha": "776235b00516648648d165c4ff0caa18a5e04f7c",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/authoring-a-skill.md",
+            "sha": "f4ea0285a56700c9a444f421e6a64ff60af58b26",
+            "type": "blob",
+            "size": 852
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+            "sha": "3bd1fefe70acb00801fc838596c15b8c7f05df40",
+            "type": "blob",
+            "size": 1884
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+            "sha": "7ea13151fa19b4f901d5a111601103907f0c0d7d",
+            "type": "blob",
+            "size": 10867
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
+            "sha": "c4360ddc66601018037f0fee01523cd5ed18ef77",
+            "type": "blob",
+            "size": 5835
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/babysit.md",
+            "sha": "16b0223dbce60d438532147fdafe21fb34f539d5",
+            "type": "blob",
+            "size": 8725
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/bug-fix.md",
+            "sha": "a2432864e08a018d299caabc37396c59171025c8",
+            "type": "blob",
+            "size": 2304
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/eval.md",
+            "sha": "4bfbc7edc67604e991e0084e45a75ab36d3724f9",
+            "type": "blob",
+            "size": 2514
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/feature.md",
+            "sha": "f2d0cd489c8d9c159719a86ae603904c9515d846",
+            "type": "blob",
+            "size": 3411
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/hillclimb.md",
+            "sha": "9abaaa92fadf7808f15b9e9a79d737e10437433f",
+            "type": "blob",
+            "size": 4413
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/investigation.md",
+            "sha": "cd119f04f23e0b7acb3f8cc5ba13ce4ab7aa6c7d",
+            "type": "blob",
+            "size": 928
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+            "sha": "45359e5b23be2f4c0be5fc94e7276a29f604ab42",
+            "type": "blob",
+            "size": 13378
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
+            "sha": "34ca78e021bb701b1cf5ed1f11237d721a1e819b",
+            "type": "blob",
+            "size": 6467
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+            "sha": "2f7c2695d02d332fa1e83024e8b7bc8ff2c44dc9",
+            "type": "blob",
+            "size": 17537
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/pause-safely.md",
+            "sha": "da90d0322b63f7a4c209d2d745c050c836fa8526",
+            "type": "blob",
+            "size": 1969
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/perf-issue.md",
+            "sha": "dba3fcef1adac055a1c89eb0c97806944c53fbe6",
+            "type": "blob",
+            "size": 1455
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/prototype.md",
+            "sha": "91c6e687fedfee906c8563c152f2a051e2bd39f3",
+            "type": "blob",
+            "size": 2160
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/refactoring.md",
+            "sha": "9700d5877e3a20bddd16b25f4151a2facf3ee5f9",
+            "type": "blob",
+            "size": 3316
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/runtime-forensics.md",
+            "sha": "46efa97edbe01681a9ea75c0f601e861d748a95c",
+            "type": "blob",
+            "size": 1209
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/session-pickup.md",
+            "sha": "9ac2af76c17ce018b6ee6079195ae983c7542d19",
+            "type": "blob",
+            "size": 2319
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/shipping.md",
+            "sha": "17840114442549e5e321e57c511255b84ff14d14",
+            "type": "blob",
+            "size": 7612
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/trace-forensics.md",
+            "sha": "48ed6b2f690215027eda96a1897ed98212bbd07a",
+            "type": "blob",
+            "size": 1865
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/visual-parity.md",
+            "sha": "0d356e4ab982279663374e7051edd8dcaba58608",
+            "type": "blob",
+            "size": 1196
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+            "sha": "89431dd8ace4e7593d85982b645c6e0c2022c354",
+            "type": "blob",
+            "size": 3925
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references",
+            "sha": "99270dc578e90900a0d82e102bd4864843bc75cc",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/agents",
+            "sha": "7747c435d8e7c9707ed03ef09578949c19719d85",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/agents/comment-sicko.md",
+            "sha": "209e3704dfa75022060c936bd3f3362fa3bbe254",
+            "type": "blob",
+            "size": 2230
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/bugbot-triage.md",
+            "sha": "b2fc7d35712783707607cf2f39752885c8d5105c",
+            "type": "blob",
+            "size": 9629
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/codex-tools.md",
+            "sha": "e8676520b764cb4145053948a7e5e7ceda23722e",
+            "type": "blob",
+            "size": 10422
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/copilot-tools.md",
+            "sha": "06edb3df155565ef7be4a6825c737c2d36aa2c1a",
+            "type": "blob",
+            "size": 20078
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/licenses",
+            "sha": "2026ee9b6586e6d9fa55e87293b084285ecece34",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/licenses/LICENSE",
+            "sha": "3ebb69c2234f26ce81fa7fb3c67d783f9228bf25",
+            "type": "blob",
+            "size": 1101
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/licenses/LICENSE-cursor-team-kit",
+            "sha": "ca2bba771cd39dbef6acf96b52481133983451f3",
+            "type": "blob",
+            "size": 1063
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/licenses/NOTICE.md",
+            "sha": "23c0ed803a92e1b92c44ec2d44732293b4735382",
+            "type": "blob",
+            "size": 1687
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/merge-safety.md",
+            "sha": "f6d81e03eb1f9c2d8f64b806d0979bb006814a5a",
+            "type": "blob",
+            "size": 5254
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/pi-tools.md",
+            "sha": "d75ddb008092ce881e3e2880e45e66523564ea86",
+            "type": "blob",
+            "size": 19595
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/references/resume-storage.md",
+            "sha": "d88e4535f42ff4fa0f2aa3ff0cb1e6cda4cae7f0",
+            "type": "blob",
+            "size": 3678
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts",
+            "sha": "0f49f1438dbb6dc26662994cab31639dadca1be7",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/.prettierignore",
+            "sha": "819c1a0f2eae7d2c0d24cddb681f42f73931f672",
+            "type": "blob",
+            "size": 446
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/.prettierrc.json",
+            "sha": "757fd64caa9e1093af0eef0b8db0a014136bf838",
+            "type": "blob",
+            "size": 29
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/bootstrap.ts",
+            "sha": "ea4d5c491b1c4fa48b7b47a38d1386db92665a90",
+            "type": "blob",
+            "size": 1848
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/bun.lock",
+            "sha": "65f0c662f300a0f72b319ca93ea18f56219c2581",
+            "type": "blob",
+            "size": 6679
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.mjs",
+            "sha": "6693259c84166da12333fa35dc3f4dec8932738f",
+            "type": "blob",
+            "size": 8232
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/check-playbooks.mjs",
+            "sha": "cfcfffd3c1ddfd68e391ffd0a6c61019197f9094",
+            "type": "blob",
+            "size": 3023
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/orch",
+            "sha": "86e3d1afcff75f604d54076ea06083e642b0e7e1",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/orch/orch.test.ts",
+            "sha": "a91257e4dda7aee5c4a95f00cc5ea6ed41f9161e",
+            "type": "blob",
+            "size": 40453
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/orch/orch.ts",
+            "sha": "219ac17bd8805b45140eca7c429834be9ded1b7d",
+            "type": "blob",
+            "size": 15511
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/orch/store.ts",
+            "sha": "1c7be01e633179837d7ada01610b8428d804711e",
+            "type": "blob",
+            "size": 47093
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/package.json",
+            "sha": "8537ce4decade7cd9bff387caeff3858ceedd631",
+            "type": "blob",
+            "size": 325
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/resume.mjs",
+            "sha": "1dc39fc86acf62a7fc5a5540721b4bad7a63977e",
+            "type": "blob",
+            "size": 7309
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/tsconfig.json",
+            "sha": "cb05ede9c4f7b9150bceb544f631a7e4fccc1ffe",
+            "type": "blob",
+            "size": 304
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr",
+            "sha": "0fe68a15cf9266ae0bc7d035045abd776f893ba0",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.test.ts",
+            "sha": "31a2a624cee7422d053dbfce5abf24855a5032ee",
+            "type": "blob",
+            "size": 10951
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.ts",
+            "sha": "8de672833bcee133128f3bd7ab8715d7b9cebac1",
+            "type": "blob",
+            "size": 7906
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/deadline.ts",
+            "sha": "ccc2d1eb90e16db0758ad69cf15685eb5d299e01",
+            "type": "blob",
+            "size": 522
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts",
+            "sha": "4bc68d5abe1ce7c8fcb2aa2892959a3d0339098f",
+            "type": "blob",
+            "size": 3524
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.test.ts",
+            "sha": "c6a06b49662347b2440a33227bb83d37546ea129",
+            "type": "blob",
+            "size": 19509
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.ts",
+            "sha": "3e3b6f9737abaab39a408b368d4fe289607d7158",
+            "type": "blob",
+            "size": 31471
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/integrity.test.ts",
+            "sha": "cff627b172cd6ae5f7fa8dc4f53c270e84044676",
+            "type": "blob",
+            "size": 24112
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/landing.ts",
+            "sha": "3fc7864b5f3714a10135ec8ff890604f1b300895",
+            "type": "blob",
+            "size": 2738
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/live-merge-safety.mjs",
+            "sha": "e1f50678c55622969f90c327181c5a26b9691197",
+            "type": "blob",
+            "size": 7583
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.test.ts",
+            "sha": "af90cf764d49b82a422a619abd067b03eb38cc50",
+            "type": "blob",
+            "size": 33939
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.ts",
+            "sha": "dd967f0b766a85c45975a1643bac10964984939f",
+            "type": "blob",
+            "size": 30007
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/render.ts",
+            "sha": "48e5750f887f370dfbd2a210dfa07e996100be89",
+            "type": "blob",
+            "size": 9078
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/ship-pr",
+            "sha": "c0ad27c4611006893cd7b7293481ac0e9b440544",
+            "type": "blob",
+            "size": 220
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/shipping-cli.test.ts",
+            "sha": "8600f6e97bcf378844899634e0740347a1c17566",
+            "type": "blob",
+            "size": 4479
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/shipping-cli.ts",
+            "sha": "34817a551533a6327bdb23d3267a869f8b8b3b74",
+            "type": "blob",
+            "size": 2340
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/shipping.test.ts",
+            "sha": "84c638c485df435d29a2ed22353661f1b5f3d517",
+            "type": "blob",
+            "size": 9257
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/shipping.ts",
+            "sha": "e0249cb381c68ac0ceb953f344fe5bbab696a7d1",
+            "type": "blob",
+            "size": 6484
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/transport.test.ts",
+            "sha": "a42087ba39cee8c52e98f52cf5876723a35f4da1",
+            "type": "blob",
+            "size": 8374
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/tsconfig.json",
+            "sha": "477af90b05cbd24fcf974fd73cf331d5ac7379cc",
+            "type": "blob",
+            "size": 270
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.compile.ts",
+            "sha": "3509160c7881c5a6348c01081a33c4a1cfd9267e",
+            "type": "blob",
+            "size": 2697
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.ts",
+            "sha": "23330f7d8db36351679c6ce2b62dc181e411c699",
+            "type": "blob",
+            "size": 13894
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/watch-pr",
+            "sha": "99807d577c3b006cfe6ee9e149cf2914bfd4afd6",
+            "type": "blob",
+            "size": 211
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/wrapper.test.ts",
+            "sha": "ee4f09d4eb6d1cfec5aafd1ee515776dba27a6b9",
+            "type": "blob",
+            "size": 587
+          },
+          {
+            "path": "plugins/pstack/skills/poteto-mode/scripts/worktree-audit.mjs",
+            "sha": "b189def4cd1404d83f802c82f0a432cb18a3e3a4",
+            "type": "blob",
+            "size": 16801
+          },
+          {
+            "path": "plugins/pstack/skills/principle-attack-the-premise",
+            "sha": "b14ef9fbe0ee8e056796ac54e8fc0bfae767be17",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-attack-the-premise/SKILL.md",
+            "sha": "adb27766fba74dc5fda54fb29c7ebb0c7a354e02",
+            "type": "blob",
+            "size": 1472
+          },
+          {
+            "path": "plugins/pstack/skills/principle-boundary-discipline",
+            "sha": "8c7ce90e19f7647e857268a5a1b9ffba914a802b",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-boundary-discipline/SKILL.md",
+            "sha": "de0c0f4196f64adc73a1e16f4b6d9cc9780c0529",
+            "type": "blob",
+            "size": 1874
+          },
+          {
+            "path": "plugins/pstack/skills/principle-build-the-lever",
+            "sha": "263aa630083c2c6ae84bda1f9df6bac1fef660c5",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-build-the-lever/SKILL.md",
+            "sha": "d1a28c69a8f66b398ab484069dc6c18d4bd998d1",
+            "type": "blob",
+            "size": 2449
+          },
+          {
+            "path": "plugins/pstack/skills/principle-encode-lessons-in-structure",
+            "sha": "4216584d7e5a9c81e78d50040d4723c9a6a0fd1e",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-encode-lessons-in-structure/SKILL.md",
+            "sha": "d92de93bfdde2f637f1d5c321207f144a1580201",
+            "type": "blob",
+            "size": 2202
+          },
+          {
+            "path": "plugins/pstack/skills/principle-exhaust-the-design-space",
+            "sha": "12ba553ca497c673b0da6935775170ad8dd6cbb6",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-exhaust-the-design-space/SKILL.md",
+            "sha": "5e581cd701c9ddd880dc3cab0271ee126db5e740",
+            "type": "blob",
+            "size": 1143
+          },
+          {
+            "path": "plugins/pstack/skills/principle-experience-first",
+            "sha": "85b31a1be2d079d48571ad5d01cacc697bb126fd",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-experience-first/SKILL.md",
+            "sha": "ff4bf14d0ae6465d164fd5b0a92df8236934b823",
+            "type": "blob",
+            "size": 1175
+          },
+          {
+            "path": "plugins/pstack/skills/principle-explain-the-number",
+            "sha": "18df8cbe258c801f5b159a8e31e354d5d9421b0f",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-explain-the-number/SKILL.md",
+            "sha": "4b28a7d44c9a19664659785d3249c2f171c66673",
+            "type": "blob",
+            "size": 2100
+          },
+          {
+            "path": "plugins/pstack/skills/principle-fix-root-causes",
+            "sha": "c901e9a0033b5ed6c053d552fa309550b758b93e",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-fix-root-causes/SKILL.md",
+            "sha": "0597b15cecb75fdf2ccfed4271c721bd8ae7a0c1",
+            "type": "blob",
+            "size": 1237
+          },
+          {
+            "path": "plugins/pstack/skills/principle-foundational-thinking",
+            "sha": "b4c9189ee194bfb46142fb36aabe1fdc57266e4a",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-foundational-thinking/SKILL.md",
+            "sha": "a6829c7884895d29b65de0ac33f20be14f59556f",
+            "type": "blob",
+            "size": 1521
+          },
+          {
+            "path": "plugins/pstack/skills/principle-guard-the-context-window",
+            "sha": "c324f1c14fa7506d615d5a2fe1e31d3c2e93d974",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-guard-the-context-window/SKILL.md",
+            "sha": "ab9e95078e7513ea7f8b0da025cf090131265d8f",
+            "type": "blob",
+            "size": 930
+          },
+          {
+            "path": "plugins/pstack/skills/principle-laziness-protocol",
+            "sha": "f4cc97519d67a47c1259296b2a675c8e4d352dbc",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-laziness-protocol/SKILL.md",
+            "sha": "c9c65ffe68406d0186065b1408692bf6ebf09dc9",
+            "type": "blob",
+            "size": 1362
+          },
+          {
+            "path": "plugins/pstack/skills/principle-make-operations-idempotent",
+            "sha": "a8279b632e07d46454ad89e2dca194d9ad4f2ffe",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+            "sha": "3caa9188593e4939ad35437d33fdf10782cabecf",
+            "type": "blob",
+            "size": 1381
+          },
+          {
+            "path": "plugins/pstack/skills/principle-migrate-callers-then-delete-legacy-apis",
+            "sha": "ef4e29d2cc5f8159f461e976c4bed3081f5ae936",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
+            "sha": "ca19666a51eec027045c72d9de83899a1011421b",
+            "type": "blob",
+            "size": 1137
+          },
+          {
+            "path": "plugins/pstack/skills/principle-minimize-reader-load",
+            "sha": "70c909e368bdb900060601c93acdb5b78009efa3",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-minimize-reader-load/SKILL.md",
+            "sha": "ea8b29881953bb354c3c0c1bc23b452179c82806",
+            "type": "blob",
+            "size": 2086
+          },
+          {
+            "path": "plugins/pstack/skills/principle-model-the-domain",
+            "sha": "c7d147e29107522cff9907cde96c24e146511556",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-model-the-domain/SKILL.md",
+            "sha": "047e493abe3509472a220149b809b36af238438d",
+            "type": "blob",
+            "size": 2073
+          },
+          {
+            "path": "plugins/pstack/skills/principle-never-block-on-the-human",
+            "sha": "fdfaced1232556cb4c33cbbc3176c783fe985f4e",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-never-block-on-the-human/SKILL.md",
+            "sha": "b9edb2c319723dd50e6a73ee712ad6433c28a98e",
+            "type": "blob",
+            "size": 1163
+          },
+          {
+            "path": "plugins/pstack/skills/principle-outcome-oriented-execution",
+            "sha": "78c2698fa12adf2cbedd0639293039fae3bb864b",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-outcome-oriented-execution/SKILL.md",
+            "sha": "935bc52122c27e7b5e5e8bb63bbb9697b220cc17",
+            "type": "blob",
+            "size": 1069
+          },
+          {
+            "path": "plugins/pstack/skills/principle-prove-it-works",
+            "sha": "1ee066f6fcca4da53b422527fc487cfc5276b6ad",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-prove-it-works/SKILL.md",
+            "sha": "3ba219579fc3febfc1a9d32bcd8d937d15d89050",
+            "type": "blob",
+            "size": 2280
+          },
+          {
+            "path": "plugins/pstack/skills/principle-redesign-from-first-principles",
+            "sha": "016933f7a981ab60209ea9b9d25e8221c0cc602b",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-redesign-from-first-principles/SKILL.md",
+            "sha": "c3c55e96fc82e97b5d272e82d3990b725d9dce62",
+            "type": "blob",
+            "size": 835
+          },
+          {
+            "path": "plugins/pstack/skills/principle-separate-before-serializing-shared-state",
+            "sha": "b2667e7dde81c669eadd137f04cd83376c368048",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+            "sha": "dd88c08e18ec613bb482bfc5354efd22ca98ee4a",
+            "type": "blob",
+            "size": 1556
+          },
+          {
+            "path": "plugins/pstack/skills/principle-sequence-verifiable-units",
+            "sha": "a6aad1402ece412475d5fd847ee7b84bb560a9e0",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+            "sha": "583be9652613d490af0a1c14fd420255fdd5ccd7",
+            "type": "blob",
+            "size": 1696
+          },
+          {
+            "path": "plugins/pstack/skills/principle-subtract-before-you-add",
+            "sha": "4faabdabfe48a04b999d73fd010b9c608a45267a",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-subtract-before-you-add/SKILL.md",
+            "sha": "1342dddf53610648cd622120e08580273dca4367",
+            "type": "blob",
+            "size": 1085
+          },
+          {
+            "path": "plugins/pstack/skills/principle-test-behavior-not-implementation",
+            "sha": "2f98b5557d4069d2911be27467ced13a0b580637",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+            "sha": "9296ac0851448be0837c8c2b040bf515c28f9521",
+            "type": "blob",
+            "size": 2101
+          },
+          {
+            "path": "plugins/pstack/skills/principle-type-system-discipline",
+            "sha": "b160b3783481b030b3c7fd2767e17ef28a8596d0",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/principle-type-system-discipline/SKILL.md",
+            "sha": "b66c78dca83d48ebbaf58d1bd312fb9e38a36fbe",
+            "type": "blob",
+            "size": 4913
+          },
+          {
+            "path": "plugins/pstack/skills/recall",
+            "sha": "c992d8d991984cf3252241cdd10100a9b391ba81",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/recall/SKILL.md",
+            "sha": "c8084cdbf4fe3a7d05eea7330d499e3c57e9358b",
+            "type": "blob",
+            "size": 5978
+          },
+          {
+            "path": "plugins/pstack/skills/reflect",
+            "sha": "cfb6dd1bfb0a41818411c093f5df4b820711034c",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/SKILL.md",
+            "sha": "9a69ac699047f25dab680016b60dcadb3ec104e9",
+            "type": "blob",
+            "size": 7076
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/references",
+            "sha": "49c6b6f64c45c4cf1cb9f988c9007ad12e8ff3d4",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/references/divergent-reviewer.md",
+            "sha": "ead10c17ea9aae02d2ec3930777efae94c2a8212",
+            "type": "blob",
+            "size": 3890
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/references/judgment-reviewer.md",
+            "sha": "24446aeae81752058808fd41b33df62c3e0caa11",
+            "type": "blob",
+            "size": 3256
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/references/synthesizer.md",
+            "sha": "67788865ea96745486dd5719958e7ade0ed25bba",
+            "type": "blob",
+            "size": 4212
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/references/tooling-reviewer.md",
+            "sha": "ac0dd8f6c8117fb9130837b3fc60c075b7a4bba6",
+            "type": "blob",
+            "size": 4610
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/scripts",
+            "sha": "59ffdefa258ede22b9e6d7d82af84830fe695471",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/reflect/scripts/find-transcript.mjs",
+            "sha": "1ff62b00d1b29aacb82017d2f70d8f7dcde75c6b",
+            "type": "blob",
+            "size": 7864
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack",
+            "sha": "ec685065da216320a4074846f5c69f1cf1f37725",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/SKILL.md",
+            "sha": "c731f3a72dacbaa408a8477c2de39293dd7d4df1",
+            "type": "blob",
+            "size": 10757
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/copilot.md",
+            "sha": "49bac87dac455cb3fe0870eacc3347d3412ba971",
+            "type": "blob",
+            "size": 11147
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/scripts",
+            "sha": "3537b5b4b81e3324ed3540057d57d5775cfe013a",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/scripts/check-sheet.awk",
+            "sha": "985ae8498efa3434db21883144b8b131c66d816f",
+            "type": "blob",
+            "size": 224
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/scripts/check-sheet.sh",
+            "sha": "c8c263daabf60dfd9470ce6af17f7c70796a3061",
+            "type": "blob",
+            "size": 789
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/scripts/read-sheet.sh",
+            "sha": "1c54b93fe418e9559c38e3baaf0b3489f0fed69a",
+            "type": "blob",
+            "size": 474
+          },
+          {
+            "path": "plugins/pstack/skills/setup-pstack/scripts/sheet.awk",
+            "sha": "31dbbf68cf8ce81d0f5e649112fb1e124a27a78d",
+            "type": "blob",
+            "size": 5430
+          },
+          {
+            "path": "plugins/pstack/skills/show-me-your-work",
+            "sha": "8eee6948193107e5a20b55bb12859f0578e00d20",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/show-me-your-work/SKILL.md",
+            "sha": "9adafb6c48a185db178e343b1653470e78e11790",
+            "type": "blob",
+            "size": 6541
+          },
+          {
+            "path": "plugins/pstack/skills/show-me-your-work/references",
+            "sha": "1671bde8f0361caa3ec0d59a5eed1e1a3dbbbaac",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/show-me-your-work/references/decision-log-template.tsv",
+            "sha": "db220376ecb8c582a6a4f6575a8f26469603a38d",
+            "type": "blob",
+            "size": 38
+          },
+          {
+            "path": "plugins/pstack/skills/show-me-your-work/scripts",
+            "sha": "9a924bef15e866f950747a5b757ee9ce7edc9c16",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/show-me-your-work/scripts/log.sh",
+            "sha": "004ec8d18fc3a141fd753346c65e6fe9babc4775",
+            "type": "blob",
+            "size": 2285
+          },
+          {
+            "path": "plugins/pstack/skills/swarm",
+            "sha": "47166190d44fb9fa8c651ea2a606c570953e2f53",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/swarm/SKILL.md",
+            "sha": "123515791886245d770143fd96171fa542c89361",
+            "type": "blob",
+            "size": 4592
+          },
+          {
+            "path": "plugins/pstack/skills/tdd",
+            "sha": "5347e133627a3268ec4b11768c9f4ea00b79186b",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/tdd/SKILL.md",
+            "sha": "67d91899a44c094d999eda716fa9877de245e109",
+            "type": "blob",
+            "size": 3337
+          },
+          {
+            "path": "plugins/pstack/skills/teach",
+            "sha": "e40d99e48ec5caee077c14fa4e88356d6a704e52",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/teach/SKILL.md",
+            "sha": "b740e6605b8abce9b62b06adbf7918cb86c7dbe9",
+            "type": "blob",
+            "size": 5887
+          },
+          {
+            "path": "plugins/pstack/skills/technical-writing",
+            "sha": "ce1ba370177f8ffe09747b5bee29109936951824",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/technical-writing/SKILL.md",
+            "sha": "8ac3ce43b172efd5cff9b463cd58ea158912d7e8",
+            "type": "blob",
+            "size": 9761
+          },
+          {
+            "path": "plugins/pstack/skills/thermo-nuclear-code-quality-review",
+            "sha": "c21b980a084de912e26c17fe8bc7488ec524eead",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
+            "sha": "4d9176be4ac90728c24eb9b29125f45d8d8aecd1",
+            "type": "blob",
+            "size": 13551
+          },
+          {
+            "path": "plugins/pstack/skills/typescript-best-practices",
+            "sha": "b08936b187336cbc2c7a6b05cd29a47b9732029e",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/typescript-best-practices/SKILL.md",
+            "sha": "2bf543fbc2991e9603f49dd224c38b6e574c93d7",
+            "type": "blob",
+            "size": 2653
+          },
+          {
+            "path": "plugins/pstack/skills/typescript-best-practices/references",
+            "sha": "f970e0d23b1b5278214750430200ed27ad94d792",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/typescript-best-practices/references/patterns.md",
+            "sha": "c21d876b71b9c7afa897f2f6d982ead07db8f104",
+            "type": "blob",
+            "size": 9214
+          },
+          {
+            "path": "plugins/pstack/skills/unslop",
+            "sha": "b3ccebfa897e9d8979f62ce7ddf2f8430ceab61d",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/unslop/SKILL.md",
+            "sha": "7d14d8c9ff4c63b96cda90aacd93b5fc752a58bc",
+            "type": "blob",
+            "size": 5984
+          },
+          {
+            "path": "plugins/pstack/skills/what-did-i-get-done",
+            "sha": "953a0fb2b6d763e4149da38a543778aed3091368",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/what-did-i-get-done/SKILL.md",
+            "sha": "e6772b22b74998fc25cd8663981b6ac30cd91613",
+            "type": "blob",
+            "size": 1012
+          },
+          {
+            "path": "plugins/pstack/skills/why",
+            "sha": "f7313e91aff8568752e3871aa3664bcba2a90999",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/why/SKILL.md",
+            "sha": "7fbe7420db10d1669eb63b5f5b332fadf01d27ea",
+            "type": "blob",
+            "size": 12034
+          },
+          {
+            "path": "plugins/pstack/skills/why/references",
+            "sha": "1fc00923a9de83c0f11ad461c2e65b4c40fc997c",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/epistemics.md",
+            "sha": "2234bcde36f563c069225da98757c906a7783ca2",
+            "type": "blob",
+            "size": 8996
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/investigator-prompt.md",
+            "sha": "4ba432b74aca7dcb788242ef76d021988056c9aa",
+            "type": "blob",
+            "size": 7220
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/source-playbook.md",
+            "sha": "aa3d877cd539763ff05e266ae0a02dd811441e2b",
+            "type": "blob",
+            "size": 1363
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources",
+            "sha": "ea5d6a4a4e88813da1b93c3cb183c95b6c240588",
+            "type": "tree"
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/code-archaeology.md",
+            "sha": "32d5f97f8d2d3974c668f5f0392737b7e8e25afd",
+            "type": "blob",
+            "size": 3489
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/databricks.md",
+            "sha": "2770763ff5d0d1ad004abcc9a0138c9537ad1978",
+            "type": "blob",
+            "size": 6994
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/datadog.md",
+            "sha": "d8363b1c1d1c7eadb15d47abd83bf70537c39620",
+            "type": "blob",
+            "size": 5323
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/incident-postmortem.md",
+            "sha": "450d6e52f25b1b41f741cb3e9c93e1c74ef858b4",
+            "type": "blob",
+            "size": 1973
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/linear.md",
+            "sha": "899c643c078f322afe6ae0ef78a007f8ffd356c1",
+            "type": "blob",
+            "size": 2996
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/notion.md",
+            "sha": "d16230a4105fd1dacf870da0950a38faeb9381e6",
+            "type": "blob",
+            "size": 2853
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/sentry.md",
+            "sha": "2b7cf6f3098ee868547dc4e69efacfe9c255246b",
+            "type": "blob",
+            "size": 4947
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/sources/slack.md",
+            "sha": "863a527d60e4e055e680834ef8098ea04273a1ae",
+            "type": "blob",
+            "size": 3105
+          },
+          {
+            "path": "plugins/pstack/skills/why/references/synthesizer-prompt.md",
+            "sha": "246141dc9cd0fd2ab41e4876d71388f9f2aab1c0",
+            "type": "blob",
+            "size": 8289
+          },
+          {
+            "path": "tests",
+            "sha": "caf28767a677897871aa3637f1ee49531480e831",
+            "type": "tree"
+          },
+          {
+            "path": "tests/agent-skills.test.mjs",
+            "sha": "7794c94525cc0bc3b687c13c9dd0a066a142059d",
+            "type": "blob",
+            "size": 11632
+          },
+          {
+            "path": "tests/check-plan.test.mjs",
+            "sha": "bab2abc77ea115f91f51525ed4fb0144ecd238df",
+            "type": "blob",
+            "size": 4639
+          },
+          {
+            "path": "tests/check-playbooks.test.mjs",
+            "sha": "b1fdc1b85ef056f13bffd581c121db92995cac76",
+            "type": "blob",
+            "size": 7330
+          },
+          {
+            "path": "tests/check-sheet.test.mjs",
+            "sha": "c96edf4db55cd727850f65db924348dd46c2b407",
+            "type": "blob",
+            "size": 4237
+          },
+          {
+            "path": "tests/ci-forks-step.test.mjs",
+            "sha": "d58c5cb7ad857a3f54d064eba86a565091b11a76",
+            "type": "blob",
+            "size": 2655
+          },
+          {
+            "path": "tests/copilot-smoke.sh",
+            "sha": "de2c2d9d669628d3158118e4e71f932116155d2e",
+            "type": "blob",
+            "size": 27987
+          },
+          {
+            "path": "tests/copilot-tui.py",
+            "sha": "3388ba75a5141e695e189a2b566eb3937bbbb6c5",
+            "type": "blob",
+            "size": 8069
+          },
+          {
+            "path": "tests/copilot.test.mjs",
+            "sha": "4372f97450b4a4af03e52418c751771205cc7e0c",
+            "type": "blob",
+            "size": 6991
+          },
+          {
+            "path": "tests/find-transcript.test.mjs",
+            "sha": "d1e02d2409b298994b147919e61377bd30984181",
+            "type": "blob",
+            "size": 16251
+          },
+          {
+            "path": "tests/generate.test.mjs",
+            "sha": "fd17de52bfe332b74e745b2ce6b50b689317e80f",
+            "type": "blob",
+            "size": 46252
+          },
+          {
+            "path": "tests/invariants.test.mjs",
+            "sha": "bc7bbfd3fccaad248cf503ed3c11a6b314518282",
+            "type": "blob",
+            "size": 6331
+          },
+          {
+            "path": "tests/log.test.mjs",
+            "sha": "06ea4650028996bbd3d293d7213d8428d6f487d7",
+            "type": "blob",
+            "size": 7506
+          },
+          {
+            "path": "tests/models.test.mjs",
+            "sha": "a17003bdc45afd3d63d83b02fab5ab9e5fdd5383",
+            "type": "blob",
+            "size": 8580
+          },
+          {
+            "path": "tests/pi-equivalence.test.mjs",
+            "sha": "408a83530c86a7f8f22c5615adf2fbe4a08a8a51",
+            "type": "blob",
+            "size": 2137
+          },
+          {
+            "path": "tests/pi-package.test.mjs",
+            "sha": "31260aefd8b95a5e452739ab02bb38fa76634179",
+            "type": "blob",
+            "size": 3728
+          },
+          {
+            "path": "tests/pi",
+            "sha": "be5e9900585dea4ee80419472e7d07a2a97731bb",
+            "type": "tree"
+          },
+          {
+            "path": "tests/pi/agents-launch.test.mjs",
+            "sha": "aa4857b802d96f7aa740d14a79b2b51009dd47b9",
+            "type": "blob",
+            "size": 9995
+          },
+          {
+            "path": "tests/pi/agents-messages.test.mjs",
+            "sha": "575a3e4020e5cd770d8c1d198613f9bb13fbd9e6",
+            "type": "blob",
+            "size": 9013
+          },
+          {
+            "path": "tests/pi/agents-run.test.mjs",
+            "sha": "73481294196814bc41d9d9fd04e7f71f4ac0e948",
+            "type": "blob",
+            "size": 20099
+          },
+          {
+            "path": "tests/pi/agents-session.test.mjs",
+            "sha": "6916c7a0b698ddffb99e9cabe8a8f72abbcd64b1",
+            "type": "blob",
+            "size": 14644
+          },
+          {
+            "path": "tests/pi/catalog.test.mjs",
+            "sha": "5fb86911ebf85ce05b81515aadc1c7b2682fca97",
+            "type": "blob",
+            "size": 1875
+          },
+          {
+            "path": "tests/pi/child.test.mjs",
+            "sha": "bc8c1fa3b738da14c160d52156bcb18d629361fa",
+            "type": "blob",
+            "size": 3192
+          },
+          {
+            "path": "tests/pi/config.test.mjs",
+            "sha": "d7d67f2ae86435d5855681a39221d9c198bfd061",
+            "type": "blob",
+            "size": 2326
+          },
+          {
+            "path": "tests/pi/fake-pi.mjs",
+            "sha": "1bc43bf15a4948ecbc99a7a8ed5a1974a4467b0e",
+            "type": "blob",
+            "size": 11072
+          },
+          {
+            "path": "tests/pi/fake-pi.test.mjs",
+            "sha": "b309c6b6cb69f2c208b4cd03ba6c31fc41bf64fd",
+            "type": "blob",
+            "size": 1177
+          },
+          {
+            "path": "tests/pi/harness.mjs",
+            "sha": "224c487d9ab7735ffc12f7c6058be64d4a5f2928",
+            "type": "blob",
+            "size": 8385
+          },
+          {
+            "path": "tests/pi/host.mjs",
+            "sha": "7ceba33d8b281a0a31682a9d1e9c8f05983f5dd0",
+            "type": "blob",
+            "size": 1060
+          },
+          {
+            "path": "tests/pi/interaction.test.mjs",
+            "sha": "a6fa79d692dc5e5db0a20f64ee484444e8c1463e",
+            "type": "blob",
+            "size": 24991
+          },
+          {
+            "path": "tests/pi/live-harness.mjs",
+            "sha": "b4e8c7f705fbd7cb41211e76583f19382f7fe6f8",
+            "type": "blob",
+            "size": 6675
+          },
+          {
+            "path": "tests/pi/live.test.mjs",
+            "sha": "2216a82d36ac3289da0f5bbd2fefdcd39381d040",
+            "type": "blob",
+            "size": 24111
+          },
+          {
+            "path": "tests/pi/path-skills.test.mjs",
+            "sha": "a393fd319d8c2db643dfe46197ec9c64605ca4c4",
+            "type": "blob",
+            "size": 3038
+          },
+          {
+            "path": "tests/pi/prompt.test.mjs",
+            "sha": "644b4b89d04be014b7cc1b272af8e7ba5e75a4e6",
+            "type": "blob",
+            "size": 3124
+          },
+          {
+            "path": "tests/pi/runtime.test.mjs",
+            "sha": "353a0cebb0d9d85aab5bb08097531f85c950c56d",
+            "type": "blob",
+            "size": 2385
+          },
+          {
+            "path": "tests/pi/sleep-wait.test.mjs",
+            "sha": "da5557125d30cb7fa838f972be65c86c4b2911a0",
+            "type": "blob",
+            "size": 4156
+          },
+          {
+            "path": "tests/pi/worktree.test.mjs",
+            "sha": "4d701db41864febdc171fb5370193991e4d9d7fd",
+            "type": "blob",
+            "size": 12077
+          },
+          {
+            "path": "tests/pre-tool-use.test.mjs",
+            "sha": "4564eb6bb3973d7da86684a86e5a10709c0660d4",
+            "type": "blob",
+            "size": 23732
+          },
+          {
+            "path": "tests/readme-facts.test.mjs",
+            "sha": "f3da3af1134d75f00ebe1ac03e39c69a3dd07aa5",
+            "type": "blob",
+            "size": 2383
+          },
+          {
+            "path": "tests/remove-during.mjs",
+            "sha": "4c67b4e8fe2099410b1688c8e928e37f10901a59",
+            "type": "blob",
+            "size": 982
+          },
+          {
+            "path": "tests/resume.test.mjs",
+            "sha": "a1a92c34fb67a39326eec73d779197eab474c935",
+            "type": "blob",
+            "size": 7964
+          },
+          {
+            "path": "tests/runtime-packaging.test.mjs",
+            "sha": "ac89eff355e79daea7890d0d25910f8e305836dd",
+            "type": "blob",
+            "size": 11488
+          },
+          {
+            "path": "tests/session-hook-sheets.mjs",
+            "sha": "f55e91c0e29f0cc879d3907398072100beaa13e2",
+            "type": "blob",
+            "size": 2826
+          },
+          {
+            "path": "tests/session-hook-windows.test.mjs",
+            "sha": "0eb89fee5b46d1e32ab4cb6cf901108a9d725bb6",
+            "type": "blob",
+            "size": 4816
+          },
+          {
+            "path": "tests/session-hook.test.mjs",
+            "sha": "d5b99fda7124f61e9ee2999a9433f92cacf51a7b",
+            "type": "blob",
+            "size": 13487
+          },
+          {
+            "path": "tests/shipping-git.test.mjs",
+            "sha": "620423abf88c02f612dbf014c30e965059f38acf",
+            "type": "blob",
+            "size": 3880
+          },
+          {
+            "path": "tests/skill-collision-repro.sh",
+            "sha": "5c9ae4f308cd70f908fa7e26e0be06e4d86198b6",
+            "type": "blob",
+            "size": 1744
+          },
+          {
+            "path": "tests/skill-references.test.mjs",
+            "sha": "835f534cb7a3c35557bea2216c551bf64cae7d10",
+            "type": "blob",
+            "size": 2443
+          },
+          {
+            "path": "tests/skill-rules.test.mjs",
+            "sha": "f426b8d2c58e1b5b57bb00d2309de4136b86d2c9",
+            "type": "blob",
+            "size": 5237
+          },
+          {
+            "path": "tests/sync.test.mjs",
+            "sha": "f9fab44ff22fcf9889f3a1811f5b35aba699ca6b",
+            "type": "blob",
+            "size": 83033
+          },
+          {
+            "path": "tests/test-discovery.test.mjs",
+            "sha": "a91bb71c92cf55c7a8347adc7a2fcc9287e601f8",
+            "type": "blob",
+            "size": 961
+          },
+          {
+            "path": "tests/worktree-audit.test.mjs",
+            "sha": "5432777026563e038b120138b6bb5bddf3b5fddd",
+            "type": "blob",
+            "size": 39941
+          },
+          {
+            "path": "tools",
+            "sha": "1bea92ce836c1b1d74e2d2e5713c6dc403fd14e9",
+            "type": "tree"
+          },
+          {
+            "path": "tools/forks.json",
+            "sha": "396a42629efd287c8be0e8a908bc0c52d8ca2d8f",
+            "type": "blob",
+            "size": 25379
+          },
+          {
+            "path": "tools/generate.mjs",
+            "sha": "746e3f64a6c92e2a42f5906699f99901bdf16496",
+            "type": "blob",
+            "size": 52677
+          },
+          {
+            "path": "tools/pi-package.mjs",
+            "sha": "fb1d13c545f01ff1695cb9a05e16df2cee43dca4",
+            "type": "blob",
+            "size": 2275
+          },
+          {
+            "path": "tools/plugin.mjs",
+            "sha": "87baad5b5abbff7deaef2b1a316d7daf0ebf777b",
+            "type": "blob",
+            "size": 319
+          },
+          {
+            "path": "tools/runtimes.mjs",
+            "sha": "3760cf8c61851db4750b69f68cf769ca045e9bc4",
+            "type": "blob",
+            "size": 14159
+          },
+          {
+            "path": "tools/substitutions.json",
+            "sha": "33452724786db48e0b8ee63873c4822af43da3e1",
+            "type": "blob",
+            "size": 22033
+          },
+          {
+            "path": "tools/sync.mjs",
+            "sha": "585ea17111e74d1de07ac28adf761c106c1eb109",
+            "type": "blob",
+            "size": 30905
+          },
+          {
+            "path": "tools/typecheck-pi.mjs",
+            "sha": "3f4574e912781381b0f2e756c5206b007ab415d6",
+            "type": "blob",
+            "size": 1833
+          },
+          {
+            "path": "tools/upstream.json",
+            "sha": "6bc4d71c6111c9edc559f019607a34f400eec9ad",
+            "type": "blob",
+            "size": 960
+          },
+          {
+            "path": "tools/validate-skills.mjs",
+            "sha": "b19e72e70f26c79fcfa56f53378af57f3aabfe88",
+            "type": "blob",
+            "size": 5378
+          }
+        ]
+      }
+    ],
+    "candidates": [
+      {
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "stars": 1607,
+        "topicMatch": 21,
+        "origin": "explicit"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "12d421b734013cfe899bc2e3",
+        "criterionId": "methodology",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "revision": "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+        "path": "plugins/pstack/README.md",
+        "sourceUrl": "https://github.com/michael-denyer/pstack-claude/blob/3b0bc62e13f507c426997ba472e3430dd3e4ef05/plugins/pstack/README.md",
+        "excerpt": "# pstack\n\nLauren Tan's [pstack](https://github.com/cursor/plugins/tree/main/pstack) is an opinionated skill stack that improves agent outcomes. This is the port for Claude Code, Codex, and other agent harnesses: the same skills, with Cursor primitives translated to each runtime's tools.\n\nTell `poteto-mode` your goal and it invokes the workflow that fits: reproduce and root-cause a bug, sketch a design with `architect`, race candidates in `arena`, review a diff with `interrogate`, cut prose with `unslop`. It keeps code concise, simple, and verified, and it reports what it checked.",
+        "kind": "canonical"
+      },
+      {
+        "id": "007c3eb74de995b9649a2005",
+        "criterionId": "usage",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "revision": "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+        "path": "plugins/pstack/README.md",
+        "sourceUrl": "https://github.com/michael-denyer/pstack-claude/blob/3b0bc62e13f507c426997ba472e3430dd3e4ef05/plugins/pstack/README.md",
+        "excerpt": "\nLauren Tan's [pstack](https://github.com/cursor/plugins/tree/main/pstack) is an opinionated skill stack that improves agent outcomes. This is the port for Claude Code, Codex, and other agent harnesses: the same skills, with Cursor primitives translated to each runtime's tools.\n\nTell `poteto-mode` your goal and it invokes the workflow that fits: reproduce and root-cause a bug, sketch a design with `architect`, race candidates in `arena`, review a diff with `interrogate`, cut prose with `unslop`. It keeps code concise, simple, and verified, and it reports what it checked.\n\n## What it contains",
+        "kind": "canonical"
+      },
+      {
+        "id": "fdedbb5d8c958b3edd398d7d",
+        "criterionId": "skill-capabilities",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "revision": "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+        "path": "plugins/pstack/README.md",
+        "sourceUrl": "https://github.com/michael-denyer/pstack-claude/blob/3b0bc62e13f507c426997ba472e3430dd3e4ef05/plugins/pstack/README.md",
+        "excerpt": "\nTell `poteto-mode` your goal and it invokes the workflow that fits: reproduce and root-cause a bug, sketch a design with `architect`, race candidates in `arena`, review a diff with `interrogate`, cut prose with `unslop`. It keeps code concise, simple, and verified, and it reports what it checked.\n\n## What it contains\n\n- Skills: Markdown instructions the agent reads. Public ones appear as `/pstack:<name>` slash commands.",
+        "kind": "canonical"
+      },
+      {
+        "id": "4797770cef7b7db9309ed284",
+        "criterionId": "governance-risk",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "revision": "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+        "path": "plugins/pstack/README.md",
+        "sourceUrl": "https://github.com/michael-denyer/pstack-claude/blob/3b0bc62e13f507c426997ba472e3430dd3e4ef05/plugins/pstack/README.md",
+        "excerpt": "- [Issues and support](https://github.com/michael-denyer/pstack-claude/issues)\n- [Security policy](https://github.com/michael-denyer/pstack-claude/blob/main/SECURITY.md)\n\n## License\n\nMIT for this port and its additions, © 2026 Michael Denyer. Original pstack © 2026 Lauren Tan; imported cursor-team-kit skills © 2026 Cursor. See [NOTICE.md](https://github.com/michael-denyer/pstack-claude/blob/main/NOTICE.md).",
+        "kind": "canonical"
+      },
+      {
+        "id": "00bb4a6fe38a1df48cc8936d",
+        "criterionId": "merge-fit",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "revision": "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+        "path": "README.md",
+        "sourceUrl": "https://github.com/michael-denyer/pstack-claude/blob/3b0bc62e13f507c426997ba472e3430dd3e4ef05/README.md",
+        "excerpt": "\n[Other playbooks](plugins/pstack/skills/poteto-mode/SKILL.md#playbooks) cover planning, features, refactoring, performance issues, investigations, prototypes, PR maintenance, shipping, and longer projects.\n\n![poteto-mode on Claude Code, Codex, and Pi turns a request into verified work. Choose a playbook, plan and delegate with architect, arena, or swarm, then review and verify with interrogate, tests, and measurements. Project playbooks customize the workflow, and setup-pstack configures the model and reasoning effort per role. Supporting skills include how, why, and unslop.](assets/pstack-overview.png)\n\n## Details",
+        "kind": "canonical"
+      }
+    ],
+    "unknownCriteria": [],
+    "navigation": [
+      {
+        "adapter": "heuristic",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "status": "used"
+      },
+      {
+        "adapter": "heuristic",
+        "repository": {
+          "owner": "michael-denyer",
+          "name": "pstack-claude"
+        },
+        "status": "used"
+      }
+    ],
+    "collection": {
+      "filesRead": 5,
+      "sourceBytesRead": 11708,
+      "durationMs": 3952,
+      "cacheHit": false
+    }
+  }
+}

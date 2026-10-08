@@ -1,0 +1,51 @@
+{
+  "schema": "technical-decision-brief/v1",
+  "user": {
+    "actor": "ZAgentic skill maintainers and users",
+    "job": "快速组装一套科学合理、可复利的工具组合与能力组合，并判断外部 skill 是否值得进入本仓库的长期治理边界"
+  },
+  "baseline": {
+    "workflow": "ZAgentic 以可安装、可组合、可验证的 skills 为基本单元，当前已有代码研究、文档治理、研究报告、TDD、路线图、合并和安全等技能；外部技能通常需要人工比较、改写触发器、迁移工具契约并登记 provenance。",
+    "failureModes": [
+      "把外部仓库的整套运行时或路由策略当成一个可直接复制的 skill 包，导致第二套 authority 和触发器冲突",
+      "只按功能名称或 README 判断相似，漏掉宿主工具、模型、路径、并发和数据处理耦合",
+      "引入多个同义 skill 后没有明确 owner、生命周期、退出路径和验证证据，造成重复能力与维护分叉",
+      "许可证、上游来源和 port-specific 改动没有随 skill 一起保留，后续无法复核或安全更新"
+    ]
+  },
+  "targetOutcome": "得到一份以固定 commit 为证据的 pstack-claude 方法论与使用说明，并为仓库中的每个上游 skill 给出可复核的 A/B1/B2/B3/C/D 拟合分类、适配边界、所有权成本和下一步验证条件。",
+  "goals": [
+    "说明 pstack-claude 的总体方法论、入口路由、运行时安装方式和关键依赖",
+    "逐个分析 58 个 skill 目录及其 references/scripts 资产，区分可复用单元、宿主耦合和与 ZAgentic 的重叠",
+    "把每个 skill 的证据、语义拟合、组合方式、成本和退出路径落入 capability-fit 决策记录",
+    "给出分阶段 merge 建议，保持 ZAgentic 的文档治理、证据链和本地技能 authority"
+  ],
+  "nonGoals": [
+    "本轮不把 pstack-claude 的 Claude Code/Codex/Pi/Copilot 插件运行时整体安装进 ZAgentic",
+    "本轮不复制 pstack 的 hooks、agents、model sheet、Pi extension、Bun orchestration 或 provider-specific 配置",
+    "本轮不替代 ZAgentic 已有同名或同职能 skill，也不对所有 skill 立即执行 git merge",
+    "本轮不把未观察到的能力写成 absent；未闭合的宿主行为保留为 unknown 并给出 PoC"
+  ],
+  "constraints": [
+    {"id": "version", "statement": "所有外部结论固定到 pstack-claude commit 3b0bc62e13f507c426997ba472e3430dd3e4ef05。"},
+    {"id": "evidence", "statement": "GitHub 仓库事实只使用 fresh sealed ledger 的 Evidence ID 与 commit-pinned source URL；本地适配判断另外标明 ZAgentic 文件证据。"},
+    {"id": "ownership", "statement": "ZAgentic 继续拥有 skill 目录约定、触发器治理、文档地图、证据与生命周期规则；外部 skill 只能以可移除薄层进入。"},
+    {"id": "runtime", "statement": "Claude Code/Codex/Pi/Copilot 专属工具、hooks、agents、model selection 和 Bun/Pi 依赖不自动视为可组合能力。"},
+    {"id": "license", "statement": "只能吸收能够保留 MIT 与上游 Cursor/作者 NOTICE、版权和 provenance 的内容。"},
+    {"id": "scope", "statement": "研究覆盖 pstack-claude 的 58 个 skill 目录；合并建议按单位 skill 给出，而不是把仓库作为不可拆分平台。"}
+  ],
+  "assumptions": [
+    "ZAgentic 的目标运行环境以 Codex/本地 agent skill discovery 为主，不承诺 Claude Code 专属 hook 或 Pi extension 的运行时等价性。",
+    "本轮 stage 为 problem-discovery：输出选择与验证入口，不把报告误写成已经完成的生产合并方案。",
+    "同名或相近的 ZAgentic skill 以当前工作区固定状态为准，若未来发生改名或职责变化需重新评估。",
+    "每个 pstack skill 的实际 merge 仍需一次小型 conformance/trigger smoke test；静态证据不足以证明运行时等价。"
+  ],
+  "stage": "problem-discovery",
+  "decisionScope": "pstack-claude 仓库的方法论、58 个 skill 单元及其 references/scripts 的选择性吸收边界；不包含整套插件 runtime 的迁移",
+  "options": [
+    {"id": "whole-plugin", "name": "整体引入 pstack-claude 插件/runtime"},
+    {"id": "selective-skills", "name": "按 skill 选择性吸收并做 ZAgentic 适配"},
+    {"id": "reference-only", "name": "只保留固定 commit 研究资料，不合并实现"},
+    {"id": "native-rewrite", "name": "参考方法论，在 ZAgentic 内原生重写所需能力"}
+  ]
+}

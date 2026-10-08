@@ -1,0 +1,382 @@
+{
+  "schema": "zj-research-report-ir/v1",
+  "family": "technical-c4/v1",
+  "title": "pstack-claude：可复利 skill 组合与逐 skill 合并拟合",
+  "summary": "在固定 commit 3b0bc62e13f507c426997ba472e3430dd3e4ef05（v0.9.75）的证据范围内，pstack-claude 的可复利价值主要来自调查、设计、并行候选、对抗评审、验证和原则技能的组合协议；整套插件 runtime、poteto-mode 全局路由、模型 sheet、transcript 读取和 PR shipping glue 不适合直接进入 ZAgentic。逐个 58 个 skill 的 capability-fit 将 29 个标为 B1 薄适配、20 个标为 C 原生去重或高 owner 成本、9 个标为 D 宿主/政策关键缺口；没有 skill 达到 A。",
+  "ledgerFingerprint": "a1aa83d3252b3ab4117de871d4f1648a98f16616bfb8ddb7cea842489a1dd580",
+  "concepts": [
+    {
+      "key": "user-job",
+      "value": "让用户快速组装一套科学、可复核、可复利的工具组合和能力组合。"
+    },
+    {
+      "key": "unit-capability",
+      "value": "把 pstack 仓库拆成可独立验收的 skill 与 principle 单元，而不是整体引入 plugin runtime。"
+    },
+    {
+      "key": "native-owner",
+      "value": "ZAgentic 继续拥有 skill discovery、evidence、roadmap、docs governance、Git safety 和 Human authority。"
+    },
+    {
+      "key": "fit-model",
+      "value": "每个单元使用 R×O 的 coverage、semantic match、composability、ownership cost 和 adaptation scope 判定 A/B1/B2/B3/C/D。"
+    },
+    {
+      "key": "lifecycle-stage",
+      "value": "当前是 problem-discovery；报告输出选择边界与验证入口，不把静态研究写成完成的生产合并。"
+    },
+    {
+      "key": "provenance",
+      "value": "pstack、Cursor team kit、端口新增内容和 babysit 的来源必须分别保留 NOTICE、版权与许可证边界。"
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "pstack-claude 与 ZAgentic 的组合边界",
+      "kind": "landscape",
+      "mermaid": "flowchart LR\n H[User] --> Z[ZAgentic skill system]\n P[pstack-claude fixed commit] --> E[Evidence + capability-fit]\n E --> B[B1 thin units]\n E --> C[C native rewrite / dedupe]\n E --> D[D reference-only]\n B --> Z\n C --> Z\n D -. no runtime import .-> Z\n Z --> G[docs / evidence / roadmap governance]"
+    },
+    {
+      "title": "逐 skill 落地与退出路径",
+      "kind": "container",
+      "mermaid": "flowchart TB\n S[One pstack skill] --> T[Trigger and discovery smoke test]\n T --> O[Existing ZAgentic owner census]\n O --> V[Conformance fixture + provenance check]\n V --> M[Merge thin adapter or native rewrite]\n M --> R[Removal test and rollback]\n T -. host or authority gap .-> D[Defer / reference only]\n D --> R"
+    }
+  ],
+  "candidates": [
+    {
+      "repository": {
+        "owner": "michael-denyer",
+        "name": "pstack-claude"
+      },
+      "stars": 1607,
+      "topicMatch": 21,
+      "evidenceIds": [
+        "12d421b734013cfe899bc2e3",
+        "007c3eb74de995b9649a2005",
+        "fdedbb5d8c958b3edd398d7d",
+        "4797770cef7b7db9309ed284",
+        "00bb4a6fe38a1df48cc8936d"
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "title": "michael-denyer/pstack-claude / 58 skill units",
+      "summary": "The repository is a multi-runtime port of an opinionated skill stack. Its instruction-level methods are separable, but the automatic router, agents, model sheet, hooks, transcript paths, Pi extension and PR shipping scripts form a separate runtime ownership surface. The per-skill fit artifact keeps those surfaces distinct.",
+      "claimIds": [
+        "methodology",
+        "usage",
+        "skill-inventory",
+        "runtime-coupling",
+        "provenance",
+        "fit-verdict"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "methodology",
+      "text": "pstack-claude routes complex work through poteto-mode and composes investigation, architecture sketching, parallel candidates, adversarial review, verification and reflection; its principles encode recurring lessons as structural rules.",
+      "critical": true,
+      "evidenceIds": [
+        "12d421b734013cfe899bc2e3"
+      ]
+    },
+    {
+      "id": "usage",
+      "text": "The repository can be installed as Claude/Codex/Copilot plugins, a Pi package, or a skills-only tree, and its default entry point is to describe the goal to poteto-mode or invoke a named skill.",
+      "critical": true,
+      "evidenceIds": [
+        "007c3eb74de995b9649a2005"
+      ]
+    },
+    {
+      "id": "skill-inventory",
+      "text": "The fixed repository documents 58 skill directories: 34 public workflow skills and 24 principle-* references, with shared references and scripts under plugins/pstack/skills.",
+      "critical": true,
+      "evidenceIds": [
+        "fdedbb5d8c958b3edd398d7d"
+      ]
+    },
+    {
+      "id": "runtime-coupling",
+      "text": "The skill tree is portable only at the instruction level; automatic routing, Agent/model dispatch, transcript discovery, task tracking, loop/run/verify, Pi extension and PR scripts require runtime-specific mappings or external tools.",
+      "critical": true,
+      "evidenceIds": [
+        "00bb4a6fe38a1df48cc8936d"
+      ]
+    },
+    {
+      "id": "provenance",
+      "text": "The port combines pstack-derived skills, Cursor team kit skills and port-authored additions under MIT, with NOTICE and fork records that must travel with any merged material.",
+      "critical": true,
+      "evidenceIds": [
+        "4797770cef7b7db9309ed284"
+      ]
+    },
+    {
+      "id": "fit-verdict",
+      "text": "The 58-skill capability-fit matrix recommends 29 B1 units for thin adapter reuse, 20 C units for native deduplication or higher ownership cost, and 9 D units for host/policy critical gaps; no unit reaches A.",
+      "critical": true,
+      "evidenceIds": [
+        "00bb4a6fe38a1df48cc8936d"
+      ]
+    },
+    {
+      "id": "b1-scope",
+      "text": "The B1 set is limited to portable checklists, review/writing helpers, small principles, and bounded verification or PR summaries; each still needs trigger, provenance and removal tests.",
+      "critical": true,
+      "evidenceIds": [
+        "fdedbb5d8c958b3edd398d7d",
+        "00bb4a6fe38a1df48cc8936d"
+      ]
+    },
+    {
+      "id": "c-scope",
+      "text": "The C set contains methods that are useful but overlap ZAgentic owners or carry enough workflow/verification responsibility that native rewrite and semantic delta are cheaper to govern than copying.",
+      "critical": true,
+      "evidenceIds": [
+        "00bb4a6fe38a1df48cc8936d"
+      ]
+    },
+    {
+      "id": "d-scope",
+      "text": "The D set contains arena/babysit/poteto-help/poteto-mode/recall/reflect/setup-pstack/swarm and never-block-on-the-human because their runtime or authority contracts are not a bounded ZAgentic skill unit.",
+      "critical": true,
+      "evidenceIds": [
+        "00bb4a6fe38a1df48cc8936d"
+      ]
+    },
+    {
+      "id": "evidence-boundary",
+      "text": "This run did not install or live-test Claude Code, Pi, Copilot, hooks, PR shipping or multi-runtime behavior; those remain validation work rather than claims of observed equivalence.",
+      "critical": false,
+      "evidenceIds": []
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "whole-vs-unit",
+      "text": "Constraint: preserve one ZAgentic authority and composable skills. Option: import the whole plugin. Evidence: the fixed repository couples skills with routing, mappings, hooks, agents and scripts. Tradeoff: whole import creates a second runtime and policy surface. Decision: choose unit-level selective absorption.",
+      "claimIds": [
+        "methodology",
+        "runtime-coupling",
+        "fit-verdict"
+      ]
+    },
+    {
+      "id": "instruction-vs-runtime",
+      "text": "Constraint: skills must run under ZAgentic discovery and governance. Option: copy Markdown plus resources. Evidence: many skills are instruction-level but references and scripts call Claude/Pi/Copilot tools. Tradeoff: a thin adapter preserves method while runtime glue multiplies owners. Decision: B1 only for bounded units; defer runtime glue.",
+      "claimIds": [
+        "usage",
+        "runtime-coupling",
+        "b1-scope",
+        "d-scope"
+      ]
+    },
+    {
+      "id": "native-vs-duplicate",
+      "text": "Constraint: avoid duplicate owners. Option: copy methods that overlap ZAgentic code research, domain modeling, TDD, roadmap and teaching. Evidence: the 58-skill matrix marks those units C. Tradeoff: native rewrite costs more up front but keeps one authority. Decision: use C for semantic delta and owner-preserving rewrite.",
+      "claimIds": [
+        "c-scope",
+        "fit-verdict"
+      ]
+    },
+    {
+      "id": "provenance-and-license",
+      "text": "Constraint: every absorbed unit must remain legally and operationally traceable. Evidence: MIT license, mixed Cursor/team-kit sources, NOTICE and forks records. Tradeoff: copied prose without provenance is cheaper immediately but creates attribution and upgrade risk. Decision: preserve notices and pin source commit per unit.",
+      "claimIds": [
+        "provenance",
+        "usage"
+      ]
+    },
+    {
+      "id": "validation-and-exit",
+      "text": "Constraint: a skill must be removable and its value observable. Evidence: pstack emphasizes verification and decision trails, while the run did not live-test multi-runtime behavior. Tradeoff: static similarity is cheaper than a smoke test but cannot prove trigger or authority fit. Decision: require trigger smoke, representative workflow, provenance check and removal test.",
+      "claimIds": [
+        "methodology",
+        "evidence-boundary",
+        "b1-scope"
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "overall-choice",
+      "text": "选择按 skill 单元选择性吸收；不把 pstack-claude 整体插件、poteto-mode router 或 runtime glue 作为 ZAgentic 的平台依赖。保留 ZAgentic 的 native discovery、evidence、roadmap、docs governance、Git safety 和 Human authority。",
+      "comparisonIds": [
+        "whole-vs-unit",
+        "instruction-vs-runtime"
+      ]
+    },
+    {
+      "id": "phase-b1",
+      "text": "第一阶段处理 29 个 B1 单元：benchmark-checklist、blast-radius、bro、correct、create-verification-skill、deslop、fix-ci、get-pr-comments、make-pr-easy-to-review、show-me-your-work、technical-writing、thermo-nuclear-code-quality-review、unslop、what-did-i-get-done，以及判定为 B1 的 principle skills。先做 trigger/discovery smoke、代表性工作流、NOTICE/provenance 和 removal test。",
+      "comparisonIds": [
+        "instruction-vs-runtime",
+        "validation-and-exit"
+      ]
+    },
+    {
+      "id": "phase-c",
+      "text": "第二阶段处理 20 个 C 单元：先做与现有 ZAgentic owner 的语义 delta，再选择吸收原则、改写为本地 skill，或明确保留现有 native owner；不做无差别复制。",
+      "comparisonIds": [
+        "native-vs-duplicate",
+        "validation-and-exit"
+      ]
+    },
+    {
+      "id": "defer-d",
+      "text": "暂缓 9 个 D 单元：arena、babysit、poteto-help、poteto-mode、principle-never-block-on-the-human、recall、reflect、setup-pstack、swarm。除非另有技术决策证明 host-neutral adapter、authority mapping、审批和退出路径，否则只保留研究引用。",
+      "comparisonIds": [
+        "whole-vs-unit",
+        "instruction-vs-runtime"
+      ]
+    },
+    {
+      "id": "preserve-provenance",
+      "text": "任何吸收都必须携带固定 commit、MIT/LICENSE、NOTICE.md、LICENSE-cursor-team-kit 和必要的 forks/provenance 说明；把上游内容、ZAgentic 改写和本地规则分开记录。",
+      "comparisonIds": [
+        "provenance-and-license"
+      ]
+    },
+    {
+      "id": "validation-gate",
+      "text": "每个 B1/C 候选的 landing gate 是：能被本仓库发现；触发器不与现有 skill 冲突；一次代表性工作流通过；关键输出进入本地 evidence/roadmap/docs 约定；删除候选后 native 路径仍通过；任何 authority bypass 或不可逆写操作直接停止。",
+      "comparisonIds": [
+        "validation-and-exit",
+        "native-vs-duplicate"
+      ]
+    },
+    {
+      "id": "remaining-risks",
+      "text": "剩余风险是静态研究没有证明多宿主运行时等价、PR/merge 脚本可能产生外部写操作、全局 router 可能改变触发优先级，以及 58 个单元的上游更新会带来 provenance 和语义漂移；这些风险由下一阶段 PoC 和重新评估触发条件承担。",
+      "comparisonIds": [
+        "instruction-vs-runtime",
+        "provenance-and-license",
+        "validation-and-exit"
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "key": "skill-discovery-pass-rate",
+      "definition": "候选 skill 在 ZAgentic 中可被发现并按预期触发的比例",
+      "unit": "percentage",
+      "method": "在干净 fixture 中执行命令名、自然语言触发和冲突触发各一次",
+      "condition": "触发错误或路由到重复 owner 计失败",
+      "expected": "100% for every merged unit"
+    },
+    {
+      "key": "representative-workflow-pass-rate",
+      "definition": "B1/C 单元完成一个最小代表性任务并产出约定 evidence 的比例",
+      "unit": "percentage",
+      "method": "按每个 skill 的 primary-findings 输入/输出契约执行一条 fixture",
+      "condition": "输出缺 source/provenance/verification 记录计失败",
+      "expected": "100% before landing"
+    },
+    {
+      "key": "removal-pass-rate",
+      "definition": "移除候选单元后 ZAgentic native 路径保持健康的比例",
+      "unit": "percentage",
+      "method": "删除适配目录或规则后运行原有 discovery、docs、roadmap 和相关 checks",
+      "condition": "任何 native authority 断裂计 hard stop",
+      "expected": "100%"
+    },
+    {
+      "key": "provenance-coverage",
+      "definition": "吸收内容具有固定 commit、LICENSE/NOTICE 和上游来源记录的比例",
+      "unit": "percentage",
+      "method": "逐文件检查 provenance ledger 与 README/docs 登记",
+      "condition": "缺任一必需来源字段计失败",
+      "expected": "100%"
+    },
+    {
+      "key": "authority-bypass-count",
+      "definition": "外部 skill 绕过 Human/Git/docs/evidence authority 的次数",
+      "unit": "count",
+      "method": "运行不可逆操作、外部写入、重复完成、伪 evidence 和路由越权负例",
+      "condition": "任何一次 bypass 都停止该候选",
+      "expected": "0"
+    },
+    {
+      "key": "owner-duplication-count",
+      "definition": "同一触发语义下仍存在多个未声明 owner 的 skill 数量",
+      "unit": "count",
+      "method": "比较 skill descriptions、docs map 和实际 trigger smoke 输出",
+      "condition": "重复 owner 未形成显式 delegation 或 native replacement 计失败",
+      "expected": "0"
+    },
+    {
+      "key": "runtime-adaptation-surface",
+      "definition": "候选需要翻译的宿主工具、路径、模型、并发和状态契约数量",
+      "unit": "contract count",
+      "method": "记录 adapter 触碰的工具类别和状态字段",
+      "condition": "触碰 router/authority/full workflow platform 则转 D",
+      "expected": "B1 remains a removable thin layer"
+    },
+    {
+      "key": "unknown-closure",
+      "definition": "未运行的多宿主和外部写操作假设被 PoC 或明确 decision closure 的比例",
+      "unit": "percentage",
+      "method": "逐项运行 local smoke 或记录延期理由/退出路径",
+      "condition": "不得把未观察到改写成 absent",
+      "expected": "100% before runtime adoption"
+    }
+  ],
+  "riskRegister": [
+    {
+      "risk": "全局路由与现有 ZAgentic skill descriptions 发生冲突",
+      "trigger": "安装或复制 poteto-mode/poteto-help 后同一用户请求触发两个 owner",
+      "impact": "流程重复、结果不稳定、用户无法判断哪个 skill 负责",
+      "mitigation": "先运行 trigger/discovery 冲突 fixture，并把唯一 owner、优先级和排除条件登记到 docs/README.md 与 skill frontmatter",
+      "residualRisk": "自然语言触发仍会随 skill 文案变化而漂移",
+      "owner": "ZAgentic skill maintainer"
+    },
+    {
+      "risk": "Claude/Pi/Copilot 专属工具和路径被误当作 ZAgentic native capability",
+      "trigger": "候选 skill 调用 Agent、loop、verify、model sheet、transcript 或 runtime mapping",
+      "impact": "skill 在本仓库不可运行，或静默跳过验证",
+      "mitigation": "把工具调用改为显式 adapter contract，并在没有映射时让 fixture 失败而不是 fallback 成 prose",
+      "residualRisk": "新宿主 API 变化仍需重新采证",
+      "owner": "adapter owner"
+    },
+    {
+      "risk": "PR 或 shipping 脚本执行未经授权的外部写操作",
+      "trigger": "babysit/fix-ci/watch-pr/shipping 路径触发 gh、push、merge 或 queue",
+      "impact": "分支、PR 或远端状态被意外改变",
+      "mitigation": "默认只读，所有写操作经过本仓库审批闸门和 Git wrapper，并为 dry-run、rollback 和 removal test 建立 fixture",
+      "residualRisk": "外部服务权限与分支保护配置仍可能变化",
+      "owner": "release maintainer"
+    },
+    {
+      "risk": "复制 Cursor 与 cursor-team-kit 内容时丢失 NOTICE 或来源边界",
+      "trigger": "合并文件没有同步 LICENSE-cursor-team-kit、NOTICE 和固定上游 commit",
+      "impact": "无法履行 MIT attribution，也无法判断后续 upstream drift",
+      "mitigation": "在 merge gate 中强制 provenance ledger、版权文件和每个目录的 source commit 字段",
+      "residualRisk": "上游多来源文件未来仍需人工审查",
+      "owner": "documentation governance owner"
+    },
+    {
+      "risk": "与现有 ZAgentic skill 重复造成双重维护",
+      "trigger": "C 类候选未经 semantic delta 直接新增同义 skill",
+      "impact": "用户触发不确定、规则分叉、修复需要同步多处",
+      "mitigation": "先做 owner census 和语义 delta；只有 native rewrite 或显式 delegation 通过 conformance 后才落盘",
+      "residualRisk": "自然语言同义表达仍会产生边界争议",
+      "owner": "skill architecture owner"
+    },
+    {
+      "risk": "静态 findings 被误读为多宿主运行时等价证明",
+      "trigger": "报告读者把 README/reference 中的 tested 叙述当成本轮 live smoke",
+      "impact": "在未验证的宿主上承担错误部署和支持责任",
+      "mitigation": "把未运行的宿主、外部账号和写操作列入验证清单，发布时要求 evidence ID 与运行记录分开",
+      "residualRisk": "读者仍可能忽略 evidence boundary",
+      "owner": "research report owner"
+    }
+  ],
+  "graduationCriteria": [],
+  "informationGaps": {
+    "status": "no-gaps",
+    "rationale": "sealed ledger 的 unknownCriteria 为空；本报告仍把未执行的多宿主 live smoke 与外部写操作验证明确列为后续 validation work，而不是把它们改写成已验证能力。"
+  }
+}

@@ -1,0 +1,244 @@
+目标: 逐个判断 pstack-claude 58 个 skill 是否能作为 ZAgentic 的可复利、可治理能力单元吸收，并把宿主耦合与重复 owner 排除在直接 merge 之外。
+============================================================
+[architect] architect (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[arena] arena (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[automate-me] automate-me (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[babysit] babysit (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[benchmark-checklist] benchmark-checklist (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[blast-radius] blast-radius (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[bro] bro (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[correct] correct (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[create-verification-skill] create-verification-skill (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[deslop] deslop (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[figure-it-out] figure-it-out (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[fix-ci] fix-ci (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[fix-merge-conflicts] fix-merge-conflicts (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[get-pr-comments] get-pr-comments (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[how] how (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[interrogate] interrogate (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[maintain-verification-skill] maintain-verification-skill (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[make-pr-easy-to-review] make-pr-easy-to-review (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[no-comments] no-comments (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[poteto-help] poteto-help (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[poteto-mode] poteto-mode (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[principle-attack-the-premise] principle-attack-the-premise (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-boundary-discipline] principle-boundary-discipline (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-build-the-lever] principle-build-the-lever (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-encode-lessons-in-structure] principle-encode-lessons-in-structure (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-exhaust-the-design-space] principle-exhaust-the-design-space (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-experience-first] principle-experience-first (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-explain-the-number] principle-explain-the-number (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-fix-root-causes] principle-fix-root-causes (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-foundational-thinking] principle-foundational-thinking (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-guard-the-context-window] principle-guard-the-context-window (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-laziness-protocol] principle-laziness-protocol (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-make-operations-idempotent] principle-make-operations-idempotent (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-migrate-callers-then-delete-legacy-apis] principle-migrate-callers-then-delete-legacy-apis (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-minimize-reader-load] principle-minimize-reader-load (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-model-the-domain] principle-model-the-domain (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-never-block-on-the-human] principle-never-block-on-the-human (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[principle-outcome-oriented-execution] principle-outcome-oriented-execution (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-prove-it-works] principle-prove-it-works (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-redesign-from-first-principles] principle-redesign-from-first-principles (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-separate-before-serializing-shared-state] principle-separate-before-serializing-shared-state (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-sequence-verifiable-units] principle-sequence-verifiable-units (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-subtract-before-you-add] principle-subtract-before-you-add (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[principle-test-behavior-not-implementation] principle-test-behavior-not-implementation (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[principle-type-system-discipline] principle-type-system-discipline (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[recall] recall (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[reflect] reflect (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[setup-pstack] setup-pstack (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[show-me-your-work] show-me-your-work (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[swarm] swarm (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 D
+    关键覆盖 60% | 平均拟合 0.71 | E 175 | 关键缺口 True | 触碰主体能力 False
+    - 关键需求 R3 状态=unsupported -> 继续搜索(D)
+    - 关键需求 R7 状态=unknown -> 继续搜索(D)
+------------------------------------------------------------
+[tdd] tdd (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[teach] teach (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[technical-writing] technical-writing (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[thermo-nuclear-code-quality-review] thermo-nuclear-code-quality-review (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[typescript-best-practices] typescript-best-practices (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+[unslop] unslop (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[what-did-i-get-done] what-did-i-get-done (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 B1
+    关键覆盖 100% | 平均拟合 0.93 | E 30 | 关键缺口 False | 触碰主体能力 False
+    - 外部 Adapter/插件/sidecar 扩展、不维护 fork -> B1
+------------------------------------------------------------
+[why] why (3b0bc62e13f507c426997ba472e3430dd3e4ef05) -> 推荐 C
+    关键覆盖 60% | 平均拟合 0.75 | E 96 | 关键缺口 False | 触碰主体能力 False
+    - 关键需求缺口且 E=96>E_MID -> C
+------------------------------------------------------------
+决策记录已写出: skills-outputs/zj-open-source-capability-fit/pstack-claude-skill-fit/decision_record.md
