@@ -229,7 +229,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | `HD-1` | 组合器是否只能生成 Plan，不能拥有执行或长期治理 authority | ✅ 已确认（2026-10-08） |
 | `HD-2` | pstack 方法机制的迁移边界作为目标形态筛选前置约束 | ✅ 已确认（2026-10-08） |
 | `HD-3` | 保持现状、可解释组合器、薄编排层、强 router/runtime 的目标形态选择 | ✅ 已确认（2026-10-08） |
-| `HD-4` | 首个 PoC 的任务白名单、产物位置、Human 批准点与不可逆动作边界 | ⏳ 待拍板 |
+| `HD-4` | 首个 PoC 的任务白名单、产物位置、Human 批准点与不可逆动作边界 | ✅ 已确认（2026-10-08） |
 | `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ⏳ 待拍板 |
 | `HD-6` | PoC 通过/失败后的长期沉淀或删除路径 | ⏳ 待拍板 |
 
@@ -254,6 +254,16 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **确定内容：** 采用“可解释组合方案生成器 + 既有 skill/roadmap 执行”；组合器输出带理由的 Plan，使用组合器 skill 内置的版本化模板；能力缺口遵循建议或逐行 `required skill：...` 协议。
 - **暂缓内容：** 有限状态薄编排层和强 router/runtime 暂不进入默认产品路径。
 - **下一轮：** `HD-4`（首个可逆 PoC 的范围和契约）。
+
+## Human 对 `HD-4` 的拍板记录
+
+- **日期：** 2026-10-08
+- **结果：** 接受。
+- **任务白名单：** 外部仓库研究、工具组合设计。
+- **产物：** 只写入 `skills-outputs/` 下带版本的 Markdown Plan，不修改 skill 定义。
+- **Human 闸门：** Plan 生成后先由 Human 审查，批准后才进入既有执行链。
+- **副作用：** PoC 不自动执行不可逆动作。
+- **下一轮：** `HD-5`（PoC 的继续/停止阈值）。
 
 ## Human 对 Agent X 的拍板
 
@@ -281,4 +291,4 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，新增产品契约/PoC 设计页，记录 Plan/Run 输入输出、状态机、权限与回退；对“生成器不得成为第二 authority/runtime”新增 ADR，并同步 `README`/`zj-guide` 的用户入口说明。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 1 的可迁移边界是子文档 2 的候选筛选闸门；任何后续 merge wave 必须先通过方案包契约和 PoC 指标”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹；PoC 失败时删除生成器适配层并保留基线。
-- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过；`HD-1`、`HD-2`、`HD-3` 已确认，PoC 范围、阈值和退出条件仍待拍板）
+- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过；`HD-1` 至 `HD-4` 已确认，PoC 阈值和退出条件仍待拍板）
