@@ -230,7 +230,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | `HD-2` | pstack 方法机制的迁移边界作为目标形态筛选前置约束 | ✅ 已确认（2026-10-08） |
 | `HD-3` | 保持现状、可解释组合器、薄编排层、强 router/runtime 的目标形态选择 | ✅ 已确认（2026-10-08） |
 | `HD-4` | 首个 PoC 的任务白名单、产物位置、Human 批准点与不可逆动作边界 | ✅ 已确认（2026-10-08） |
-| `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ⏳ 待拍板 |
+| `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ✅ 已确认（2026-10-08） |
 | `HD-6` | PoC 通过/失败后的长期沉淀或删除路径 | ⏳ 待拍板 |
 
 > **HD-5 测量修正：** B/C/T/U 角色观点中的 30% 提速、控制组或解释率数字属于独立视角提出的候选测量，不是已确认门槛。由于人工组装基线受任务和操作者差异影响，当前整合方案将这些数字降为描述性观测，机械验收只采用 Plan 契约、场景 oracle、安全硬门槛和删除后回归。
@@ -267,6 +267,15 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **副作用：** PoC 不自动执行不可逆动作。
 - **下一轮：** `HD-5`（PoC 的继续/停止阈值）。
 
+## Human 对 `HD-5` 的拍板记录
+
+- **日期：** 2026-10-08
+- **结果：** 接受修订后的判定。
+- **撤回：** 不把人工组装提速或人工基线执行成功率作为客观硬门槛。
+- **保留：** 固定 fixture 下的时间、交互步骤、人工修改、拒绝/重试、失败恢复和 Plan 采纳情况只作为描述性观测。
+- **机械门槛：** Plan schema/provenance 完整；能力选择有理由；缺口按 `required skill：...` 输出；场景 oracle 通过；authority bypass、未声明副作用、未批准写入或外联、秘密明文泄露均为 0；删除实验层后原路径回归通过。
+- **下一轮：** `HD-6`（长期沉淀和退出路径）。
+
 ## Human 对 Agent X 的拍板
 
 | 轮次 | 视角 | 隔离方式 | Human 拍板 | 是否 conclusion | 备注 |
@@ -293,4 +302,4 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，新增产品契约/PoC 设计页，记录 Plan/Run 输入输出、状态机、权限与回退；对“生成器不得成为第二 authority/runtime”新增 ADR，并同步 `README`/`zj-guide` 的用户入口说明。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 1 的可迁移边界是子文档 2 的候选筛选闸门；任何后续 merge wave 必须先通过方案包契约和 PoC 指标”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹；PoC 失败时删除生成器适配层并保留基线。
-- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过；`HD-1` 至 `HD-4` 已确认，PoC 阈值和退出条件仍待拍板）
+- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过；`HD-1` 至 `HD-5` 已确认，仅长期沉淀和退出路径仍待拍板）
