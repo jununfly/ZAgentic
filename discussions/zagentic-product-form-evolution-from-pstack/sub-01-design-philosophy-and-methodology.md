@@ -164,9 +164,16 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 
 | 本文涉及 | 决策对象 | 当前状态 |
 | --- | --- | --- |
-| `HD-1` | 产品单元与唯一 authority：skill/workflow、证据协议、组合器、执行链的语义、状态、权限 owner | ⏳ 待拍板（当前轮次） |
+| `HD-1` | 产品单元与唯一 authority：skill/workflow、证据协议、组合器、执行链的语义、状态、权限 owner | ✅ 已确认（2026-10-08） |
 | `HD-2` | pstack 阶段化方法、验收契约、证据包、复盘与宿主 runtime 的迁移边界 | ⏳ 待拍板 |
 | `HD-6` | 比较结论进入长期设计/ADR 的沉淀与过程目录删除条件 | ⏳ 待拍板 |
+
+## Human 对 `HD-1` 的拍板记录
+
+- **日期：** 2026-10-08
+- **结果：** 接受。
+- **确定内容：** 组合器负责意图到 Plan 的方案生成、解释和缺口输出；Plan 由组合器 skill 内置版本化模板生成；执行和长期治理 authority 保持在既有体系。
+- **下一轮：** `HD-2`（pstack 机制的迁移边界）。
 
 ## Human 对 Agent X 的拍板
 
