@@ -227,6 +227,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | 本文涉及 | 决策对象 | 当前状态 |
 | --- | --- | --- |
 | `HD-1` | 组合器是否只能生成 Plan，不能拥有执行或长期治理 authority | ✅ 已确认（2026-10-08） |
+| `HD-2` | pstack 方法机制的迁移边界作为目标形态筛选前置约束 | ✅ 已确认（2026-10-08） |
 | `HD-3` | 保持现状、可解释组合器、薄编排层、强 router/runtime 的目标形态选择 | ⏳ 待拍板 |
 | `HD-4` | 首个 PoC 的任务白名单、产物位置、Human 批准点与不可逆动作边界 | ⏳ 待拍板 |
 | `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ⏳ 待拍板 |
@@ -238,6 +239,13 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **结果：** 接受。
 - **确定内容：** 组合器负责意图到 Plan 的方案生成、解释和缺口输出；Plan 由组合器 skill 内置版本化模板生成；执行和长期治理 authority 保持在既有体系。
 - **下一轮：** `HD-2`（pstack 机制的迁移边界）。
+
+## Human 对 `HD-2` 的拍板记录
+
+- **日期：** 2026-10-08
+- **结果：** 接受。
+- **对本文的约束：** 目标产品形态可以复用阶段化工作流、验收契约、证据包和复盘记录，但不得把 pstack 的全局 router、hooks、transcript/model sheet、宿主 runtime 状态或 shipping glue 带入 ZAgentic 默认路径。
+- **下一轮：** `HD-3`（目标产品形态选择）。
 
 ## Human 对 Agent X 的拍板
 
@@ -265,4 +273,4 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，新增产品契约/PoC 设计页，记录 Plan/Run 输入输出、状态机、权限与回退；对“生成器不得成为第二 authority/runtime”新增 ADR，并同步 `README`/`zj-guide` 的用户入口说明。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 1 的可迁移边界是子文档 2 的候选筛选闸门；任何后续 merge wave 必须先通过方案包契约和 PoC 指标”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹；PoC 失败时删除生成器适配层并保留基线。
-- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过，等待 Human 对候选形态和 PoC 阈值拍板）
+- **状态协议：** NEEDS_CONTEXT（六个角色已覆盖且结构闸门通过；`HD-1`、`HD-2` 已确认，候选形态和 PoC 阈值仍待拍板）

@@ -165,7 +165,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 | 本文涉及 | 决策对象 | 当前状态 |
 | --- | --- | --- |
 | `HD-1` | 产品单元与唯一 authority：skill/workflow、证据协议、组合器、执行链的语义、状态、权限 owner | ✅ 已确认（2026-10-08） |
-| `HD-2` | pstack 阶段化方法、验收契约、证据包、复盘与宿主 runtime 的迁移边界 | ⏳ 待拍板 |
+| `HD-2` | pstack 阶段化方法、验收契约、证据包、复盘与宿主 runtime 的迁移边界 | ✅ 已确认（2026-10-08） |
 | `HD-6` | 比较结论进入长期设计/ADR 的沉淀与过程目录删除条件 | ⏳ 待拍板 |
 
 ## Human 对 `HD-1` 的拍板记录
@@ -174,6 +174,13 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 - **结果：** 接受。
 - **确定内容：** 组合器负责意图到 Plan 的方案生成、解释和缺口输出；Plan 由组合器 skill 内置版本化模板生成；执行和长期治理 authority 保持在既有体系。
 - **下一轮：** `HD-2`（pstack 机制的迁移边界）。
+
+## Human 对 `HD-2` 的拍板记录
+
+- **日期：** 2026-10-08
+- **结果：** 接受。
+- **确定内容：** 吸收阶段化工作流、验收契约、证据包和复盘记录；按“直接迁移 / 薄适配验证 / 拒绝迁移”逐项落地；拒绝直接引入全局 router、hooks、transcript/model sheet、宿主 runtime 状态和 shipping glue。
+- **下一轮：** `HD-3`（ZAgentic 目标产品形态）。
 
 ## Human 对 Agent X 的拍板
 
@@ -192,4 +199,4 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，将统一比较矩阵、迁移试验卡字段和五条设计张力沉淀到 `docs/designs/` 的产品形态设计页，并在涉及 authority/runtime 的决定上新增 ADR；不把本讨论文件夹当长期 authority。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 2 只能选择不引入第二 authority/runtime 的候选；任何 pstack 机制须带迁移证据和回退路径”。
   - 待删临时脚手架：Human 确认并由 `zj-docs-ontology` 完成沉淀后，删除 `briefings/` 与本讨论过程文件夹。
-- **状态协议：** NEEDS_CONTEXT（角色覆盖与证据闸门已完成，等待 Human 对四个视角逐轮拍板）
+- **状态协议：** NEEDS_CONTEXT（`HD-1`、`HD-2` 已确认；目标产品形态与最终沉淀仍待拍板）
