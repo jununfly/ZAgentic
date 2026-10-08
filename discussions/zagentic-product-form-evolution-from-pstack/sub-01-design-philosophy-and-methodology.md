@@ -159,6 +159,15 @@
 python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussions/zagentic-product-form-evolution-from-pstack/sub-01-design-philosophy-and-methodology.md --out discussions/zagentic-product-form-evolution-from-pstack/briefings
 ```
 
+
+### 跨文档 Human 拍板议题映射
+
+| 本文涉及 | 决策对象 | 当前状态 |
+| --- | --- | --- |
+| `HD-1` | 产品单元与唯一 authority：skill/workflow、证据协议、组合器、执行链的语义、状态、权限 owner | ⏳ 待拍板（当前轮次） |
+| `HD-2` | pstack 阶段化方法、验收契约、证据包、复盘与宿主 runtime 的迁移边界 | ⏳ 待拍板 |
+| `HD-6` | 比较结论进入长期设计/ADR 的沉淀与过程目录删除条件 | ⏳ 待拍板 |
+
 ## Human 对 Agent X 的拍板
 
 | 轮次 | 视角 | 隔离方式 | Human 拍板 | 是否 conclusion | 备注 |
@@ -170,7 +179,7 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 
 ## conclusion（含沉淀指令）
 
-- **子问题结论：** 两项目都把“阶段化任务推进 + 可验证产出”作为复利来源，但产品单元和 authority 不同：pstack 以 suite/router 驱动连续执行，ZAgentic 以可拆卸 skill、证据协议和 Human 治理维持长期可组合性。pstack 的阶段化方法、验收契约、证据包和复盘记录可作为薄层原则；其全局 router、宿主运行时、hooks、模型/转录状态和 shipping glue 不应直接成为 ZAgentic 的第二 authority/runtime。
+- **子问题结论：** 两项目都把“阶段化任务推进 + 可验证产出”作为复利来源，但产品单元和 authority 不同：pstack 以 suite/router 驱动连续执行，ZAgentic 以可拆卸 skill、证据协议和 Human 治理维持长期可组合性。pstack 的阶段化方法、验收契约、证据包和复盘记录可作为薄层原则；其全局 router、宿主运行时、hooks、模型/转录状态和 shipping glue 不应直接成为 ZAgentic 的第二 authority/runtime。本文采用的产品单元边界是：组合器负责从能力目录生成建议和 Plan，能力缺口无可靠建议时逐行输出 `required skill：<缺失 skill 形状>`；Plan 的模板由组合器 skill 内置并版本化。
 - **解法：** 采用统一比较矩阵与迁移试验卡：每项机制记录输入/输出、状态、权限、语义 owner、宿主依赖、证据、删除与回退；只允许“可直接迁移 / 薄适配验证 / 拒绝迁移”三类结果。把下列设计张力交给子文档 2 的产品形态决策：强路由与单一 authority、自动化速度与可审计退出、suite 一致性与 skill 可移除性、运行时便利与宿主可移植性、经验复用与治理唯一性。
 - **沉淀指令：**
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，将统一比较矩阵、迁移试验卡字段和五条设计张力沉淀到 `docs/designs/` 的产品形态设计页，并在涉及 authority/runtime 的决定上新增 ADR；不把本讨论文件夹当长期 authority。

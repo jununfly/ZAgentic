@@ -5,7 +5,7 @@
 ## 上下文
 
 - **所属主文档：** [../MASTER.md](./MASTER.md)
-- **本子问题独立性：** 本文从 ZAgentic 当前用户任务、入口和治理边界出发，选择目标产品形态并定义最小可逆验证；它可独立评估，不以子文档 1 先给出最终结论为前提。
+- **本子问题独立性：** 本文从 ZAgentic 当前用户任务、入口和治理边界出发，选择目标产品形态并定义最小可逆验证；它可独立评估，不以子文档 1 先给出最终结论为前提。本文将“组合器”定义为意图到 Plan 的方案生成能力，将“Plan”定义为组合器 skill 内置模板生成的可审查方案契约。
 - **成功判据：** 至少比较保持现状、可解释组合器/方案生成器、有限状态薄编排层和强 router/runtime；明确一个推荐形态或暂不演进的理由；写出输入、输出、状态、失败出口、Human 决策点、owner 边界；给出可逆 PoC、测量方法、成功阈值、停止条件和回退路径。
 - **声明必需角色集：** B,C,A,U,T,S
 
@@ -221,6 +221,17 @@
 python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussions/zagentic-product-form-evolution-from-pstack/sub-02-target-product-form-and-evolution.md --out discussions/zagentic-product-form-evolution-from-pstack/briefings
 ```
 
+
+### 跨文档 Human 拍板议题映射
+
+| 本文涉及 | 决策对象 | 当前状态 |
+| --- | --- | --- |
+| `HD-1` | 组合器是否只能生成 Plan，不能拥有执行或长期治理 authority | ⏳ 待拍板（前置约束） |
+| `HD-3` | 保持现状、可解释组合器、薄编排层、强 router/runtime 的目标形态选择 | ⏳ 待拍板 |
+| `HD-4` | 首个 PoC 的任务白名单、产物位置、Human 批准点与不可逆动作边界 | ⏳ 待拍板 |
+| `HD-5` | 价值指标、安全硬门槛、回归与停止/删除条件 | ⏳ 待拍板 |
+| `HD-6` | PoC 通过/失败后的长期沉淀或删除路径 | ⏳ 待拍板 |
+
 ## Human 对 Agent X 的拍板
 
 | 轮次 | 视角 | 隔离方式 | Human 拍板 | 是否 conclusion | 备注 |
@@ -234,14 +245,15 @@ python3 /Users/bilibili/.codex/skills/zj-discuss/scripts/launch_pack.py discussi
 
 ## conclusion（含沉淀指令）
 
-- **子问题结论：** 推荐 ZAgentic 先演进为“可解释组合方案生成器 + 既有 skill/roadmap 执行”的薄产品形态，而不是直接引入强 router/suite runtime。生成器接收用户目标、约束、权限与证据要求，输出版本化 Markdown 方案包；Human 审查后才进入既有执行链，结果回填证据、验证和可复用记录。
+- **子问题结论：** 推荐 ZAgentic 先演进为“可解释组合方案生成器 + 既有 skill/roadmap 执行”的薄产品形态，而不是直接引入强 router/suite runtime。组合器接收用户目标、约束、权限与证据要求，输出符合其内置版本化模板的 Plan；Human 审查后才进入既有执行链，结果回填证据、验证和可复用记录。若已有 skill 无法覆盖需求但存在可信候选，组合器给出建议；若没有可信建议，必须逐行输出 `required skill：简短地描述缺失skill的形状`，让缺口成为后续 skill 设计或研究输入。
 - **解法：**
   1. **输入：** 任务目标、范围/预算/时间约束、可用 skill 偏好、权限边界、验收标准与证据要求。
-  2. **输出：** 候选 skill/workflow、选择理由、执行顺序、输入输出契约、Human 检查点、权限/副作用说明、验证命令、失败出口、回退步骤和 provenance。
-  3. **状态：** `planned → approved → running → blocked/failed → verified → recorded`，另有 `cancelled` 与 `rolled_back`；生成器只拥有 `planned` 方案和解释，不拥有执行权限或长期治理 authority。
-  4. **Human 决策点：** 批准方案、批准高风险能力、处理冲突/过期依赖、接受验证结果、决定是否固化经验。
-  5. **最小纵切 PoC：** 选择“外部仓库研究”和“一套工具组合设计”两个真实任务，与当前人工组装基线对照；只写入 `skills-outputs/` 下版本化方案包，不改 skill 定义、不自动执行不可逆动作。
-  6. **继续阈值：** 首次生成有效方案时间相对基线下降 ≥30%；独立用户能解释选择理由的比例 ≥80%；执行成功率不低于基线；零 authority bypass、零未声明副作用；删除生成器后原有路径可复现。任一高风险副作用、权限绕过、持续性 runtime 依赖或基线回归超过 20% 即停止并删除适配层。
+  2. **输出：** 候选 skill/workflow、选择理由、执行顺序、输入输出契约、Human 检查点、权限/副作用说明、验证命令、失败出口、回退步骤和 provenance；若覆盖不足，附“建议”或逐行 `required skill：<缺失 skill 形状>` 缺口清单。
+  3. **模板：** Plan 模板作为组合器 skill 的内置版本化资源，Plan 携带模板版本和来源；模板升级必须显式变更版本，不能静默改变旧 Plan 的含义。
+  4. **状态：** `planned → approved → running → blocked/failed → verified → recorded`，另有 `cancelled` 与 `rolled_back`；生成器只拥有 `planned` 方案和解释，不拥有执行权限或长期治理 authority。
+  5. **Human 决策点：** 批准方案、批准高风险能力、处理冲突/过期依赖、接受验证结果、决定是否固化经验。
+  6. **最小纵切 PoC：** 选择“外部仓库研究”和“一套工具组合设计”两个真实任务，与当前人工组装基线对照；只写入 `skills-outputs/` 下版本化方案包，不改 skill 定义、不自动执行不可逆动作。
+  7. **继续阈值：** 首次生成有效方案时间相对基线下降 ≥30%；独立用户能解释选择理由的比例 ≥80%；执行成功率不低于基线；零 authority bypass、零未声明副作用；删除生成器后原有路径可复现。任一高风险副作用、权限绕过、持续性 runtime 依赖或基线回归超过 20% 即停止并删除适配层。
 - **沉淀指令：**
   - 改哪些 PRD / ADR / 文档：若 Human 拍板通过，新增产品契约/PoC 设计页，记录 Plan/Run 输入输出、状态机、权限与回退；对“生成器不得成为第二 authority/runtime”新增 ADR，并同步 `README`/`zj-guide` 的用户入口说明。
   - 跨子文档约束登记：回填 `MASTER.md`，登记“子文档 1 的可迁移边界是子文档 2 的候选筛选闸门；任何后续 merge wave 必须先通过方案包契约和 PoC 指标”。
