@@ -10,9 +10,7 @@
       ],
       "handoff_eligible": false,
       "handoff_reasons": [
-        "status_not_approved",
-        "human_review_not_approved",
-        "plan_acceptance_not_passed"
+        "no_matching_capability"
       ],
       "id": "no-match",
       "passed": true,
@@ -72,12 +70,13 @@
     },
     "rejected_plans_preserved_and_not_handoffable": true,
     "removal_regression": {
+      "catalog_restored": true,
       "experimental_layer_removed": true,
       "experimental_layer_was_discoverable": true,
       "historical_artifact_preserved": true,
       "original_capability_path_preserved": true,
-      "original_output_digest_after": "b0d7c47d2612ef9b97b0b1c010c58fe2f37c5b7cba34cabf88aee8da69c26eae",
-      "original_output_digest_before": "b0d7c47d2612ef9b97b0b1c010c58fe2f37c5b7cba34cabf88aee8da69c26eae",
+      "original_output_digest_after": "e11d52ea268c59e45c18acba6bd4855e5cf0ac232361e99eaa95a7453acbff1f",
+      "original_output_digest_before": "e11d52ea268c59e45c18acba6bd4855e5cf0ac232361e99eaa95a7453acbff1f",
       "original_output_equal": true,
       "original_path_executed_after_removal": true,
       "original_path_executed_before_removal": true,
@@ -469,13 +468,13 @@
     "credential_reads": 0,
     "declared": {
       "regression_result": 1,
-      "temporary_fixture_copies": 66
+      "temporary_fixture_copies": 68
     },
     "git_publications": 0,
     "irreversible_actions": 0,
     "network_calls": 0,
     "safe": true,
-    "unapproved_side_effects": 5
+    "unapproved_side_effects": 0
   },
   "valid": true
 }
