@@ -26,6 +26,7 @@ connection, Git publication, and irreversible deletion. Every attempt must be
 blocked and counted while actual effects remain zero. It also checks recursive
 catalog metadata and snapshot digests, no-match stopping, stale-source review,
 template-version pinning, and removal. The removal regression runs the original
-catalog path before and after deleting the isolated Composer layer, compares the
-outputs byte-for-byte by digest, and verifies that historical artifacts remain.
+fixture capability entrypoint before and after deleting the isolated Composer
+layer, compares its outputs by digest, verifies the original catalog view is
+restored, and verifies that historical artifacts remain.
 The real repository is read-only except for the allowlisted regression result.

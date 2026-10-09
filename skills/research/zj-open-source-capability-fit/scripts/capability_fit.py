@@ -228,12 +228,13 @@ def run_gates(data: dict, cid: str) -> list[GateResult]:
 
     # G6 适配模式枚举：缺省 mode 仍表示待细分的通用 B；显式值必须属于契约。
     mode = adaptation.get("mode")
+    mode_ok = mode in (None, "") or (isinstance(mode, str) and mode in VALID_B_MODE)
     gates.append(GateResult(
         "G6-adaptation-mode",
-        ok=mode in (None, "") or mode in VALID_B_MODE,
+        ok=mode_ok,
         message=(
             "OK"
-            if mode in (None, "") or mode in VALID_B_MODE
+            if mode_ok
             else f"非法 adaptation.mode={mode!r}; 允许值: {sorted(VALID_B_MODE)}"
         ),
     ))

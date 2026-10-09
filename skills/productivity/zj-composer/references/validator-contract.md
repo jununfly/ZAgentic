@@ -26,7 +26,8 @@ identifier comes from the Plan's `skill_index_snapshot` field.
 - the referenced snapshot exists, its content digest matches its manifest, and
   selected skill source files match the pinned SHA-256 entries;
 - selected, excluded, suggested, and gap-related capabilities use class-scoped
-  `capability -> source` mappings in `source_references`;
+  `capability -> source` mappings in `source_references`; mapping subjects are
+  compared as complete tokens, never as substrings;
 - gap lines use the exact Unicode form `required skill：...`;
 - unresolved prerequisites, contradictory step dependencies, authority bypass,
   undeclared or unapproved side effects, and secret-shaped values are rejected;
@@ -39,6 +40,9 @@ handoff. An approved Human may preserve an explicit
 keeps a `provenance_stale_reviewed` warning and allows eligibility only when
 status, Human review, and Plan acceptance are all approved/passed. A rejected
 Plan must preserve a concrete `because`/`reason` in `rejection_path`.
+A valid Plan containing only `required skill：...` gaps and no capability step
+remains preserved for review but is ineligible for handoff with
+`no_matching_capability`.
 
 Diagnostics use stable categories such as `missing_section`,
 `missing_capability_field`, `provenance_stale`, `template_version_mismatch`,

@@ -442,39 +442,67 @@ def provenance_segments(value: Optional[str]) -> dict[str, str]:
     }
 
 
-def mapped_reference(segment: Optional[str], needle: Optional[str] = None) -> bool:
+def reference_mappings(segment: Optional[str]) -> list[tuple[str, str]]:
+    """Parse one class-scoped ``subject -> source`` mapping list.
+
+    Subjects are kept as complete tokens.  Substring checks are unsafe here:
+    ``zj-discuss-view`` must never satisfy a required mapping for
+    ``zj-discuss``, and ``Step 10`` must not satisfy ``Step 1``.
+    """
+
     if not isinstance(segment, str) or not meaningful(segment) or is_explicit_none(segment):
-        return False
-    if "->" not in segment:
-        return False
+        return []
+    mappings: list[tuple[str, str]] = []
+    for entry in segment.split("|"):
+        subject, separator, source = entry.partition("->")
+        if not separator:
+            continue
+        subject = clean_value(subject)
+        source = clean_value(source)
+        if meaningful(subject) and meaningful(source):
+            mappings.append((subject.casefold(), source))
+    return mappings
+
+
+def mapped_reference(segment: Optional[str], needle: Optional[str] = None) -> bool:
+    mappings = reference_mappings(segment)
     if needle is None:
-        return True
-    return needle.casefold() in segment.casefold()
+        return bool(mappings)
+    expected = clean_value(needle).casefold()
+    return any(subject == expected for subject, _source in mappings)
+
+
+def gap_protocol_lines(
+    lines: list[str], sections: dict[str, dict[str, Any]]
+) -> tuple[list[str], list[str]]:
+    """Return exact unresolved-gap and bounded-suggestion protocol lines."""
+
+    gaps_section = sections.get("Gaps and suggestions")
+    gap_lines: list[str] = []
+    suggestion_lines: list[str] = []
+    if gaps_section:
+        for _, value in section_body_lines(lines, gaps_section):
+            if GAP_RE.fullmatch(value):
+                gap_lines.append(value)
+            elif SUGGESTION_RE.fullmatch(value):
+                suggestion_lines.append(value)
+    return gap_lines, suggestion_lines
 
 
 def validate_provenance_classes(
-    root: Path,
     lines: list[str],
     sections: dict[str, dict[str, Any]],
     selected: list[tuple[str, int]],
     references: Optional[str],
     references_line: Optional[int],
-    snapshot: Optional[dict[str, Any]],
     diagnostics: list[Diagnostic],
 ) -> None:
     """Require class-scoped source mappings for every represented capability kind."""
 
     segments = provenance_segments(references)
     selected_segment = segments.get("selected")
-    catalog_entries = snapshot.get("catalog", {}).get("skills", []) if snapshot else []
     for skill, line in selected:
-        item = next((entry for entry in catalog_entries if entry.get("name") == skill), None)
-        path_ref = item.get("path") if isinstance(item, dict) else None
-        cited = isinstance(selected_segment, str) and (
-            skill.casefold() in selected_segment.casefold()
-            or (isinstance(path_ref, str) and path_ref.casefold() in selected_segment.casefold())
-        )
-        if not cited or not mapped_reference(selected_segment):
+        if not mapped_reference(selected_segment, skill):
             diagnostics.append(
                 Diagnostic(
                     "provenance_incomplete_selected",
@@ -500,15 +528,7 @@ def validate_provenance_classes(
                 )
             )
 
-    gaps_section = sections.get("Gaps and suggestions")
-    gap_lines: list[str] = []
-    suggestion_lines: list[str] = []
-    if gaps_section:
-        for _, value in section_body_lines(lines, gaps_section):
-            if GAP_RE.fullmatch(value):
-                gap_lines.append(value)
-            elif SUGGESTION_RE.fullmatch(value):
-                suggestion_lines.append(value)
+    gap_lines, suggestion_lines = gap_protocol_lines(lines, sections)
     for value in suggestion_lines:
         if not mapped_reference(segments.get("suggested"), value):
             diagnostics.append(
@@ -741,13 +761,11 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
             validate_snapshot_files(root, snapshot, selected, stale_review_text, diagnostics)
 
     validate_provenance_classes(
-        root,
         lines,
         sections,
         selected,
         references,
         references_line,
-        snapshot,
         diagnostics,
     )
 
@@ -778,6 +796,11 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
         handoff_reasons.append("human_review_not_approved")
     if acceptance != "passed":
         handoff_reasons.append("plan_acceptance_not_passed")
+    gap_lines, suggestion_lines = gap_protocol_lines(lines, sections)
+    if not steps and gap_lines and not suggestion_lines:
+        # A required-skill-only Plan is a useful, valid planning artifact, but
+        # there is no executable capability to hand off.
+        handoff_reasons.append("no_matching_capability")
     return {
         "schema": PLAN_SCHEMA,
         "valid": not errors,

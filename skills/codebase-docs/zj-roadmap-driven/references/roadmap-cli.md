@@ -168,11 +168,15 @@ set. A lease claims work; it does not hide it.
 Edges are a layer orthogonal to the tree: `blocks` (hard dependency), `informs`
 (context only), `supersedes` (replaces another node), `derives-from` (provenance).
 
-Only `blocks` may not form a cycle — a `blocks` edge that would close one is
-refused with `E_CYCLE` (exit 1) and nothing is written. `informs` and
-`derives-from` cycles are allowed: they carry context, not scheduling. A node
-may not `blocks` itself. Pointing an edge at a node that does not exist fails
-with `E_NODE_NOT_FOUND` (exit 1) — dangling edges are never created silently.
+`blocks` and `supersedes` may not form cycles. Plan-to-plan `derives-from` and
+`informs` retain their non-scheduling cycle behavior. Trace causal edges have
+stricter contracts: `mainline` and `reference` are trace→trace,
+`prompted-by` is plan→trace, and cross-layer `derives-from` is trace→plan;
+`mainline`, `prompted-by`, and cross-layer `derives-from` share one acyclic
+causal graph. Violations return `E_LAYER_VIOLATION` or `E_CYCLE` before anything
+is written. A node may not `blocks` itself. Pointing an edge at a node that does
+not exist fails with `E_NODE_NOT_FOUND` (exit 1) — dangling edges are never
+created silently.
 
 Edge ids are assigned from a monotonic counter (`e1`, `e2`, ...) and are never
 reused after removal, so downstream output can cite them as stable references.
@@ -216,6 +220,10 @@ edge was removed the extra line is not printed, so `delete` stays
 byte-identical to its pre-edge output. A dangling edge that does appear
 (hand-edited file, or an interrupted write) is reported by `validate`, not
 silently scheduled around.
+
+`compressed_from` is a UID reference outside the edge table. Deleting a node or
+subtree still cited by a surviving trace is refused with `E_REFERENCED`; the
+edge cascade never leaves that provenance dangling.
 
 ## Exit codes
 

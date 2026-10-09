@@ -124,6 +124,7 @@ from roadmap import (
     LeaseHeld,
     ConflictError,
     ScopeError,
+    InvalidLayer,
     exit_code_for,
     is_within_scope,
     write_requires_lease,
@@ -475,7 +476,10 @@ def cmd_trace(args: dict):
             _print_json(rows)
         return
     if action == "get":
-        node = r.get_node(args["positional"][2])
+        trace_id = r.resolve_node(args["positional"][2])
+        node = r.get_node(trace_id)
+        if node.get("layer") != LAYER_TRACE:
+            raise InvalidLayer(f"trace get 只作用于 trace 节点，{trace_id} 是 plan 节点")
         _print_json(node)
         return
     if action == "prune":

@@ -173,6 +173,9 @@ EDGE_TYPES = (
     EDGE_REFERENCE,
     EDGE_PROMPTED_BY,
 )
+TRACE_CAUSAL_ACYCLIC_TYPES = frozenset(
+    {EDGE_MAINLINE, EDGE_DERIVES_FROM, EDGE_PROMPTED_BY}
+)
 
 MODE_EXPLORE = "explore"
 
@@ -1948,6 +1951,27 @@ class Roadmap:
 
         _collect(node_id)
 
+        # compressed_from is a UID reference outside the edge table, so the
+        # normal edge cascade cannot preserve it for us.  Refuse deletion when
+        # any surviving trace still cites a node in the subtree.  Display ids
+        # are included for compatibility with provenance written before the
+        # UID-only contract was enforced.
+        deleted_refs = set(deleted)
+        deleted_refs.update(
+            self.data["nodes"][nid].get("uid")
+            for nid in deleted
+            if self.data["nodes"][nid].get("uid")
+        )
+        for trace in self.iter_nodes(layer=LAYER_TRACE):
+            if trace["id"] in deleted:
+                continue
+            cited = deleted_refs.intersection(trace.get("compressed_from") or [])
+            if cited:
+                raise ReferencedError(
+                    f"node {node_id} 被 trace {trace['id']} 的 compressed_from 引用: "
+                    f"{sorted(cited)}"
+                )
+
         # 先删边、后删节点。中断后的半态因此是"边没了、
         # 节点还在"——命令重跑一次即可——而不是悬空边那种要人工修的状态。
         self.last_edge_cascade = self.remove_edges_touching(set(deleted))
@@ -1986,6 +2010,30 @@ class Roadmap:
             raise NodeNotFound(f"节点不存在: {to_id}")
         if edge_type not in EDGE_TYPES:
             raise ValueError(f"无效的边类型: {edge_type}")
+        from_node = self.data["nodes"][from_display]
+        to_node = self.data["nodes"][to_display]
+        from_layer = from_node.get("layer", LAYER_PLAN)
+        to_layer = to_node.get("layer", LAYER_PLAN)
+        if edge_type in (EDGE_MAINLINE, EDGE_REFERENCE):
+            if (from_layer, to_layer) != (LAYER_TRACE, LAYER_TRACE):
+                raise LayerViolation(
+                    f"{edge_type} 只允许 trace → trace，收到 "
+                    f"{from_display}({from_layer}) → {to_display}({to_layer})"
+                )
+        elif edge_type == EDGE_PROMPTED_BY:
+            if (from_layer, to_layer) != (LAYER_PLAN, LAYER_TRACE):
+                raise LayerViolation(
+                    f"prompted-by 只允许 plan → trace，收到 "
+                    f"{from_display}({from_layer}) → {to_display}({to_layer})"
+                )
+        elif edge_type == EDGE_DERIVES_FROM and LAYER_TRACE in (from_layer, to_layer):
+            # Preserve the older plan→plan provenance edge, but the execution
+            # graph's cross-layer form has one canonical direction.
+            if (from_layer, to_layer) != (LAYER_TRACE, LAYER_PLAN):
+                raise LayerViolation(
+                    f"跨层 derives-from 只允许 trace → plan，收到 "
+                    f"{from_display}({from_layer}) → {to_display}({to_layer})"
+                )
         from_uid = self.data["nodes"][from_display]["uid"]
         to_uid = self.data["nodes"][to_display]["uid"]
         if edge_type == EDGE_BLOCKS and self._blocks_reachable(to_uid, from_uid):
@@ -1993,6 +2041,17 @@ class Roadmap:
                 f"{from_id} -blocks-> {to_id} 会让依赖图成环"
                 f"（{to_id} 已经直接或间接阻塞 {from_id}）"
             )
+        trace_causal = edge_type in TRACE_CAUSAL_ACYCLIC_TYPES and (
+            edge_type != EDGE_DERIVES_FROM or LAYER_TRACE in (from_layer, to_layer)
+        )
+        if trace_causal and self._edge_reachable(
+            to_uid, from_uid, TRACE_CAUSAL_ACYCLIC_TYPES
+        ):
+            raise CycleError(f"{from_id} -{edge_type}-> {to_id} 会让 trace 因果图成环")
+        if edge_type == EDGE_SUPERSEDES and self._edge_reachable(
+            to_uid, from_uid, frozenset({EDGE_SUPERSEDES})
+        ):
+            raise CycleError(f"{from_id} -supersedes-> {to_id} 会让取代关系成环")
         edges = self._edge_list()
         seq = int(self.data.get("edge_seq", 0)) + 1
         self.data["edge_seq"] = seq
@@ -2036,10 +2095,15 @@ class Roadmap:
         边端点统一翻成 uid 再建邻接表：存量显示 id 边（迁移前）与 uid 边（迁移后 /
         新加）在 uid 空间里一致，环检测才与存储形状无关、始终正确（验收 #4）。
         """
+        return self._edge_reachable(start, target, frozenset({EDGE_BLOCKS}))
+
+    def _edge_reachable(self, start: str, target: str, edge_types: frozenset) -> bool:
+        """沿指定边类型从 UID ``start`` 能否到达 UID ``target``。"""
+
         adjacency: dict = {}
         nodes = self.data["nodes"]
         for edge in self._edge_list():
-            if edge["type"] == EDGE_BLOCKS:
+            if edge["type"] in edge_types:
                 try:
                     f = endpoint_to_uid(edge["from"], nodes)
                     t = endpoint_to_uid(edge["to"], nodes)

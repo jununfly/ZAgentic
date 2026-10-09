@@ -16,6 +16,7 @@ import io
 import json
 import os
 import re
+import runpy
 import shutil
 import socket
 import subprocess
@@ -74,8 +75,10 @@ class EffectLedger:
         self.temporary_writes += 1
 
     def block(self, category: str, message: str) -> None:
+        # A rejected probe is evidence that the guard worked, not an escaped
+        # side effect.  Keep attempts separate from effects so the final safety
+        # verdict cannot report both ``safe`` and a non-zero effect count.
         self.blocked_attempts[category] += 1
-        self.unapproved_side_effects += 1
         raise RegressionError(message)
 
     def as_dict(self) -> dict[str, Any]:
@@ -97,6 +100,7 @@ class EffectLedger:
                     self.git_publications,
                     self.credential_reads,
                     self.irreversible_actions,
+                    self.unapproved_side_effects,
                 )
             ),
         }
@@ -734,6 +738,11 @@ def run_no_match_case(plan_text: str, temp_root: Path, ledger: EffectLedger) -> 
     plan = replace_provenance_segment(plan, "selected", "none declared")
     plan = replace_provenance_segment(plan, "excluded", "none declared")
     plan = replace_provenance_segment(plan, "suggested", "none declared")
+    # Exercise the real boundary: even an explicitly approved/passed artifact
+    # cannot hand off when it contains only an unresolved required-skill gap.
+    plan = replace_field(plan, "Identity", "status", "`approved`")
+    plan = replace_field(plan, "Identity", "human_review", "`approved`")
+    plan = replace_field(plan, "Verification", "plan_acceptance", "`passed`")
     path = temp_root / "no-match" / "plan.md"
     ledger.write_temporary(path, plan)
     validation = validate_plan(path, ROOT, None)
@@ -796,6 +805,13 @@ def write_catalog_fixture(fixture_root: Path, ledger: EffectLedger) -> dict[Path
             "---\n"
             "# Nested skill\n"
         ),
+        fixture_root / "skills/productivity/group/zj-nested-skill/scripts/original_path.py": (
+            "def run():\n"
+            "    return {\n"
+            "        'capability': 'zj-nested-skill',\n"
+            "        'output': 'original-path-ok',\n"
+            "    }\n"
+        ),
     }
     for path, content in files.items():
         ledger.write_temporary(path, content)
@@ -806,6 +822,23 @@ def canonical_json_digest(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+
+
+def execute_original_fixture_path(fixture_root: Path) -> dict[str, Any]:
+    """Execute the synthetic pre-Composer capability through its real entrypoint."""
+
+    entrypoint = (
+        fixture_root
+        / "skills/productivity/group/zj-nested-skill/scripts/original_path.py"
+    )
+    namespace = runpy.run_path(str(entrypoint))
+    runner = namespace.get("run")
+    if not callable(runner):
+        raise RegressionError(f"original fixture entrypoint has no run(): {entrypoint}")
+    output = runner()
+    if not isinstance(output, dict):
+        raise RegressionError("original fixture entrypoint must return a JSON object")
+    return output
 
 
 def run_recursive_catalog_regression(temp_root: Path, ledger: EffectLedger) -> dict[str, Any]:
@@ -949,7 +982,8 @@ def run_removal_regression(
 ) -> dict[str, Any]:
     simulation = temp_root / "removal-regression"
     baseline_files = write_catalog_fixture(simulation, ledger)
-    original_before = discover_catalog(simulation)
+    catalog_before = discover_catalog(simulation)
+    original_before = execute_original_fixture_path(simulation)
     original_digest_before = canonical_json_digest(original_before)
     historical = simulation / "historical-artifacts" / "composer-v0-plan.md"
     ledger.write_temporary(historical, plan_text)
@@ -981,24 +1015,28 @@ def run_removal_regression(
     shutil.rmtree(experimental)
     for path in index_paths:
         ledger.write_temporary(path, baseline_files[path])
-    original_after = discover_catalog(simulation)
+    catalog_after = discover_catalog(simulation)
+    original_after = execute_original_fixture_path(simulation)
     original_digest_after = canonical_json_digest(original_after)
     historical_preserved = historical.is_file() and sha256(historical) == historical_digest
     original_path = simulation / "skills/productivity/group/zj-nested-skill/SKILL.md"
     output_equal = original_before == original_after and original_digest_before == original_digest_after
+    catalog_restored = catalog_before == catalog_after
     passed = bool(
         experimental_visible
         and not experimental.exists()
         and historical_preserved
         and original_path.is_file()
         and output_equal
+        and catalog_restored
     )
     return {
-        "original_path_executed_before_removal": True,
-        "original_path_executed_after_removal": True,
+        "original_path_executed_before_removal": isinstance(original_before, dict),
+        "original_path_executed_after_removal": isinstance(original_after, dict),
         "original_output_digest_before": original_digest_before,
         "original_output_digest_after": original_digest_after,
         "original_output_equal": output_equal,
+        "catalog_restored": catalog_restored,
         "experimental_layer_was_discoverable": experimental_visible,
         "experimental_layer_removed": not experimental.exists(),
         "historical_artifact_preserved": historical_preserved,
