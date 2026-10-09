@@ -33,8 +33,11 @@ approve or execute work, own skill semantics, or create a second runtime.
    their snapshots under `skills-outputs/zj-composer/`.
 6. Validate an external Plan at the output seam with
    `python skills/productivity/zj-composer/scripts/validate_plan.py PLAN.md`.
-   See [the validator contract](references/validator-contract.md). A rejected
-   Plan stays preserved with its reason; only
+   For a frozen fixture, compose that check with
+   `python skills/productivity/zj-composer/scripts/evaluate_fixture.py FIXTURE_DIR`
+   to produce the scenario oracle result. See
+   [the validator contract](references/validator-contract.md). A rejected Plan
+   stays preserved with its reason; only
    an approved Plan may hand off to the consuming execution chain.
 
 ## Output boundary

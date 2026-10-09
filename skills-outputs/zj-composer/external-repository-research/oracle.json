@@ -1,0 +1,60 @@
+{
+  "schema": "zj-composer/fixture-oracle/v1",
+  "fixture_id": "external-repository-research-v1",
+  "plan_filename": "plan.md",
+  "expected_status": "planned",
+  "expected_steps": [
+    {
+      "number": 1,
+      "skill_or_workflow": "zj-code-research",
+      "reason_keywords": ["capability", "pinned", "repository"],
+      "required_output_keywords": ["repository map", "architecture study"]
+    },
+    {
+      "number": 2,
+      "skill_or_workflow": "zj-research",
+      "reason_keywords": ["primary", "evidence", "source"],
+      "required_output_keywords": ["sealed", "findings"]
+    },
+    {
+      "number": 3,
+      "skill_or_workflow": "zj-open-source-capability-fit",
+      "reason_keywords": ["fit", "composable", "ownership"],
+      "required_output_keywords": ["matrix", "decision"]
+    },
+    {
+      "number": 4,
+      "skill_or_workflow": "zj-tech-research-report",
+      "reason_keywords": ["synthesis", "recommendation", "evidence"],
+      "required_output_keywords": ["report", "recommendation"]
+    }
+  ],
+  "required_intent_keywords": [
+    "https://github.com/michael-denyer/pstack-claude",
+    "3b0bc62e13f507c426997ba472e3430dd3e4ef05",
+    "capability surfaces",
+    "adapter",
+    "ownership"
+  ],
+  "required_provenance_references": [
+    "skills/research/zj-code-research/SKILL.md",
+    "skills/research/zj-research/SKILL.md",
+    "skills/research/zj-open-source-capability-fit/SKILL.md",
+    "skills/research/zj-tech-research-report/SKILL.md",
+    "https://github.com/michael-denyer/pstack-claude/commit/3b0bc62e13f507c426997ba472e3430dd3e4ef05"
+  ],
+  "required_permission_keywords": [
+    "no repository writes",
+    "Git publication",
+    "credentials",
+    "irreversible"
+  ],
+  "forbidden_capability_terms": [
+    "global router",
+    "second runtime",
+    "automatic execution",
+    "credential use",
+    "Git publication"
+  ],
+  "required_dependency_rule": "Each step after the first names the immediately preceding step as a dependency."
+}

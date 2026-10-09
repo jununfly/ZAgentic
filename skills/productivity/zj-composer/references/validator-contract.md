@@ -37,3 +37,11 @@ Diagnostics use stable categories such as `missing_section`,
 `dependency_contradiction`, `authority_bypass`, `unapproved_side_effect`, and
 `secret-shaped-output`. Errors produce exit code 1; a valid Plan produces exit
 code 0. Warnings remain visible in JSON and do not silently disappear.
+
+## Fixture oracle
+
+`evaluate_fixture.py FIXTURE_DIR` composes the validator with a checked-in
+`input.json` and `oracle.json`. The result records the fixture id, Plan id,
+template version, pinned source revision, validator output, and scenario-oracle
+diagnostics. A fixture passes only when both the generic validator and the
+scenario oracle pass; the evaluator never makes a live repository request.

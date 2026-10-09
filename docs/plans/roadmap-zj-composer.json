@@ -178,16 +178,23 @@
       "id": "1-5",
       "uid": "01a11ea37583-1485198775",
       "label": "Build external repository research fixture",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
         "1-5-1",
         "1-5-2"
       ],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "外部仓库研究 fixture 的固定输入和 capability 链如何选择？",
+          "answer": "冻结 repository=https://github.com/michael-denyer/pstack-claude、revision=3b0bc62e13f507c426997ba472e3430dd3e4ef05；研究问题覆盖 capability surface、可组合边界与 ownership/security/lifecycle caveats；Plan capability 顺序固定为 zj-code-research → zj-research → zj-open-source-capability-fit → zj-tech-research-report。",
+          "note": "使用已有 commit-pinned sealed ledger 作为本地证据背景，不在 fixture 验收中访问网络；输出只生成研究 Plan、validator diagnostics 与 oracle result，不执行外部仓库写入或发布。"
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-6": {
       "id": "1-6",
@@ -486,7 +493,7 @@
       "id": "1-5-1",
       "uid": "01a11ea423c8-01e933dee0",
       "label": "Freeze external-repository-research fixture inputs and oracle",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-5",
       "children": [],
@@ -495,6 +502,16 @@
           "q": "研究 fixture 的 oracle 检查什么？",
           "answer": "固定 URL/revision、研究问题、证据要求和 no-write boundary；oracle 检查 discovery→primary evidence→capability fit→report synthesis 的顺序、理由和 provenance。",
           "note": "首个已确认 fixture。"
+        },
+        {
+          "q": "fixture 输入和 oracle 文件如何冻结？",
+          "answer": "在 skills-outputs/zj-composer/external-repository-research/ 固定 input.json、oracle.json 与 README.md；input 固定 fixture_id、repository URL/SHA、三项研究问题、证据要求和 no-write boundary；oracle 固定四步 skill 顺序、reason keywords、依赖方向、source reference 要求、禁止 router/executor/automatic execution。",
+          "note": "Oracle 只检查外部 artifact 的可观察内容，并复用 Plan validator；不依赖 live GitHub 或模型输出。"
+        },
+        {
+          "q": "固定 fixture 与 oracle 的实测结果是什么？",
+          "answer": "通过：input.json 固定 fixture_id、pstack-claude URL、commit 3b0bc62e13f507c426997ba472e3430dd3e4ef05、三项研究问题、证据要求、read-only boundary 与 catalog snapshot；oracle.json 固定四步顺序、理由关键词、输出关键词、依赖方向、provenance 引用、权限边界和禁止 capability 扩张。",
+          "note": "fixture README 说明不访问 live GitHub；oracle 只消费 Plan artifact、validator 输出和固定 JSON。"
         }
       ],
       "notes": "",
@@ -504,11 +521,22 @@
       "id": "1-5-2",
       "uid": "01a11ea42452-1351e35bdc",
       "label": "Generate and validate the research Plan output",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-5",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "研究 Plan 输出如何验收？",
+          "answer": "把 plan.md 作为外部 Composer artifact；由 validate_plan.py 先检查 v1 schema/provenance/authority，再由 evaluate_fixture.py 检查 input/oracle 的场景属性，产出 validation.json 与 oracle-result.json。只有 validator 和 oracle 同时 valid 才算 fixture 通过。",
+          "note": "Plan 保持 planned/pending，不执行 consuming chain；source revision、snapshot id、fixture id 和 Plan id 在 input/Plan/结果中可追溯。"
+        },
+        {
+          "q": "研究 Plan 和场景 oracle 的实测结果是什么？",
+          "answer": "通过：evaluate_fixture.py 返回 valid=true；Plan validator valid=true、errors=0、warnings=0；oracle valid=true。四步顺序为 zj-code-research → zj-research → zj-open-source-capability-fit → zj-tech-research-report，固定 URL/SHA、五项 provenance references、权限边界和逐步依赖均命中。",
+          "note": "产物为 plan.md、validation.json、oracle-result.json；fixture 不访问 live GitHub，Plan 仍为 planned/pending，不进入 consuming execution chain。"
+        }
+      ],
       "notes": "",
       "layer": "plan"
     },
@@ -581,7 +609,7 @@
   },
   "metadata": {
     "created": "2026-10-09 11:07:11",
-    "updated": "2026-10-09 15:22:45",
+    "updated": "2026-10-09 16:58:02",
     "md_file": "docs/plans/roadmap-zj-composer.md"
   },
   "edges": [
