@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `roadmap-zj-composer.json` | 最后更新: 2026-10-09 16:58:02
+> 数据文件: `roadmap-zj-composer.json` | 最后更新: 2026-10-09 17:29:06
 
 [~][Y+] 1. Composer implementation and reversible PoC
 ├── [x][Y+] 1-1. Freeze Composer and Plan contracts
@@ -20,17 +20,15 @@
 ├── [x][Y+] 1-5. Build external repository research fixture
 │   ├── [x][Y+] 1-5-1. Freeze external-repository-research fixture inputs and oracle
 │   └── [x][Y+] 1-5-2. Generate and validate the research Plan output
-├── [ ][Y+] 1-6. Build tool-combination design fixture
-│   ├── [ ][Y+] 1-6-1. Freeze tool-combination-design fixture inputs and oracle
-│   └── [!][Y+] 1-6-2. Generate and validate the combination Plan output
+├── [x][Y+] 1-6. Build tool-combination design fixture
+│   ├── [x][Y+] 1-6-1. Freeze tool-combination-design fixture inputs and oracle
+│   └── [x][Y+] 1-6-2. Generate and validate the combination Plan output
 ├── [ ][Y+] 1-7. Add security, oracle, handoff, and removal regression checks
-│   ├── [!][Y+] 1-7-1. Add negative-case and Human-rejection checks
+│   ├── [ ][Y+] 1-7-1. Add negative-case and Human-rejection checks
 │   └── [!][Y+] 1-7-2. Add security, handoff, and removal-regression checks
 └── [!][Y+] 1-8. Human review of PoC evidence and continuation decision
-<details><summary>阻塞链：4 个节点被阻塞</summary>
+<details><summary>阻塞链：2 个节点被阻塞</summary>
 
-- 1-6-2. Generate and validate the combination Plan output ← e15: 1-6-1. Freeze tool-combination-design fixture inputs and oracle [ ]
-- 1-7-1. Add negative-case and Human-rejection checks ← e17: 1-6-2. Generate and validate the combination Plan output [ ]
 - 1-7-2. Add security, handoff, and removal-regression checks ← e18: 1-7-1. Add negative-case and Human-rejection checks [ ]
 - 1-8. Human review of PoC evidence and continuation decision ← e19: 1-7-2. Add security, handoff, and removal-regression checks [ ]
 
@@ -39,7 +37,6 @@
 
 ### 下一步可开工（ready 前 3）
 
-- 1-6. Build tool-combination design fixture [ ]
-- 1-6-1. Freeze tool-combination-design fixture inputs and oracle [ ]
 - 1-7. Add security, oracle, handoff, and removal regression checks [ ]
+- 1-7-1. Add negative-case and Human-rejection checks [ ]
 <!-- ROADMAP_SECTION_END -->

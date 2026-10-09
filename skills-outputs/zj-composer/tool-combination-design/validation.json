@@ -1,0 +1,18 @@
+{
+  "diagnostics": [],
+  "plan": {
+    "capability_steps": 3,
+    "path": "skills-outputs/zj-composer/tool-combination-design/plan.md",
+    "plan_id": "tool-combination-design-v1-plan",
+    "snapshot_id": "catalog-v1-0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776",
+    "status": "planned",
+    "template_version": "1"
+  },
+  "schema": "zj-composer/plan/v1",
+  "summary": {
+    "categories": [],
+    "errors": 0,
+    "warnings": 0
+  },
+  "valid": true
+}

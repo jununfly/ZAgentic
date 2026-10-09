@@ -1,0 +1,17 @@
+{
+  "schema": "zj-composer/fixture-input/v1",
+  "fixture_id": "tool-combination-design-v1",
+  "title": "Compose a reviewed implementation path for a bounded product request",
+  "goal": "Turn a bounded product request into a reviewable implementation brief, technical design review, and roadmap handoff.",
+  "constraints": [
+    "Use the current local ZAgentic catalog and existing skill semantics.",
+    "Require Human approval before any consuming execution chain action.",
+    "Do not introduce a global router, second runtime, or automatic execution."
+  ],
+  "desired_output": "A versioned Plan with candidate capabilities, an explicit gap, verification, handoff, and rollback.",
+  "permission_boundary": "Read current local capability metadata and write only bounded Plan evidence; no automatic execution, unapproved writes, network publication, credentials, or irreversible actions.",
+  "required_skill_gap": "required skill：跨工具组合的统一执行能力",
+  "expected_plan_id": "tool-combination-design-v1-plan",
+  "source_revision": "catalog-v1-0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776",
+  "snapshot_id": "catalog-v1-0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776"
+}

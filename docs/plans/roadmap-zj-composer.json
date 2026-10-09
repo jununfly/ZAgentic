@@ -200,16 +200,23 @@
       "id": "1-6",
       "uid": "01a11ea37607-73cc48216a",
       "label": "Build tool-combination design fixture",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
         "1-6-1",
         "1-6-2"
       ],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "tool-combination-design fixture 的目标与 capability 组合如何固定？",
+          "answer": "冻结目标为：把一个 bounded product request 转成可审阅的 implementation brief、technical design review 和 roadmap handoff；约束为 local repository、Human approval、no automatic execution。Plan capability 顺序固定为 zj-leader → zj-tech-design-review → zj-roadmap-driven，并保留一个 exact required skill：... gap。",
+          "note": "fixture 验收只检查 artifact 内容与 oracle，不启动 router、executor 或 consuming chain；使用当前 catalog snapshot 固定候选 skill provenance。"
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-7": {
       "id": "1-7",
@@ -544,7 +551,7 @@
       "id": "1-6-1",
       "uid": "01a11ea424d9-03b8a67694",
       "label": "Freeze tool-combination-design fixture inputs and oracle",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-6",
       "children": [],
@@ -553,6 +560,16 @@
           "q": "组合设计 fixture 的 oracle 检查什么？",
           "answer": "固定 skill index、目标、约束和 Human checkpoint；oracle 检查候选能力、依赖、缺口、verification、handoff、rollback，且无 router/executor。",
           "note": "首个已确认 fixture。"
+        },
+        {
+          "q": "组合设计 fixture 的 input/oracle 如何冻结？",
+          "answer": "在 skills-outputs/zj-composer/tool-combination-design/ 固定 input.json、oracle.json、README.md；input 固定 fixture_id、目标、约束、desired output、permission boundary 与 snapshot_id；oracle 检查三步顺序、selection reason、dependency direction、exact required skill： gap、Human checkpoint、verification、handoff、rollback，以及禁止 router/executor/automatic execution。",
+          "note": "gap 故意保持为一个机械可解析的缺口，验证 Composer 能暴露覆盖不足而不是伪造 capability。"
+        },
+        {
+          "q": "tool-combination-design fixture 的实测结果是什么？",
+          "answer": "通过：input.json、oracle.json、README.md 已冻结；oracle 固定三步 zj-leader → zj-tech-design-review → zj-roadmap-driven、逐步依赖、exact required skill：跨工具组合的统一执行能力、Human approval、verification、handoff、rollback 与 forbidden authority terms。",
+          "note": "evaluate_fixture.py 对 fixture 输入和 Plan artifact 的结果为 oracle=true、validator=true；使用 catalog-v1-0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776。"
         }
       ],
       "notes": "",
@@ -562,11 +579,22 @@
       "id": "1-6-2",
       "uid": "01a11ea42564-d6796f6bdf",
       "label": "Generate and validate the combination Plan output",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-6",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "组合设计 Plan 输出如何验收？",
+          "answer": "把 plan.md 作为外部 artifact；由 validate_plan.py 做 schema/provenance/authority 硬门槛，再由 evaluate_fixture.py 做 exact gap、candidate order、dependency、section keyword 和 forbidden capability oracle。只有两层都通过才生成 valid result。",
+          "note": "Plan 保持 planned/pending；缺口不触发 skill 创建或执行，Human approval 和 consuming execution chain handoff 仍是边界。"
+        },
+        {
+          "q": "组合设计 Plan 和 oracle 的实测结果是什么？",
+          "answer": "通过：tool-combination-design 的 validator=true、oracle=true、errors=0、warnings=0；结果保留 fixture_id、Plan id、template_version=1 与 catalog source_revision；精确 gap 行和三步 capability/dependency 顺序均命中。",
+          "note": "同时重跑 external-repository-research，仍为 validator=true、oracle=true，确认 evaluator 的新 section/gap 规则未破坏既有 fixture。"
+        }
+      ],
       "notes": "",
       "layer": "plan"
     },
@@ -609,7 +637,7 @@
   },
   "metadata": {
     "created": "2026-10-09 11:07:11",
-    "updated": "2026-10-09 16:58:02",
+    "updated": "2026-10-09 17:29:06",
     "md_file": "docs/plans/roadmap-zj-composer.md"
   },
   "edges": [

@@ -42,6 +42,7 @@ def evaluate_oracle(
     fixture: dict[str, Any],
     oracle: dict[str, Any],
     sections: dict[str, dict[str, Any]],
+    lines: list[str],
 ) -> list[dict[str, Any]]:
     errors: list[dict[str, Any]] = []
     fixture_id = fixture.get("fixture_id")
@@ -73,6 +74,18 @@ def evaluate_oracle(
     for keyword in oracle.get("required_permission_keywords", []):
         if str(keyword).casefold() not in permission_boundary.casefold():
             errors.append(oracle_error("permission_oracle_mismatch", f"Permission boundary is missing: {keyword}"))
+
+    for expected_line in oracle.get("required_gap_lines", []):
+        if not any(line.strip() == str(expected_line) for line in lines):
+            errors.append(oracle_error("gap_oracle_mismatch", f"Plan is missing exact gap line: {expected_line}"))
+
+    for section_name, keywords in oracle.get("required_section_keywords", {}).items():
+        section_text = "\n".join(
+            value for value, _ in sections.get(section_name, {}).get("fields", {}).values()
+        )
+        for keyword in keywords:
+            if str(keyword).casefold() not in section_text.casefold():
+                errors.append(oracle_error("section_oracle_mismatch", f"{section_name} is missing keyword: {keyword}"))
 
     steps = sections.get("Capability composition", {}).get("steps", [])
     expected_steps = oracle.get("expected_steps", [])
@@ -130,7 +143,7 @@ def evaluate_fixture(fixture_dir: Path, root: Path) -> dict[str, Any]:
     try:
         text = plan_path.read_text(encoding="utf-8")
         sections, _ = parse_sections(text.splitlines(), [])
-        oracle_errors = evaluate_oracle(fixture, oracle, sections)
+        oracle_errors = evaluate_oracle(fixture, oracle, sections, text.splitlines())
     except (OSError, UnicodeError) as exc:
         oracle_errors = [oracle_error("fixture_read_error", str(exc))]
 
@@ -139,7 +152,10 @@ def evaluate_fixture(fixture_dir: Path, root: Path) -> dict[str, Any]:
         "fixture_id": fixture.get("fixture_id"),
         "plan_id": validation.get("plan", {}).get("plan_id"),
         "template_version": validation.get("plan", {}).get("template_version"),
-        "source_revision": fixture.get("repository", {}).get("revision"),
+        "source_revision": fixture.get(
+            "source_revision",
+            fixture.get("repository", {}).get("revision", fixture.get("snapshot_id")),
+        ),
         "valid": bool(validation.get("valid")) and not oracle_errors,
         "validation": validation,
         "oracle": {

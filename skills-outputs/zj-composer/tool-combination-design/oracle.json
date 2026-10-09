@@ -1,0 +1,61 @@
+{
+  "schema": "zj-composer/fixture-oracle/v1",
+  "fixture_id": "tool-combination-design-v1",
+  "plan_filename": "plan.md",
+  "expected_status": "planned",
+  "expected_steps": [
+    {
+      "number": 1,
+      "skill_or_workflow": "zj-leader",
+      "reason_keywords": ["goal", "brief", "constraints"],
+      "required_output_keywords": ["brief", "acceptance criteria"]
+    },
+    {
+      "number": 2,
+      "skill_or_workflow": "zj-tech-design-review",
+      "reason_keywords": ["design", "architecture", "risk"],
+      "required_output_keywords": ["design review", "risk"]
+    },
+    {
+      "number": 3,
+      "skill_or_workflow": "zj-roadmap-driven",
+      "reason_keywords": ["roadmap", "handoff", "verification"],
+      "required_output_keywords": ["roadmap", "handoff"]
+    }
+  ],
+  "required_intent_keywords": [
+    "bounded product request",
+    "Human approval",
+    "no automatic execution",
+    "reviewable implementation brief"
+  ],
+  "required_provenance_references": [
+    "skills/engineering/zj-leader/SKILL.md",
+    "skills/engineering/zj-tech-design-review/SKILL.md",
+    "skills/codebase-docs/zj-roadmap-driven/SKILL.md"
+  ],
+  "required_permission_keywords": [
+    "no automatic execution",
+    "unapproved writes",
+    "credentials",
+    "irreversible"
+  ],
+  "required_gap_lines": [
+    "required skill：跨工具组合的统一执行能力"
+  ],
+  "required_section_keywords": {
+    "Human checkpoints": ["Human approval", "rejection"],
+    "Verification": ["observable", "oracle"],
+    "Failure and rollback": ["safe stop", "rollback"],
+    "Handoff": ["consuming execution chain", "no execution authority"]
+  },
+  "forbidden_capability_terms": [
+    "global router",
+    "second runtime",
+    "automatic execution",
+    "executor",
+    "credential use",
+    "Git publication"
+  ],
+  "required_dependency_rule": "Each step after the first names the immediately preceding step as a dependency."
+}
