@@ -28,7 +28,7 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
                                             # 级联删掉触及被删子树的边，并报告条数
 
   edge    add <json_path> <from> <to> --type blocks|informs|supersedes|derives-from
-                                            # 记一条依赖边；只有 blocks 不许成环
+                                            # 记一条边；blocks、supersedes 与 trace 因果图不许成环
   edge    list <json_path> [--node <id>]     # 列出边，可按节点过滤入边与出边
   edge    remove <json_path> <edge_id>       # 删掉一条边
   edge    migrate <json_path>                # 存量显示 id 边一次性转成 uid

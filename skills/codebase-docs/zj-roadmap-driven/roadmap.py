@@ -156,7 +156,7 @@ def apply_failure(node: dict, error: str, now=None, raised_by: str = None,
 
 
 # ── 依赖边类型（P1 依赖层） ────────────────────────────────
-# 四种边共享同一套存储与命令，差别只在语义与成环规则。
+# 七种边共享同一套存储与命令，差别只在层方向、语义与成环规则。
 EDGE_BLOCKS = "blocks"
 EDGE_INFORMS = "informs"
 EDGE_SUPERSEDES = "supersedes"
@@ -233,9 +233,10 @@ class NodeNotFound(RoadmapError):
 
 
 class CycleError(RoadmapError):
-    """一条 blocks 边会让依赖图成环——环上每个节点都在等别人先动。
+    """新增边会违反对应图的无环约束。
 
-    只有 blocks 会成环死锁；informs / derives-from 成环是允许的。
+    `blocks`、`supersedes` 与 trace 因果图分别保持无环；plan→plan 的
+    `informs` / `derives-from` 与 trace `reference` 允许成环。
     """
 
     code = "E_CYCLE"
@@ -1783,7 +1784,7 @@ class Roadmap:
             # plan 端沿边取回执行期材料；字段只保留向后兼容。
             self.add_edge(under_id, trace_id, EDGE_PROMPTED_BY)
         if from_trace is not None:
-            # 端点落盘一律 uid（与 plan 边同纪律）；mainline 不是 blocks，不触发环检测。
+            # 端点落盘一律 uid（与 plan 边同纪律）；mainline 参与 trace 因果环检测。
             self.add_edge(trace_id, from_id, EDGE_MAINLINE)
         return node
 

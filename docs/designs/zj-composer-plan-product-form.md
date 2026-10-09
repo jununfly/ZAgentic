@@ -20,11 +20,11 @@ This design defines the approved product boundary for the Composer capability an
 - **Plan** is the versioned, reviewable task contract generated from the Composer skill's built-in template. It records selected capabilities, reasons, order, inputs/outputs, dependencies, Human checkpoints, verification, failure exits, rollback, and provenance.
 - A skill or workflow remains the semantic owner of its capability and execution behavior.
 - The evidence and decision protocol remains the owner of provenance, verification facts, and Human decisions.
-- The existing execution chain owns approved execution, side effects, failure recovery, and verification.
+- The existing execution chain owns execution after an approved handoff, side effects, failure recovery, and verification.
 - The documentation system owns durable governance rules. Composer output cannot silently become a long-lived rule.
 - When an existing capability matches, Composer proposes it with reasons and constraints. When a credible external or future capability is identifiable, Composer gives a bounded suggestion with source and fit caveats. When no reliable suggestion exists, Composer emits one line per gap in the exact form `required skill：简短地描述缺失skill的形状`.
 - Plan templates are versioned resources inside the Composer skill. A Plan records its template version; template changes require an explicit version change and cannot silently reinterpret an existing Plan.
-- Composer may generate and explain a Plan. It does not own approved execution, irreversible writes, network actions, Git publication, or durable document authority.
+- Composer may generate and explain a Plan and record the Human's disposition. It does not execute an approved Plan or own irreversible writes, network actions, Git publication, or durable document authority.
 
 ## Contract
 
@@ -49,7 +49,7 @@ This design defines the approved product boundary for the Composer capability an
 
 ### State handoff
 
-Composer owns the generated Plan while it is `planned`. Human approval transfers the task to the existing execution chain, which owns `approved`, `running`, `blocked`, `failed`, `verified`, `recorded`, `cancelled`, and `rolled_back` transitions according to the consuming workflow.
+Composer owns the artifact statuses `planned`, `approved`, `rejected`, `superseded`, and `cancelled`. An `approved` Plan that passes the validator's handoff gates may enter the existing execution chain. The consuming workflow then owns `running`, `blocked`, `failed`, `verified`, `recorded`, and `rolled_back` transitions.
 
 ## Reversible validation slice
 
@@ -75,6 +75,10 @@ Wall-clock time, interaction steps, manual edits, rejects, retries, recovery, an
 ## Source map
 
 - [ZAgentic guide](../../skills/engineering/zj-guide/SKILL.md)
+- [Composer skill](../../skills/productivity/zj-composer/SKILL.md)
+- [Composer Plan contract](../../skills/productivity/zj-composer/references/plan-contract.md)
+- [Composer validator contract](../../skills/productivity/zj-composer/references/validator-contract.md)
+- [Composer regression evidence](../../skills-outputs/zj-composer/regression/regression-result.json)
 - [Cross-stage checkpoints](zj-cross-stage-skills.md)
 - [Open-source capability-fit decision model](../agreements/open-source-capability-fit-decision-model.md)
 - [pstack primary findings](../../skills-outputs/zj-research/pstack-claude-capability-fit/primary-findings.md)

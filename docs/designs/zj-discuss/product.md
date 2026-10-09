@@ -1,4 +1,25 @@
+---
+doc-kind: design
+authority: primary
+authority-id: design.zj-discuss-product
+---
+
 # zj-discuss — 产品文档（Product）
+
+## Question
+
+`zj-discuss` 为谁解决什么问题，并如何按可用性、严谨性和有用性判断成功？
+
+## Scope
+
+本文拥有 `zj-discuss` / `zj-discuss-view` 的产品定位、目标用户、生命周期和产品层
+成功判据。行为细节与实现结构分别由同目录的 design 和 architecture 页面拥有。
+
+## Boundaries
+
+- 本产品形态处理 flat chat 无法充分承载的复杂问题，不替代单点问答或轻量 grilling。
+- 求解期文档组是过程材料；只有 `zj-docs-ontology` 经 Human 确认后才能沉淀或删除。
+- 外部范式只作为结构借鉴，不成为运行时依赖或第二权威。
 
 > 本文是 `zj-discuss` / `zj-discuss-view` 这组技能的产品定义。它是长期权威页；
 > 行为细节见同目录 `design.md`，组件与生命周期见 `architecture.md`。
@@ -64,3 +85,16 @@
 - 同一复杂问题，用 `zj-discuss` 比 flat chat **捕获更多偏离 / 分歧**，收敛轮次可控。
 - 生成的文档组可被第三方（另一 Human / Agent）**复核**——每个观点标来源、每步拍板留痕。
 - 角色选取贴合问题意涵，不冗余（收敛停规则生效）。
+
+## Source map
+
+- [zj-discuss skill](../../../skills/productivity/zj-discuss/SKILL.md)
+- [zj-discuss-view skill](../../../skills/productivity/zj-discuss-view/SKILL.md)
+- [Role matrix](../../../skills/productivity/zj-discuss/references/role-matrix.md)
+- [Open-source capability-fit decision model](../../agreements/open-source-capability-fit-decision-model.md)
+
+## Related authority
+
+- [ZAgentic documentation map](../../README.md)
+- [zj-discuss architecture](architecture.md)
+- [zj-discuss full specification](design.md)

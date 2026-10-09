@@ -57,9 +57,11 @@ Agent 需要换载体 → 调 `migrate --to single|sqlite`（显式；源文件�
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
 Agent 需要取活/看最长未完工链/看改动波及 → 调 `ready` / `critical-path` / `impact`（只读，不拿锁）
 
-依赖是树之外的一层正交边：`blocks` 是硬依赖（不许成环，会返 `E_CYCLE`），
-`informs` / `derives-from` 只是上下文与来源追溯，允许成环。删节点会级联删掉
-触及它的边并报告条数——边不能比它的节点活得久。
+依赖是树之外的一层正交边：`blocks` 是硬依赖，`supersedes` 表示取代关系，
+两者各自不许成环并会返 `E_CYCLE`。plan→plan 的 `informs` / `derives-from`
+只是上下文与来源追溯，允许成环。trace 因果边另有更严格的层方向与无环规则：
+`mainline`、`prompted-by`、跨层 `derives-from` 共同构成无环因果图，`reference`
+允许成环。删节点会级联删掉触及它的边并报告条数——边不能比它的节点活得久。
 
 `blocked` / `blocked_reason` 是**读取时从 `blocks` 边派生的，永不落盘**：
 `get <node>` 在有未完成前驱时附带这两个字段（reason 是阻塞它的边 id 列表），

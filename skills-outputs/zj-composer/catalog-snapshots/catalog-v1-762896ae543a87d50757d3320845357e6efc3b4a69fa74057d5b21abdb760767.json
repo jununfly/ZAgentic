@@ -1,0 +1,1706 @@
+{
+  "catalog": {
+    "index_surfaces": {
+      "bucket_readmes": [
+        "skills/engineering/README.md",
+        "skills/codebase-docs/README.md",
+        "skills/productivity/README.md",
+        "skills/misc/README.md",
+        "skills/research/README.md"
+      ],
+      "guide": "skills/engineering/zj-guide/SKILL.md",
+      "install_list": "scripts/zagentic-skills-list",
+      "root_readme": "README.md"
+    },
+    "public_buckets": [
+      "engineering",
+      "codebase-docs",
+      "productivity",
+      "misc",
+      "research"
+    ],
+    "root": ".",
+    "schema": "zj-composer/catalog-discovery/v1",
+    "skills": [
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-debrief",
+        "frontmatter": {
+          "description": "Reflect on a finished task — walk through drift, surface new concepts, and capture concrete actions to do better next time. Use when a task wraps up and you want to close the loop with the planning step, not as a generic post-mortem or notes dump. User-invoked.",
+          "disable-model-invocation": true,
+          "name": "zj-debrief"
+        },
+        "metadata_warnings": [],
+        "name": "zj-debrief",
+        "path": "skills/codebase-docs/zj-debrief/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-debrief/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-docs-architecture",
+        "frontmatter": {
+          "description": "Maintains and validates a codebase's multi-view architecture handbook: map, layers, subsystems, flows, and cross-cutting rules. Use when creating, reviewing, migrating, or validating architecture documentation and its source maps.",
+          "name": "zj-docs-architecture"
+        },
+        "metadata_warnings": [],
+        "name": "zj-docs-architecture",
+        "path": "skills/codebase-docs/zj-docs-architecture/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-docs-architecture/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-docs-ontology",
+        "frontmatter": {
+          "description": "Human-invoked governance of one codebase's documentation system: discover, classify, propose safe migration, validate drift, and report lifecycle work.",
+          "disable-model-invocation": true,
+          "name": "zj-docs-ontology"
+        },
+        "metadata_warnings": [],
+        "name": "zj-docs-ontology",
+        "path": "skills/codebase-docs/zj-docs-ontology/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-docs-ontology/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-domain-modeling",
+        "frontmatter": {
+          "description": "Build and sharpen a project's domain model. Use when the user wants to pin down domain terminology or a ubiquitous language, record an architectural decision, or when another skill needs to maintain the domain model.",
+          "name": "zj-domain-modeling"
+        },
+        "metadata_warnings": [],
+        "name": "zj-domain-modeling",
+        "path": "skills/codebase-docs/zj-domain-modeling/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-domain-modeling/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-grill-with-docs",
+        "frontmatter": {
+          "description": "A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.",
+          "disable-model-invocation": true,
+          "name": "zj-grill-with-docs"
+        },
+        "metadata_warnings": [],
+        "name": "zj-grill-with-docs",
+        "path": "skills/codebase-docs/zj-grill-with-docs/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-grill-with-docs/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-neat-freak",
+        "frontmatter": {
+          "compatibility": "Requires filesystem read access. Writes and destructive actions follow the active agent, workspace, and user authorization rules. Git and rg improve verification; scripts/audit-inventory.sh needs Bash — without it, do the equivalent checks manually. Works on any Agent Skills platform.",
+          "description": "Knowledge and governance closeout: reconcile project docs, rule files (CLAUDE.md/AGENTS.md), authorized agent memory, and workspace residue with what the code and runtime actually do, so the next session or the next person starts from one current answer. Trigger when the user names \"neat-freak\", \"洁癖\", or \"/neat\" — and also on clear knowledge-closeout intent without the name: syncing or tidying project docs/rules/memory after development (\"把文档和记忆整理一下\", \"收尾时把文档同步掉\", \"docs 和代码对不上了\"), stale or conflicting CLAUDE.md/memory, a clean handoff to a teammate or a fresh session, or auditing whether workspace rules are actually followed. Do not trigger for pure coding/refactoring/debugging tasks, tidying data or prose (JSON, 周报, changelog announcements), or a bare \"整理\" with no project-knowledge context.",
+          "metadata": {
+            "category": "knowledge-governance",
+            "version": "3.0.0"
+          },
+          "name": "zj-neat-freak"
+        },
+        "metadata_warnings": [],
+        "name": "zj-neat-freak",
+        "path": "skills/codebase-docs/zj-neat-freak/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-neat-freak/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-roadmap-driven",
+        "frontmatter": {
+          "description": "路线图驱动开发与验收：以树形 roadmap（编号节点 + 状态 checkbox）和随节点落盘的决策记录， 作为 Agent 与 Human 的共享地图；施工进度靠 `render` 出的 md 视图回看。节点执行前先做 scope gate， 区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。 Use when 用户提到 路线图驱动 / roadmap driven / 导航式开发 / 进度地图 / 节点推进 / plan tree， 或需要把长任务拆成可追踪的树形计划并沉淀决策。载体支持单文件 JSON 与 SQLite， 与 zj-wayfinder（规划）、zj-to-tickets（转换）配合。",
+          "name": "zj-roadmap-driven",
+          "triggers": [
+            "路线图驱动",
+            "roadmap driven",
+            "导航式开发",
+            "进度地图",
+            "节点推进",
+            "plan tree"
+          ]
+        },
+        "metadata_warnings": [],
+        "name": "zj-roadmap-driven",
+        "path": "skills/codebase-docs/zj-roadmap-driven/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-roadmap-driven/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "codebase-docs",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-wayfinder",
+        "frontmatter": {
+          "description": "Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets, and resolve them one at a time until the way to the destination is clear. Dual-mode: a tracker-dependent carrier (teamwork, multi-agent) or a self-contained local-markdown carrier (context-complete, offline). Designed as a skill pair with zj-roadmap-driven (plan → track); zj-to-tickets is the seam converter.",
+          "disable-model-invocation": true,
+          "name": "zj-wayfinder"
+        },
+        "metadata_warnings": [],
+        "name": "zj-wayfinder",
+        "path": "skills/codebase-docs/zj-wayfinder/SKILL.md",
+        "source_reference": "skills/codebase-docs/zj-wayfinder/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-code-review",
+        "frontmatter": {
+          "description": "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\".",
+          "name": "zj-code-review"
+        },
+        "metadata_warnings": [],
+        "name": "zj-code-review",
+        "path": "skills/engineering/zj-code-review/SKILL.md",
+        "source_reference": "skills/engineering/zj-code-review/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-codebase-design",
+        "frontmatter": {
+          "description": "Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary.",
+          "name": "zj-codebase-design"
+        },
+        "metadata_warnings": [],
+        "name": "zj-codebase-design",
+        "path": "skills/engineering/zj-codebase-design/SKILL.md",
+        "source_reference": "skills/engineering/zj-codebase-design/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-diagnosing-bugs",
+        "frontmatter": {
+          "description": "Diagnosis loop for hard bugs and performance regressions. Use when the user says \"diagnose\"/\"debug this\", or reports something broken/throwing/failing/slow.",
+          "name": "zj-diagnosing-bugs"
+        },
+        "metadata_warnings": [],
+        "name": "zj-diagnosing-bugs",
+        "path": "skills/engineering/zj-diagnosing-bugs/SKILL.md",
+        "source_reference": "skills/engineering/zj-diagnosing-bugs/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-dry-run",
+        "frontmatter": {
+          "description": "Rehearse a plan before you commit to it — walk each ticket in order, flag the friction points you'll hit, and hand the decision log to grilling if the plan needs re-cutting. Use when tickets exist and you want a quick pre-flight check on whether the plan actually runs end-to-end, not as a general \"trace through the code\" prompt. User-invoked.",
+          "disable-model-invocation": true,
+          "name": "zj-dry-run"
+        },
+        "metadata_warnings": [],
+        "name": "zj-dry-run",
+        "path": "skills/engineering/zj-dry-run/SKILL.md",
+        "source_reference": "skills/engineering/zj-dry-run/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-git-bypass-safe-delete",
+        "frontmatter": {
+          "description": "Diagnose and recover from git-repository corruption caused by WorkBuddy on Windows. Two independent mechanisms: (1) the safe-delete shim routes delete syscalls to the Recycle Bin; (2) the LiteSandbox filesystem-protection layer rolls back git's \"create nested ref dir + lock→rename\" transactions ~70ms after the write, inside the WorkBuddy process tree only. Use when `git status` shows all files as A, `git diff` fails with a missing tree, a branch ref vanishes after `git checkout -b`/`commit`/`push`, or `fetch` reports success but the local ref doesn't move. SCOPE: Windows + WorkBuddy only. On macOS/Linux the shim defaults to off and LiteSandbox does not apply — do not load.",
+          "name": "zj-git-bypass-safe-delete"
+        },
+        "metadata_warnings": [],
+        "name": "zj-git-bypass-safe-delete",
+        "path": "skills/engineering/zj-git-bypass-safe-delete/SKILL.md",
+        "source_reference": "skills/engineering/zj-git-bypass-safe-delete/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-guide",
+        "frontmatter": {
+          "description": "Ask which skill or flow fits your situation. A router over the skills in this repo.",
+          "disable-model-invocation": true,
+          "name": "zj-guide"
+        },
+        "metadata_warnings": [],
+        "name": "zj-guide",
+        "path": "skills/engineering/zj-guide/SKILL.md",
+        "source_reference": "skills/engineering/zj-guide/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-implement",
+        "frontmatter": {
+          "description": "Implement a piece of work based on a spec or set of tickets.",
+          "disable-model-invocation": true,
+          "name": "zj-implement"
+        },
+        "metadata_warnings": [],
+        "name": "zj-implement",
+        "path": "skills/engineering/zj-implement/SKILL.md",
+        "source_reference": "skills/engineering/zj-implement/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-improve-codebase-architecture",
+        "frontmatter": {
+          "description": "Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.",
+          "disable-model-invocation": true,
+          "name": "zj-improve-codebase-architecture"
+        },
+        "metadata_warnings": [],
+        "name": "zj-improve-codebase-architecture",
+        "path": "skills/engineering/zj-improve-codebase-architecture/SKILL.md",
+        "source_reference": "skills/engineering/zj-improve-codebase-architecture/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-leader",
+        "frontmatter": {
+          "description": "把一句话的想法拆成 AI agent 能独立跑完的目标任务书。用户说「帮我给 agent 写个目标」「帮我详细拆一下这个目标」「写个任务书/brief 给 agent」「写个 goal 提示词」「让 agent 自己跑这个项目」「把活分给几个 agent 并行」时使用。先进代码库实测、必要时联网调研，再一次性提问（≤5 个），产出一份 ≤4000 字符、直接粘进 /goal 就能跑的任务书，含实测数字、白名单地界、防作弊验收和断点续跑。执行型与探索型（调研/选型/找方案）自动分流。",
+          "name": "zj-leader"
+        },
+        "metadata_warnings": [],
+        "name": "zj-leader",
+        "path": "skills/engineering/zj-leader/SKILL.md",
+        "source_reference": "skills/engineering/zj-leader/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-merge-skill-pair",
+        "frontmatter": {
+          "description": "Execute a single skill-pair merge as one atomic commit. Reads the strategy from a zj-roadmap-driven node's decisions, applies 12 classes of side effects (skill files, README sync, bucket README, setup-skills templates, ZJ-CONTEXT.md, ADR cross-refs, git mv for renames, deletion of replaced skills), updates the roadmap node to completed, and commits. Triggers on \"merge this skill\", \"execute the plan for X\", \"absorb B into A\". Pair with zj-merge-skills-wave — that one plans a whole wave, this one executes one pair.",
+          "disable-model-invocation": true,
+          "name": "zj-merge-skill-pair"
+        },
+        "metadata_warnings": [],
+        "name": "zj-merge-skill-pair",
+        "path": "skills/engineering/zj-merge-skill-pair/SKILL.md",
+        "source_reference": "skills/engineering/zj-merge-skill-pair/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-merge-skills-wave",
+        "frontmatter": {
+          "description": "Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from an upstream skills collection, another skills collection, or any directory of SKILL.md files. Triggers on \"merge skills from\", \"absorb from source-name\", \"import skills from\". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.",
+          "disable-model-invocation": true,
+          "name": "zj-merge-skills-wave"
+        },
+        "metadata_warnings": [],
+        "name": "zj-merge-skills-wave",
+        "path": "skills/engineering/zj-merge-skills-wave/SKILL.md",
+        "source_reference": "skills/engineering/zj-merge-skills-wave/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-prototype",
+        "frontmatter": {
+          "description": "Build a throwaway prototype to answer a design question. Use when the user wants to sanity-check whether a state model or logic feels right, or explore what a UI should look like.",
+          "name": "zj-prototype"
+        },
+        "metadata_warnings": [],
+        "name": "zj-prototype",
+        "path": "skills/engineering/zj-prototype/SKILL.md",
+        "source_reference": "skills/engineering/zj-prototype/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-repo-init",
+        "frontmatter": {
+          "description": "Configures a repository's collaboration entrypoints: issue tracker, triage vocabulary, and concise Agent rules. Use when tracker or triage setup is needed before `zj-to-tickets`, `zj-to-spec`, `zj-triage`, or `zj-wayfinder` can operate correctly.",
+          "disable-model-invocation": true,
+          "name": "zj-repo-init"
+        },
+        "metadata_warnings": [],
+        "name": "zj-repo-init",
+        "path": "skills/engineering/zj-repo-init/SKILL.md",
+        "source_reference": "skills/engineering/zj-repo-init/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-resolving-merge-conflicts",
+        "frontmatter": {
+          "description": "Use when you need to resolve an in-progress git merge/rebase conflict.",
+          "name": "zj-resolving-merge-conflicts"
+        },
+        "metadata_warnings": [],
+        "name": "zj-resolving-merge-conflicts",
+        "path": "skills/engineering/zj-resolving-merge-conflicts/SKILL.md",
+        "source_reference": "skills/engineering/zj-resolving-merge-conflicts/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-steelman",
+        "frontmatter": {
+          "description": "Steelman a proposal before you let it get torn down — extract its core assumptions, write the strongest case for each, judge how strong that case actually is, and route to grilling only if it fails. Use when you have a plan or decision in front of you and want a quick reality check on whether it's worth defending, not as a generic \"argue both sides\" prompt. User-invoked.",
+          "disable-model-invocation": true,
+          "name": "zj-steelman"
+        },
+        "metadata_warnings": [],
+        "name": "zj-steelman",
+        "path": "skills/engineering/zj-steelman/SKILL.md",
+        "source_reference": "skills/engineering/zj-steelman/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-tdd",
+        "frontmatter": {
+          "description": "Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions \"red-green-refactor\", or wants integration tests.",
+          "name": "zj-tdd"
+        },
+        "metadata_warnings": [],
+        "name": "zj-tdd",
+        "path": "skills/engineering/zj-tdd/SKILL.md",
+        "source_reference": "skills/engineering/zj-tdd/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-tech-design-review",
+        "frontmatter": {
+          "description": "Guide an evidence-backed technical design review from problem framing through architecture, metrics, risk, rollout, testing, and follow-up. Use when the user asks for a design doc, technical proposal, architecture review, launch review, or a structured critique of a proposed change.",
+          "name": "zj-tech-design-review"
+        },
+        "metadata_warnings": [],
+        "name": "zj-tech-design-review",
+        "path": "skills/engineering/zj-tech-design-review/SKILL.md",
+        "source_reference": "skills/engineering/zj-tech-design-review/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-to-spec",
+        "frontmatter": {
+          "description": "Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.",
+          "disable-model-invocation": true,
+          "name": "zj-to-spec"
+        },
+        "metadata_warnings": [],
+        "name": "zj-to-spec",
+        "path": "skills/engineering/zj-to-spec/SKILL.md",
+        "source_reference": "skills/engineering/zj-to-spec/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-to-tickets",
+        "frontmatter": {
+          "description": "Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker — edges as text in one file per ticket locally, or native blocking links on a real tracker.",
+          "disable-model-invocation": true,
+          "name": "zj-to-tickets"
+        },
+        "metadata_warnings": [],
+        "name": "zj-to-tickets",
+        "path": "skills/engineering/zj-to-tickets/SKILL.md",
+        "source_reference": "skills/engineering/zj-to-tickets/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-triage",
+        "frontmatter": {
+          "description": "Move issues and external PRs through a state machine of triage roles — categorise, verify, grill if needed, and write agent-ready briefs.",
+          "disable-model-invocation": true,
+          "name": "zj-triage"
+        },
+        "metadata_warnings": [],
+        "name": "zj-triage",
+        "path": "skills/engineering/zj-triage/SKILL.md",
+        "source_reference": "skills/engineering/zj-triage/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "engineering",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-wizard",
+        "frontmatter": {
+          "description": "Generate an interactive bash wizard that walks a human through steps only they can perform. Use when provisioning infrastructure, setting up credentials or CI secrets, walking an unfamiliar third-party dashboard, or running a one-off migration or cutover. Don't invoke this for steps the agent can perform itself.",
+          "name": "zj-wizard"
+        },
+        "metadata_warnings": [],
+        "name": "zj-wizard",
+        "path": "skills/engineering/zj-wizard/SKILL.md",
+        "source_reference": "skills/engineering/zj-wizard/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "misc",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-aihot",
+        "frontmatter": {
+          "description": "查询 AIHOT 的中文 AI 资讯、精选、当前热点和日报。用户询问今天或最近的 AI 新闻、AI 圈动态、大模型或产品发布、OpenAI／Anthropic／Google 最新消息、AI 论文、AI 日报、AIHOT 精选、当前最热事件，或需要同步当前全部精选时使用。必须通过 aihot.virxact.com 的匿名只读 API 获取当前数据，不凭训练记忆回答新闻；不需要 API Key 或 MCP server。",
+          "license": "MIT. See LICENSE",
+          "metadata": {
+            "author": "Virxact",
+            "version": "1.5.3"
+          },
+          "name": "zj-aihot"
+        },
+        "metadata_warnings": [],
+        "name": "zj-aihot",
+        "path": "skills/misc/zj-aihot/SKILL.md",
+        "source_reference": "skills/misc/zj-aihot/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "misc",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-git-guardrails-claude-code",
+        "frontmatter": {
+          "description": "Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, branch -D, etc.) before they execute. Use when user wants to prevent destructive git operations, add git safety hooks, or block git push/reset in Claude Code.",
+          "name": "zj-git-guardrails-claude-code"
+        },
+        "metadata_warnings": [],
+        "name": "zj-git-guardrails-claude-code",
+        "path": "skills/misc/zj-git-guardrails-claude-code/SKILL.md",
+        "source_reference": "skills/misc/zj-git-guardrails-claude-code/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "misc",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-migrate-to-shoehorn",
+        "frontmatter": {
+          "description": "Migrate test files from `as` type assertions to @total-typescript/shoehorn. Use when user mentions shoehorn, wants to replace `as` in tests, or needs partial test data.",
+          "name": "zj-migrate-to-shoehorn"
+        },
+        "metadata_warnings": [],
+        "name": "zj-migrate-to-shoehorn",
+        "path": "skills/misc/zj-migrate-to-shoehorn/SKILL.md",
+        "source_reference": "skills/misc/zj-migrate-to-shoehorn/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "misc",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-scaffold-exercises",
+        "frontmatter": {
+          "description": "Create exercise directory structures with sections, problems, solutions, and explainers that pass linting. Use when user wants to scaffold exercises, create exercise stubs, or set up a new course section.",
+          "name": "zj-scaffold-exercises"
+        },
+        "metadata_warnings": [],
+        "name": "zj-scaffold-exercises",
+        "path": "skills/misc/zj-scaffold-exercises/SKILL.md",
+        "source_reference": "skills/misc/zj-scaffold-exercises/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "misc",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-setup-pre-commit",
+        "frontmatter": {
+          "description": "Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing.",
+          "name": "zj-setup-pre-commit"
+        },
+        "metadata_warnings": [],
+        "name": "zj-setup-pre-commit",
+        "path": "skills/misc/zj-setup-pre-commit/SKILL.md",
+        "source_reference": "skills/misc/zj-setup-pre-commit/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "misc",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-storage-analyzer",
+        "frontmatter": {
+          "description": "macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出 占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出 可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可 起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景 使用：用户说\"存储分析\"\"磁盘满了\"\"C盘/硬盘满了\"\"空间不够\"\"清理空间\" \"清理磁盘\"\"占空间\"\"哪些东西占地方\"\"帮我看看存储\"\"看一下电脑存储/空间\" \"存储空间\"\"电脑空间不够\"\"内存满了/不够/不足\"\"看下内存/存储\"（中文口语里 \"内存\"常指存储空间）\"storage analysis\"\"disk cleanup\"\"清缓存\"\"磁盘清理\"； 或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确 指运行内存/RAM（如\"哪个进程吃内存\"\"内存占用高\"想看活动监视器），那是 RAM 不是存储，不属于本 skill。",
+          "name": "zj-storage-analyzer"
+        },
+        "metadata_warnings": [],
+        "name": "zj-storage-analyzer",
+        "path": "skills/misc/zj-storage-analyzer/SKILL.md",
+        "source_reference": "skills/misc/zj-storage-analyzer/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-caveman",
+        "frontmatter": {
+          "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /zj-caveman.\n",
+          "disable-model-invocation": true,
+          "name": "zj-caveman"
+        },
+        "metadata_warnings": [],
+        "name": "zj-caveman",
+        "path": "skills/productivity/zj-caveman/SKILL.md",
+        "source_reference": "skills/productivity/zj-caveman/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-composer",
+        "frontmatter": {
+          "argument-hint": "目标、约束和期望产物",
+          "description": "Generate a reviewable, versioned task Plan from a goal, constraints, evidence needs, and permission boundaries. Use when a Human invokes /zj-composer to assemble ZAgentic capabilities, expose gaps, or prepare a bounded handoff to an existing execution chain.",
+          "disable-model-invocation": true,
+          "name": "zj-composer"
+        },
+        "metadata_warnings": [],
+        "name": "zj-composer",
+        "path": "skills/productivity/zj-composer/SKILL.md",
+        "source_reference": "skills/productivity/zj-composer/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-discuss",
+        "frontmatter": {
+          "argument-hint": "<complex problem description, or an existing discussions/ (slug) path to resume>",
+          "description": "Run zj-discuss when the user faces a genuinely complex problem that flat chat cannot fully resolve, or points to an existing discussions/ (slug) directory to resume. It decomposes the problem into a master doc + independent sub-documents, runs role-based multi-agent discussion via a fixed+dynamic agenda, synthesizes, and hands off to zj-docs-ontology. For a single issue, use zj-discuss-view + zj-steelman directly instead.",
+          "name": "zj-discuss"
+        },
+        "metadata_warnings": [],
+        "name": "zj-discuss",
+        "path": "skills/productivity/zj-discuss/SKILL.md",
+        "source_reference": "skills/productivity/zj-discuss/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-discuss-view",
+        "frontmatter": {
+          "argument-hint": "--role <role-key-from-pool|自定义> <sub-doc-path>  (or --all <sub-doc-path>)",
+          "description": "Load zj-discuss-view when a Human pastes a sub-document path and asks a separate independent Agent to take one role. It reads the original, writes one isolated viewpoint into",
+          "name": "zj-discuss-view"
+        },
+        "metadata_warnings": [],
+        "name": "zj-discuss-view",
+        "path": "skills/productivity/zj-discuss-view/SKILL.md",
+        "source_reference": "skills/productivity/zj-discuss-view/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-grilling",
+        "frontmatter": {
+          "description": "Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.",
+          "name": "zj-grilling"
+        },
+        "metadata_warnings": [],
+        "name": "zj-grilling",
+        "path": "skills/productivity/zj-grilling/SKILL.md",
+        "source_reference": "skills/productivity/zj-grilling/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-handoff",
+        "frontmatter": {
+          "argument-hint": "What will the next session be used for?",
+          "description": "Compact the current conversation into a handoff document for another agent to pick up.",
+          "name": "zj-handoff"
+        },
+        "metadata_warnings": [],
+        "name": "zj-handoff",
+        "path": "skills/productivity/zj-handoff/SKILL.md",
+        "source_reference": "skills/productivity/zj-handoff/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-teach",
+        "frontmatter": {
+          "argument-hint": "What would you like to learn about?",
+          "description": "Teach the user a new skill or concept, within this workspace.",
+          "disable-model-invocation": true,
+          "name": "zj-teach"
+        },
+        "metadata_warnings": [],
+        "name": "zj-teach",
+        "path": "skills/productivity/zj-teach/SKILL.md",
+        "source_reference": "skills/productivity/zj-teach/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-to-questionnaire",
+        "frontmatter": {
+          "description": "Turn a decision you can't fully answer into a questionnaire for someone else to fill in.",
+          "disable-model-invocation": true,
+          "name": "zj-to-questionnaire"
+        },
+        "metadata_warnings": [],
+        "name": "zj-to-questionnaire",
+        "path": "skills/productivity/zj-to-questionnaire/SKILL.md",
+        "source_reference": "skills/productivity/zj-to-questionnaire/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-wait-what",
+        "frontmatter": {
+          "description": "Stop. That last message did not land — re-pitch it.",
+          "disable-model-invocation": true,
+          "name": "zj-wait-what"
+        },
+        "metadata_warnings": [],
+        "name": "zj-wait-what",
+        "path": "skills/productivity/zj-wait-what/SKILL.md",
+        "source_reference": "skills/productivity/zj-wait-what/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-write-a-skill",
+        "frontmatter": {
+          "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.",
+          "name": "zj-write-a-skill"
+        },
+        "metadata_warnings": [],
+        "name": "zj-write-a-skill",
+        "path": "skills/productivity/zj-write-a-skill/SKILL.md",
+        "source_reference": "skills/productivity/zj-write-a-skill/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-writing-for-agents",
+        "frontmatter": {
+          "description": "Reference for writing any document an agent consumes — a skill, an AGENTS.md / CLAUDE.md, a doc reached by a pointer. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.",
+          "name": "zj-writing-for-agents"
+        },
+        "metadata_warnings": [],
+        "name": "zj-writing-for-agents",
+        "path": "skills/productivity/zj-writing-for-agents/SKILL.md",
+        "source_reference": "skills/productivity/zj-writing-for-agents/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "research",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-code-research",
+        "frontmatter": {
+          "description": "Research a code repository through two complementary passes: build a commit-scoped Repository Map for breadth, then perform an evidence-linked Architecture Study for selected modules or flows. Use for repository orientation, architecture deep-reads, and codebase comparisons; use zj-tech-research-report when the result must select or recommend a technical solution.",
+          "name": "zj-code-research"
+        },
+        "metadata_warnings": [],
+        "name": "zj-code-research",
+        "path": "skills/research/zj-code-research/SKILL.md",
+        "source_reference": "skills/research/zj-code-research/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "research",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-open-source-capability-fit",
+        "frontmatter": {
+          "argument-hint": "<目标需求描述，或一个已填好的 capability_fit 输入 JSON 路径>",
+          "description": "用本仓库《开源能力拟合决策模型》评估是否直接采用 / 扩展采用 / 选择性复用 / 继续搜索某个外部开源项目，产出可复核的 R×O 证据矩阵与 A/B1/B2/B3/C/D 分类。 带机械闸门（矩阵完整性、版本固定、证据非空、关键能力缺失→D、可控 B 边界校验）， 不是薄 prompt。Use when deciding whether to ingest/merge an external OSS capability, or to re-evaluate a prior OSS-fit decision after upstream change. For a full selection report (problem framing → options → evidence → fit → ownership risk → gates → recommendation), call `zj-tech-research-report` and let it reference this skill's output; this skill only produces the fit verdict and decision record, not the narrative report.",
+          "name": "zj-open-source-capability-fit"
+        },
+        "metadata_warnings": [],
+        "name": "zj-open-source-capability-fit",
+        "path": "skills/research/zj-open-source-capability-fit/SKILL.md",
+        "source_reference": "skills/research/zj-open-source-capability-fit/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "research",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-research",
+        "frontmatter": {
+          "description": "Investigate a question against high-trust primary sources and capture cited findings in the repo. Use for documentation or API reading legwork and for multi-repository technical comparisons that need commit-pinned GitHub evidence.",
+          "name": "zj-research"
+        },
+        "metadata_warnings": [],
+        "name": "zj-research",
+        "path": "skills/research/zj-research/SKILL.md",
+        "source_reference": "skills/research/zj-research/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "research",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-systematic-research",
+        "frontmatter": {
+          "description": "对产品、公司、概念、技术或人物进行系统性研究：重建其从起源到当下的演进脉络，分析当前竞品/同类格局，并综合两条线索形成判断。\n当用户想要系统性了解一个对象的来龙去脉、发展逻辑、竞争位置或整体画像时使用；不要用于单个事实查找、API/文档阅读、局部技术问题或只比较方案的技术选型报告。",
+          "name": "zj-systematic-research"
+        },
+        "metadata_warnings": [],
+        "name": "zj-systematic-research",
+        "path": "skills/research/zj-systematic-research/SKILL.md",
+        "source_reference": "skills/research/zj-systematic-research/SKILL.md",
+        "warnings": []
+      },
+      {
+        "bucket": "research",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "zj-tech-research-report",
+        "frontmatter": {
+          "description": "Produce evidence-backed technical-solution research reports from cited findings and sealed ledgers, covering decision framing, alternatives, capability fit, ownership risks, validation gates, and recommendations. Use after zj-research for technical architecture decisions, technology comparisons, open-source selection, and prototype planning; do not use it as a generic domain-report skill.",
+          "name": "zj-tech-research-report"
+        },
+        "metadata_warnings": [],
+        "name": "zj-tech-research-report",
+        "path": "skills/research/zj-tech-research-report/SKILL.md",
+        "source_reference": "skills/research/zj-tech-research-report/SKILL.md",
+        "warnings": []
+      }
+    ],
+    "warnings": []
+  },
+  "generated_at": "2026-10-09T14:09:09Z",
+  "metadata_warnings": [],
+  "schema": "zj-composer/catalog-snapshot/v1",
+  "snapshot_id": "catalog-v1-762896ae543a87d50757d3320845357e6efc3b4a69fa74057d5b21abdb760767",
+  "source": {
+    "content_digest": "762896ae543a87d50757d3320845357e6efc3b4a69fa74057d5b21abdb760767",
+    "discovery_schema": "zj-composer/catalog-discovery/v1",
+    "files": [
+      {
+        "exists": true,
+        "path": "README.md",
+        "sha256": "197dc96f736120f133dc435f0305ffef2f36b3aad27368c7eca15ba7a9013aab",
+        "size": 11930
+      },
+      {
+        "exists": true,
+        "path": "scripts/zagentic-skills-list",
+        "sha256": "4bfd34c8cee26aafe0fabe75bfe3cdf9e1229daecdc2eb2c387101584397c9a8",
+        "size": 887
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/README.md",
+        "sha256": "3ea93c1629021e96fabd3dcee2c18c9937c7e3351d6c876bbae077ca3bc42d69",
+        "size": 1280
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-debrief/SKILL.md",
+        "sha256": "704e5250b6b2b57ea0c9be04a37ebe8cb940fcf2426781e367a3a69b8b77e0d8",
+        "size": 3491
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-docs-architecture/SKILL.md",
+        "sha256": "536580167fb978800f3f3057370a42c020ca9b2a5f43e52ad4f935144d8b8ee1",
+        "size": 4334
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-docs-ontology/SKILL.md",
+        "sha256": "20c643715086003db315c9d7808ac2aed4dca1d407b91a4b1d2455eef26ce60f",
+        "size": 2895
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-domain-modeling/SKILL.md",
+        "sha256": "93b42db0ad63196fe82d7c0efc4e7ca8b2413fb72810a0c8a1fd3581239678af",
+        "size": 3481
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-grill-with-docs/SKILL.md",
+        "sha256": "351a767b04f6042e0699610d178477ea16adddaeaf8f96689e71c8530b349c78",
+        "size": 254
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-neat-freak/SKILL.md",
+        "sha256": "7daceddf0afd738bd5d3205a62a153c35b18b12ef655c90ad373696bd06b5726",
+        "size": 15457
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-roadmap-driven/SKILL.md",
+        "sha256": "21793fa08a782c2c8409eba09157f41a533ccf0746e1e03bc64d0af817dc0bfb",
+        "size": 10789
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-wayfinder/SKILL.md",
+        "sha256": "e69f0dc9f2826c110d41dc7d381fc407b1d691323ae8e70eb0237f88e651d8e5",
+        "size": 17200
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/README.md",
+        "sha256": "5005d91dd1856ff39a91678db8836ec82a70e94a67f7be419db8c9dac303b3ab",
+        "size": 4848
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-code-review/SKILL.md",
+        "sha256": "125cae5f86c5acc08516859056ea11ebbb998db95f0ca43a450e1e7a24ba2cfe",
+        "size": 6663
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-codebase-design/SKILL.md",
+        "sha256": "65209963f9fc5bd870d2c33cdf572b83ba14897156b9bbaa36db90f3d2d0b47b",
+        "size": 6491
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-diagnosing-bugs/SKILL.md",
+        "sha256": "bf28c917e4d218ce02ff6b066b64904f9293b6817ab6db06642f87c579f46c8f",
+        "size": 8978
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-dry-run/SKILL.md",
+        "sha256": "2dfe84cc711b2db45216faec3db6d2bb4fd221868d4e9b261ee7c1bb80c0eb6c",
+        "size": 4396
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-git-bypass-safe-delete/SKILL.md",
+        "sha256": "78f0a40f93d24e26e67403317bccb3485c13e24665c8e32997d5f751a807501a",
+        "size": 50849
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-guide/SKILL.md",
+        "sha256": "d3d0f191797cf8ec2bcabba90ba0409b718b72b788d7a150fe1a5db49917b0b3",
+        "size": 19834
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-implement/SKILL.md",
+        "sha256": "92f3ff3f93ebb2d82c7d694145743f709cf38f46bf232a9668702116aef7ff90",
+        "size": 442
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-improve-codebase-architecture/SKILL.md",
+        "sha256": "72adf25465fd132a77ec001cf72d6a26ba62a1a2af7d837e077adb5ea1196a26",
+        "size": 6051
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-leader/SKILL.md",
+        "sha256": "4a06baac788c91d39b611b756f5dca76af010093638f860d782e19c16a44d386",
+        "size": 7172
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-merge-skill-pair/SKILL.md",
+        "sha256": "f6ffd2c4dcedd0ee93b605ff812c3123e6bb96eac9d2d2ed5e532a653d94bced",
+        "size": 4923
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-merge-skills-wave/SKILL.md",
+        "sha256": "58eaec6931473b65617dc3e3b229b932dd40ad4ec7e20a1950d09e12b8d65455",
+        "size": 5525
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-prototype/SKILL.md",
+        "sha256": "6a08626506f0427760043344908fbcaf2e50922f848da753df056cf48f5b7721",
+        "size": 2957
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-repo-init/SKILL.md",
+        "sha256": "df48b07c0cec14a86f7353c838d1256bfbd8e0f9cb5f4dce860c2c3b0c76adaf",
+        "size": 3043
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-resolving-merge-conflicts/SKILL.md",
+        "sha256": "b31a06e30518ca1294266194c8e0c9d3694f555e9257f5d6521577b7ab4dd46f",
+        "size": 924
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-steelman/SKILL.md",
+        "sha256": "6b817a9f00056eda55ee5cc85c95b21bc21fe323c0b9992bdfa418b2e2bbf0be",
+        "size": 3501
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-tdd/SKILL.md",
+        "sha256": "b59690e8b3c8220488db531bcb901facc1a4c1c6f3f5ba0a026c23bb5d326f38",
+        "size": 3581
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-tech-design-review/SKILL.md",
+        "sha256": "e7be9a0811e03d9929a063bfa272a92a1b847379a811d684e9885bc21e7179af",
+        "size": 4608
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-to-spec/SKILL.md",
+        "sha256": "cd416d9a94dc88725f29056f8c3c1ff5b1bb01c983b6243ac0f8b360ef10e4e9",
+        "size": 3026
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-to-tickets/SKILL.md",
+        "sha256": "46d84e5a857705db5cfc37060a0b24cb7d8ce8c6b60f89a53155cc928bdcbbd4",
+        "size": 5686
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-triage/SKILL.md",
+        "sha256": "2a3d11e8f44f3b16734d1f3e7d8799b175545a30e5f14fb5866beba6b64be717",
+        "size": 6731
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-wizard/SKILL.md",
+        "sha256": "2b433532fc47694bdadb55ee68efe6ab0ac16f172df5b739f6f633ccf5da0fae",
+        "size": 4174
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/README.md",
+        "sha256": "89b5a9fc39d5c96ecace724f6be5a5dddcaae73bb787361c0be5bcf9a4d0c375",
+        "size": 1265
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-aihot/SKILL.md",
+        "sha256": "843ef0dd49d3c3f18c7f4e7a84cc706544e9231984c4cd1d8af1cc9f6f6fece7",
+        "size": 11212
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-git-guardrails-claude-code/SKILL.md",
+        "sha256": "36b40e24ee11bda05d89035bd1d7db1184f2ce5ae38bb4dae1f565410e7b8d42",
+        "size": 2315
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-migrate-to-shoehorn/SKILL.md",
+        "sha256": "776e1b62073b4c0672a014985b226fa8b08f240aa7fc17604e193d8cffdbed38",
+        "size": 2798
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-scaffold-exercises/SKILL.md",
+        "sha256": "21a15915106cf1b0d46e031e19123f29f7fee9d4c0714d27a51055e1061b88ef",
+        "size": 3592
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-setup-pre-commit/SKILL.md",
+        "sha256": "0211ce0b5489adb774842ca4426e2f1c87a7ba3370b51c26826b3104f42441ec",
+        "size": 2264
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-storage-analyzer/SKILL.md",
+        "sha256": "20ac12c340a3a53b1eed6bfc5baf0a398a24cc431418ef8aaec4c077e2fe9ddc",
+        "size": 11413
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/README.md",
+        "sha256": "70472394d786544691186c736ab8baaa9e6836381fa7697ed4739094a636ac28",
+        "size": 2439
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-caveman/SKILL.md",
+        "sha256": "b43f708ad650e48a2cb004d5bddde08b64ccd230b5e5e3b35b830891db75177a",
+        "size": 1953
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-composer/SKILL.md",
+        "sha256": "b4ac509884ee389628ba5c2bed0a82e0ac508bd3da846e1f7fd2f98763effb28",
+        "size": 3358
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-discuss-view/SKILL.md",
+        "sha256": "bbd52a35ab180bfda80742b52489524fb2f4bfe6345070ec5e1a7669f13fd600",
+        "size": 3673
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-discuss/SKILL.md",
+        "sha256": "1633d8a5b089d594ca009a6533b3f2e8d1604241b7bccd1b08fdf33611c08afe",
+        "size": 20488
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-grilling/SKILL.md",
+        "sha256": "b204649a245737f326cb755b8414faf6b0f9aeedc901882b766cab31fb4bf2b0",
+        "size": 1875
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-handoff/SKILL.md",
+        "sha256": "3976f39a78368dcdd3e12e15f240de154cfb508b4f4d07d106e44b71bc9dd6a3",
+        "size": 850
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-teach/SKILL.md",
+        "sha256": "f387cf2d2703c13f56f2a60080e4131fb9749798be1343ebc0d65e4b7e317139",
+        "size": 9510
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-to-questionnaire/SKILL.md",
+        "sha256": "d9bd1b9788569e6a6e06a34592dacb8e810e67fefa2c88a44948f31fcc9de68a",
+        "size": 2924
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-wait-what/SKILL.md",
+        "sha256": "ac31355a601b7d96fd61e23db316bba3fe6009c0cd2c2c529c9a1ae23553c3ee",
+        "size": 331
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-write-a-skill/SKILL.md",
+        "sha256": "01c291cce710a88fa9863bf431f0da44db0b8468cf1eebe1ed09a1e77dda2f11",
+        "size": 4188
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-writing-for-agents/SKILL.md",
+        "sha256": "8245e3d8e3e35be360b5b6d73ae59195e694618e085cd0097e2cc1f51ed3d9b3",
+        "size": 11059
+      },
+      {
+        "exists": true,
+        "path": "skills/research/README.md",
+        "sha256": "ec197b9900d0504c9f94ddeb68c51381c34cd27f13505642f72fc7bf58a2c297",
+        "size": 1102
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-code-research/SKILL.md",
+        "sha256": "5fe73ee59c2768a8f6f37e24df5020c96a4985f9c5d29188bdb4a899093efdf0",
+        "size": 5316
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-open-source-capability-fit/SKILL.md",
+        "sha256": "3a20e9b1a222ad96c7dbc66a4c2907433baf18ef710399c012c6cb5c9b578967",
+        "size": 5776
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-research/SKILL.md",
+        "sha256": "292f98219c31a806cba3e18f9690de023726d89696381353b01b5ebefbf74b00",
+        "size": 3713
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-systematic-research/SKILL.md",
+        "sha256": "973716265df1b534fb06442f47948b542a20aabaab008dc42d2dd4721923a0c1",
+        "size": 18766
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-tech-research-report/SKILL.md",
+        "sha256": "9ab77709f4da7b1ab887b84e2f4f48dc13dd70dc69139f80a61f822bfc34fdfb",
+        "size": 14863
+      }
+    ],
+    "root": "."
+  }
+}

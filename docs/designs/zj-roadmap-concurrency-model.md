@@ -1,10 +1,28 @@
+---
+doc-kind: design
+authority: primary
+authority-id: design.roadmap-concurrency-model
+---
+
 # Roadmap 并发与依赖模型（zj-roadmap-driven）
 
-`doc-kind: design`
-`authority: primary`
-`authority-id: design.roadmap-concurrency-model`
+## Question
 
-> Bounded question: 多 Agent 并发写、跨子树依赖、以及跨 carrier 扩展读，zj-roadmap-driven 分别靠什么设计保证安全与一致？
+多 Agent 并发写、跨子树依赖、以及跨 carrier 扩展读，
+`zj-roadmap-driven` 分别靠什么设计保证安全与一致？
+
+## Scope
+
+本文拥有 roadmap 的稳定节点身份、依赖边、租约、carrier 演进以及错误码与
+退出码纪律。它记录已经接受的并发和存储设计理由，不替代 CLI 操作参考或执行图设计。
+
+## Boundaries
+
+- 调度和并发模型在本文；trace layer 的上下文与因果模型由
+  [Roadmap 执行图](zj-roadmap-execution-graph.md)拥有。
+- 当前命令语法和实际错误行为以 skill 内 CLI reference 与实现为准。
+- 历史 spec 只保留在 Git 历史中，不继续作为现役权威。
+
 > 来源 spec：`docs/plans/zj-roadmap-dag-concurrency.md`（已于 2026-09-16 抽取至本 designs 后从仓库删除，原稿见 git 历史 `929b4ab^`）。本文提炼权威结论与决策理由，完整 62 条 user story 与论证以 git 历史中的原 plan 为准。
 
 ## 核心不变式（一切阶段的地基）
@@ -82,3 +100,18 @@
 ## 后续
 
 P5（执行图 / trace layer）是另一张图的设计，权威见 [`zj-roadmap-execution-graph.md`](zj-roadmap-execution-graph.md)。
+
+## Source map
+
+- [Roadmap skill](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
+- [Roadmap data model](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-data-model.md)
+- [Roadmap CLI contract](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
+- [Single-file carrier](../../skills/codebase-docs/zj-roadmap-driven/roadmap.py)
+- [SQLite carrier](../../skills/codebase-docs/zj-roadmap-driven/roadmap_sqlite.py)
+
+## Related authority
+
+- [ZAgentic documentation map](../README.md)
+- [Roadmap execution graph](zj-roadmap-execution-graph.md)
+- [Wayfinder and roadmap carrier seam](zj-wayfinder-roadmap-dual-mode.md)
+- [ZJ-CONTEXT glossary](../../ZJ-CONTEXT.md)

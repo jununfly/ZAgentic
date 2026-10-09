@@ -1,4 +1,25 @@
+---
+doc-kind: agreement
+authority: primary
+authority-id: agreement.open-source-capability-fit-decision-model
+---
+
 # 开源能力拟合决策模型（Open-Source Capability-Fit Decision Model）
+
+## Question
+
+ZAgentic 如何判定一个外部开源能力应直接采用、扩展采用、选择性复用，还是继续搜索？
+
+## Scope
+
+本文拥有 `R × O` 证据矩阵、有效拟合度、总所有权成本、A/B/C/D 分类和重新评估
+规则。具体候选的研究事实和决策记录仍由各自 evidence artifact 拥有。
+
+## Boundaries
+
+- 本模型给出可复核的能力拟合判定，不代替完整技术选型报告。
+- 缺失关键能力不能被非关键能力覆盖率抵消。
+- 采用结论不授权实现、发布或不可逆副作用；后续执行仍遵循对应 workflow。
 
 > 开源能力拟合决策模型（本仓库 SSOT），用于评估是否将某个外部开源项目（或其部分能力）
 > 直接采用 / 扩展采用 / 选择性复用 / 继续搜索，产出可复核的 `R × O` 证据矩阵与
@@ -129,4 +150,17 @@ A > B1 > B2 > C > B3
 - 采用理由、主要风险、退出路径和重新评估触发条件。
 
 **完成标准**：第三方 Agent 仅凭该决策记录，即可复核分类依据，并能识别哪些结论来自证据、哪些仍是假设。
+
+## Source map
+
+- [Capability-fit skill](../../skills/research/zj-open-source-capability-fit/SKILL.md)
+- [Model application contract](../../skills/research/zj-open-source-capability-fit/references/model-application.md)
+- [Decision-record template](../../skills/research/zj-open-source-capability-fit/references/decision-record-template.md)
+
+## Related authority
+
+- [ZAgentic documentation map](../README.md)
+- [Research bucket architecture](../architecture/ta-skill-bucket-research.md)
+- [Composer and Plan product form](../designs/zj-composer-plan-product-form.md)
+- [zj-discuss full specification](../designs/zj-discuss/design.md)
 

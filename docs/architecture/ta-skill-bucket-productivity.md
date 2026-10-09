@@ -14,18 +14,19 @@ and how does it fail?
 ## Scope
 
 This page describes the productivity bucket as an architecture subsystem.
-The bucket holds daily non-code-work skills: language switches, grilling
-sessions, hand-offs, teaching state, question formulation, and skill-
-writing helpers. It does **not** own repository-governance skills
-(codebase-docs has those) or code-change skills (engineering has those).
+The bucket holds daily non-code-work skills: communication modes, capability
+composition, structured discussion, hand-offs, teaching state, question
+formulation, and skill-writing helpers. It does **not** own repository
+governance (codebase-docs has that) or code-change execution (engineering has
+that).
 
 ## Boundaries
 
-The productivity bucket holds daily non-code-work skills — language
-switches, grilling sessions, hand-offs, teaching state, question
-formulation, and skill-writing helpers. It does **not** own
-repository-governance skills (codebase-docs has those) or code-change
-skills (engineering has those).
+The productivity bucket owns Human-facing workflow methods and their bounded
+process or evidence artifacts. Composer Plans remain review artifacts under
+`skills-outputs/`; zj-discuss document groups remain process material until a
+Human invokes documentation governance. Neither artifact becomes durable
+repository authority by being produced here.
 
 ## Responsibility
 
@@ -35,6 +36,9 @@ The bucket covers:
 
 - language and tone switches (`zj-caveman`, `zj-grilling`,
   `zj-wait-what`),
+- reviewable capability composition (`zj-composer`),
+- structured complex-problem discussion (`zj-discuss`,
+  `zj-discuss-view`),
 - session transfer and continuation (`zj-handoff`),
 - multi-session teaching state (`zj-teach`),
 - decision capture and routing (`zj-to-questionnaire`),
@@ -43,21 +47,22 @@ The bucket covers:
 
 ## Owned state
 
-- The skill folders under `skills/productivity/` (8 entries) plus their
+- The skill folders under `skills/productivity/` (11 entries) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
-- No state outside the bucket: these skills operate on session-local
-  context and on produced artefacts, never on durable repository state
-  without explicit Human consent.
+- Workflow-owned process and evidence artifacts such as Composer Plans under
+  `skills-outputs/zj-composer/` and zj-discuss groups under
+  `discussions/<slug>/`. These are not durable documentation authority and
+  remain subject to their own Human review or governance lifecycle.
 
 ## Interface
 
 | Direction | Interface |
 | --- | --- |
-| Inbound | Human prompts that ask for a grilling session, a handoff, a teaching arrangement, a questionnaire, or a skill-writing task. |
-| Outbound | Reformatted language, drilling questions, handoff documents, teaching plans, questionnaires, and skill drafts — all session-scoped outputs. |
-| Cross-bucket | May cite `ZJ-CONTEXT.md` for vocabulary; `zj-grilling` may consult `zj-grill-with-docs` from the codebase-docs bucket for repository-aware drilling. Reads but does not modify other buckets. |
-| External | Reads `ZJ-CONTEXT.md` for vocabulary; produces skill drafts into `skills/` or `personal/` only with explicit Human confirmation. |
+| Inbound | Human prompts for communication help, capability composition, structured discussion, handoff, teaching, questionnaires, or skill writing. |
+| Outbound | Session responses, reviewable Composer Plans, zj-discuss process-document groups, handoff documents, teaching plans, questionnaires, and skill drafts. |
+| Cross-bucket | Composer reads the recursive public-skill catalog without taking semantic ownership; zj-discuss hands completed process material to `zj-docs-ontology`; repository-aware grilling may route to `zj-grill-with-docs`. |
+| External | Reads `ZJ-CONTEXT.md` for vocabulary. Writes skill drafts into `skills/` or `personal/`, or promotes process material into durable docs, only through the applicable Human-confirmed workflow. |
 
 ## Failure behavior
 
@@ -70,6 +75,10 @@ The bucket covers:
   a handoff document and lets the receiving agent resume explicitly.
 - `zj-teach` does not advance without an explicit "continue" from the
   Human; it treats the teaching workspace as stateful.
+- `zj-composer` stops at a reviewable Plan, preserves unresolved gaps, and
+  cannot hand off until its validator reports eligibility.
+- `zj-discuss` preserves unresolved viewpoints and hands its process material
+  to documentation governance instead of promoting it automatically.
 
 ## Source map
 
@@ -81,6 +90,11 @@ The bucket covers:
   stress-test interview loop.
 - [zj-handoff](../../skills/productivity/zj-handoff/SKILL.md) —
   forward session transfer.
+- [zj-composer](../../skills/productivity/zj-composer/SKILL.md) — the
+  intent-to-Plan composition boundary.
+- [zj-discuss](../../skills/productivity/zj-discuss/SKILL.md) and
+  [zj-discuss-view](../../skills/productivity/zj-discuss-view/SKILL.md) —
+  the structured discussion lifecycle and independent-view companion.
 - [zj-teach](../../skills/productivity/zj-teach/SKILL.md) — stateful
   multi-session teaching.
 - [zj-write-a-skill](../../skills/productivity/zj-write-a-skill/SKILL.md)

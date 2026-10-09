@@ -1,4 +1,25 @@
+---
+doc-kind: design
+authority: primary
+authority-id: design.zj-discuss-architecture
+---
+
 # zj-discuss — 架构文档（Architecture）
+
+## Question
+
+哪些组件、生命周期、文件布局、角色池和议程引擎构成 `zj-discuss`？
+
+## Scope
+
+本文拥有 `zj-discuss` 的组件关系、求解期文件布局、角色选择和议程编排结构。
+产品定位由 `product.md` 拥有，完整行为规格由 `design.md` 拥有。
+
+## Boundaries
+
+- `zj-discuss` 编排方法和文档，不创建会话运行时或 suite router。
+- `zj-discuss-view` 只写一个独立视角，不承担合成和生命周期编排。
+- 求解后的 durable extraction 和删除由 `zj-docs-ontology` 处理。
 
 > 长期权威页。产品定义见 `product.md`，完整行为规格见 `design.md`。
 > 角色语义唯一真源：`skills/productivity/zj-discuss/references/role-matrix.md`。
@@ -96,3 +117,18 @@ discussions/<self-explain-slug>/        # 仓库根，无 discuss- 前缀
 **否决** 运行时编排器 / suite-化（触发约束 1 → D）。
 
 > 具体边界（R5）与度量 schema（R4）见 `design.md` §8 / §9。
+
+## Source map
+
+- [zj-discuss skill](../../../skills/productivity/zj-discuss/SKILL.md)
+- [zj-discuss-view skill](../../../skills/productivity/zj-discuss-view/SKILL.md)
+- [Role matrix](../../../skills/productivity/zj-discuss/references/role-matrix.md)
+- [Master template](../../../skills/productivity/zj-discuss/references/master-template.md)
+- [Sub-document template](../../../skills/productivity/zj-discuss/references/subdoc-template.md)
+
+## Related authority
+
+- [ZAgentic documentation map](../../README.md)
+- [zj-discuss product](product.md)
+- [zj-discuss full specification](design.md)
+- [Open-source capability-fit decision model](../../agreements/open-source-capability-fit-decision-model.md)

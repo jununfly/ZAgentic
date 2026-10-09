@@ -1,10 +1,29 @@
+---
+doc-kind: design
+authority: primary
+authority-id: design.roadmap-execution-graph
+---
+
 # Roadmap 执行图（trace layer，P5）
 
-`doc-kind: design`
-`authority: primary`
-`authority-id: design.roadmap-execution-graph`
+## Question
 
-> Bounded question: 执行期涌现的发现与上下文需求，zj-roadmap-driven 如何记录与供给而不膨胀 Human 视图、不污染地图？
+执行期涌现的发现与上下文需求，`zj-roadmap-driven` 如何记录与供给而不膨胀
+Human 视图、不污染地图？
+
+## Scope
+
+本文拥有 plan/trace 两层模型、trace schema、因果边方向与无环约束、晋升状态机和
+Human 主视图边界。它记录 durable 设计，不替代 CLI 参考或运行时代码。
+
+## Boundaries
+
+- 节点租约、调度依赖和 carrier 并发由
+  [Roadmap 并发与依赖模型](zj-roadmap-concurrency-model.md)拥有。
+- `reference` 是可成环的上下文引用；`mainline`、`prompted-by` 和 trace 参与的
+  `derives-from` 共同构成无环因果图。
+- 过程 trace 默认不进入 Markdown 主视图，也不成为 plan tree 的父子节点。
+
 > 上游 spec：`docs/plans/zj-roadmap-dag-concurrency.md` §8（方向与边界）；本篇细化 spec：`docs/plans/zj-roadmap-execution-graph.md`（均已抽取至 designs 后于 2026-09-16 从仓库删除，原稿见 git 历史 `929b4ab^`）。本文只提炼权威结论与决策理由。
 
 ## 要治的病
@@ -86,3 +105,18 @@ S1 `layer` 字段 + 迁移 + L1/L2 归口 → S2 `trace add` + provenance → S3
 2. **共享 carrier 把「忘过滤 layer」从远端错误变当场泄漏**，且与视图膨胀头号风险叠加同一 bug。
 3. **视图膨胀头号风险** —— 任何向 md 加内容的提议先答「少问一句吗」，默认不加。
 4. **命令面膨胀** —— 新命令必须能被 Agent 机械调用（JSON 输出 + 稳定 `E_*` code），否则不值得进 CLI。
+
+## Source map
+
+- [Roadmap skill](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
+- [Roadmap implementation](../../skills/codebase-docs/zj-roadmap-driven/roadmap.py)
+- [Roadmap CLI contract](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
+- [Trace behavior tests](../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace.py)
+- [Trace provenance tests](../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace_provenance.py)
+
+## Related authority
+
+- [ZAgentic documentation map](../README.md)
+- [Roadmap concurrency and dependency model](zj-roadmap-concurrency-model.md)
+- [Wayfinder and roadmap carrier seam](zj-wayfinder-roadmap-dual-mode.md)
+- [ZJ-CONTEXT glossary](../../ZJ-CONTEXT.md)

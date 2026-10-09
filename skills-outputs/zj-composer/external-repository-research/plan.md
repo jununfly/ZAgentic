@@ -83,8 +83,8 @@ No unresolved capability gaps.
 
 ## Evidence and provenance
 
-- **skill_index_snapshot:** `catalog-v1-0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776`
-- **catalog_revision_or_digest:** `0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776`
+- **skill_index_snapshot:** `catalog-v1-762896ae543a87d50757d3320845357e6efc3b4a69fa74057d5b21abdb760767`
+- **catalog_revision_or_digest:** `762896ae543a87d50757d3320845357e6efc3b4a69fa74057d5b21abdb760767`
 - **source_references:** selected=[zj-code-research -> skills/research/zj-code-research/SKILL.md | zj-research -> skills/research/zj-research/SKILL.md | zj-open-source-capability-fit -> skills/research/zj-open-source-capability-fit/SKILL.md | zj-tech-research-report -> skills/research/zj-tech-research-report/SKILL.md]; excluded=[Step 1 -> skills-outputs/zj-composer/external-repository-research/oracle.json | Step 2 -> skills-outputs/zj-composer/external-repository-research/oracle.json | Step 3 -> skills-outputs/zj-composer/external-repository-research/oracle.json | Step 4 -> skills-outputs/zj-composer/external-repository-research/oracle.json]; suggested=[none declared]; gap=[none declared]; external=https://github.com/michael-denyer/pstack-claude/commit/3b0bc62e13f507c426997ba472e3430dd3e4ef05
 - **evidence_requirements:** Pin every repository claim to the fixed commit and cite a primary-source path or commit reference.
 - **generated_assertions:** The four selected capabilities cover discovery, primary evidence, capability fit, and report synthesis in that order.

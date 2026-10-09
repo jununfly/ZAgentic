@@ -15,17 +15,16 @@ how does it fail?
 
 This page describes the research bucket as an architecture subsystem. The
 bucket holds skills that produce evidence, primary-source findings, sealed
-ledgers, and bounded technical-solution research reports. It does **not**
-own documentation governance (codebase-docs owns that) and does **not**
-own code-change skills (engineering owns that).
+ledgers, capability-fit decisions, and bounded technical-solution research
+reports. It does **not** own documentation governance (codebase-docs owns
+that) and does **not** own code-change skills (engineering owns that).
 
 ## Boundaries
 
-This page describes the research bucket as an architecture subsystem. The
-bucket holds skills that produce evidence, primary-source findings, sealed
-ledgers, and bounded technical-solution research reports. It does **not**
-own documentation governance (codebase-docs owns that) and does **not**
-own code-change skills (engineering owns that).
+The research bucket owns evidence-producing methods and their bounded output
+contracts. Its outputs remain evidence surfaces until a separate governance
+pass promotes a durable conclusion; the bucket does not own documentation
+authority or code-change execution.
 
 ## Responsibility
 
@@ -36,28 +35,31 @@ research-shaped answer rather than a code change. The bucket covers:
 - commit-scoped repository mapping (`zj-code-research`),
 - technical-solution recommendation writing
   (`zj-tech-research-report`),
+- mechanical open-source capability-fit decisions
+  (`zj-open-source-capability-fit`),
 - end-to-end product/company/technology origin-to-present studies
   (`zj-systematic-research`).
 
-The bucket produces artefacts that flow into `research/`; it does not
-promote those artefacts into durable authority. Promotion is a separate
-governance pass under `zj-docs-ontology`.
+The bucket produces artifacts in the target repository's chosen evidence
+surface, commonly `research/` or `skills-outputs/<skill>/`. It does not promote
+those artifacts into durable authority. Promotion is a separate governance
+pass under `zj-docs-ontology`.
 
 ## Owned state
 
-- The skill folders under `skills/research/` (4 entries) plus their
+- The skill folders under `skills/research/` (5 entries) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
-- No state outside the bucket: research skills write to `research/` (the
-  evidence surface) and never to `docs/` without explicit Human
-  confirmation.
+- Research packages and decision records written to the target's declared
+  evidence surface. The bucket never writes them into durable `docs/`
+  authority without explicit Human confirmation.
 
 ## Interface
 
 | Direction | Interface |
 | --- | --- |
-| Inbound | Human prompts asking for a research package, a recommendation, or a domain study. |
-| Outbound | Research packages, sealed evidence ledgers, technical-solution recommendation reports, and end-to-end studies written into `research/`. |
+| Inbound | Human prompts asking for a research package, capability-fit decision, recommendation, or domain study. |
+| Outbound | Research packages, sealed evidence ledgers, capability-fit decision records, technical-solution reports, and end-to-end studies written to the selected evidence surface. |
 | Cross-bucket | Reads `ZJ-CONTEXT.md` for vocabulary; reads `docs/designs/` and `docs/zj-adr/` for the historical decisions it must respect; reads but does not write into other buckets. |
 | External | Connects to external information sources through the skill's own `scripts/` and per-skill `references/`; relies on `scripts/` for shared utilities. |
 
@@ -70,6 +72,9 @@ governance pass under `zj-docs-ontology`.
 - A repository-mapping skill (`zj-code-research`) refuses to map a
   repository that lacks a recent commit hash for anchoring; it does not
   silently default to HEAD without flagging the default.
+- A capability-fit evaluation fails closed when a required evidence matrix or
+  mechanical gate is incomplete; it does not convert a critical capability
+  gap into a favorable verdict.
 - A technical recommendation report (`zj-tech-research-report`) halts on
   unsupported claims; it labels inference, target architecture, and
   implemented behaviour separately rather than smoothing them into one
@@ -90,6 +95,10 @@ governance pass under `zj-docs-ontology`.
   the origin-to-present domain study.
 - [zj-tech-research-report](../../skills/research/zj-tech-research-report/SKILL.md) —
   the technical-solution recommendation writer.
+- [zj-open-source-capability-fit](../../skills/research/zj-open-source-capability-fit/SKILL.md) —
+  the capability-fit decision instrument.
+- [Open-source capability-fit decision model](../agreements/open-source-capability-fit-decision-model.md) —
+  the methodology authority used by that instrument.
 
 ## Related authority
 

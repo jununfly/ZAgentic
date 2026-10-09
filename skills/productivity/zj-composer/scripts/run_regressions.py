@@ -1058,14 +1058,18 @@ def run_regressions(root: Path, output: Path) -> dict[str, Any]:
     before = {path.name: fixture_files(path) for path in fixture_dirs}
     source_paths = [
         ROOT / "skills/productivity/zj-composer/SKILL.md",
+        ROOT / "skills/productivity/zj-composer/references/plan-contract.md",
         ROOT / "skills/productivity/zj-composer/references/plan-template.md",
+        ROOT / "skills/productivity/zj-composer/references/snapshot-contract.md",
         ROOT / "skills/productivity/zj-composer/references/template-versions.json",
+        ROOT / "skills/productivity/zj-composer/references/validator-contract.md",
         ROOT / "skills/productivity/zj-composer/scripts/discover_catalog.py",
         ROOT / "skills/productivity/zj-composer/scripts/generate_snapshot.py",
         ROOT / "skills/productivity/zj-composer/scripts/validate_plan.py",
         ROOT / "skills/productivity/zj-composer/scripts/evaluate_fixture.py",
         ROOT / "skills/productivity/zj-composer/scripts/run_regressions.py",
-        ROOT / "docs/plans/roadmap-zj-composer.json",
+        ROOT / "docs/designs/zj-composer-plan-product-form.md",
+        ROOT / "docs/zj-adr/0005-composer-authority-and-plan-contract.md",
     ]
     # Include every path pinned by the active catalog snapshot in the integrity
     # check.  This catches an accidental mutation of a source file even when a

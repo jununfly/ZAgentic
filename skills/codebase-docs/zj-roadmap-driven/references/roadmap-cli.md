@@ -241,16 +241,17 @@ never disagree on what counts as a start or a child.
 
 | Code | Raised by |
 |------|-----------|
-| `E_CYCLE` | a `blocks` edge that would close a cycle |
+| `E_CYCLE` | a `blocks` or `supersedes` edge, or a trace causal edge, that would close its graph's cycle |
 | `E_NODE_NOT_FOUND` | an edge pointing at a node that does not exist |
 | `E_INVALID_STATUS` | `add` / `update --status blocked` (blocked is derived, not settable) |
 | `E_LEASE_HELD` | writing a lease holder's fields on a node someone else holds (or with a stale fencing token) |
 | `E_CONFLICT` | `--if-rev <sha>` no longer matches the current revision |
 | `E_SCOPE` | an `--scope`-bearing write aimed outside that node's subtree |
 
-All six exit 1. `E_CYCLE` and `E_NODE_NOT_FOUND` are only raised by `edge`;
-pre-existing commands still raise `KeyError`/`ValueError` with their original
-wording, so their output is unchanged.
+All six exit 1. `E_CYCLE` may surface through `edge`, `trace add`, or `promote`,
+because all three can add an edge governed by an acyclic contract.
+`E_NODE_NOT_FOUND` is raised by `edge`; pre-existing commands still raise
+`KeyError`/`ValueError` with their original wording, so their output is unchanged.
 
 ### Scope tokens
 

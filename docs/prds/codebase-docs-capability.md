@@ -1,3 +1,8 @@
+---
+doc-kind: prd
+authority: supporting
+---
+
 # Codebase Docs Capability Spec
 
 ## One-page overview

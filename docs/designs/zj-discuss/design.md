@@ -1,4 +1,26 @@
+---
+doc-kind: design
+authority: primary
+authority-id: design.zj-discuss-spec
+---
+
 # zj-discuss — 设计文档（Design / 完整规格）
+
+## Question
+
+`zj-discuss` 的完整 durable 行为规格、硬规则、角色协议和模板约束是什么？
+
+## Scope
+
+本文拥有 `zj-discuss` / `zj-discuss-view` 的完整行为规格和已 ratify 的方法论修订。
+产品定位与组件路由分别由 `product.md` 和 `architecture.md` 拥有。
+
+## Boundaries
+
+- 本文固定方法和行为合同，不拥有角色定义的逐项内容；角色语义由 skill 内
+  `references/role-matrix.md` 维护。
+- 外部范式证据只支持取舍，不授权引入宿主运行时、router 或 suite 状态。
+- 求解期文档不是长期权威，必须经过文档治理后才能沉淀或删除。
 
 > 本文件是 `zj-discuss` / `zj-discuss-view` 的**权威详细规格**，沉淀自一段长对话
 > （立项 grill → 共识 → 落 skill → 自举验证 → 合并 → 阶段 2 处置 → 开源范式复盘/决策模型复盘
@@ -410,3 +432,18 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
 - 边界案例保留：B3（停止规则）、C3（目标适用范围）为 borderline，不自动计入 N（按节点 1-4 诚实局限）。
 - **R2 过程角色 adapt 过度**：`/plan-*` 带入软件交付语境，adapt 时剥离代码专用措辞，只取评审闸门结构。
 - **R3 决策模型重评被误读为放开 D 红线**：B1 仅方法 / 范式，suite / 运行时 D 不变；重评表显式标注 D 维持。
+
+## Source map
+
+- [zj-discuss skill](../../../skills/productivity/zj-discuss/SKILL.md)
+- [zj-discuss-view skill](../../../skills/productivity/zj-discuss-view/SKILL.md)
+- [Role matrix](../../../skills/productivity/zj-discuss/references/role-matrix.md)
+- [Process roles](../../../skills/productivity/zj-discuss/references/process-roles.md)
+- [Sibling boundary](../../../skills/productivity/zj-discuss/references/sibling-boundary.md)
+
+## Related authority
+
+- [ZAgentic documentation map](../../README.md)
+- [zj-discuss product](product.md)
+- [zj-discuss architecture](architecture.md)
+- [Open-source capability-fit decision model](../../agreements/open-source-capability-fit-decision-model.md)

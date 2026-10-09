@@ -1,10 +1,9 @@
 # Composer Plan v1 contract
 
 This reference is the operational checklist for the bundled template. The
-buildable specification and the Composer design remain the durable sources for
+Composer design and accepted authority decision remain the durable sources for
 the product boundary:
 
-- [buildable spec](../../../../docs/plans/zj-composer-buildable-spec.md)
 - [product form](../../../../docs/designs/zj-composer-plan-product-form.md)
 - [authority ADR](../../../../docs/zj-adr/0005-composer-authority-and-plan-contract.md)
 - [snapshot contract](snapshot-contract.md)

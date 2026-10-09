@@ -686,7 +686,7 @@ The required discriminant separating plan nodes (`plan`, default) from trace nod
 _Avoid_: level, tier, kind (as the layer discriminant; trace nodes carry a separate `kind` describing the material)
 
 **Trace layer**:
-The execution-emergent half of the two-layer graph (opposite of **Layer** `plan`). Trace nodes are produced by the machine during execution and proliferate fast; they are recorded, never curated. They share the carrier and edge table with plan nodes but are excluded from Markdown, scheduling, and tree `children` by §2.4 — the only legal way to express a parent/child relationship across layers is an edge (`mainline` / `reference`), never a tree link. In both carriers they live in the same `nodes` map as plan nodes but are filtered out by `iter_nodes` (L2).
+The execution-emergent half of the two-layer graph (opposite of **Layer** `plan`). Trace nodes are produced by the machine during execution and proliferate fast; they are recorded, never curated. They share the carrier and edge table with plan nodes but are excluded from Markdown, scheduling, and tree `children` by §2.4. Cross-layer relationships use `prompted-by` (plan→trace) or `derives-from` (trace→plan), never a tree link; `mainline` / `reference` connect trace nodes to trace nodes. In both carriers they live in the same `nodes` map as plan nodes but are filtered out by `iter_nodes` (L2).
 _Avoid_: log, transcript, event stream (those are storage shapes, not the layer concept)
 
 **iter_nodes(layer=)**:
@@ -694,11 +694,11 @@ The single traversal entry point that all read queries converge on (L1 of the th
 _Avoid_: traverse, walk, get_all_nodes (those bypass the layer contract)
 
 **E_LAYER_VIOLATION**:
-The error (exit code 1, in `ERROR_EXIT_CODES`) raised when a write path tries to make a trace node the parent of a plan node, or otherwise violate §2.4's hard premise that trace nodes carry no `parent` and never appear in `children`. `assert_plan_layer(parent)` is the guard, called inside `add_node` for all three carriers before the child is attached. This is the third defensive layer (after L2 `iter_nodes` filtering and L3 `traces/` isolation): even if a trace node were to slip into the plan `nodes` space, attaching a child to it fails closed rather than polluting the tree / `_sync_parent_status`.
+The error (exit code 1, in `ERROR_EXIT_CODES`) raised when a write path violates a layer boundary: making a trace node the tree parent of a plan node, or adding an edge in a direction forbidden by its type. `assert_plan_layer(parent)` guards tree attachment, while `add_edge` enforces `mainline` / `reference` trace→trace, `prompted-by` plan→trace, and cross-layer `derives-from` trace→plan. These checks fail closed before the tree or edge table can be polluted.
 _Avoid_: E_PARENT (does not exist), E_INVALID_PARENT
 
 **trace add**:
-The S2 write command — `trace add <path> --kind <enum> --body "…" [--under <plan uid>] [--from <trace uid>]`. Appends a `trace` node and writes provenance at birth: `--under` sets `prompted_by` (only a plan node may be the target), `--from` writes a `mainline` edge to the referenced trace. No approval, no `children` insertion. `trace list` / `trace get` read trace nodes; `trace prune` is S4. Namespaced `trace <action>` (positional dispatch, mirroring `edge`) and takes the whole-graph lock on write.
+The S2 write command — `trace add <path> --kind <enum> --body "…" [--under <plan uid>] [--from <trace uid>]`. Appends a `trace` node and writes provenance at birth: `--under` writes the authoritative `prompted-by` edge and retains `prompted_by` as a compatibility field (only a plan node may be the target); `--from` writes a `mainline` edge to the referenced trace. No approval, no `children` insertion. `trace list` / `trace get` read trace nodes; `trace prune` is S4. Namespaced `trace <action>` (positional dispatch, mirroring `edge`) and takes the whole-graph lock on write.
 _Avoid_: trace write, log append (storage shapes, not the command)
 
 **Trace kind**:
@@ -706,11 +706,11 @@ The material classifier on a `trace` node — one of `turn` / `finding` / `doubt
 _Avoid_: trace type, category (overloaded)
 
 **prompted_by**:
-The field on a `trace` node naming the plan node that prompted it (set by `trace add --under`). It is provenance, not a tree link: it never places the trace in the plan node's `children` (§2.4). A `--under` target that is missing or not a plan node → `E_PROMOTE_TARGET_INVALID` (exit 1).
+The compatibility field on a `trace` node naming the plan node that prompted it (set by `trace add --under`). The authoritative relationship is the plan→trace `prompted-by` edge. Neither representation is a tree link: the trace never enters the plan node's `children` (§2.4). A `--under` target that is missing or not a plan node → `E_PROMOTE_TARGET_INVALID` (exit 1).
 _Avoid_: parent (trace nodes have no parent), source node
 
 **Provenance edge** (mainline / reference):
-The two edge types S2 adds for trace↔trace lineage (`EDGE_MAINLINE` / `EDGE_REFERENCE`), joining the four plan edge types. `mainline` records "this trace continues from that trace" (written by `trace add --from`); `reference` marks a trace citing another. Both are provenance, not scheduling — like `informs` / `derives-from` they never appear in a **Critical path** / **Impact** set, and `mainline` does not trigger cycle detection (only `blocks` does). Endpoints are stored as uid, translated to display id on read, same discipline as plan edges.
+The two edge types S2 adds for trace↔trace lineage (`EDGE_MAINLINE` / `EDGE_REFERENCE`), joining the plan and cross-layer edge types. `mainline` records "this trace continues from that trace" (written by `trace add --from`); `reference` marks a trace citing another. Both are provenance, not scheduling, so they never appear in a **Critical path** / **Impact** set. `mainline` participates in trace causal cycle detection together with `prompted-by` and cross-layer `derives-from`; `reference` may cycle. Endpoints are stored as uid, translated to display id on read, same discipline as plan edges.
 _Avoid_: link, continuation edge (too vague about uid storage)
 
 **E_INVALID_KIND**:
@@ -726,11 +726,11 @@ S2 error (exit 1) raised by `trace add --under` when the target is missing or is
 _Avoid_: E_INVALID_UNDER
 
 **E_INVALID_LAYER**:
-S2 error (exit 1) reserved for using a `plan` command on a `trace` node or vice versa; not yet raised by the S2 `trace add` path but part of the S2 error-code table.
+S2 error (exit 1) raised when a layer-specific command targets the wrong layer; for example, `trace get` on a plan node, or `promote` / `trace prune` on a plan node.
 _Avoid_: E_LAYER
 
 **E_REFERENCED**:
-S2 error (exit 1) reserved for refused deletion of a trace still referenced by another (the `reference` edge's delete guard); belongs to a later S2/S4 slice, listed now so the S2 error-code table is complete.
+S2 error (exit 1) raised when deletion would break provenance that cannot be repaired by the normal edge cascade: an accepted promotion still depends on its source trace, or a surviving trace's `compressed_from` list cites a node in the deletion subtree.
 _Avoid_: E_IN_USE
 
 ### Issue / Triage
