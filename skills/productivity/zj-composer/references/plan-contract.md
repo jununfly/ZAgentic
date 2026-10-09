@@ -7,6 +7,7 @@ the product boundary:
 - [buildable spec](../../../../docs/plans/zj-composer-buildable-spec.md)
 - [product form](../../../../docs/designs/zj-composer-plan-product-form.md)
 - [authority ADR](../../../../docs/zj-adr/0005-composer-authority-and-plan-contract.md)
+- [snapshot contract](snapshot-contract.md)
 
 ## Required shape
 
@@ -23,6 +24,8 @@ The Plan names the capability-index snapshot, its source revision or content
 digest, generation time, and source references for selected, excluded,
 suggested, or gap-related capabilities. Missing or stale metadata stays visible
 as a warning or blocks approval when it changes a capability's meaning.
+The snapshot's immutable file format and reuse rule are defined in
+`snapshot-contract.md`.
 
 ## Gaps and states
 

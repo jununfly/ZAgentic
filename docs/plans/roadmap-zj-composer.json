@@ -135,7 +135,7 @@
       "id": "1-3",
       "uid": "01a11ea37483-51c7dd5f06",
       "label": "Build capability index and provenance snapshot",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -156,16 +156,23 @@
       "id": "1-4",
       "uid": "01a11ea37505-36d956f62c",
       "label": "Implement the Plan validator seam",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
         "1-4-1",
         "1-4-2"
       ],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "validator 的 seam 与失败类别如何固定？",
+          "answer": "新增外部 Plan Markdown 校验器 validate_plan.py：解析 v1 headings/fields、capability reasons、snapshot/provenance 与 authority/side-effect gates；输出排序稳定的 JSON diagnostics，按 stable category 给出 error/warning，invalid 时非零退出。",
+          "note": "先完成 1-4-1 的 schema/provenance/reason 门槛，再完成 1-4-2 的 gap/prerequisite/authority/side-effect/secret 门槛；不引入第二个执行 runtime。"
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-5": {
       "id": "1-5",
@@ -389,7 +396,7 @@
       "id": "1-3-2",
       "uid": "01a11ea42213-fc5a5fff7b",
       "label": "Generate revisioned capability snapshots and metadata warnings",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-3",
       "children": [],
@@ -398,16 +405,32 @@
           "q": "snapshot 如何保证可复核？",
           "answer": "每个 snapshot 带稳定 id、来源 revision/content digest、生成时间、解析 warning；选入 Plan 的能力必须引用该 snapshot。",
           "note": "满足 provenance hard gate。"
+        },
+        {
+          "q": "provenance snapshot 如何生成、命名和保存？",
+          "answer": "由 skills/productivity/zj-composer/scripts/generate_snapshot.py 消费 1-3-1 discovery：对五个 public bucket 的 SKILL.md、README/guide/install-list 计算排序后的逐文件 SHA-256，组合成 source_content_digest；snapshot_id 仅由 schema 与该 digest 派生，保证相同 catalog 内容稳定。snapshot 记录 UTC generated_at、source_files、discovery catalog 和结构化 metadata_warnings，默认保存到 skills-outputs/zj-composer/catalog-snapshots/<snapshot_id>.json。",
+          "note": "选择 content digest 代替 Git revision，使 snapshot 在 detached/dirty checkout 仍可复核；生成脚本是唯一持久化 seam，不创建第二个 registry。"
+        },
+        {
+          "q": "当前 provenance snapshot 结果如何验收？",
+          "answer": "首次生成 catalog-v1-45cb36c8148ddd19aee0e2a3238a17e1dda83499105291bcbdabd03a440122b2：包含 schema=v1、稳定 snapshot_id、UTC generated_at、58 个 source files 的逐文件 SHA-256、51 个 catalog skills 和 0 个 metadata_warnings；第二次运行识别同名内容一致快照并复用，不覆盖。",
+          "note": "由 generate_snapshot.py 写入 skills-outputs/zj-composer/catalog-snapshots；validator、snapshot contract 与 immutable reuse check 均通过。"
         }
       ],
-      "notes": "",
-      "layer": "plan"
+      "notes": "已实现 generate_snapshot.py 与 snapshot-contract.md；内容 digest 派生稳定 snapshot_id，记录 UTC generated_at、58 个 source files、逐文件 digest、完整 discovery catalog 和结构化 metadata_warnings；真实 checkout 结果为 51 skills、0 warnings，重复运行不覆盖。",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "snapshot_id 对相同 catalog 内容稳定",
+        "记录 generated_at、source_content_digest、逐文件 source digest 与 discovery warnings",
+        "缺失/失配 metadata 结构化记录，不静默补齐 capability semantics"
+      ]
     },
     "1-4-1": {
       "id": "1-4-1",
       "uid": "01a11ea4229f-73350d6a21",
       "label": "Validate Plan schema, provenance, and selection reasons",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-4",
       "children": [],
@@ -416,6 +439,16 @@
           "q": "validator 的高位职责是什么？",
           "answer": "验证 v1 schema、template version、每个 selected capability 的 reason、source reference 和 provenance；验证对象是外部 Plan artifact。",
           "note": "唯一主测试 seam 的第一段。"
+        },
+        {
+          "q": "1-4-1 的 schema/provenance 校验如何实现？",
+          "answer": "validate_plan.py 解析 Markdown heading 与字段列表，强制九段、Identity/status/template_version/Plan fields、每个 capability step 的九项字段；从 skill_index_snapshot 定位快照并校验 snapshot_id、source.content_digest、selected skill path 与文件 sha256，缺失或不一致按稳定 category 报错。",
+          "note": "校验器接收外部 Plan 路径，可显式传 --snapshot；默认从仓库 skills-outputs/zj-composer/catalog-snapshots 查找。输出 JSON diagnostics、summary 与 plan metadata。"
+        },
+        {
+          "q": "1-4-1 的实测结果是什么？",
+          "answer": "通过：完整 v1 Plan 返回 valid=true、errors=0、warnings=0；旧快照对未变更的 selected skill 可复核，快照生成后产生新的 content-addressed snapshot 以记录当前 Composer SKILL.md。缺字段、错误 template_version、缺快照、digest 不一致会落入稳定诊断类别。",
+          "note": "验证命令：python skills/productivity/zj-composer/scripts/validate_plan.py /tmp/valid-plan.md；python scripts/validate-zagentic-plugin.py；python roadmap_cli.py validate docs/plans/roadmap-zj-composer.json。"
         }
       ],
       "notes": "",
@@ -425,7 +458,7 @@
       "id": "1-4-2",
       "uid": "01a11ea42338-4d087a2b13",
       "label": "Validate gaps, prerequisites, authority, and side-effect boundaries",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-4",
       "children": [],
@@ -434,6 +467,16 @@
           "q": "validator 如何处理权限与缺口？",
           "answer": "机械拒绝 malformed required-skill 行、缺 prerequisite、authority bypass、undeclared side effect、unapproved write/network call 和 secret leakage。",
           "note": "硬门槛不可由叙述替代。"
+        },
+        {
+          "q": "1-4-2 的机械安全门槛如何实现？",
+          "answer": "validator 以 heading-aware 文本检查 exact Unicode required skill：行；拒绝 malformed gap、缺 prerequisite/dependency、缺 Human approval checkpoint、authority bypass、undeclared writes/network/Git/credentials/irreversible actions 与 secret-shaped literals。side-effect authorization 只能描述已声明 Human gate，authority_statement 必须保留 Composer 无执行权。",
+          "note": "这些是 error categories；诊断排序按 category、line、message 固定，便于 fixture 与后续 oracle 复用。"
+        },
+        {
+          "q": "1-4-2 的实测结果是什么？",
+          "answer": "通过：malformed required skill:、缺 prerequisite、Step 2 前置依赖、without approval authority bypass、secret-shaped api_key 与未授权 write/network 文本均以非零退出并落入稳定类别；有效 Plan 的 side-effect boundary 与 Human checkpoint 通过。",
+          "note": "负例类别：malformed_gap、unresolved_prerequisite、dependency_contradiction、authority_bypass、secret-shaped-output、unapproved_side_effect；所有诊断按 severity/category/line/message 排序。"
         }
       ],
       "notes": "",
@@ -538,7 +581,7 @@
   },
   "metadata": {
     "created": "2026-10-09 11:07:11",
-    "updated": "2026-10-09 13:58:59",
+    "updated": "2026-10-09 15:22:45",
     "md_file": "docs/plans/roadmap-zj-composer.md"
   },
   "edges": [

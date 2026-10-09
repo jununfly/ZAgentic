@@ -17,9 +17,11 @@ approve or execute work, own skill semantics, or create a second runtime.
    permission boundary, and exclusions.
 2. Read the current recursive public-skill catalog with the bundled read-only
    helper: `python skills/productivity/zj-composer/scripts/discover_catalog.py`.
-   Record a provenance snapshot with its source revision or content digest,
-   discovery time, source paths, and metadata warnings. Treat the existing
-   catalog as the authority.
+   Generate a provenance artifact with
+   `python skills/productivity/zj-composer/scripts/generate_snapshot.py`.
+   Record its source revision or content digest, discovery time, source paths,
+   and metadata warnings. See [the snapshot contract](references/snapshot-contract.md).
+   Treat the existing catalog as the authority.
 3. Compose ordered capability steps. For every selected skill, record its role,
    selection reason, inputs, outputs, prerequisites, dependencies, and excluded
    alternatives. Keep conflicts visible and route unresolved choices to a Human.
@@ -29,7 +31,10 @@ approve or execute work, own skill semantics, or create a second runtime.
 5. Fill [the Plan template](references/plan-template.md) and apply
    [the v1 contract](references/plan-contract.md). Store generated Plans and
    their snapshots under `skills-outputs/zj-composer/`.
-6. Stop for Human review. A rejected Plan stays preserved with its reason; only
+6. Validate an external Plan at the output seam with
+   `python skills/productivity/zj-composer/scripts/validate_plan.py PLAN.md`.
+   See [the validator contract](references/validator-contract.md). A rejected
+   Plan stays preserved with its reason; only
    an approved Plan may hand off to the consuming execution chain.
 
 ## Output boundary

@@ -144,6 +144,13 @@ provenance. It is distinct from a roadmap Node and does not own execution or
 long-term authority.
 _Avoid_: roadmap node, executor, runtime state
 
+**Plan validator seam**:
+The deterministic artifact boundary that checks an external Composer Plan's
+v1 schema, capability reasons, snapshot provenance, gap syntax, dependency
+assessment, Human approval, authority, and side-effect gates. It emits stable
+diagnostic categories and never executes the Plan.
+_Avoid_: Composer executor, second runtime, narrative-only review
+
 **Skill**:
 A single unit of agent capability under
 `skills/<bucket>/zj-<name>/SKILL.md` or `personal/zj-<name>/SKILL.md`.
