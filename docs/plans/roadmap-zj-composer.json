@@ -1,0 +1,661 @@
+{
+  "title": "Composer implementation and reversible PoC",
+  "description": "Product execution roadmap for the Composer skill, versioned Plan contract, validator seam, and two fixed reversible PoC fixtures.",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "uid": "01a11ea1031e-3fd535d022",
+      "label": "Composer implementation and reversible PoC",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3",
+        "1-4",
+        "1-5",
+        "1-6",
+        "1-7",
+        "1-8"
+      ],
+      "decisions": [
+        {
+          "q": "路线类型是什么？",
+          "answer": "Product execution：目标是实现 Composer 与首个可逆 PoC；节点可在仓库规则允许的范围内修改产品 skill、验证器和 fixture。",
+          "note": "Scope gate 已通过；不是 legacy/技能验收路线。"
+        },
+        {
+          "q": "Composer 的产品边界是什么？",
+          "answer": "Human-invoked 的 intent-to-Plan 能力，只负责发现、解释、缺口报告和 Plan 生成；不拥有批准执行、不可逆副作用或长期治理权威。",
+          "note": "对应 Composer 设计权威页与 ADR 0005。"
+        },
+        {
+          "q": "Plan 的权威和模板归属是什么？",
+          "answer": "Plan 是 Composer skill 内置模板生成的、带显式 template_version 的可审阅任务契约；模板变更必须显式升版，Plan 不成为第二个 roadmap、executor、evidence authority 或 governance database。",
+          "note": "对应 HD-1、HD-2、HD-3。"
+        },
+        {
+          "q": "能力缺口如何表达？",
+          "answer": "有匹配则给出 skill 与理由；有可信外部/未来能力则给出带来源和适配 caveat 的 bounded suggestion；无可靠建议则每个缺口输出一行精确的 。",
+          "note": "对应 HD-1 的缺口协议。"
+        },
+        {
+          "q": "首个 PoC 的范围是什么？",
+          "answer": "只覆盖 external repository research 与 tool-combination design 两个固定 fixture；输出版本化 Markdown Plan 和验证材料；Human review 后才能进入既有执行链。",
+          "note": "对应已确认的首个可逆 PoC。"
+        },
+        {
+          "q": "首个实现 seam 和验收闸门是什么？",
+          "answer": "以 Composer output → Plan validator → fixed-fixture oracle 为唯一高位 seam；用 schema、provenance、reason、gap-format、authority、side-effect、secret-leakage 和 removal-regression 机械检查，不把人工组装时间或成功率当客观硬门槛。",
+          "note": "对应 HD-5 修订后的验收口径。"
+        },
+        {
+          "q": "是否引入全局 runtime 或自动副作用？",
+          "answer": "不引入 global router、hooks、transcript/model-sheet state、host runtime、shipping glue，也不自动执行不可逆写入、网络写入、Git 发布或其他副作用。",
+          "note": "沿用 pstack capability-fit 的 reject migration 边界。"
+        },
+        {
+          "q": "能力缺口如何表达？",
+          "answer": "",
+          "note": "retracted: 对应 HD-1 的缺口协议。",
+          "retracted": true,
+          "retracts": "5cfc4a5c984db7d39aa42855c15568925a6c404e63e454a35b16c46c1a7f8514"
+        },
+        {
+          "q": "能力缺口如何表达？",
+          "answer": "有匹配则给出 skill 与理由；有可信外部/未来能力则给出带来源和适配 caveat 的 bounded suggestion；无可靠建议则每个缺口输出一行精确的 `required skill：简短地描述缺失skill的形状`。",
+          "note": "对应 HD-1 的缺口协议。"
+        }
+      ],
+      "notes": "Buildable contract: docs/plans/zj-composer-buildable-spec.md. Product execution route; begin with contract freeze before implementation.",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "两项固定 PoC fixture 的 oracle 与 Plan validator 通过；authority bypass、undeclared side effects、unapproved writes/network calls、secret leakage 均为 0；移除实验层后原路径和历史 artifacts 恢复；Human 完成继续/停止决定。"
+      ]
+    },
+    "1-1": {
+      "id": "1-1",
+      "uid": "01a11ea37374-526fdc5824",
+      "label": "Freeze Composer and Plan contracts",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-1-1",
+        "1-1-2",
+        "1-1-3"
+      ],
+      "decisions": [
+        {
+          "q": "1-1 的冻结结果是什么？",
+          "answer": "冻结 Composer/Plan v1 的可执行边界：Plan 必须携带 template_version=1、稳定 plan_id、完整九段契约和来源快照；能力索引是从现有递归 public-skill catalog 派生的只读 snapshot；缺口使用逐项精确的 required skill：... 行；Composer 仅管理 planned/approved/rejected/superseded/cancelled，批准后的执行状态归 consuming execution chain。",
+          "note": "依据 docs/plans/zj-composer-buildable-spec.md、docs/designs/zj-composer-plan-product-form.md 与 docs/zj-adr/0005-composer-authority-and-plan-contract.md；本节点只冻结契约，不实现 skill、validator 或 fixture。"
+        }
+      ],
+      "notes": "Scope gate: Product execution。合同冻结仅固化 Composer/Plan v1、能力索引 provenance snapshot、gap/status protocol；实现留给后续节点。",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "v1 Plan 九段契约与 template_version=1 明确",
+        "能力索引为现有 catalog 派生的可复现只读 snapshot",
+        "gap 行格式与 Composer/执行链状态所有权可机械校验"
+      ]
+    },
+    "1-2": {
+      "id": "1-2",
+      "uid": "01a11ea37401-bff06a1a05",
+      "label": "Scaffold the public Composer skill",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-2-1",
+        "1-2-2"
+      ],
+      "decisions": [
+        {
+          "q": "1-2 的 scaffold 采用什么调用与注册边界？",
+          "answer": "zj-composer 作为 productivity public skill 提供显式 /zj-composer Human invocation，frontmatter 设置 disable-model-invocation=true；同时注册 bucket/root README、zj-guide 与 scripts/zagentic-skills-list，不接入默认 router 或自动触发。",
+          "note": "实现依据 1-2-1 的 invocation 决策与 AGENTS.md 的递归 discovery 规则。"
+        }
+      ],
+      "notes": "Product execution：已新增 skills/productivity/zj-composer scaffold，并同步注册 README、zj-guide 与 scripts/zagentic-skills-list。",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "zj-composer frontmatter 明确 Human-only /zj-composer invocation",
+        "内置 Plan v1 template 与 contract reference 可直接读取",
+        "public skill recursive discovery、frontmatter、README、guide coverage 全部通过"
+      ]
+    },
+    "1-3": {
+      "id": "1-3",
+      "uid": "01a11ea37483-51c7dd5f06",
+      "label": "Build capability index and provenance snapshot",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-3-1",
+        "1-3-2"
+      ],
+      "decisions": [],
+      "notes": "Product execution：构建只读 capability-index discovery seam；snapshot 持久化和 warning policy 留给 1-3-2。",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "递归 public bucket discovery 输出稳定 JSON catalog",
+        "读取 frontmatter、README、guide、install-list 声明而不创建第二 registry",
+        "malformed metadata 以 warning/record 形式保留，不编造 capability semantics"
+      ]
+    },
+    "1-4": {
+      "id": "1-4",
+      "uid": "01a11ea37505-36d956f62c",
+      "label": "Implement the Plan validator seam",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-4-1",
+        "1-4-2"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-5": {
+      "id": "1-5",
+      "uid": "01a11ea37583-1485198775",
+      "label": "Build external repository research fixture",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-5-1",
+        "1-5-2"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-6": {
+      "id": "1-6",
+      "uid": "01a11ea37607-73cc48216a",
+      "label": "Build tool-combination design fixture",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-6-1",
+        "1-6-2"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-7": {
+      "id": "1-7",
+      "uid": "01a11ea37689-fc59fc6cad",
+      "label": "Add security, oracle, handoff, and removal regression checks",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-7-1",
+        "1-7-2"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-8": {
+      "id": "1-8",
+      "uid": "01a11ea3770b-c9e4dc04cc",
+      "label": "Human review of PoC evidence and continuation decision",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "何时允许超出 PoC？",
+          "answer": "两 fixture、validator、negative/security/removal evidence 完成并经 Human review 后，才决定是否进入更广覆盖；通过 PoC 不自动批准生产 rollout。",
+          "note": "保持阶段化演进。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-1-1": {
+      "id": "1-1-1",
+      "uid": "01a11ea41e80-df5eace960",
+      "label": "Define built-in Plan template v1",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "Plan v1 必须包含哪些契约？",
+          "answer": "Identity、intent、ordered capability composition、gaps/suggestions、Human checkpoints、evidence/provenance、verification/oracle、failure/rollback、handoff；每份 Plan 固定记录 template_version=1。",
+          "note": "与 buildable spec §Implementation Decisions 对齐。"
+        },
+        {
+          "q": "v1 Plan 的字段与段落如何作为 validator seam？",
+          "answer": "固定九段：Identity、Intent、Capability composition、Gaps and suggestions、Human checkpoints、Evidence and provenance、Verification、Failure and rollback、Handoff；Identity 强制 plan_id、template_version=1、status、generated_at、Composer version、Human review state；每个 capability step 强制 name、role、reason、inputs、outputs、prerequisites、dependencies、excluded alternatives。",
+          "note": "实现节点只能消费这份契约；模板内容留给 1-2-2，validator 留给 1-4。"
+        }
+      ],
+      "notes": "已冻结 v1 九段契约、Identity 必填字段与 capability step 字段；模板实现和 validator 分别由后续节点负责。",
+      "layer": "plan"
+    },
+    "1-1-2": {
+      "id": "1-1-2",
+      "uid": "01a11ea41f14-4bd42eaa3f",
+      "label": "Define capability-index and provenance-snapshot rules",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "能力索引是否成为第二个 registry？",
+          "answer": "不成为第二个 durable registry；从现有递归 skill discovery、frontmatter、bucket/root index 和 skill 声明派生只读 snapshot，并记录 source revision/content digest 与 metadata warnings。",
+          "note": "保留现有 catalog 权威。"
+        },
+        {
+          "q": "能力索引 provenance snapshot 如何可复现？",
+          "answer": "snapshot 必须包含稳定 snapshot_id、生成时间、catalog source revision 或内容 digest、递归发现范围、每个 skill 的 source reference 与 metadata warnings；它是从现有 public-skill discovery/frontmatter/bucket-root index 派生的只读视图，不是第二个 durable registry。",
+          "note": "1-3 负责生成与校验；本节点只冻结输入字段和 authority 边界。"
+        }
+      ],
+      "notes": "已冻结 snapshot_id、generated_at、source revision/content digest、递归发现范围、source references 与 metadata warnings；保持现有 catalog 为唯一权威。",
+      "layer": "plan"
+    },
+    "1-1-3": {
+      "id": "1-1-3",
+      "uid": "01a11ea41fe1-ae25d4e0a8",
+      "label": "Define required-skill gap protocol and Plan status transitions",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "Plan 状态如何与执行链分工？",
+          "answer": "Composer 只产生 planned/approved/rejected/superseded/cancelled；approved 后 running/blocked/failed/verified/recorded/rolled_back 由 consuming execution chain 持有。",
+          "note": "防止 Composer 变成第二个 executor。"
+        },
+        {
+          "q": "缺口行和 Plan 状态如何机械分界？",
+          "answer": "每个未解决缺口必须独占一行并严格匹配 ；禁止 ASCII 冒号、编号、合并多缺口或自动建 skill。Composer 只写 planned/approved/rejected/superseded/cancelled；approved 之后的 running/blocked/failed/verified/recorded/rolled_back 由 consuming execution chain 负责。",
+          "note": "validator 对格式与 owner 做硬检查；Human rejection 保留 rejected artifact 且不进入执行。"
+        },
+        {
+          "q": "缺口行和 Plan 状态如何机械分界？",
+          "answer": "",
+          "note": "retracted: validator 对格式与 owner 做硬检查；Human rejection 保留 rejected artifact 且不进入执行。",
+          "retracted": true,
+          "retracts": "f6bff20d3f3b45531f53805d34906e1af7be2857143b742070530e094062bbe2"
+        },
+        {
+          "q": "缺口行和 Plan 状态如何机械分界？",
+          "answer": "每个未解决缺口必须独占一行并严格匹配 required skill：简短地描述缺失skill的形状；禁止 ASCII 冒号、编号、合并多缺口或自动建 skill。Composer 只写 planned/approved/rejected/superseded/cancelled；approved 之后的 running/blocked/failed/verified/recorded/rolled_back 由 consuming execution chain 负责。",
+          "note": "validator 对格式与 owner 做硬检查；Human rejection 保留 rejected artifact 且不进入执行。"
+        }
+      ],
+      "notes": "已冻结逐缺口 required skill：... 行格式与 Composer/consuming execution chain 状态所有权；rejected artifact 保留且不得进入执行。",
+      "layer": "plan"
+    },
+    "1-2-1": {
+      "id": "1-2-1",
+      "uid": "01a11ea4206a-89ca9b6e43",
+      "label": "Add Composer frontmatter and explicit invocation contract",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "Composer 如何被调用？",
+          "answer": "新增 public productivity skill，显式 Human invocation；不作为默认 router，不自动触发。",
+          "note": "遵循产品边界。"
+        },
+        {
+          "q": "frontmatter 与调用契约落在哪些 artifact？",
+          "answer": "skills/productivity/zj-composer/SKILL.md 是唯一入口，携带 name、description、disable-model-invocation=true 与 argument-hint；agents/openai.yaml 以 allow_implicit_invocation=false 复述 Human-only policy。",
+          "note": "SKILL.md 保持短步骤，详细契约下沉到 references。"
+        }
+      ],
+      "notes": "已新增 Human-only frontmatter、/zj-composer explicit invocation、argument-hint 与 agents/openai.yaml policy，并完成 README/guide/list registration。",
+      "layer": "plan"
+    },
+    "1-2-2": {
+      "id": "1-2-2",
+      "uid": "01a11ea420f8-f208c5ea7a",
+      "label": "Bundle the Plan template and supporting references",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "模板和引用材料放在哪里？",
+          "answer": "模板与可复用参考材料随 Composer skill 维护；Plan 输出属于 skills-outputs 证据面，不把模板或输出复制成 docs authority。",
+          "note": "符合 AGENTS.md 与文档治理边界。"
+        },
+        {
+          "q": "Plan template 与 supporting reference 如何组织？",
+          "answer": "随 Composer skill 共置 references/plan-template.md 与 references/plan-contract.md；前者固定九段 Plan v1 输出形状，后者固定 provenance、gap syntax、status ownership 与 authority/side-effect boundary；生成 Plan 仍写入 skills-outputs/zj-composer/。",
+          "note": "不复制成 docs authority；buildable spec、design 与 ADR 继续拥有长期边界。"
+        }
+      ],
+      "notes": "已随 skill bundle plan-template.md 与 plan-contract.md；模板固定九段 v1，参考固定 provenance、gap、status ownership 与 authority boundary。",
+      "layer": "plan"
+    },
+    "1-3-1": {
+      "id": "1-3-1",
+      "uid": "01a11ea42185-357939a60e",
+      "label": "Discover the recursive public-skill catalog",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "索引来源的读取边界是什么？",
+          "answer": "只读取现有递归 public-skill discovery 表面及其声明；不创建独立全局注册表，不改写 skill 语义。",
+          "note": "保持一个 capability authority。"
+        },
+        {
+          "q": "能力索引 discovery 的实现 seam 和输出是什么？",
+          "answer": "在 skills/productivity/zj-composer/scripts/discover_catalog.py 提供只读 helper：遍历既有五个 public bucket 的 SKILL.md，解析 frontmatter，读取 bucket/root README、zj-guide 和 scripts/zagentic-skills-list 的注册声明，按稳定路径排序后输出结构化 JSON 到 stdout；默认不写文件、不创建 registry、不改写 skill 语义。",
+          "note": "1-3-2 负责消费该 discovery 输出，加入 source revision/content digest、generated_at、snapshot_id 与 metadata warning policy。"
+        },
+        {
+          "q": "当前 discovery 结果如何验收？",
+          "answer": "在当前 ZAgentic checkout 上按五个 public bucket 稳定排序发现 51 个 public skills；所有条目都有可解析 frontmatter name，顶层 discovery warnings 为 0，zj-composer 的 bucket/root README、zj-guide、install-list 四个声明面均为 true。脚本只输出 JSON，不产生 snapshot 或 registry 文件。",
+          "note": "运行 python skills/productivity/zj-composer/scripts/discover_catalog.py 并解析 stdout；source revision/content digest 与 generated_at 留给 1-3-2。"
+        }
+      ],
+      "notes": "已实现只读 discovery helper：扫描五个 public bucket、解析 frontmatter、读取 README/guide/install-list 声明并按稳定路径输出 JSON；真实仓库结果为 51 个 public skills、0 个顶层 warning。",
+      "layer": "plan"
+    },
+    "1-3-2": {
+      "id": "1-3-2",
+      "uid": "01a11ea42213-fc5a5fff7b",
+      "label": "Generate revisioned capability snapshots and metadata warnings",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "snapshot 如何保证可复核？",
+          "answer": "每个 snapshot 带稳定 id、来源 revision/content digest、生成时间、解析 warning；选入 Plan 的能力必须引用该 snapshot。",
+          "note": "满足 provenance hard gate。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-4-1": {
+      "id": "1-4-1",
+      "uid": "01a11ea4229f-73350d6a21",
+      "label": "Validate Plan schema, provenance, and selection reasons",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "validator 的高位职责是什么？",
+          "answer": "验证 v1 schema、template version、每个 selected capability 的 reason、source reference 和 provenance；验证对象是外部 Plan artifact。",
+          "note": "唯一主测试 seam 的第一段。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-4-2": {
+      "id": "1-4-2",
+      "uid": "01a11ea42338-4d087a2b13",
+      "label": "Validate gaps, prerequisites, authority, and side-effect boundaries",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "validator 如何处理权限与缺口？",
+          "answer": "机械拒绝 malformed required-skill 行、缺 prerequisite、authority bypass、undeclared side effect、unapproved write/network call 和 secret leakage。",
+          "note": "硬门槛不可由叙述替代。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-5-1": {
+      "id": "1-5-1",
+      "uid": "01a11ea423c8-01e933dee0",
+      "label": "Freeze external-repository-research fixture inputs and oracle",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [
+        {
+          "q": "研究 fixture 的 oracle 检查什么？",
+          "answer": "固定 URL/revision、研究问题、证据要求和 no-write boundary；oracle 检查 discovery→primary evidence→capability fit→report synthesis 的顺序、理由和 provenance。",
+          "note": "首个已确认 fixture。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-5-2": {
+      "id": "1-5-2",
+      "uid": "01a11ea42452-1351e35bdc",
+      "label": "Generate and validate the research Plan output",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-6-1": {
+      "id": "1-6-1",
+      "uid": "01a11ea424d9-03b8a67694",
+      "label": "Freeze tool-combination-design fixture inputs and oracle",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [
+        {
+          "q": "组合设计 fixture 的 oracle 检查什么？",
+          "answer": "固定 skill index、目标、约束和 Human checkpoint；oracle 检查候选能力、依赖、缺口、verification、handoff、rollback，且无 router/executor。",
+          "note": "首个已确认 fixture。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-6-2": {
+      "id": "1-6-2",
+      "uid": "01a11ea42564-d6796f6bdf",
+      "label": "Generate and validate the combination Plan output",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-7-1": {
+      "id": "1-7-1",
+      "uid": "01a11ea425ec-14229de79a",
+      "label": "Add negative-case and Human-rejection checks",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [
+        {
+          "q": "负例如何终止？",
+          "answer": "no-match/no-suggestion 输出 required-skill 行并停止；conflict 保留 alternatives 并要求 Human choice；stale source 要求 regenerate/review；rejected Plan 保留并不执行。",
+          "note": "负例是契约，不是日志。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-7-2": {
+      "id": "1-7-2",
+      "uid": "01a11ea42676-9df5586c74",
+      "label": "Add security, handoff, and removal-regression checks",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [
+        {
+          "q": "撤销与安全验收如何定义？",
+          "answer": "instrument writes/network/Git publication/secrets，所有未声明或未批准副作用必须为零；移除 Composer 实验层后原路径和历史 artifact 可用。",
+          "note": "对应 removal-regression hard gate。"
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    }
+  },
+  "metadata": {
+    "created": "2026-10-09 11:07:11",
+    "updated": "2026-10-09 13:58:59",
+    "md_file": "docs/plans/roadmap-zj-composer.md"
+  },
+  "edges": [
+    {
+      "id": "e1",
+      "from": "01a11ea41e80-df5eace960",
+      "to": "01a11ea420f8-f208c5ea7a",
+      "type": "blocks"
+    },
+    {
+      "id": "e2",
+      "from": "01a11ea41e80-df5eace960",
+      "to": "01a11ea4229f-73350d6a21",
+      "type": "blocks"
+    },
+    {
+      "id": "e3",
+      "from": "01a11ea41f14-4bd42eaa3f",
+      "to": "01a11ea42213-fc5a5fff7b",
+      "type": "blocks"
+    },
+    {
+      "id": "e4",
+      "from": "01a11ea41f14-4bd42eaa3f",
+      "to": "01a11ea42185-357939a60e",
+      "type": "blocks"
+    },
+    {
+      "id": "e5",
+      "from": "01a11ea41fe1-ae25d4e0a8",
+      "to": "01a11ea42338-4d087a2b13",
+      "type": "blocks"
+    },
+    {
+      "id": "e6",
+      "from": "01a11ea4206a-89ca9b6e43",
+      "to": "01a11ea420f8-f208c5ea7a",
+      "type": "blocks"
+    },
+    {
+      "id": "e7",
+      "from": "01a11ea42185-357939a60e",
+      "to": "01a11ea42213-fc5a5fff7b",
+      "type": "blocks"
+    },
+    {
+      "id": "e8",
+      "from": "01a11ea42213-fc5a5fff7b",
+      "to": "01a11ea4229f-73350d6a21",
+      "type": "blocks"
+    },
+    {
+      "id": "e9",
+      "from": "01a11ea42213-fc5a5fff7b",
+      "to": "01a11ea423c8-01e933dee0",
+      "type": "blocks"
+    },
+    {
+      "id": "e10",
+      "from": "01a11ea42213-fc5a5fff7b",
+      "to": "01a11ea424d9-03b8a67694",
+      "type": "blocks"
+    },
+    {
+      "id": "e11",
+      "from": "01a11ea4229f-73350d6a21",
+      "to": "01a11ea42338-4d087a2b13",
+      "type": "blocks"
+    },
+    {
+      "id": "e12",
+      "from": "01a11ea42338-4d087a2b13",
+      "to": "01a11ea42452-1351e35bdc",
+      "type": "blocks"
+    },
+    {
+      "id": "e13",
+      "from": "01a11ea42338-4d087a2b13",
+      "to": "01a11ea42564-d6796f6bdf",
+      "type": "blocks"
+    },
+    {
+      "id": "e14",
+      "from": "01a11ea423c8-01e933dee0",
+      "to": "01a11ea42452-1351e35bdc",
+      "type": "blocks"
+    },
+    {
+      "id": "e15",
+      "from": "01a11ea424d9-03b8a67694",
+      "to": "01a11ea42564-d6796f6bdf",
+      "type": "blocks"
+    },
+    {
+      "id": "e16",
+      "from": "01a11ea42452-1351e35bdc",
+      "to": "01a11ea425ec-14229de79a",
+      "type": "blocks"
+    },
+    {
+      "id": "e17",
+      "from": "01a11ea42564-d6796f6bdf",
+      "to": "01a11ea425ec-14229de79a",
+      "type": "blocks"
+    },
+    {
+      "id": "e18",
+      "from": "01a11ea425ec-14229de79a",
+      "to": "01a11ea42676-9df5586c74",
+      "type": "blocks"
+    },
+    {
+      "id": "e19",
+      "from": "01a11ea42676-9df5586c74",
+      "to": "01a11ea3770b-c9e4dc04cc",
+      "type": "blocks"
+    }
+  ],
+  "edge_seq": 19
+}

@@ -153,6 +153,7 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 ### Productivity
 
 - [zj-caveman](./skills/productivity/zj-caveman/SKILL.md) — Switch to ultra-compressed communication mode.
+- [zj-composer](./skills/productivity/zj-composer/SKILL.md) — Compose a reviewable, versioned task Plan from a goal, constraints, evidence needs, and permission boundaries.
 - [zj-grilling](./skills/productivity/zj-grilling/SKILL.md) — Stress-test a plan, decision, or idea through structured questions.
 - [zj-handoff](./skills/productivity/zj-handoff/SKILL.md) — Create a compact handoff for another human or agent.
 - [zj-wait-what](./skills/productivity/zj-wait-what/SKILL.md) — Re-pitch the last message when it did not land.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "ZJ Composer"
+  short_description: "Compose a reviewable, versioned task Plan"
+policy:
+  allow_implicit_invocation: false

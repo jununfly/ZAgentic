@@ -15,7 +15,7 @@ A **flow** is a path through the skills. Most paths run along one **main flow**,
 
 `zj-guide` is user-only, so it chooses a route for the Human; it does not
 silently invoke another user-only skill. The other user-only routes are
-`zj-caveman`, `zj-debrief`, `zj-docs-ontology`, `zj-dry-run`,
+`zj-caveman`, `zj-composer`, `zj-debrief`, `zj-docs-ontology`, `zj-dry-run`,
 `zj-grill-with-docs`, `zj-implement`, `zj-improve-codebase-architecture`,
 `zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-repo-init`,
 `zj-steelman`, `zj-teach`, `zj-to-questionnaire`, `zj-to-spec`,
@@ -78,6 +78,7 @@ A starting situation that generates work, then merges onto the main flow.
 - **`/zj-leader`** — turn one sentence into a self-contained `/goal` brief when the desired next step is to delegate work to an agent. It is a task-brief route, not a substitute for the idea→ship flow.
 - **`/zj-wayfinder`** — plan a foggy, multi-session effort and resolve decision tickets. When the map is clear, continue through `/zj-to-spec` → `/zj-to-tickets`.
 - **`/zj-roadmap-driven`** — track an agreed route in a local JSON roadmap, record decisions, and keep the Human-facing Markdown view current. It tracks; it does not replace wayfinder planning or ticket slicing.
+- **`/zj-composer`** — compose a reviewable, versioned Plan from a goal and constraints, explain selected capabilities, report bounded gaps, and stop for Human approval before handoff.
 
 If the work is already well-scoped, skip `/zj-leader` and `/zj-wayfinder` and
 start at the main flow.
