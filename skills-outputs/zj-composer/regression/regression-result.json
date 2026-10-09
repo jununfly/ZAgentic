@@ -1,0 +1,246 @@
+{
+  "checks": {
+    "authority_and_handoff_guarded": true,
+    "fixture_path_integrity": true,
+    "negative_categories_pass": true,
+    "positive_fixtures_pass": true,
+    "rejected_plans_preserved_and_not_handoffable": true,
+    "removal_simulation": {
+      "experimental_layer_removed": true,
+      "historical_artifact_preserved": true,
+      "original_capability_path_preserved": true,
+      "passed": true,
+      "real_repository_touched": false
+    },
+    "source_integrity": true,
+    "temporary_directory_removed": true
+  },
+  "fixtures": [
+    {
+      "fixture_id": "external-repository-research",
+      "handoff_contract": {
+        "authority_preserves_no_execution_authority": true,
+        "authority_statement_present": true,
+        "handoff_preconditions_guarded": true,
+        "handoff_preconditions_present": true,
+        "passed": true
+      },
+      "negative_cases": [
+        {
+          "description": "Reject an ASCII colon where the exact full-width gap marker is required.",
+          "expected_category": "malformed_gap",
+          "id": "malformed-unicode-gap",
+          "observed_categories": [
+            "malformed_gap"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a prerequisite declaration that explicitly remains unresolved.",
+          "expected_category": "unresolved_prerequisite",
+          "id": "missing-prerequisite",
+          "observed_categories": [
+            "unresolved_prerequisite"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a Plan whose catalog digest no longer matches the frozen snapshot.",
+          "expected_category": "provenance_digest_mismatch",
+          "id": "stale-snapshot-digest",
+          "observed_categories": [
+            "provenance_digest_mismatch"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject authority text that bypasses Human approval.",
+          "expected_category": "authority_bypass",
+          "id": "authority-bypass",
+          "observed_categories": [
+            "authority_bypass"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a secret-shaped literal inserted into a capability output.",
+          "expected_category": "secret-shaped-output",
+          "id": "secret-shaped-output",
+          "observed_categories": [
+            "secret-shaped-output"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a permission boundary that permits a production write without a gate.",
+          "expected_category": "unapproved_side_effect",
+          "id": "unapproved-write",
+          "observed_categories": [
+            "unapproved_side_effect"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject retained alternatives until a Human makes the explicit choice.",
+          "expected_category": "unresolved_conflict",
+          "id": "conflicting-alternatives",
+          "observed_categories": [
+            "unresolved_conflict"
+          ],
+          "passed": true,
+          "validator_valid": false
+        }
+      ],
+      "positive": {
+        "errors": 0,
+        "oracle_valid": true,
+        "valid": true,
+        "validator_valid": true,
+        "warnings": 0
+      },
+      "rejected_plan": {
+        "expected": {
+          "handoff_eligible": false,
+          "human_review": "rejected",
+          "preserved": true,
+          "status": "rejected"
+        },
+        "id": "rejected-plan",
+        "observed": {
+          "handoff_eligible": false,
+          "human_review": "rejected",
+          "preserved": true,
+          "status": "rejected",
+          "validator_valid": true
+        },
+        "passed": true
+      }
+    },
+    {
+      "fixture_id": "tool-combination-design",
+      "handoff_contract": {
+        "authority_preserves_no_execution_authority": true,
+        "authority_statement_present": true,
+        "handoff_preconditions_guarded": true,
+        "handoff_preconditions_present": true,
+        "passed": true
+      },
+      "negative_cases": [
+        {
+          "description": "Reject an ASCII colon where the exact full-width gap marker is required.",
+          "expected_category": "malformed_gap",
+          "id": "malformed-unicode-gap",
+          "observed_categories": [
+            "malformed_gap"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a prerequisite declaration that explicitly remains unresolved.",
+          "expected_category": "unresolved_prerequisite",
+          "id": "missing-prerequisite",
+          "observed_categories": [
+            "unresolved_prerequisite"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a Plan whose catalog digest no longer matches the frozen snapshot.",
+          "expected_category": "provenance_digest_mismatch",
+          "id": "stale-snapshot-digest",
+          "observed_categories": [
+            "provenance_digest_mismatch"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject authority text that bypasses Human approval.",
+          "expected_category": "authority_bypass",
+          "id": "authority-bypass",
+          "observed_categories": [
+            "authority_bypass"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a secret-shaped literal inserted into a capability output.",
+          "expected_category": "secret-shaped-output",
+          "id": "secret-shaped-output",
+          "observed_categories": [
+            "secret-shaped-output"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a permission boundary that permits a production write without a gate.",
+          "expected_category": "unapproved_side_effect",
+          "id": "unapproved-write",
+          "observed_categories": [
+            "unapproved_side_effect"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject retained alternatives until a Human makes the explicit choice.",
+          "expected_category": "unresolved_conflict",
+          "id": "conflicting-alternatives",
+          "observed_categories": [
+            "unresolved_conflict"
+          ],
+          "passed": true,
+          "validator_valid": false
+        }
+      ],
+      "positive": {
+        "errors": 0,
+        "oracle_valid": true,
+        "valid": true,
+        "validator_valid": true,
+        "warnings": 0
+      },
+      "rejected_plan": {
+        "expected": {
+          "handoff_eligible": false,
+          "human_review": "rejected",
+          "preserved": true,
+          "status": "rejected"
+        },
+        "id": "rejected-plan",
+        "observed": {
+          "handoff_eligible": false,
+          "human_review": "rejected",
+          "preserved": true,
+          "status": "rejected",
+          "validator_valid": true
+        },
+        "passed": true
+      }
+    }
+  ],
+  "schema": "zj-composer/regression-result/v1",
+  "side_effects": {
+    "credential_reads": 0,
+    "declared": {
+      "regression_result": 1,
+      "temporary_fixture_copies": 19
+    },
+    "git_publications": 0,
+    "irreversible_actions": 0,
+    "network_calls": 0,
+    "safe": true,
+    "unapproved_side_effects": 0
+  },
+  "valid": true
+}

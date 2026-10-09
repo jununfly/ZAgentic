@@ -135,6 +135,10 @@ AUTHORITY_BYPASS = re.compile(
     r"\b(?:without\s+(?:human|approval)|bypass(?:ing)?\s+(?:human|approval|authority)|automatically\s+(?:write|publish|push|delete|install|execute)|no\s+approval\s+required)\b",
     re.IGNORECASE,
 )
+CONFLICT_MARKER = re.compile(
+    r"(?:\bconflict\b|\bunresolved\s+conflict\b|\bhuman\s+choice\s+required\b|\bchoose\s+one\b|冲突|需要\s*Human\s*选择)",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -416,6 +420,15 @@ def validate_text_gates(lines: list[str], sections: dict[str, dict[str, Any]], d
 
     for step in sections.get("Capability composition", {}).get("steps", []):
         fields = step.get("fields", {})
+        alternatives, alternatives_line = fields.get("excluded_alternatives", (None, None))
+        if isinstance(alternatives, str) and CONFLICT_MARKER.search(alternatives):
+            diagnostics.append(
+                Diagnostic(
+                    "unresolved_conflict",
+                    f"Step {step['number']} retains conflicting alternatives and requires a Human choice",
+                    alternatives_line,
+                )
+            )
         prerequisites = fields.get("prerequisites")
         dependencies = fields.get("dependencies")
         for field_name, item in (("prerequisites", prerequisites), ("dependencies", dependencies)):

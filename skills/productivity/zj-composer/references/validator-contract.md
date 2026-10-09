@@ -34,9 +34,12 @@ identifier comes from the Plan's `skill_index_snapshot` field.
 
 Diagnostics use stable categories such as `missing_section`,
 `missing_capability_field`, `provenance_stale`, `malformed_gap`,
-`dependency_contradiction`, `authority_bypass`, `unapproved_side_effect`, and
-`secret-shaped-output`. Errors produce exit code 1; a valid Plan produces exit
-code 0. Warnings remain visible in JSON and do not silently disappear.
+`dependency_contradiction`, `unresolved_conflict`, `authority_bypass`,
+`unapproved_side_effect`, and `secret-shaped-output`. An explicit conflict
+marker in a step's `excluded_alternatives` is rejected until a Human chooses
+among the retained alternatives. Errors produce exit code 1; a valid Plan
+produces exit code 0. Warnings remain visible in JSON and do not silently
+disappear.
 
 ## Fixture oracle
 

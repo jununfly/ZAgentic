@@ -222,16 +222,23 @@
       "id": "1-7",
       "uid": "01a11ea37689-fc59fc6cad",
       "label": "Add security, oracle, handoff, and removal regression checks",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
         "1-7-1",
         "1-7-2"
       ],
-      "decisions": [],
-      "notes": "",
-      "layer": "plan"
+      "decisions": [
+        {
+          "q": "回归检查如何覆盖负例、安全、handoff 和 removal？",
+          "answer": "新增本地无网络的 run_regressions.py：对两个已通过 fixture 做受控 Markdown mutations，验证稳定失败类别、rejected Plan 保留且不进入执行；再做 source/path integrity、authority/handoff 文本与临时目录 removal simulation，输出可复核 regression-result.json。",
+          "note": "硬门槛是安全副作用为零、两个 fixture 继续通过、负例命中预期类别、历史非 Composer artifact 在模拟移除后仍存在；不引入 live network 或真实删除。"
+        }
+      ],
+      "notes": "1-7-1 与 1-7-2 均完成；两 fixture、负例、Human rejection、security、handoff、removal regression 均通过。",
+      "layer": "plan",
+      "rounds": 1
     },
     "1-8": {
       "id": "1-8",
@@ -602,7 +609,7 @@
       "id": "1-7-1",
       "uid": "01a11ea425ec-14229de79a",
       "label": "Add negative-case and Human-rejection checks",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-7",
       "children": [],
@@ -611,16 +618,27 @@
           "q": "负例如何终止？",
           "answer": "no-match/no-suggestion 输出 required-skill 行并停止；conflict 保留 alternatives 并要求 Human choice；stale source 要求 regenerate/review；rejected Plan 保留并不执行。",
           "note": "负例是契约，不是日志。"
+        },
+        {
+          "q": "负例和 Human rejection 如何落盘？",
+          "answer": "固定 regression cases：malformed Unicode gap、missing prerequisite、stale snapshot digest、authority bypass、secret-shaped output、unapproved write、conflicting alternatives 与 rejected Plan。每个 case 复制已通过 Plan 到隔离临时目录，使用 validator 返回 stable category；rejected Plan 必须保留 status=rejected/human_review=rejected 且 oracle 不能进入 handoff。",
+          "note": "不把负例改写进生产 fixture；回归结果只落在 skills-outputs/zj-composer/regression/。"
+        },
+        {
+          "q": "conflicting alternatives 如何形成稳定回归类别？",
+          "answer": "扩展 Plan validator 识别 excluded_alternatives 中显式的 conflict/Human choice required 标记并返回 unresolved_conflict；其余七类复用已有稳定诊断类别。所有 case 只在临时 Plan 副本运行，生产 fixture 保持不变。",
+          "note": "rejected Plan 仍需通过结构校验，但 handoff eligibility 必须为 false。"
         }
       ],
-      "notes": "",
-      "layer": "plan"
+      "notes": "回归结果：两 fixture 正向 validator/oracle 均 valid，七类负例均命中稳定类别，rejected Plan 保留且 handoff_eligible=false；证据见 skills-outputs/zj-composer/regression/regression-result.json。",
+      "layer": "plan",
+      "rounds": 1
     },
     "1-7-2": {
       "id": "1-7-2",
       "uid": "01a11ea42676-9df5586c74",
       "label": "Add security, handoff, and removal-regression checks",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-7",
       "children": [],
@@ -629,15 +647,21 @@
           "q": "撤销与安全验收如何定义？",
           "answer": "instrument writes/network/Git publication/secrets，所有未声明或未批准副作用必须为零；移除 Composer 实验层后原路径和历史 artifact 可用。",
           "note": "对应 removal-regression hard gate。"
+        },
+        {
+          "q": "本地安全、handoff 与 removal 回归的硬门槛如何核验？",
+          "answer": "run_regressions.py 在受控 side-effect guards 下仅写临时 Plan 副本和 regression-result.json；network_calls、git_publications、credential_reads、irreversible_actions、unapproved_side_effects 均为 0。结果同时验证两 fixture 的 authority/handoff 文本、fixture/source hash integrity、临时目录自动移除，以及移除模拟后历史 artifact 与非 Composer capability path 仍可用。",
+          "note": "不执行 capability、网络请求、Git publication 或真实删除；结果 valid=true 才允许完成节点。"
         }
       ],
-      "notes": "",
-      "layer": "plan"
+      "notes": "安全/handoff/removal hard gates 通过：side-effect counters 全部为 0，authority 与 handoff preconditions 通过，source/fixture integrity 保持，临时目录已移除，历史 artifact 与非 Composer 路径在 removal simulation 中保留。证据见 skills-outputs/zj-composer/regression/regression-result.json。",
+      "layer": "plan",
+      "rounds": 1
     }
   },
   "metadata": {
     "created": "2026-10-09 11:07:11",
-    "updated": "2026-10-09 17:29:06",
+    "updated": "2026-10-09 18:07:11",
     "md_file": "docs/plans/roadmap-zj-composer.md"
   },
   "edges": [
