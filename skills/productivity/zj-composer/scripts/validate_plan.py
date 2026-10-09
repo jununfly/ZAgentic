@@ -22,6 +22,7 @@ from typing import Any, Iterable, Optional
 
 PLAN_SCHEMA = "zj-composer/plan/v1"
 SNAPSHOT_SCHEMA = "zj-composer/catalog-snapshot/v1"
+TEMPLATE_REGISTRY_SCHEMA = "zj-composer/template-versions/v1"
 REQUIRED_SECTIONS = (
     "Identity",
     "Intent",
@@ -109,6 +110,11 @@ FIELD_RE = re.compile(r"^\s*-\s+\*\*([^*]+):\*\*\s*(.*?)\s*$")
 STEP_RE = re.compile(r"^Step\s+(\d+)\s+[-—]\s+(.+?)\s*$", re.IGNORECASE)
 GAP_RE = re.compile(r"^required skill：\s*\S.*$")
 GAP_LIKE_RE = re.compile(r"required\s+skill\s*[:：]", re.IGNORECASE)
+SUGGESTION_RE = re.compile(r"^suggested capability：\s*\S.*$", re.IGNORECASE)
+PROVENANCE_CLASS_RE = re.compile(
+    r"(?:^|;)\s*(selected|excluded|suggested|gap)\s*=\s*\[([^\]]*)\]",
+    re.IGNORECASE,
+)
 STEP_REF_RE = re.compile(r"\bStep\s+(\d+)\b", re.IGNORECASE)
 ISO_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:")
 SECRET_PATTERNS = (
@@ -132,7 +138,7 @@ AFFIRMATIVE_SIDE_EFFECT = re.compile(
     re.IGNORECASE,
 )
 AUTHORITY_BYPASS = re.compile(
-    r"\b(?:without\s+(?:human|approval)|bypass(?:ing)?\s+(?:human|approval|authority)|automatically\s+(?:write|publish|push|delete|install|execute)|no\s+approval\s+required)\b",
+    r"\b(?:without\s+(?:human|approval)|bypass(?:ing)?\s+(?:human|approval|authority)|automatically\s+(?:write|publish|push|delete|install|execute)|no\s+approval\s+required|composer\s+(?:is|becomes)\s+(?:the\s+)?(?:second\s+)?(?:durable\s+)?authority(?:\s+of\s+record)?|second\s+(?:durable\s+)?authority)\b",
     re.IGNORECASE,
 )
 CONFLICT_MARKER = re.compile(
@@ -283,6 +289,59 @@ def canonical_manifest_digest(manifest: list[dict[str, Any]]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def validate_template_pin(root: Path, version: Optional[str], diagnostics: list[Diagnostic]) -> None:
+    """Bind a Plan version to the exact bundled template bytes."""
+
+    registry_path = root / "skills/productivity/zj-composer/references/template-versions.json"
+    try:
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        diagnostics.append(
+            Diagnostic("template_registry_invalid", f"unable to read template version registry: {exc}")
+        )
+        return
+    if not isinstance(registry, dict) or registry.get("schema") != TEMPLATE_REGISTRY_SCHEMA:
+        diagnostics.append(
+            Diagnostic(
+                "template_registry_invalid",
+                f"template registry schema must be {TEMPLATE_REGISTRY_SCHEMA}",
+            )
+        )
+        return
+    entry = registry.get("versions", {}).get(version) if isinstance(version, str) else None
+    if not isinstance(entry, dict):
+        diagnostics.append(
+            Diagnostic("invalid_template_version", f"template_version {version!r} is not registered")
+        )
+        return
+    relative = entry.get("path")
+    expected = entry.get("sha256")
+    if not isinstance(relative, str) or not isinstance(expected, str):
+        diagnostics.append(
+            Diagnostic("template_registry_invalid", f"template_version {version!r} has no path/digest binding")
+        )
+        return
+    template_path = (root / relative).resolve()
+    try:
+        template_path.relative_to(root.resolve())
+    except ValueError:
+        diagnostics.append(
+            Diagnostic("template_registry_invalid", f"template path escapes repository root: {relative}")
+        )
+        return
+    if not template_path.is_file():
+        diagnostics.append(
+            Diagnostic("template_version_mismatch", f"registered template is missing: {relative}")
+        )
+    elif digest_bytes(template_path) != expected:
+        diagnostics.append(
+            Diagnostic(
+                "template_version_mismatch",
+                f"template_version {version} no longer matches its registered digest; increment the version",
+            )
+        )
+
+
 def load_snapshot(root: Path, snapshot_id: str, explicit: Optional[Path], diagnostics: list[Diagnostic]) -> Optional[dict[str, Any]]:
     path = snapshot_path(root, snapshot_id, explicit)
     if path is None or not path.is_file():
@@ -310,7 +369,13 @@ def load_snapshot(root: Path, snapshot_id: str, explicit: Optional[Path], diagno
     return snapshot
 
 
-def validate_snapshot_files(root: Path, snapshot: dict[str, Any], selected: list[tuple[str, int]], diagnostics: list[Diagnostic]) -> None:
+def validate_snapshot_files(
+    root: Path,
+    snapshot: dict[str, Any],
+    selected: list[tuple[str, int]],
+    stale_review_text: str,
+    diagnostics: list[Diagnostic],
+) -> None:
     source = snapshot.get("source", {})
     files = {item.get("path"): item for item in source.get("files", []) if isinstance(item, dict)}
     catalog = snapshot.get("catalog", {})
@@ -337,10 +402,131 @@ def validate_snapshot_files(root: Path, snapshot: dict[str, Any], selected: list
         checked.add(path)
         manifest = files[path]
         current = root / path
+        reviewed = "stale source reviewed" in stale_review_text.casefold() and (
+            path.casefold() in stale_review_text.casefold()
+            or "all catalog sources" in stale_review_text.casefold()
+        )
         if not current.is_file():
-            diagnostics.append(Diagnostic("provenance_stale", f"snapshot source file is missing: {path}"))
+            diagnostics.append(
+                Diagnostic(
+                    "provenance_stale_reviewed" if reviewed else "provenance_stale",
+                    f"snapshot source file is missing: {path}",
+                    severity="warning" if reviewed else "error",
+                )
+            )
         elif manifest.get("sha256") != digest_bytes(current):
-            diagnostics.append(Diagnostic("provenance_stale", f"snapshot source file changed: {path}"))
+            diagnostics.append(
+                Diagnostic(
+                    "provenance_stale_reviewed" if reviewed else "provenance_stale",
+                    f"snapshot source file changed: {path}",
+                    severity="warning" if reviewed else "error",
+                )
+            )
+
+
+def section_body_lines(lines: list[str], section: dict[str, Any]) -> list[tuple[int, str]]:
+    start = section["line"]
+    end = next(
+        (line_no for line_no in range(start + 1, len(lines) + 1) if re.match(r"^##\s+", lines[line_no - 1])),
+        len(lines) + 1,
+    )
+    return [(line_no, lines[line_no - 1].strip()) for line_no in range(start + 1, end)]
+
+
+def provenance_segments(value: Optional[str]) -> dict[str, str]:
+    if not isinstance(value, str):
+        return {}
+    return {
+        match.group(1).casefold(): match.group(2).strip()
+        for match in PROVENANCE_CLASS_RE.finditer(value)
+    }
+
+
+def mapped_reference(segment: Optional[str], needle: Optional[str] = None) -> bool:
+    if not isinstance(segment, str) or not meaningful(segment) or is_explicit_none(segment):
+        return False
+    if "->" not in segment:
+        return False
+    if needle is None:
+        return True
+    return needle.casefold() in segment.casefold()
+
+
+def validate_provenance_classes(
+    root: Path,
+    lines: list[str],
+    sections: dict[str, dict[str, Any]],
+    selected: list[tuple[str, int]],
+    references: Optional[str],
+    references_line: Optional[int],
+    snapshot: Optional[dict[str, Any]],
+    diagnostics: list[Diagnostic],
+) -> None:
+    """Require class-scoped source mappings for every represented capability kind."""
+
+    segments = provenance_segments(references)
+    selected_segment = segments.get("selected")
+    catalog_entries = snapshot.get("catalog", {}).get("skills", []) if snapshot else []
+    for skill, line in selected:
+        item = next((entry for entry in catalog_entries if entry.get("name") == skill), None)
+        path_ref = item.get("path") if isinstance(item, dict) else None
+        cited = isinstance(selected_segment, str) and (
+            skill.casefold() in selected_segment.casefold()
+            or (isinstance(path_ref, str) and path_ref.casefold() in selected_segment.casefold())
+        )
+        if not cited or not mapped_reference(selected_segment):
+            diagnostics.append(
+                Diagnostic(
+                    "provenance_incomplete_selected",
+                    f"selected capability {skill!r} needs a selected=[capability -> source] mapping",
+                    references_line or line,
+                )
+            )
+
+    excluded_steps = [
+        step["number"]
+        for step in sections.get("Capability composition", {}).get("steps", [])
+        if meaningful(step.get("fields", {}).get("excluded_alternatives", (None, None))[0])
+        and not is_explicit_none(step.get("fields", {}).get("excluded_alternatives", ("", None))[0])
+    ]
+    excluded_segment = segments.get("excluded")
+    for number in excluded_steps:
+        if not mapped_reference(excluded_segment, f"Step {number}"):
+            diagnostics.append(
+                Diagnostic(
+                    "provenance_incomplete_excluded",
+                    f"Step {number} excluded alternatives need an excluded=[Step {number} -> source] mapping",
+                    references_line,
+                )
+            )
+
+    gaps_section = sections.get("Gaps and suggestions")
+    gap_lines: list[str] = []
+    suggestion_lines: list[str] = []
+    if gaps_section:
+        for _, value in section_body_lines(lines, gaps_section):
+            if GAP_RE.fullmatch(value):
+                gap_lines.append(value)
+            elif SUGGESTION_RE.fullmatch(value):
+                suggestion_lines.append(value)
+    for value in suggestion_lines:
+        if not mapped_reference(segments.get("suggested"), value):
+            diagnostics.append(
+                Diagnostic(
+                    "provenance_incomplete_suggested",
+                    "suggested capability needs a suggested=[suggestion -> source] mapping",
+                    references_line,
+                )
+            )
+    for value in gap_lines:
+        if not mapped_reference(segments.get("gap"), value):
+            diagnostics.append(
+                Diagnostic(
+                    "provenance_incomplete_gap",
+                    "required-skill gap needs a gap=[required skill line -> source] mapping",
+                    references_line,
+                )
+            )
 
 
 def validate_text_gates(lines: list[str], sections: dict[str, dict[str, Any]], diagnostics: list[Diagnostic]) -> None:
@@ -484,8 +670,7 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
     if values.get("human_review") and values["human_review"] not in ALLOWED_REVIEW:
         diagnostics.append(Diagnostic("invalid_review_state", f"human_review must be one of: {', '.join(sorted(ALLOWED_REVIEW))}", field_value(identity, "human_review")[1]))
     template = values.get("template_version")
-    if template != "1":
-        diagnostics.append(Diagnostic("invalid_template_version", "template_version must be exactly 1", field_value(identity, "template_version")[1]))
+    validate_template_pin(root, template, diagnostics)
     if values.get("generated_at") and not ISO_RE.match(values["generated_at"]):
         diagnostics.append(Diagnostic("invalid_generated_at", "generated_at must be an ISO-8601 timestamp", field_value(identity, "generated_at")[1]))
     elif values.get("generated_at"):
@@ -499,6 +684,20 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
         diagnostics.append(Diagnostic("review_state_mismatch", "approved Plan must have human_review: approved", field_value(identity, "human_review")[1]))
     if values.get("status") == "rejected" and values.get("human_review") != "rejected":
         diagnostics.append(Diagnostic("review_state_mismatch", "rejected Plan must have human_review: rejected", field_value(identity, "human_review")[1]))
+    if values.get("status") == "rejected":
+        rejection_path, rejection_line = field_value(sections.get("Human checkpoints", {}), "rejection_path")
+        if not isinstance(rejection_path, str) or not re.search(
+            r"(?:because\s+\S|reason\s*[:=]\s*\S|原因\s*[:：]\s*\S)",
+            rejection_path,
+            re.IGNORECASE,
+        ):
+            diagnostics.append(
+                Diagnostic(
+                    "missing_rejection_reason",
+                    "rejected Plan must preserve a concrete because/reason in rejection_path",
+                    rejection_line,
+                )
+            )
 
     steps = sections.get("Capability composition", {}).get("steps", [])
     numbers = [step["number"] for step in steps]
@@ -528,6 +727,10 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
     snapshot_id, snapshot_line = field_value(provenance, "skill_index_snapshot")
     digest, digest_line = field_value(provenance, "catalog_revision_or_digest")
     references, references_line = field_value(provenance, "source_references")
+    unknowns, _ = field_value(provenance, "unknowns")
+    stale_review_text = ""
+    if values.get("status") == "approved" and values.get("human_review") == "approved":
+        stale_review_text = unknowns or ""
     snapshot = None
     if meaningful(snapshot_id):
         snapshot = load_snapshot(root, snapshot_id.strip("`"), explicit_snapshot, diagnostics)
@@ -535,14 +738,18 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
             source_digest = snapshot.get("source", {}).get("content_digest")
             if meaningful(digest) and digest.strip("`") != source_digest:
                 diagnostics.append(Diagnostic("provenance_digest_mismatch", "catalog_revision_or_digest must equal snapshot source.content_digest", digest_line))
-            if meaningful(references):
-                ref_text = references
-                for skill, line in selected:
-                    item = next((entry for entry in snapshot.get("catalog", {}).get("skills", []) if entry.get("name") == skill), None)
-                    path_ref = item.get("path") if isinstance(item, dict) else None
-                    if not (skill in ref_text or (isinstance(path_ref, str) and path_ref in ref_text)):
-                        diagnostics.append(Diagnostic("provenance_incomplete", f"source_references does not cite selected capability {skill!r}", references_line))
-            validate_snapshot_files(root, snapshot, selected, diagnostics)
+            validate_snapshot_files(root, snapshot, selected, stale_review_text, diagnostics)
+
+    validate_provenance_classes(
+        root,
+        lines,
+        sections,
+        selected,
+        references,
+        references_line,
+        snapshot,
+        diagnostics,
+    )
 
     acceptance, acceptance_line = field_value(sections.get("Verification", {}), "plan_acceptance")
     if meaningful(acceptance) and acceptance not in ALLOWED_ACCEPTANCE:
@@ -562,6 +769,15 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
     )
     errors = [item for item in diagnostics if item.severity == "error"]
     warnings = [item for item in diagnostics if item.severity == "warning"]
+    handoff_reasons: list[str] = []
+    if errors:
+        handoff_reasons.append("validation_errors")
+    if values.get("status") != "approved":
+        handoff_reasons.append("status_not_approved")
+    if values.get("human_review") != "approved":
+        handoff_reasons.append("human_review_not_approved")
+    if acceptance != "passed":
+        handoff_reasons.append("plan_acceptance_not_passed")
     return {
         "schema": PLAN_SCHEMA,
         "valid": not errors,
@@ -577,6 +793,10 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
             "errors": len(errors),
             "warnings": len(warnings),
             "categories": sorted({item.category for item in diagnostics}),
+        },
+        "handoff": {
+            "eligible": not handoff_reasons,
+            "reasons": handoff_reasons,
         },
         "diagnostics": [item.as_dict() for item in diagnostics],
     }

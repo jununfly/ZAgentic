@@ -20,7 +20,8 @@ approve or execute work, own skill semantics, or create a second runtime.
    Generate a provenance artifact with
    `python skills/productivity/zj-composer/scripts/generate_snapshot.py`.
    Record its source revision or content digest, discovery time, source paths,
-   and metadata warnings. See [the snapshot contract](references/snapshot-contract.md).
+   declared inputs/outputs/dependencies/boundaries, and metadata warnings. See
+   [the snapshot contract](references/snapshot-contract.md).
    Treat the existing catalog as the authority.
 3. Compose ordered capability steps. For every selected skill, record its role,
    selection reason, inputs, outputs, prerequisites, dependencies, and excluded
@@ -37,8 +38,9 @@ approve or execute work, own skill semantics, or create a second runtime.
    `python skills/productivity/zj-composer/scripts/evaluate_fixture.py FIXTURE_DIR`
    to produce the scenario oracle result. See
    [the validator contract](references/validator-contract.md). A rejected Plan
-   stays preserved with its reason; only
-   an approved Plan may hand off to the consuming execution chain.
+   stays preserved with its reason. Handoff additionally requires an approved
+   Human review, passed Plan acceptance, current or explicitly reviewed source
+   metadata, and a valid template-version binding.
 
 ## Output boundary
 

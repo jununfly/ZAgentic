@@ -3,16 +3,138 @@
     "authority_and_handoff_guarded": true,
     "fixture_path_integrity": true,
     "negative_categories_pass": true,
+    "no_match_stops_before_handoff": {
+      "exact_required_skill_only": true,
+      "gap_output": [
+        "required skill：跨工具组合的统一执行能力"
+      ],
+      "handoff_eligible": false,
+      "handoff_reasons": [
+        "status_not_approved",
+        "human_review_not_approved",
+        "plan_acceptance_not_passed"
+      ],
+      "id": "no-match",
+      "passed": true,
+      "validator_valid": true
+    },
     "positive_fixtures_pass": true,
+    "recursive_catalog_and_snapshot": {
+      "nested_skill_discovered": true,
+      "passed": true,
+      "record": {
+        "bucket": "productivity",
+        "declarations": {
+          "bucket_readme": true,
+          "guide": true,
+          "install_list": true,
+          "root_readme": true
+        },
+        "declared": {
+          "boundaries": [
+            "local fixture only"
+          ],
+          "dependencies": [
+            "zj-guide"
+          ],
+          "inputs": [
+            "nested request"
+          ],
+          "outputs": [
+            "nested result"
+          ]
+        },
+        "directory": "group/zj-nested-skill",
+        "frontmatter": {
+          "boundaries": [
+            "local fixture only"
+          ],
+          "dependencies": [
+            "zj-guide"
+          ],
+          "description": "Exercise recursive Composer discovery.",
+          "inputs": [
+            "nested request"
+          ],
+          "name": "zj-nested-skill",
+          "outputs": [
+            "nested result"
+          ]
+        },
+        "metadata_warnings": [],
+        "name": "zj-nested-skill",
+        "path": "skills/productivity/group/zj-nested-skill/SKILL.md",
+        "source_reference": "skills/productivity/group/zj-nested-skill/SKILL.md",
+        "warnings": []
+      },
+      "snapshot_contains_nested_source": true,
+      "snapshot_digest_verified": true
+    },
     "rejected_plans_preserved_and_not_handoffable": true,
-    "removal_simulation": {
+    "removal_regression": {
       "experimental_layer_removed": true,
+      "experimental_layer_was_discoverable": true,
       "historical_artifact_preserved": true,
       "original_capability_path_preserved": true,
+      "original_output_digest_after": "b0d7c47d2612ef9b97b0b1c010c58fe2f37c5b7cba34cabf88aee8da69c26eae",
+      "original_output_digest_before": "b0d7c47d2612ef9b97b0b1c010c58fe2f37c5b7cba34cabf88aee8da69c26eae",
+      "original_output_equal": true,
+      "original_path_executed_after_removal": true,
+      "original_path_executed_before_removal": true,
       "passed": true,
       "real_repository_touched": false
     },
+    "side_effect_guard_probes": {
+      "expected": [
+        "credential_reads",
+        "filesystem_writes",
+        "git_publications",
+        "irreversible_actions",
+        "network_calls"
+      ],
+      "messages": {
+        "credential_reads": "credential read is forbidden: /Users/bilibili/.ssh/id_rsa",
+        "filesystem_writes": "filesystem write is outside the allowlist: /private/var/folders/bk/25klw83n5wn38lj2m3wbr9fc0000gn/T/zj-composer-unauthorized-probe.txt",
+        "git_publications": "subprocess is forbidden during Composer regressions: git push",
+        "irreversible_actions": "irreversible action is outside the allowlist: /Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/README.md",
+        "network_calls": "network access is forbidden during Composer regressions"
+      },
+      "observed": {
+        "credential_reads": true,
+        "filesystem_writes": true,
+        "git_publications": true,
+        "irreversible_actions": true,
+        "network_calls": true
+      },
+      "passed": true
+    },
     "source_integrity": true,
+    "stale_source_review_protocol": {
+      "changed_source": "skills/engineering/zj-leader/SKILL.md",
+      "explicit_human_review": {
+        "categories": [
+          "provenance_stale_reviewed"
+        ],
+        "handoff_eligible": true,
+        "validator_valid": true
+      },
+      "passed": true,
+      "stale": {
+        "categories": [
+          "provenance_stale"
+        ],
+        "handoff_eligible": false,
+        "validator_valid": false
+      }
+    },
+    "template_version_pinning": {
+      "baseline_categories": [],
+      "existing_plan_reinterpreted": false,
+      "mutated_categories": [
+        "template_version_mismatch"
+      ],
+      "passed": true
+    },
     "temporary_directory_removed": true
   },
   "fixtures": [
@@ -67,6 +189,26 @@
           "validator_valid": false
         },
         {
+          "description": "Reject a Plan that makes Composer a second durable authority.",
+          "expected_category": "authority_bypass",
+          "id": "second-authority",
+          "observed_categories": [
+            "authority_bypass"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject an automatic irreversible request before handoff.",
+          "expected_category": "authority_bypass",
+          "id": "automatic-irreversible-action",
+          "observed_categories": [
+            "authority_bypass"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
           "description": "Reject a secret-shaped literal inserted into a capability output.",
           "expected_category": "secret-shaped-output",
           "id": "secret-shaped-output",
@@ -95,6 +237,36 @@
           ],
           "passed": true,
           "validator_valid": false
+        },
+        {
+          "description": "Reject excluded alternatives without a class-scoped source mapping.",
+          "expected_category": "provenance_incomplete_excluded",
+          "id": "missing-excluded-provenance",
+          "observed_categories": [
+            "provenance_incomplete_excluded"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a bounded suggestion without a class-scoped source mapping.",
+          "expected_category": "provenance_incomplete_suggested",
+          "id": "missing-suggested-provenance",
+          "observed_categories": [
+            "provenance_incomplete_suggested"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a required-skill gap without a class-scoped source mapping.",
+          "expected_category": "provenance_incomplete_gap",
+          "id": "missing-gap-provenance",
+          "observed_categories": [
+            "provenance_incomplete_gap"
+          ],
+          "passed": true,
+          "validator_valid": false
         }
       ],
       "positive": {
@@ -109,6 +281,7 @@
           "handoff_eligible": false,
           "human_review": "rejected",
           "preserved": true,
+          "rejection_reason_preserved": true,
           "status": "rejected"
         },
         "id": "rejected-plan",
@@ -116,6 +289,8 @@
           "handoff_eligible": false,
           "human_review": "rejected",
           "preserved": true,
+          "rejection_reason": "Rejected because the Human declined the proposed capability boundary; preserve this Plan and do not execute.",
+          "rejection_reason_preserved": true,
           "status": "rejected",
           "validator_valid": true
         },
@@ -173,6 +348,26 @@
           "validator_valid": false
         },
         {
+          "description": "Reject a Plan that makes Composer a second durable authority.",
+          "expected_category": "authority_bypass",
+          "id": "second-authority",
+          "observed_categories": [
+            "authority_bypass"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject an automatic irreversible request before handoff.",
+          "expected_category": "authority_bypass",
+          "id": "automatic-irreversible-action",
+          "observed_categories": [
+            "authority_bypass"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
           "description": "Reject a secret-shaped literal inserted into a capability output.",
           "expected_category": "secret-shaped-output",
           "id": "secret-shaped-output",
@@ -201,6 +396,36 @@
           ],
           "passed": true,
           "validator_valid": false
+        },
+        {
+          "description": "Reject excluded alternatives without a class-scoped source mapping.",
+          "expected_category": "provenance_incomplete_excluded",
+          "id": "missing-excluded-provenance",
+          "observed_categories": [
+            "provenance_incomplete_excluded"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a bounded suggestion without a class-scoped source mapping.",
+          "expected_category": "provenance_incomplete_suggested",
+          "id": "missing-suggested-provenance",
+          "observed_categories": [
+            "provenance_incomplete_suggested"
+          ],
+          "passed": true,
+          "validator_valid": false
+        },
+        {
+          "description": "Reject a required-skill gap without a class-scoped source mapping.",
+          "expected_category": "provenance_incomplete_gap",
+          "id": "missing-gap-provenance",
+          "observed_categories": [
+            "provenance_incomplete_gap"
+          ],
+          "passed": true,
+          "validator_valid": false
         }
       ],
       "positive": {
@@ -215,6 +440,7 @@
           "handoff_eligible": false,
           "human_review": "rejected",
           "preserved": true,
+          "rejection_reason_preserved": true,
           "status": "rejected"
         },
         "id": "rejected-plan",
@@ -222,6 +448,8 @@
           "handoff_eligible": false,
           "human_review": "rejected",
           "preserved": true,
+          "rejection_reason": "Rejected because the Human declined the proposed capability boundary; preserve this Plan and do not execute.",
+          "rejection_reason_preserved": true,
           "status": "rejected",
           "validator_valid": true
         },
@@ -231,16 +459,23 @@
   ],
   "schema": "zj-composer/regression-result/v1",
   "side_effects": {
+    "blocked_attempts": {
+      "credential_reads": 1,
+      "filesystem_writes": 1,
+      "git_publications": 1,
+      "irreversible_actions": 1,
+      "network_calls": 1
+    },
     "credential_reads": 0,
     "declared": {
       "regression_result": 1,
-      "temporary_fixture_copies": 19
+      "temporary_fixture_copies": 66
     },
     "git_publications": 0,
     "irreversible_actions": 0,
     "network_calls": 0,
     "safe": true,
-    "unapproved_side_effects": 0
+    "unapproved_side_effects": 5
   },
   "valid": true
 }

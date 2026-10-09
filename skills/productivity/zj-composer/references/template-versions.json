@@ -1,0 +1,9 @@
+{
+  "schema": "zj-composer/template-versions/v1",
+  "versions": {
+    "1": {
+      "path": "skills/productivity/zj-composer/references/plan-template.md",
+      "sha256": "b099ee5de513477da3f1217e6c862c00c17b0eff52c8987510f5e058f396def3"
+    }
+  }
+}

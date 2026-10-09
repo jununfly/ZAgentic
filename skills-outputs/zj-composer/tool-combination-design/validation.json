@@ -1,5 +1,13 @@
 {
   "diagnostics": [],
+  "handoff": {
+    "eligible": false,
+    "reasons": [
+      "status_not_approved",
+      "human_review_not_approved",
+      "plan_acceptance_not_passed"
+    ]
+  },
   "plan": {
     "capability_steps": 3,
     "path": "skills-outputs/zj-composer/tool-combination-design/plan.md",

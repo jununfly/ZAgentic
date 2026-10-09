@@ -151,6 +151,30 @@ assessment, Human approval, authority, and side-effect gates. It emits stable
 diagnostic categories and never executes the Plan.
 _Avoid_: Composer executor, second runtime, narrative-only review
 
+**Capability snapshot**:
+The immutable, content-addressed Composer view of the recursively discovered
+public skill catalog. It preserves each capability's source reference, declared
+inputs/outputs/dependencies/boundaries, declaration checks, and metadata warnings.
+_Avoid_: second registry, rewritten skill contract
+
+**Class-scoped provenance mapping**:
+A `source_references` entry that binds one represented capability class to its
+source: selected, excluded, suggested, or gap. The mapping makes provenance
+coverage mechanically checkable instead of relying on an unstructured source list.
+_Avoid_: generic references, selected-only provenance
+
+**Template version binding**:
+The registry entry that binds a Composer `template_version` to the exact
+SHA-256 of its bundled Plan template. Template content changes require a new
+version rather than silently changing the meaning of an existing Plan.
+_Avoid_: template label, mutable v1 template
+
+**Handoff eligibility**:
+The validator-derived result that a Plan has no hard errors, is approved by the
+Human, and has passed Plan acceptance. A stale selected source remains
+ineligible until regeneration or an explicit stale-source review marker.
+_Avoid_: Plan validity, automatic execution, dispatch
+
 **Skill**:
 A single unit of agent capability under
 `skills/<bucket>/zj-<name>/SKILL.md` or `personal/zj-<name>/SKILL.md`.

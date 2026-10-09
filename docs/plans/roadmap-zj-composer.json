@@ -7,7 +7,7 @@
       "id": "1",
       "uid": "01a11ea1031e-3fd535d022",
       "label": "Composer implementation and reversible PoC",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": null,
       "children": [
@@ -18,7 +18,8 @@
         "1-5",
         "1-6",
         "1-7",
-        "1-8"
+        "1-8",
+        "1-9"
       ],
       "decisions": [
         {
@@ -67,6 +68,11 @@
           "q": "能力缺口如何表达？",
           "answer": "有匹配则给出 skill 与理由；有可信外部/未来能力则给出带来源和适配 caveat 的 bounded suggestion；无可靠建议则每个缺口输出一行精确的 `required skill：简短地描述缺失skill的形状`。",
           "note": "对应 HD-1 的缺口协议。"
+        },
+        {
+          "q": "如何把规格审查缺口接回路线图？",
+          "answer": "在根节点 1 下新增 1-9 Close buildable-spec implementation gaps，按 P1/P2 拆成七个可独立验收的实现与回归节点；P1 先补副作用审计、能力索引元数据与 removal 回归，P2 再补负例、stale review/regeneration、template pinning 与完整 provenance。1-9-5 和 1-9-7 依赖 1-9-2。",
+          "note": "依据 docs/plans/zj-composer-buildable-spec.md 的实现审查：当前正向 PoC 通过，但这些机械闸门仍有实现或覆盖缺口。"
         }
       ],
       "notes": "Buildable contract: docs/plans/zj-composer-buildable-spec.md. Product execution route; begin with contract freeze before implementation.",
@@ -244,7 +250,7 @@
       "id": "1-8",
       "uid": "01a11ea3770b-c9e4dc04cc",
       "label": "Human review of PoC evidence and continuation decision",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [],
@@ -253,10 +259,21 @@
           "q": "何时允许超出 PoC？",
           "answer": "两 fixture、validator、negative/security/removal evidence 完成并经 Human review 后，才决定是否进入更广覆盖；通过 PoC 不自动批准生产 rollout。",
           "note": "保持阶段化演进。"
+        },
+        {
+          "q": "PoC 证据是否达到 Human review 闸门？",
+          "answer": "已具备审阅材料：external-repository-research 与 tool-combination-design 两个 fixture 的 validator/oracle 均 valid=true；negative/security/handoff/removal regression valid=true，network_calls、git_publications、credential_reads、irreversible_actions、unapproved_side_effects 均为 0。继续扩大覆盖或进入 rollout 仍待 Human 决定。",
+          "note": "审阅依据：skills-outputs/zj-composer/{external-repository-research,tool-combination-design,regression} 下的 README、Plan、validation/oracle/regression 结果；本节点保持 in_progress，等待 Human continuation decision。"
+        },
+        {
+          "q": "Human continuation decision",
+          "answer": "保持 PoC 范围，完成 1-8；不扩大覆盖，不进入生产 rollout。",
+          "note": "Human 已审阅两个 fixture、validator、negative/security/handoff/removal evidence，并选择阶段化收束。"
         }
       ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-1-1": {
       "id": "1-1-1",
@@ -657,11 +674,206 @@
       "notes": "安全/handoff/removal hard gates 通过：side-effect counters 全部为 0，authority 与 handoff preconditions 通过，source/fixture integrity 保持，临时目录已移除，历史 artifact 与非 Composer 路径在 removal simulation 中保留。证据见 skills-outputs/zj-composer/regression/regression-result.json。",
       "layer": "plan",
       "rounds": 1
+    },
+    "1-9": {
+      "id": "1-9",
+      "uid": "01a12099d278-1ace6d933f",
+      "label": "Close buildable-spec implementation gaps",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-9-1",
+        "1-9-2",
+        "1-9-3",
+        "1-9-4",
+        "1-9-5",
+        "1-9-6",
+        "1-9-7"
+      ],
+      "decisions": [
+        {
+          "q": "1-9 的验收边界是什么？",
+          "answer": "补齐规格审查发现的实现与回归缺口，不扩大 Composer 产品边界，不引入 global router、第二 runtime、自动执行或第二权威；每个子节点都要有可复核代码/fixture/回归证据。",
+          "note": "P1 节点先恢复硬副作用与可逆性闸门；P2 节点补齐负例、状态协议、模板演进和 provenance 覆盖。"
+        }
+      ],
+      "notes": "All seven implementation-gap nodes completed. Full Composer regression is valid: both fixture/oracle paths pass with 0 errors/warnings; active side-effect probes, recursive catalog/snapshot, no-match and authority rejection, stale review, template pinning, class-scoped provenance, handoff, and removal comparison all pass.",
+      "layer": "plan",
+      "exit_criteria": [
+        "七个缺口子节点全部完成并各自有可复核代码或回归证据",
+        "两 fixture、Plan validator、negative/security/handoff/removal 回归继续通过，且新增硬闸门不再依赖硬编码零值",
+        "不引入 global router、第二 runtime、自动执行或第二权威"
+      ],
+      "rounds": 1
+    },
+    "1-9-1": {
+      "id": "1-9-1",
+      "uid": "01a12099d38d-c1a19d1de3",
+      "label": "Enforce filesystem and credential side-effect guards",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "如何让副作用闸门成为实际执行的硬约束？",
+          "answer": "用显式临时目录与结果文件 allowlist 包住文件写入，并对 credential、socket、subprocess/Git publication、删除动作运行主动攻击 probe；blocked attempts 单独计数，真实副作用保持为零。",
+          "note": "结果文件也必须经 allowlist 写入，不能在 guard 外落盘；valid 依赖 probe 真实被拒，而非硬编码零值。"
+        }
+      ],
+      "notes": "Implemented explicit temp/result write allowlists plus active filesystem, credential, network, Git-publication, and irreversible-action probes. Evidence: skills-outputs/zj-composer/regression/regression-result.json checks.side_effect_guard_probes and side_effects.",
+      "layer": "plan",
+      "exit_criteria": [
+        "临时 fixture/result 写入有明确 allowlist，未授权文件写入会失败并计入 unapproved_side_effects",
+        "凭据读取、网络、Git publication、不可逆动作均由 harness 实际拦截或计数"
+      ],
+      "rounds": 1
+    },
+    "1-9-2": {
+      "id": "1-9-2",
+      "uid": "01a12099d414-870e563ad4",
+      "label": "Complete recursive capability index metadata and provenance",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "递归 catalog 与 capability metadata 如何表达？",
+          "answer": "递归扫描每个 public bucket 下全部 SKILL.md；record 保留相对目录、source_reference，以及 frontmatter 中原样声明的 inputs、outputs、dependencies、boundaries，缺失值保持空而不臆造。",
+          "note": "README、root index、guide 与 install-list 的现有注册校验继续保留，snapshot manifest/digest 自动覆盖递归发现的新路径。"
+        }
+      ],
+      "notes": "Recursive rglob discovery now preserves source_reference, declared inputs/outputs/dependencies/boundaries, registration checks, and metadata warnings; synthetic nested fixture and snapshot digest verification pass.",
+      "layer": "plan",
+      "exit_criteria": [
+        "新增合规嵌套 SKILL.md 可被递归发现，且现有注册声明继续校验",
+        "每个 capability record 保留 declared inputs、outputs、dependencies、boundaries、source reference 与 metadata warnings",
+        "snapshot digest 覆盖新增发现范围并可由 validator 复核"
+      ],
+      "rounds": 1
+    },
+    "1-9-3": {
+      "id": "1-9-3",
+      "uid": "01a12099d49e-5a27a4b2be",
+      "label": "Execute original-path removal regression and compare artifacts",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "removal regression 怎样验证原路径？",
+          "answer": "在隔离 fixture 中保存 Composer 移除前后的原始能力发现结果与历史 artifact digest，移除实验层后重新运行同一 recursive catalog 原路径并逐项比较；真实仓库只读。",
+          "note": "用结构化 before/after artifact comparison 代替仅检查三个路径存在的模拟。"
+        }
+      ],
+      "notes": "Removal regression executes the same original recursive catalog path before and after isolated Composer removal, compares identical output digests, and preserves historical Plan plus original capability path.",
+      "layer": "plan",
+      "exit_criteria": [
+        "移除实验层后运行原 pre-Composer fixture path 并得到可比较结果",
+        "历史 Plan/artifact 保留，原 capability path 行为或输出对照通过，真实仓库未被删除或修改"
+      ],
+      "rounds": 1
+    },
+    "1-9-4": {
+      "id": "1-9-4",
+      "uid": "01a12099d566-f2814b9da2",
+      "label": "Cover no-match authority rejection and rejection-reason cases",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "no-match、authority rejection 与 rejection reason 用什么协议？",
+          "answer": "以 validator 输出的 handoff eligibility 为唯一状态判定；no-match 保留逐行 exact required skill gap 且 planned/pending 不可 handoff；第二权威与自动不可逆请求产生稳定拒绝诊断；rejected Plan 必须在既有 rejection_path 中保存具体 because/reason。",
+          "note": "不新增 runtime 或第二状态存储。"
+        }
+      ],
+      "notes": "Validator emits handoff eligibility/blockers; no-match stops with one exact required-skill line; second-authority and automatic irreversible requests are rejected; rejected Plans retain a concrete reason.",
+      "layer": "plan",
+      "exit_criteria": [
+        "无匹配且无可信建议时只输出 exact required skill：... 行并在 handoff 前停止",
+        "第二权威或自动 irreversible request 被拒绝并解释边界",
+        "rejected Plan 保留 rejection reason，且 handoff eligibility 为 false"
+      ],
+      "rounds": 1
+    },
+    "1-9-5": {
+      "id": "1-9-5",
+      "uid": "01a12099d5ee-0504994457",
+      "label": "Require review or regeneration for stale source metadata",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "stale source 的显式 Human review 如何记录而不扩展 v1 模板？",
+          "answer": "复用 Evidence and provenance.unknowns，要求 approved status + approved human_review，并写入 path-specific 的 stale source reviewed: <path> marker；未 review 为硬错误，review 后保留 warning。",
+          "note": "handoff eligibility 还必须同时满足 plan_acceptance=passed；仅写 marker 不能绕过状态闸门。"
+        }
+      ],
+      "notes": "Changed selected source yields provenance_stale and blocks handoff; approved path-specific stale source review yields provenance_stale_reviewed and becomes eligible only with Human approval plus passed Plan acceptance.",
+      "layer": "plan",
+      "exit_criteria": [
+        "source revision/digest 变化会产生可识别 stale 或 review-required 结果",
+        "stale Plan 在 regenerate 或显式 Human review 前不能通过 handoff"
+      ],
+      "rounds": 1
+    },
+    "1-9-6": {
+      "id": "1-9-6",
+      "uid": "01a12099d67a-95a1499e79",
+      "label": "Add template-version pinning regression",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "模板版本如何机械固定？",
+          "answer": "新增版本清单，将 template_version 1 绑定到 plan-template.md 的 SHA-256；validator 每次核对清单、路径和 digest，未知版本或内容漂移均拒绝。",
+          "note": "回归只改隔离模板副本，证明既有 Plan 不会被静默按新模板解释。"
+        }
+      ],
+      "notes": "template-versions.json binds v1 to plan-template.md SHA-256; isolated template mutation yields template_version_mismatch and cannot silently reinterpret the Plan.",
+      "layer": "plan",
+      "exit_criteria": [
+        "改变 template fixture 不会静默重新解释既有 Plan",
+        "版本不匹配被 validator/oracle 稳定拒绝或要求显式升版"
+      ],
+      "rounds": 1
+    },
+    "1-9-7": {
+      "id": "1-9-7",
+      "uid": "01a12099d70b-5aed2d618b",
+      "label": "Validate provenance for excluded suggested and gap capabilities",
+      "status": "completed",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "四类 capability provenance 如何在既有 v1 字段中机械校验？",
+          "answer": "在 source_references 内使用 selected/excluded/suggested/gap 四个 class-scoped [item -> source] segment；validator 仅对 Plan 实际出现的类别要求映射，并给出类专属稳定诊断。",
+          "note": "不改 v1 模板字段集合；两个 fixture 已改为结构化映射，缺失三类非 selected provenance 的负例均通过。"
+        }
+      ],
+      "notes": "Validator enforces selected/excluded/suggested/gap class-scoped provenance mappings. Both fixtures pass; each missing non-selected class produces its stable diagnostic and blocks validation.",
+      "layer": "plan",
+      "exit_criteria": [
+        "validator 对 excluded、suggested、gap-related capability 的 source reference 做机械检查",
+        "缺少任一类 provenance 时产生稳定诊断并阻止通过"
+      ],
+      "rounds": 1
     }
   },
   "metadata": {
     "created": "2026-10-09 11:07:11",
-    "updated": "2026-10-09 18:07:11",
+    "updated": "2026-10-09 20:37:46",
     "md_file": "docs/plans/roadmap-zj-composer.md"
   },
   "edges": [
@@ -778,7 +990,19 @@
       "from": "01a11ea42676-9df5586c74",
       "to": "01a11ea3770b-c9e4dc04cc",
       "type": "blocks"
+    },
+    {
+      "id": "e20",
+      "from": "01a12099d414-870e563ad4",
+      "to": "01a12099d5ee-0504994457",
+      "type": "blocks"
+    },
+    {
+      "id": "e21",
+      "from": "01a12099d414-870e563ad4",
+      "to": "01a12099d70b-5aed2d618b",
+      "type": "blocks"
     }
   ],
-  "edge_seq": 19
+  "edge_seq": 21
 }

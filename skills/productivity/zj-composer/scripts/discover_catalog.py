@@ -26,9 +26,10 @@ except ModuleNotFoundError as exc:  # pragma: no cover - environment dependent
 
 PUBLIC_BUCKETS = ("engineering", "codebase-docs", "productivity", "misc", "research")
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---(?:\n|$)", re.DOTALL)
-BUCKET_LINK_RE = re.compile(r"\]\(\./([^/]+)/SKILL\.md\)")
-ROOT_LINK_RE = re.compile(r"\]\(\./skills/[^/]+/([^/]+)/SKILL\.md\)")
+BUCKET_LINK_RE = re.compile(r"\]\(\./(?:[^/)]+/)*([^/)]+)/SKILL\.md\)")
+ROOT_LINK_RE = re.compile(r"\]\(\./skills/[^/)]+/(?:[^/)]+/)*([^/)]+)/SKILL\.md\)")
 GUIDE_NAME_RE = re.compile(r"\bzj-[a-z0-9]+(?:-[a-z0-9]+)*\b")
+CAPABILITY_METADATA_FIELDS = ("inputs", "outputs", "dependencies", "boundaries")
 
 
 def relative_path(root: Path, path: Path) -> str:
@@ -126,36 +127,48 @@ def discover_catalog(root: Path) -> dict[str, Any]:
             warnings.append(f"missing public bucket: {relative_path(root, bucket_root)}")
             continue
 
-        for skill_dir in sorted(bucket_root.iterdir(), key=lambda path: path.name):
-            if not skill_dir.is_dir() or skill_dir.name.startswith("."):
-                continue
-            skill_md = skill_dir / "SKILL.md"
-            if not skill_md.is_file():
-                warnings.append(
-                    f"skill directory missing SKILL.md: {relative_path(root, skill_dir)}"
-                )
-                continue
+        skill_files = sorted(
+            (
+                path
+                for path in bucket_root.rglob("SKILL.md")
+                if not any(part.startswith(".") for part in path.relative_to(bucket_root).parts)
+            ),
+            key=lambda path: relative_path(root, path),
+        )
+        for skill_md in skill_files:
+            skill_dir = skill_md.parent
+            directory = skill_dir.relative_to(bucket_root).as_posix()
+            leaf_directory = skill_dir.name
 
             frontmatter, skill_warnings = parse_frontmatter(skill_md)
             declared_name = frontmatter.get("name") if frontmatter else None
-            if isinstance(declared_name, str) and declared_name != skill_dir.name:
+            if isinstance(declared_name, str) and declared_name != leaf_directory:
                 skill_warnings.append(
-                    f"frontmatter name {declared_name!r} does not match directory {skill_dir.name!r}"
+                    f"frontmatter name {declared_name!r} does not match directory {leaf_directory!r}"
                 )
+
+            declared_metadata = {
+                field: frontmatter.get(field) if frontmatter else None
+                for field in CAPABILITY_METADATA_FIELDS
+            }
+            source_reference = relative_path(root, skill_md)
 
             skills.append(
                 {
                     "bucket": bucket,
-                    "directory": skill_dir.name,
+                    "directory": directory,
                     "name": declared_name if isinstance(declared_name, str) else None,
-                    "path": relative_path(root, skill_md),
+                    "path": source_reference,
+                    "source_reference": source_reference,
                     "frontmatter": frontmatter,
+                    "declared": declared_metadata,
                     "declarations": {
-                        "bucket_readme": skill_dir.name in declarations["bucket_readmes"][bucket],
-                        "root_readme": skill_dir.name in declarations["root_readme"],
-                        "guide": skill_dir.name in declarations["guide"],
-                        "install_list": skill_dir.name in declarations["install_list"],
+                        "bucket_readme": leaf_directory in declarations["bucket_readmes"][bucket],
+                        "root_readme": leaf_directory in declarations["root_readme"],
+                        "guide": leaf_directory in declarations["guide"],
+                        "install_list": leaf_directory in declarations["install_list"],
                     },
+                    "metadata_warnings": skill_warnings,
                     "warnings": skill_warnings,
                 }
             )

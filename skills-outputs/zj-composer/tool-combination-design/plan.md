@@ -74,7 +74,7 @@ required skill：跨工具组合的统一执行能力
 
 - **skill_index_snapshot:** `catalog-v1-0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776`
 - **catalog_revision_or_digest:** `0bbd5fc19b5cde54b2fcd9a89e0a97dd0b9bd5ff98c64919cad5b96dfbd0c776`
-- **source_references:** `skills/engineering/zj-leader/SKILL.md`; `skills/engineering/zj-tech-design-review/SKILL.md`; `skills/codebase-docs/zj-roadmap-driven/SKILL.md`; local fixture input and oracle.
+- **source_references:** selected=[zj-leader -> skills/engineering/zj-leader/SKILL.md | zj-tech-design-review -> skills/engineering/zj-tech-design-review/SKILL.md | zj-roadmap-driven -> skills/codebase-docs/zj-roadmap-driven/SKILL.md]; excluded=[Step 1 -> skills-outputs/zj-composer/tool-combination-design/oracle.json | Step 2 -> skills-outputs/zj-composer/tool-combination-design/oracle.json | Step 3 -> skills-outputs/zj-composer/tool-combination-design/oracle.json]; suggested=[none declared]; gap=[required skill：跨工具组合的统一执行能力 -> skills-outputs/zj-composer/tool-combination-design/input.json]
 - **evidence_requirements:** Each selected capability must be traceable to its current SKILL.md and each design claim must point to a review artifact.
 - **generated_assertions:** The three selected capabilities cover framing, design review, and roadmap handoff; the cross-tool executor capability remains an explicit gap.
 - **unknowns:** The missing cross-tool execution capability is not installed, and no consuming chain is authorized by this fixture.

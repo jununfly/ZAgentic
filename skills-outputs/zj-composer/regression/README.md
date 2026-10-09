@@ -13,14 +13,19 @@ mutations only to temporary Plan copies:
 - missing prerequisite → `unresolved_prerequisite`
 - stale snapshot digest → `provenance_digest_mismatch`
 - authority bypass → `authority_bypass`
+- second durable authority and automatic irreversible request → `authority_bypass`
 - secret-shaped output → `secret-shaped-output`
 - unapproved write → `unapproved_side_effect`
 - conflicting alternatives → `unresolved_conflict`
+- missing excluded/suggested/gap provenance → stable class-specific diagnostics
 - rejected Plan → preserved with `status=rejected` and
-  `human_review=rejected`, and not eligible for handoff
+  `human_review=rejected`, a concrete rejection reason, and no handoff eligibility
 
-The runner also records source and fixture path integrity, zero network/Git or
-credential side effects, and a temporary removal simulation in which the
-Composer experiment layer is removed while a historical artifact and a
-non-Composer capability path remain available. It never executes capability
-steps or performs a real deletion.
+The runner actively attempts an out-of-allowlist write, credential read, network
+connection, Git publication, and irreversible deletion. Every attempt must be
+blocked and counted while actual effects remain zero. It also checks recursive
+catalog metadata and snapshot digests, no-match stopping, stale-source review,
+template-version pinning, and removal. The removal regression runs the original
+catalog path before and after deleting the isolated Composer layer, compares the
+outputs byte-for-byte by digest, and verifies that historical artifacts remain.
+The real repository is read-only except for the allowlisted regression result.

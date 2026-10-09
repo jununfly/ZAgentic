@@ -24,6 +24,9 @@ The Plan names the capability-index snapshot, its source revision or content
 digest, generation time, and source references for selected, excluded,
 suggested, or gap-related capabilities. Missing or stale metadata stays visible
 as a warning or blocks approval when it changes a capability's meaning.
+`source_references` uses class-scoped mappings such as
+`selected=[capability -> source]`, `excluded=[Step N -> source]`,
+`suggested=[suggestion -> source]`, and `gap=[required skill line -> source]`.
 The snapshot's immutable file format and reuse rule are defined in
 `snapshot-contract.md`.
 

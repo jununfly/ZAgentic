@@ -14,8 +14,14 @@ registry.
 - `catalog`: the exact discovery output consumed from 1-3-1
 - `metadata_warnings`: structured discovery, skill metadata, and declaration warnings
 
+Discovery is recursive below every public bucket. Each capability record keeps
+its bucket-relative directory, `source_reference`, frontmatter, declaration
+surface checks, metadata warnings, and the frontmatter values declared for
+`inputs`, `outputs`, `dependencies`, and `boundaries`. Missing declarations stay
+empty; the snapshot never invents semantics.
+
 The digest covers the five bucket READMEs, the root README, `zj-guide`, the
-install list, and every discovered public skill `SKILL.md`. A missing input is
+install list, and every recursively discovered public skill `SKILL.md`. A missing input is
 retained in the manifest with `exists: false` so the provenance record remains
 honest.
 
