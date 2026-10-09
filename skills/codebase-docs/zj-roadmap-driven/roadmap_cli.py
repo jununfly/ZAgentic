@@ -33,6 +33,11 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   edge    remove <json_path> <edge_id>       # 删掉一条边
   edge    migrate <json_path>                # 存量显示 id 边一次性转成 uid
 
+  trace   add <roadmap_path> --kind <kind> --body "..." [--under <plan>] [--from <trace>]
+  trace   list <roadmap_path>
+  trace   get <roadmap_path> <trace_uid>
+  trace   prune <roadmap_path> <trace_uid> [--edge <id>]
+
   lease   claim  <json_path> <node_uid> --agent <id> [--ttl 300] [--device <id>]
                                             # 拿节点租约（默认 TTL 300s，fencing=1）
   lease   heartbeat <json_path> <node_uid> --agent <id>
@@ -137,6 +142,13 @@ import time
 
 # 可以重复出现、每次追加一条值的参数（`--exit-criteria` 可给多条判据）。
 MULTI_VALUE_FLAGS = frozenset({"exit-criteria", "include"})
+
+
+class CliUsageError(RoadmapError):
+    """命令缺少位置参数或使用了未知子动作。"""
+
+    code = "E_USAGE"
+    exit_code = 1
 
 
 def _store(args: dict, key: str, value: str) -> None:
@@ -435,7 +447,7 @@ def cmd_edge(args: dict):
 def cmd_trace(args: dict):
     """`trace <action> <roadmap_path> ...` —— 动作在前（与 `edge` 同款）。
 
-    add 写（整图锁）；list / get 只读。trace 是机器自主记录，无需审批。
+    add / prune 写（整图锁）；list / get 只读。trace 是机器自主记录，无需审批。
     输出走 stdout 的 JSON（与既有命令一致）；失败输出到 stderr 且含 `E_*` code。
     """
     action = args["positional"][0]
@@ -466,6 +478,10 @@ def cmd_trace(args: dict):
         node = r.get_node(args["positional"][2])
         _print_json(node)
         return
+    if action == "prune":
+        removed = r.prune(args["positional"][2], edge_id=args.get("edge"))
+        _print_json(removed)
+        return
     raise ValueError(f"未知 trace 动作: {action}")
 
 
@@ -492,19 +508,6 @@ def cmd_promote(args: dict):
         reason=args.get("reason"),
     )
     _print_json(node)
-    return
-
-
-def cmd_prune(args: dict):
-    """`prune <roadmap_path> <trace_uid> [--edge <id>]` —— 删边而非删节点。
-
-    thoughtDAG 原则：删一条边即改变上下文。不带 --edge 时默认删该 trace 的 mainline
-    边（从上下文移除，节点仍在）。
-    """
-    r = _load_roadmap(args["positional"][0])
-    trace_uid = args["positional"][1]
-    removed = r.prune(trace_uid, edge_id=args.get("edge"))
-    _print_json(removed)
     return
 
 
@@ -927,7 +930,6 @@ COMMANDS = {
     "context": cmd_context,
     "trace": cmd_trace,
     "promote": cmd_promote,
-    "prune": cmd_prune,
     "next": cmd_next,
 }
 
@@ -935,10 +937,72 @@ COMMANDS = {
 # 写命令走整图锁；`edge` 按子动作区分，因为 `edge list` 是只读。
 LOCK_COMMANDS = frozenset(
     {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease", "fail",
-     "promote", "prune"}
+     "promote"}
 )
 EDGE_WRITE_ACTIONS = frozenset({"add", "remove", "migrate"})
 TRACE_WRITE_ACTIONS = frozenset({"add", "prune"})
+
+# 所有 handler 在进入前先过位置参数闸门；这样锁选择与业务分派都不会因
+# `positional[n]` 越界而把 Python traceback 泄漏给 Agent。
+COMMAND_POSITIONAL_ARITY = {
+    "init": 1,
+    "add": 3,
+    "update": 2,
+    "delete": 2,
+    "fail": 2,
+    "get": 2,
+    "tree": 1,
+    "ready": 1,
+    "critical-path": 1,
+    "impact": 2,
+    "decide": 4,
+    "decisions": 1,
+    "remove-decision": 2,
+    "render": 1,
+    "section": 1,
+    "link": 2,
+    "unlock": 1,
+    "stats": 1,
+    "recommend-storage": 1,
+    "validate": 1,
+    "path": 2,
+    "siblings": 2,
+    "focus": 1,
+    "migrate": 1,
+    "context": 2,
+    "promote": 2,
+    "next": 1,
+}
+GROUP_ACTION_ARITY = {
+    "edge": {"add": 4, "remove": 3, "list": 2, "migrate": 2},
+    "lease": {"claim": 3, "heartbeat": 3, "steal": 3, "release": 3},
+    "trace": {"add": 2, "list": 2, "get": 3, "prune": 3},
+}
+
+
+def _validate_arity(cmd: str, args: dict) -> None:
+    positional = args.get("positional", [])
+    if cmd in GROUP_ACTION_ARITY:
+        if not positional:
+            raise CliUsageError(f"{cmd} requires an action: {', '.join(GROUP_ACTION_ARITY[cmd])}")
+        action = positional[0]
+        action_arity = GROUP_ACTION_ARITY[cmd]
+        if action not in action_arity:
+            raise CliUsageError(
+                f"unknown {cmd} action {action!r}; expected one of: {', '.join(action_arity)}"
+            )
+        required = action_arity[action]
+        if len(positional) < required:
+            raise CliUsageError(
+                f"{cmd} {action} requires {required - 1} argument(s) after the action; "
+                f"received {len(positional) - 1}"
+            )
+        return
+    required = COMMAND_POSITIONAL_ARITY.get(cmd, 0)
+    if len(positional) < required:
+        raise CliUsageError(
+            f"{cmd} requires {required} positional argument(s); received {len(positional)}"
+        )
 
 
 def _needs_lock(cmd: str, args: dict) -> bool:
@@ -981,6 +1045,7 @@ def main():
 
     args = _parse_args(sys.argv[2:])
     try:
+        _validate_arity(cmd, args)
         if _needs_lock(cmd, args):
             with roadmap_file_lock(_lock_path(cmd, args)):
                 COMMANDS[cmd](args)

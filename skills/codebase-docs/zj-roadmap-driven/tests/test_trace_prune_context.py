@@ -2,8 +2,8 @@
 """P5-S4 prune + edge-driven `context --include`（§3.3 / §4.4）。
 
 验收：
-- prune <trace> --edge <id> 删指定边、节点仍在；不带 --edge 默认删 mainline 边。
-- prune 作用于 plan 节点 → E_INVALID_LAYER。
+- trace prune <trace> --edge <id> 删指定边、节点仍在；不带 --edge 默认删 mainline 边。
+- trace prune 作用于 plan 节点 → E_INVALID_LAYER。
 - context 默认（不含 --include trace）输出与 S5 逐字节一致；--include trace 才暴露 trace 边；
   --include decisions 读 node.decisions；--include children 列 children。
 - 裸 --include（无值）报错，不静默接受。
@@ -94,10 +94,19 @@ class PruneSliceTest(unittest.TestCase):
             self.assertEqual(len(mainline), 1)
             edge_id = mainline[0]["id"]
             before_traces = len(rm.node_ids(layer=LAYER_TRACE))
-            p = run_cli("prune", path, "9-2", "--edge", edge_id, cwd=tmpd)
+            p = run_cli("trace", "prune", path, "9-2", "--edge", edge_id, cwd=tmpd)
             self.assertEqual(p.returncode, 0)
             rm2 = load_carrier(storage, path)
-            self.assertEqual(len(rm2.list_edges()), 0, "指定边应被删")
+            self.assertEqual(
+                len([e for e in rm2.list_edges() if e["type"] == "mainline"]),
+                0,
+                "指定 mainline 边应被删",
+            )
+            self.assertEqual(
+                len([e for e in rm2.list_edges() if e["type"] == "prompted-by"]),
+                2,
+                "prompted-by 因果边应保留",
+            )
             self.assertEqual(len(rm2.node_ids(layer=LAYER_TRACE)), before_traces, "节点不应被删")
 
     def _prune_default_mainline(self, storage: str):
@@ -105,7 +114,7 @@ class PruneSliceTest(unittest.TestCase):
             tmpd = Path(d)
             path, _ = self._seed(storage, tmpd)
             before_traces = len(load_carrier(storage, path).node_ids(layer=LAYER_TRACE))
-            p = run_cli("prune", path, "9-2", cwd=tmpd)  # 默认删 9-2 的 mainline 边
+            p = run_cli("trace", "prune", path, "9-2", cwd=tmpd)  # 默认删 9-2 的 mainline 边
             self.assertEqual(p.returncode, 0)
             rm = load_carrier(storage, path)
             self.assertEqual(len([e for e in rm.list_edges() if e["type"] == "mainline"]), 0)
@@ -115,7 +124,7 @@ class PruneSliceTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             tmpd = Path(d)
             path, _ = self._seed(storage, tmpd)
-            p = run_cli("prune", path, "1-1", check=False, cwd=tmpd)
+            p = run_cli("trace", "prune", path, "1-1", check=False, cwd=tmpd)
             self.assertEqual(p.returncode, 1)
             self.assertIn("E_INVALID_LAYER", p.stderr)
 
@@ -128,7 +137,7 @@ class PruneSliceTest(unittest.TestCase):
                 "section": normalize(run_cli("section", path, cwd=tmpd).stdout),
                 "stats": run_cli("stats", path, cwd=tmpd).stdout,
             }
-            run_cli("prune", path, "9-2", cwd=tmpd)
+            run_cli("trace", "prune", path, "9-2", cwd=tmpd)
             after = {
                 "tree": run_cli("tree", path, "--depth", "10", cwd=tmpd).stdout,
                 "section": normalize(run_cli("section", path, cwd=tmpd).stdout),

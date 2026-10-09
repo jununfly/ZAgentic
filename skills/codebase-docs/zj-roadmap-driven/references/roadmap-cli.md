@@ -43,6 +43,21 @@ python roadmap_cli.py edge add <roadmap_path> <from_id> <to_id> --type blocks|in
 python roadmap_cli.py edge list <roadmap_path> [--node <node_id>]
 python roadmap_cli.py edge remove <roadmap_path> <edge_id>
 
+# Execution trace. `prompted-by` is written as plan -> trace when --under is present.
+python roadmap_cli.py trace add <roadmap_path> --kind <kind> --body "..." [--under <plan_id>] [--from <trace_id>]
+python roadmap_cli.py trace list <roadmap_path>
+python roadmap_cli.py trace get <roadmap_path> <trace_uid>
+python roadmap_cli.py trace prune <roadmap_path> <trace_uid> [--edge <edge_id>]
+python roadmap_cli.py context <roadmap_path> <node_id> [--include trace]
+python roadmap_cli.py promote <roadmap_path> <trace_uid> --under <plan_id> [--label "..."]
+
+# Lease inputs accept display ids for Human convenience; the sidecar/database
+# key and every emitted node_uid use the node's immutable uid.
+python roadmap_cli.py lease claim <roadmap_path> <node_uid> --agent <agent_id> [--ttl 300]
+python roadmap_cli.py lease heartbeat <roadmap_path> <node_uid> --agent <agent_id>
+python roadmap_cli.py lease steal <roadmap_path> <node_uid> --agent <agent_id>
+python roadmap_cli.py lease release <roadmap_path> <node_uid> --agent <agent_id> [--force]
+
 # Render and inspect
 python roadmap_cli.py render <roadmap_path>
 python roadmap_cli.py section <roadmap_path> [--max-depth 2] [--max-bytes N]
@@ -61,6 +76,9 @@ python roadmap_cli.py ready <roadmap_path>
 python roadmap_cli.py critical-path <roadmap_path>
 python roadmap_cli.py impact <roadmap_path> <node_id>
 ```
+
+Missing positional arguments and unknown command-group actions fail with
+`E_USAGE` instead of a Python traceback.
 
 `render` writes the lightweight Markdown view: when there is a current focus it renders a radial view (ancestor chain always visible + focus subtree drilled down + non-focus siblings collapsed to a count), and falls back to a root tree at depth=2 when there is no focus; completed subtrees collapse, in_progress/blocked/open_question nodes force-expand; the tail carries a `ready` preview. `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
 

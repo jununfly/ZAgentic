@@ -50,7 +50,7 @@ provenance 的本轮范围：trace 节点诞生即带 device/agent/session，但
 
 ## 命令契约（#46）
 
-`trace <action>` 一个 COMMANDS 条目内部按 positional 分派（add/list/get/prune），与上游 `trace add` 写法一致。`trace add` 无需审批（provenance 诞生即写）；`promote` 默认 proposal；`prune <trace> --edge <id>` 删边而非删节点（借 thoughtDAG：删一条边即改变上下文）；`context <node> --include …` edge-driven，默认 `layer='plan'`。所有失败输出到 stderr 且必须含 `E_*` code。
+`trace <action>` 一个 COMMANDS 条目内部按 positional 分派（add/list/get/prune），与上游 `trace add` 写法一致。`trace add` 无需审批（provenance 诞生即写）；`promote` 默认 proposal；`trace prune <roadmap> <trace> --edge <id>` 删边而非删节点（借 thoughtDAG：删一条边即改变上下文）；`context <node> --include …` edge-driven，默认 `layer='plan'`。所有失败输出到 stderr 且必须含 `E_*` code。
 
 新增错误码（全进 `ERROR_EXIT_CODES`，每码一个 `RoadmapError` 子类，不另起机制）：`E_TRACE_NOT_FOUND` / `E_INVALID_KIND` / `E_INVALID_LAYER` / `E_LAYER_VIOLATION`（塞 trace 进 children）/ `E_PROMOTE_TARGET_INVALID` / `E_REFERENCED`（删被引用者）/ `E_CYCLE`（复用）。**新错误码默认退出码 1**，只有新增「需不同重试语义」的类别才开新退出码。
 
@@ -62,7 +62,7 @@ provenance 的本轮范围：trace 节点诞生即带 device/agent/session，但
 
 | 层 | 动作 | Agent | Human |
 | --- | --- | --- | --- |
-| trace | `trace add` / `prune`（删边） | ✅ 自主 | ✅ |
+| trace | `trace add` / `trace prune`（删边） | ✅ 自主 | ✅ |
 | trace→plan | `promote`（默认 proposal） | ✅ | ✅ |
 | trace→plan | `promote --accept` / `--reject` | ❌ | ✅（落正式节点 = 改图） |
 | plan | `add`/`update`/`delete`/`decide`/`render`/`migrate` | ✅（按给定图施工） | ✅ |

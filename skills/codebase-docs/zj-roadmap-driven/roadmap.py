@@ -163,7 +163,16 @@ EDGE_SUPERSEDES = "supersedes"
 EDGE_DERIVES_FROM = "derives-from"
 EDGE_MAINLINE = "mainline"
 EDGE_REFERENCE = "reference"
-EDGE_TYPES = (EDGE_BLOCKS, EDGE_INFORMS, EDGE_SUPERSEDES, EDGE_DERIVES_FROM, EDGE_MAINLINE, EDGE_REFERENCE)
+EDGE_PROMPTED_BY = "prompted-by"
+EDGE_TYPES = (
+    EDGE_BLOCKS,
+    EDGE_INFORMS,
+    EDGE_SUPERSEDES,
+    EDGE_DERIVES_FROM,
+    EDGE_MAINLINE,
+    EDGE_REFERENCE,
+    EDGE_PROMPTED_BY,
+)
 
 MODE_EXPLORE = "explore"
 
@@ -1155,9 +1164,14 @@ def node_context(node_id: str, nodes, edges, includes=()) -> dict:
     if INCLUDE_TRACE in includes:
         trace_edges = []
         for e in edges or []:
-            # trace 维度只暴露 trace 相关的边：mainline / reference / derives-from。
-            # 注意 `prompted_by` 是 trace 节点上的**字段**而非边类型，没有 EDGE_PROMPTED_BY。
-            if e.get("type") not in (EDGE_MAINLINE, EDGE_REFERENCE, EDGE_DERIVES_FROM):
+            # trace 维度只暴露 trace 相关的边；prompted-by 让 plan 能反查
+            # `trace add --under` 产生的执行来路。
+            if e.get("type") not in (
+                EDGE_MAINLINE,
+                EDGE_REFERENCE,
+                EDGE_DERIVES_FROM,
+                EDGE_PROMPTED_BY,
+            ):
                 continue
             if e.get("from") != node_id and e.get("to") != node_id:
                 continue
@@ -1733,6 +1747,15 @@ class Roadmap:
             if src.get("layer") != LAYER_TRACE:
                 raise TraceNotFound(from_trace)
         trace_id = self._new_trace_id()
+        compressed_uids = []
+        for ref in compressed_from or []:
+            source_id = self.resolve_node(ref)
+            source = self.get_node(source_id)
+            source_uid = source.get("uid")
+            if not source_uid:
+                raise RoadmapError(f"compressed_from 节点缺少 uid: {source_id}")
+            compressed_uids.append(source_uid)
+
         node = {
             "id": trace_id,
             "uid": new_uid(),
@@ -1744,13 +1767,18 @@ class Roadmap:
             "children": [],
             "decisions": [],
             "notes": "",
+            # 兼容旧读取方；权威因果关系落在下面的 prompted-by 边中。
             "prompted_by": under_id,
             "session_ref": session_ref or "",
             "agent_id": agent_id or "",
             "device_id": device_id or "",
-            "compressed_from": [self.resolve_node(c) for c in compressed_from] if compressed_from else [],
+            "compressed_from": compressed_uids,
         }
         self.data["nodes"][trace_id] = node
+        if under_id is not None:
+            # 设计契约：prompted-by 是 plan → trace 的跨层边，context 才能从
+            # plan 端沿边取回执行期材料；字段只保留向后兼容。
+            self.add_edge(under_id, trace_id, EDGE_PROMPTED_BY)
         if from_trace is not None:
             # 端点落盘一律 uid（与 plan 边同纪律）；mainline 不是 blocks，不触发环检测。
             self.add_edge(trace_id, from_id, EDGE_MAINLINE)
@@ -2154,8 +2182,8 @@ class Roadmap:
     def owner_map(self) -> dict:
         """display id → `agent[/device]`：当前持有**未过期**租约的节点。
 
-        租约侧车以 node_uid 为键；uid 与显示 id 都可能被当作键传入（claim 不解析），
-        所以两端都查。过期租约不算持有者——僵尸租约留着不自动删，但 md 不该显示。
+        新租约侧车只以 node_uid 为键；读取时仍兼容旧版本留下的 display-id 键。
+        过期租约不算持有者——僵尸租约留着不自动删，但 md 不该显示。
         """
         result: dict = {}
         store = self._read_lease_store()
@@ -2299,20 +2327,36 @@ class Roadmap:
     def _write_lease_store(self, store: dict) -> None:
         atomic_write_text(self._lease_store_path(), json.dumps(store, ensure_ascii=False, indent=2))
 
-    def get_lease(self, node_uid: str) -> Optional[dict]:
-        """返回该节点的当前租约 dict，无租约时返回 None。"""
-        return self._read_lease_store()["leases"].get(node_uid)
+    def _lease_identity(self, node_ref: str) -> tuple[str, str]:
+        """把 display id / uid 输入统一成 `(display_id, immutable_uid)`。"""
+        display_id = self.resolve_node(node_ref)
+        node = self.get_node(display_id)
+        node_uid = node.get("uid")
+        if not node_uid:
+            raise RoadmapError(f"node {display_id} 缺少 uid，需先通过写命令完成 P0 迁移")
+        return display_id, node_uid
+
+    @staticmethod
+    def _stored_lease(store: dict, display_id: str, node_uid: str) -> Optional[dict]:
+        """读 UID 主键，并兼容迁移前以 display id 为键的侧车。"""
+        return store["leases"].get(node_uid) or store["leases"].get(display_id)
+
+    def get_lease(self, node_ref: str) -> Optional[dict]:
+        """返回节点当前租约；输入可读 display id，存储身份始终是 uid。"""
+        display_id, node_uid = self._lease_identity(node_ref)
+        return self._stored_lease(self._read_lease_store(), display_id, node_uid)
 
     def claim_lease(self, node_uid: str, agent_id: str, ttl: float = LEASE_TTL_SECONDS,
                     device_id: str = "", now: Optional[float] = None) -> dict:
-        self.get_node(node_uid)  # 节点必须存在，否则 KeyError（沿用既有错误输出）
+        display_id, node_uid = self._lease_identity(node_uid)
         now = time.time() if now is None else now
         store = self._read_lease_store()
-        existing = store["leases"].get(node_uid)
+        existing = self._stored_lease(store, display_id, node_uid)
         if existing is not None and not is_expired(existing, now):
             raise LeaseHeld(f"node {node_uid} already leased by {existing['agent_id']} "
                             f"(fencing {existing['fencing_token']}, expires {existing['expires_at']})")
         lease = new_lease(node_uid, agent_id, device_id, ttl, now)
+        store["leases"].pop(display_id, None)
         store["leases"][node_uid] = lease
         store["events"].append({"operation": "lease-claimed", "node_uid": node_uid,
                                  "agent_id": agent_id, "fencing_token": lease["fencing_token"], "at": now})
@@ -2320,9 +2364,10 @@ class Roadmap:
         return lease
 
     def heartbeat_lease(self, node_uid: str, agent_id: str, now: Optional[float] = None) -> dict:
+        display_id, node_uid = self._lease_identity(node_uid)
         now = time.time() if now is None else now
         store = self._read_lease_store()
-        lease = store["leases"].get(node_uid)
+        lease = self._stored_lease(store, display_id, node_uid)
         if lease is None:
             raise LeaseHeld(f"node {node_uid} has no active lease to heartbeat")
         if is_expired(lease, now):
@@ -2330,19 +2375,24 @@ class Roadmap:
         if lease["agent_id"] != agent_id:
             raise LeaseHeld(f"node {node_uid} leased by {lease['agent_id']}, not {agent_id}")
         renewed = apply_heartbeat(lease, now)
+        renewed["node_uid"] = node_uid
+        store["leases"].pop(display_id, None)
         store["leases"][node_uid] = renewed
         self._write_lease_store(store)
         return renewed
 
     def steal_lease(self, node_uid: str, agent_id: str, device_id: str = "",
                    now: Optional[float] = None) -> dict:
+        display_id, node_uid = self._lease_identity(node_uid)
         now = time.time() if now is None else now
         store = self._read_lease_store()
-        existing = store["leases"].get(node_uid)
+        existing = self._stored_lease(store, display_id, node_uid)
         if existing is not None and not is_expired(existing, now):
             raise LeaseHeld(f"node {node_uid} lease not expired (expires {existing['expires_at']}); "
                             f"cannot steal before TTL")
         lease = apply_steal(existing, node_uid, agent_id, device_id, now)
+        lease["node_uid"] = node_uid
+        store["leases"].pop(display_id, None)
         store["leases"][node_uid] = lease
         store["events"].append({"operation": "lease-stolen", "node_uid": node_uid,
                                  "agent_id": agent_id, "fencing_token": lease["fencing_token"], "at": now})
@@ -2351,9 +2401,10 @@ class Roadmap:
 
     def release_lease(self, node_uid: str, agent_id: str, force: bool = False,
                       now: Optional[float] = None) -> None:
+        display_id, node_uid = self._lease_identity(node_uid)
         now = time.time() if now is None else now
         store = self._read_lease_store()
-        lease = store["leases"].get(node_uid)
+        lease = self._stored_lease(store, display_id, node_uid)
         if lease is None:
             return  # 幂等：没有租约也算释放成功
         if not force:
@@ -2361,6 +2412,7 @@ class Roadmap:
                 raise LeaseHeld(f"node {node_uid} lease expired; use steal, not release")
             if lease["agent_id"] != agent_id:
                 raise LeaseHeld(f"node {node_uid} leased by {lease['agent_id']}, not {agent_id}")
+        store["leases"].pop(display_id, None)
         store["leases"].pop(node_uid, None)
         store["events"].append({"operation": "lease-released", "node_uid": node_uid,
                                  "agent_id": agent_id, "force": force, "at": now})

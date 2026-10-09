@@ -175,8 +175,8 @@ class TraceProvenanceCompressedFromTest(unittest.TestCase):
 
     def _assert_compressed(self, storage: str, tmpd: Path, path: Path):
         rm = load_carrier(storage, path)
-        # 压缩两条 plan 子节点；compressed_from 存的是经 resolve_node 解析后的引用
-        expected = [rm.resolve_node("1-1"), rm.resolve_node("1-2")]
+        # 压缩两条 plan 子节点；compressed_from 落不可变 uid，不落显示 id。
+        expected = [rm.get_node("1-1")["uid"], rm.get_node("1-2")["uid"]]
         run_cli("trace", "add", path, "--kind", "finding", "--body", "merged",
                 "--compressed-from", "1-1,1-2", cwd=tmpd)
         # 子进程写盘，必须重新加载

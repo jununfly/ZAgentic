@@ -63,6 +63,15 @@ STATUS_UNSUPPORTED = "unsupported"  # 不支持
 VALID_STATUS = {STATUS_NATIVE, STATUS_ADAPTED, STATUS_UNKNOWN, STATUS_UNSUPPORTED}
 VALID_PRIORITY = {"must", "want", "nice"}
 VALID_B_MODE = {"adapter", "plugin", "sidecar", "upstream-contrib", "fork"}
+MATRIX_FIELDS = {
+    "coverage",
+    "semantic_match",
+    "composability",
+    "status",
+    "evidence",
+    "notes",
+}
+FIT_FIELDS = ("coverage", "semantic_match", "composability")
 
 
 # ----------------------------------------------------------------------------
@@ -126,12 +135,48 @@ def run_gates(data: dict, cid: str) -> list[GateResult]:
     matrix = data.get("matrix", {}).get(cid, {})
     adaptation = data.get("adaptation", {}).get(cid, {})
 
-    # G1 矩阵完整性: 每个 (R × O) 单元齐全
+    # G1 矩阵完整性: 每个 (R × O) 单元存在，字段齐全且枚举/拟合因子合法。
     missing = [r["id"] for r in reqs if r["id"] not in matrix]
+    malformed = []
+    for requirement in reqs:
+        rid = requirement["id"]
+        if rid not in matrix:
+            continue
+        cell = matrix[rid]
+        problems = []
+        if not isinstance(cell, dict):
+            problems.append("单元不是 object")
+        else:
+            absent = sorted(MATRIX_FIELDS - set(cell))
+            if absent:
+                problems.append(f"缺字段 {absent}")
+            if cell.get("status") not in VALID_STATUS:
+                problems.append(f"非法 status={cell.get('status')!r}")
+            bad_fits = [
+                field
+                for field in FIT_FIELDS
+                if isinstance(cell.get(field), bool)
+                or not isinstance(cell.get(field), (int, float))
+                or not 0.0 <= float(cell[field]) <= 1.0
+            ]
+            if bad_fits:
+                problems.append(f"拟合因子须在 [0,1]: {bad_fits}")
+        if problems:
+            malformed.append(f"{rid}({'; '.join(problems)})")
     gates.append(GateResult(
         "G1-matrix-complete",
-        ok=not missing,
-        message=("OK" if not missing else f"缺单元: {missing}"),
+        ok=not missing and not malformed,
+        message=(
+            "OK"
+            if not missing and not malformed
+            else "; ".join(
+                part for part in (
+                    f"缺单元: {missing}" if missing else "",
+                    f"非法单元: {malformed}" if malformed else "",
+                )
+                if part
+            )
+        ),
     ))
 
     # G2 每个需求有 priority 与 critical 字段
@@ -151,10 +196,17 @@ def run_gates(data: dict, cid: str) -> list[GateResult]:
     ))
 
     # G4 被标记为满足的单元必须有非空证据 (canonical: 结论须来自一手资料)
-    no_ev = [r["id"] for r in reqs
-             if r["id"] in matrix
-             and matrix[r["id"]].get("status") in (STATUS_NATIVE, STATUS_ADAPTED)
-             and not matrix[r["id"]].get("evidence", "").strip()]
+    no_ev = [
+        r["id"]
+        for r in reqs
+        if r["id"] in matrix
+        and isinstance(matrix[r["id"]], dict)
+        and matrix[r["id"]].get("status") in (STATUS_NATIVE, STATUS_ADAPTED)
+        and (
+            not isinstance(matrix[r["id"]].get("evidence"), str)
+            or not matrix[r["id"]]["evidence"].strip()
+        )
+    ]
     gates.append(GateResult(
         "G4-evidence-present",
         ok=not no_ev,
@@ -164,12 +216,26 @@ def run_gates(data: dict, cid: str) -> list[GateResult]:
     # G5 关键未知项须有 PoC 计划 (canonical: 未知项须消除或有可接受验证计划)
     unknown_must = [r["id"] for r in reqs
                     if is_must(r) and r["id"] in matrix
+                    and isinstance(matrix[r["id"]], dict)
                     and matrix[r["id"]].get("status") == STATUS_UNKNOWN]
-    poc = (adaptation.get("poc_plan") or data.get("poc_plan") or "").strip()
+    raw_poc = adaptation.get("poc_plan") or data.get("poc_plan") or ""
+    poc = raw_poc.strip() if isinstance(raw_poc, str) else ""
     gates.append(GateResult(
         "G5-unknown-poc-plan",
         ok=not unknown_must or bool(poc),
         message=("OK" if (not unknown_must or poc) else f"关键未知项无 PoC 计划: {unknown_must}"),
+    ))
+
+    # G6 适配模式枚举：缺省 mode 仍表示待细分的通用 B；显式值必须属于契约。
+    mode = adaptation.get("mode")
+    gates.append(GateResult(
+        "G6-adaptation-mode",
+        ok=mode in (None, "") or mode in VALID_B_MODE,
+        message=(
+            "OK"
+            if mode in (None, "") or mode in VALID_B_MODE
+            else f"非法 adaptation.mode={mode!r}; 允许值: {sorted(VALID_B_MODE)}"
+        ),
     ))
 
     return gates
@@ -191,7 +257,7 @@ def classify_candidate(data: dict, cid: str) -> CandidateResult:
         recommended="BLOCKED", reasons=[], gates=gates,
     )
 
-    # 硬闸门 (G1-G4: 输入合法性) 不过 -> 拒绝自信分类
+    # 硬闸门（除 G5 外均为输入合法性）不过 -> 拒绝自信分类。
     # G5 (未知项无 PoC 计划) 是就绪度提示，不阻塞分类，仅作理由附注
     failed = [g for g in gates if not g.ok and g.name != "G5-unknown-poc-plan"]
     if failed:
@@ -441,7 +507,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
             f.write(render_decision_record(data, results))
         print(f"决策记录已写出: {args.record}")
 
-    # 退出码: 仅硬闸门(G1-G4)未过 -> 1 (提醒不要盲信);
+    # 退出码: 任一硬闸门（除 G5 外）未过 -> 1 (提醒不要盲信);
     # G5 是就绪度提示、不阻塞分类, 不影响退出码 (classify_candidate 已排除 G5)
     hard_failed = any(
         any(g.name != "G5-unknown-poc-plan" and not g.ok for g in r.gates)

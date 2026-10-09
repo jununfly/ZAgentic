@@ -18,7 +18,8 @@ from scripts.capability_fit import (
 
 def _cell(coverage, semantic, composability, status, evidence="src:x"):
     return {"coverage": coverage, "semantic_match": semantic,
-            "composability": composability, "status": status, "evidence": evidence}
+            "composability": composability, "status": status,
+            "evidence": evidence, "notes": "test fixture"}
 
 
 def _base(reqs, matrix, cost=None, adaptation=None):
