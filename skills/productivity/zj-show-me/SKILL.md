@@ -1,8 +1,11 @@
 ---
 name: zj-show-me
-description: Help the user understand the current topic visually with concise diagrams, code-shape sketches, and focused HTML artifacts.
+description: Help the user understand the current topic visually with concise diagrams, code-shape sketches, and focused HTML artifacts. Use when the user asks to visualize, sketch, or diagram something, wants to see structure or flow, or says things like 画一下 / 直观一点 / 看看结构.
 disable-model-invocation: true
+argument-hint: "What should I visualize?"
 ---
+
+# zj-show-me
 
 Help the user understand the current topic of conversation visually. Skip the preamble and keep prose brief. Pick the smallest view that makes the key point clear.
 
