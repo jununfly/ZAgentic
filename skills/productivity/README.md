@@ -6,6 +6,7 @@ General workflow tools, not code-specific.
 - **[zj-composer](./zj-composer/SKILL.md)** — Compose a reviewable, versioned task Plan from a goal, constraints, evidence needs, and permission boundaries.
 - **[zj-grilling](./zj-grilling/SKILL.md)** — Grill the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved (frontier/rounds method).
 - **[zj-handoff](./zj-handoff/SKILL.md)** — Compact the current conversation into a handoff document so another agent can continue the work.
+- **[zj-show-me](./zj-show-me/SKILL.md)** — Explain the current topic visually with concise inline sketches (pseudocode, call trees, component/file trees, Mermaid, diffs) and focused HTML artifacts.
 - **[zj-wait-what](./zj-wait-what/SKILL.md)** — Re-pitch the last message — it didn't land. User-only; supplements with project glossary terms from `ZJ-CONTEXT.md` and ASD-STE100 simplified English.
 - **[zj-write-a-skill](./zj-write-a-skill/SKILL.md)** — Create new skills with proper structure, progressive disclosure, and bundled resources.
 - **[zj-writing-for-agents](./zj-writing-for-agents/SKILL.md)** — Reference for writing any document an agent consumes (skills, AGENTS.md/CLAUDE.md, pointer-reached docs): context pointers, progressive disclosure, leading words, pruning.

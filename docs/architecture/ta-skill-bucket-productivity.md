@@ -16,7 +16,8 @@ and how does it fail?
 This page describes the productivity bucket as an architecture subsystem.
 The bucket holds daily non-code-work skills: communication modes, capability
 composition, structured discussion, hand-offs, teaching state, question
-formulation, and skill-writing helpers. It does **not** own repository
+formulation, inline visual explanation, and skill-writing helpers. It does
+**not** own repository
 governance (codebase-docs has that) or code-change execution (engineering has
 that).
 
@@ -42,12 +43,13 @@ The bucket covers:
 - session transfer and continuation (`zj-handoff`),
 - multi-session teaching state (`zj-teach`),
 - decision capture and routing (`zj-to-questionnaire`),
+- inline visual explanation (`zj-show-me`),
 - skill-creation discipline (`zj-write-a-skill`,
   `zj-writing-for-agents`).
 
 ## Owned state
 
-- The skill folders under `skills/productivity/` (11 entries) plus their
+- The skill folders under `skills/productivity/` (12 entries) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
 - Workflow-owned process and evidence artifacts such as Composer Plans under
@@ -97,6 +99,8 @@ The bucket covers:
   the structured discussion lifecycle and independent-view companion.
 - [zj-teach](../../skills/productivity/zj-teach/SKILL.md) — stateful
   multi-session teaching.
+- [zj-show-me](../../skills/productivity/zj-show-me/SKILL.md) — inline
+  visual explanation with sketches and focused HTML artifacts.
 - [zj-write-a-skill](../../skills/productivity/zj-write-a-skill/SKILL.md)
   and
   [zj-writing-for-agents](../../skills/productivity/zj-writing-for-agents/SKILL.md) —
