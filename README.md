@@ -156,6 +156,7 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-composer](./skills/productivity/zj-composer/SKILL.md) — Compose a reviewable, versioned task Plan from a goal, constraints, evidence needs, and permission boundaries.
 - [zj-grilling](./skills/productivity/zj-grilling/SKILL.md) — Stress-test a plan, decision, or idea through structured questions.
 - [zj-handoff](./skills/productivity/zj-handoff/SKILL.md) — Create a compact handoff for another human or agent.
+- [zj-show-me](./skills/productivity/zj-show-me/SKILL.md) — Explain the current topic visually with concise inline sketches and focused HTML artifacts.
 - [zj-wait-what](./skills/productivity/zj-wait-what/SKILL.md) — Re-pitch the last message when it did not land.
 - [zj-write-a-skill](./skills/productivity/zj-write-a-skill/SKILL.md) — Create a skill with progressive disclosure and bundled resources.
 - [zj-writing-for-agents](./skills/productivity/zj-writing-for-agents/SKILL.md) — Write skills, rules, and agent-consumed documents clearly.

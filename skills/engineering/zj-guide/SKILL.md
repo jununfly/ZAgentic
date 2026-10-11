@@ -18,7 +18,7 @@ silently invoke another user-only skill. The other user-only routes are
 `zj-caveman`, `zj-composer`, `zj-debrief`, `zj-docs-ontology`, `zj-dry-run`,
 `zj-grill-with-docs`, `zj-implement`, `zj-improve-codebase-architecture`,
 `zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-repo-init`,
-`zj-steelman`, `zj-teach`, `zj-to-questionnaire`, `zj-to-spec`,
+`zj-show-me`, `zj-steelman`, `zj-teach`, `zj-to-questionnaire`, `zj-to-spec`,
 `zj-to-tickets`, `zj-triage`, `zj-wait-what`, and `zj-wayfinder`.
 
 All other public skills remain model-invoked or reference-capable: the agent
@@ -165,6 +165,7 @@ Off the main flow entirely.
 - **`/zj-wizard`** — for the steps only a **human** can take: provisioning infrastructure, setting up credentials or CI secrets, clicking through an unfamiliar third-party dashboard, running a one-off migration or cutover. It generates an interactive bash script that opens each URL, captures each value, and writes it into `.env` and GitHub secrets — so the procedure stops being something you re-explain to an agent every time. Model-invoked, so the agent reaches for it the moment it hits a wall only you can pass. If the agent could just do it itself, it should; this is for where a human is genuinely in the loop.
 - **`/zj-wait-what`** — the corrective for a message that didn't land. Use it mid-conversation, inside any other skill, and the agent re-pitches what it just said with the context you were missing, in plain English, using the `ZJ-CONTEXT.md` vocabulary. It works after the fact; `/zj-grill-with-docs` is the upfront cure, because a shared language agreed early is what stops the jargon arriving at all.
 - **`/zj-teach`** — learn a concept over multiple sessions, using the current directory as a stateful workspace.
+- **`/zj-show-me`** — explain the current topic visually with concise inline sketches (pseudocode, call trees, Mermaid, diffs) and focused HTML artifacts.
 - **`/zj-writing-for-agents`** — reference for writing documents agents consume: skills, AGENTS.md, pointed-at docs.
 - **`/zj-caveman`** — switch to ultra-compressed communication when token-efficient replies are the goal.
 - **`/zj-aihot`** — retrieve current Chinese AI news and highlights from AIHOT; use it instead of memory for time-sensitive AI news.
