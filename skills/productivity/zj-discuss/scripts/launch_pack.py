@@ -221,6 +221,12 @@ zj-discuss-view --role {{key}} {{subdoc}}
    `` 视角来源: 跨会话独立Agent `` 开头。
 5. **Answer the open questions** —— 回答该子文档 `## 待讨论问题` 里的 Q1/Q2/…，
    不要复述文件既有内容假装是自己的结论。
+6. **Cite with a locator** —— 「发现」须带能回溯到原文的定位：`原文 L96` /
+   `原文 <file> Lxx` / `原文 ## 章节`。**只给文件名不算定位**：`原文 ADR 0008`
+   会被 `check_subdoc.py` 判无效（缺定位锚点），须写成 `原文 ADR 0008 L28` 或
+   `原文 ADR 0008 ## 小节`。
+7. **Fill the placeholders** —— 模板里 `<主题>` / `<...>` 是**未填**占位，
+   照抄不算证据：未填占位块被闸门计 0 条，复制 N 份空壳凑不出 N。
 """
 
 
