@@ -25,6 +25,25 @@ import re
 import sys
 from pathlib import Path
 
+# Reuse the generic structural-gate substrate from the zj-doc-collab base skill
+# (split_sections, viewpoint-marker / non-degradation checks, block splitting,
+# evidence classification). This skill keeps only its domain-specific layer:
+# the conclusion status enum, the deposition check, the per-role N-gate, and the
+# viewpoint heading vocabulary. The base's defaults already equal this skill's
+# vocabulary (跨会话独立Agent / ⚠ 非独立 / 非降级红线 / 原文 evidence), so the
+# delegation is behavior-preserving with no per-call overrides needed.
+from pathlib import Path as _Path
+_BASE_SCRIPTS = _Path(__file__).resolve().parents[2] / "zj-doc-collab" / "scripts"
+if str(_BASE_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_BASE_SCRIPTS))
+from gate_core import (
+    split_sections,
+    _role_of,
+    check_non_degradation as _check_non_degradation,
+    split_viewpoint_blocks as _split_viewpoint_blocks,
+    placeholder_markers_in,
+)
+
 VALID_STATUS = {"DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT"}
 CROSS_SESSION_MARKER = "跨会话独立Agent"
 PREVIEW_MARKER = "同会话SubAgent(低权重)"
@@ -46,7 +65,8 @@ SOURCE_RE = re.compile(r"视角来源" + LABEL_SEPARATOR + r"[：:]" + LABEL_SEP
 STATUS_RE = re.compile(
     r"状态协议" + LABEL_SEPARATOR + r"[：:]" + LABEL_SEPARATOR + r"([A-Za-z_]+)"
 )
-ROLE_RE = re.compile(r"视角\s*[：:]\s*([^（(]+)")
+# NOTE: ROLE_RE now lives in zj-doc-collab/scripts/gate_core (used by _role_of
+# there). Kept out of this skill to avoid a second source of truth.
 # Tokens that mark a viewpoint as same-session preview output.
 PREVIEW_TOKENS = ("预演", "同会话SubAgent")
 # A bare mention is NOT a citation: a conclusion may legitimately *discuss* the
@@ -60,7 +80,7 @@ STRIP_CHARS = " \t`\"'*_\u00a0"
 # an evidence citation back to the source the Agent Read (gated method ④). The
 # delimiter is fence-aware via split_sections (a ``**观点`` line inside a code
 # fence is inert).
-VIEWPOINT_BLOCK_RE = re.compile(r"^(#{4}\s*观点|\*\*观点)")
+# NOTE: VIEWPOINT_BLOCK_RE now lives in zj-doc-collab/scripts/gate_core.
 # Evidence = a "原文" reference carrying a locator (file+line / line / section /
 # paren), e.g. "原文 L96", "原文 sub-02 L85-88", "原文 SKILL.md L140-144",
 # "原文 ## 上下文", "原文 §结论不变式", "（原文 L9-13）", "原文 第9-13行".
@@ -85,51 +105,17 @@ CITATION_RE = re.compile(r"原文")
 # ≥N placeholder blocks passed the gate — the template bypassed its own gate
 # (#166). Placeholders are matched by the marker vocabulary the template uses,
 # not by a bare `<...>` regex, so a legitimate `<tag>` in prose is not hit.
-PLACEHOLDER_TOKEN_RE = re.compile(r"<([^<>\n]{0,80})>")
-PLACEHOLDER_MARKERS = (
-    "主题", "未填", "留空", "从原文读到", "该发现对方案", "具体、可执行",
-    "主会话撰写", "若有", "...",
-)
+# NOTE: PLACEHOLDER_TOKEN_RE / PLACEHOLDER_MARKERS now live in
+# zj-doc-collab/scripts/gate_core (defaults already equal this skill's vocab).
 ROLE_METHODS_DIR = Path(__file__).resolve().parent.parent / "references" / "role-methods"
 # Fallback when a role has no gated-method file (custom / unknown role key).
 GATE_N_DEFAULT = 3
 GATE_N_RE = re.compile(r"N\s*=\s*(\d+)")
 
 
-def split_sections(text):
-    """Split Markdown into (heading, body) pairs by ATX headings.
-
-    Fence-aware: lines inside a ``` / ~~~ code fence are never treated as
-    headings, even if they start with ``#``. This keeps a digest block (or any
-    code block) inert to viewpoint/conclusion detection — a digest that echoes a
-    ``### 视角：X`` line inside a fence must not be parsed as a real viewpoint
-    (see design.md §8 digest-injection PoC).
-    """
-    sections = []
-    heading = None
-    body = []
-    in_fence = False
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith(("```", "~~~")):
-            in_fence = not in_fence
-            body.append(line)  # a fence delimiter is content of the section
-            continue
-        if not in_fence and line.startswith("#"):
-            if heading is not None:
-                sections.append((heading, "\n".join(body)))
-            heading = line.strip()
-            body = []
-        else:
-            body.append(line)
-    if heading is not None:
-        sections.append((heading, "\n".join(body)))
-    return sections
-
-
-def _role_of(heading):
-    match = ROLE_RE.search(heading)
-    return match.group(1).strip() if match else heading
+# `split_sections` and `_role_of` are delegated to zj-doc-collab/scripts/gate_core
+# (split_sections re-exported via markdown_sections). Local copies removed in the
+# base-skill extraction; output is byte-identical.
 
 
 def _check_conclusion(body):
@@ -223,31 +209,8 @@ def _check_viewpoint(heading, body):
     return _check_viewpoint_gate(role, body)
 
 
-def _split_viewpoint_blocks(body):
-    """Split a viewpoint body into viewpoint blocks by their delimiter.
-
-    A block starts at a line matching ``#### 观点`` (h4) or ``**观点`` (bold),
-    and runs until the next delimiter or the end of the body.
-
-    The preamble before the first delimiter (the `视角来源:` line and any prose
-    above the first 观点) is **not** a viewpoint block and is dropped — it used
-    to be counted as block 1, which made per-block diagnostics report a phantom
-    "第 1 块没有原文引用" and shifted every real block's position by one (#165).
-    A body with no delimiter keeps its single (likely non-compliant) block, so
-    "wrote no viewpoint at all" still fails the gate instead of passing.
-    """
-    blocks = []
-    current = []
-    for line in body.splitlines():
-        if VIEWPOINT_BLOCK_RE.match(line.strip()):
-            blocks.append("\n".join(current))
-            current = [line]
-        else:
-            current.append(line)
-    blocks.append("\n".join(current))
-    if len(blocks) > 1:
-        blocks = blocks[1:]  # drop the preamble; keep the single-block fallback
-    return blocks
+# `_split_viewpoint_blocks` is delegated to zj-doc-collab/scripts/gate_core
+# (VIEWPOINT_BLOCK_RE + preamble-drop logic live there now).
 
 
 def gate_n_for_role(role_key):
@@ -273,17 +236,8 @@ def gate_n_for_role(role_key):
     return GATE_N_DEFAULT
 
 
-def placeholder_markers_in(block):
-    """Return the placeholder markers (`<...>` / `<主题>` …) in a viewpoint block.
-
-    Empty when the block is real content. See PLACEHOLDER_MARKERS.
-    """
-    found = []
-    for match in PLACEHOLDER_TOKEN_RE.finditer(block):
-        inner = match.group(1).strip()
-        if any(marker in inner for marker in PLACEHOLDER_MARKERS):
-            found.append(match.group(0))
-    return found
+# `placeholder_markers_in` is delegated to zj-doc-collab/scripts/gate_core
+# (PLACEHOLDER_TOKEN_RE + PLACEHOLDER_MARKERS live there as defaults).
 
 
 def _check_viewpoint_gate(role, body):
@@ -366,27 +320,8 @@ def _join_positions(positions):
     return "、".join(str(p) for p in positions)
 
 
-def _check_non_degradation(conclusion_body, has_cross_session_anchor):
-    """Hard rule 3's operational form: a claimed conclusion needs a real anchor.
-
-    The independence ladder is cross-provider > cross-session > same-session.
-    Same-session is a floor to pass through, never a place to settle, so a
-    conclusion claiming DONE / DONE_WITH_CONCERNS must rest on at least one
-    cross-session viewpoint.
-    """
-    if has_cross_session_anchor:
-        return []
-    status_match = STATUS_RE.search(conclusion_body)
-    status = status_match.group(1).strip() if status_match else None
-    if status not in CLAIMED_STATUS:
-        return []
-    return [
-        "非降级红线：「{}」声称已收敛，但本子文档没有任何 `{}` 视角作为锚点"
-        "（仅有同会话预演，或根本没有视角）。同会话是下限而非终点——"
-        "须重开真隔离会话取得至少一个独立视角后方可标为已结论。".format(
-            status, CROSS_SESSION_MARKER
-        )
-    ]
+# `_check_non_degradation` is delegated to zj-doc-collab/scripts/gate_core
+# (the 非降级红线 message + CLAIMED_STATUS / CROSS_SESSION_MARKER defaults).
 
 
 def check(text):
