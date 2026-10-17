@@ -29,95 +29,26 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_MATRIX = SKILL_DIR / "references" / "role-matrix.md"
 
-DECLARED_SET_RE = re.compile(r"声明必需角色集\s*[：:]\s*(.+)")
-SPLIT_RE = re.compile(r"[,，、;；]")
-STRIP_CHARS = " \t`\"'*_\u00a0"
-
-
-class Refusal(Exception):
-    """Raised when the generator must refuse rather than guess."""
-
-
-def parse_declared_set(text):
-    """Extract the declared required role keys from a sub-document body."""
-    match = DECLARED_SET_RE.search(text)
-    if not match:
-        return []
-    raw = match.group(1)
-    keys = []
-    for part in SPLIT_RE.split(raw):
-        key = part.strip(STRIP_CHARS).strip()
-        if key:
-            keys.append(key)
-    return keys
-
-
-def load_role_pool(matrix_path):
-    """Parse key -> {name, stance, intro} out of the role matrix table."""
-    matrix_path = Path(matrix_path)
-    if not matrix_path.exists():
-        raise Refusal("role matrix not found: {}".format(matrix_path))
-
-    pool = {}
-    for raw_line in matrix_path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line.startswith("|"):
-            continue
-        cells = [c.strip() for c in line.strip("|").split("|")]
-        if len(cells) < 3:
-            continue
-        key = cells[0].strip(STRIP_CHARS)
-        name = cells[1].strip(STRIP_CHARS)
-        if not key or key.lower() == "key":
-            continue
-        if set(key) <= set("-: "):
-            continue
-        pool[key] = {
-            "name": name,
-            "stance": cells[3].strip(STRIP_CHARS) if len(cells) > 3 else "",
-            "intro": cells[5].strip(STRIP_CHARS) if len(cells) > 5 else "",
-            "is_base": "✅" in cells[2] if len(cells) > 2 else False,
-        }
-    if not pool:
-        raise Refusal("no roles parsed from {}".format(matrix_path))
-    return pool
-
-
-SIGNAL_HEADER_RE = re.compile(r"信号\s*[（(]?\s*子问题触及")
-ROLE_KEY_IN_CELL_RE = re.compile(r"^\s*([A-Za-z]+)\s*[（(]")
-
-
-def load_signals(matrix_path):
-    """Map role key -> trigger-signal text from role-matrix's signal table.
-
-    The signal table (``| 信号（子问题触及…） | 建议追加角色 |``) lives below the
-    main role table; parsing it keeps the prep list's "推荐理由" column a single
-    source (role-matrix), so the prep command cannot drift from the matrix.
-    """
-    matrix_path = Path(matrix_path)
-    if not matrix_path.exists():
-        raise Refusal("role matrix not found: {}".format(matrix_path))
-    signals = {}
-    in_signal_table = False
-    for raw_line in matrix_path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line.startswith("|"):
-            if in_signal_table:
-                break
-            continue
-        if SIGNAL_HEADER_RE.search(line):
-            in_signal_table = True
-            continue
-        if not in_signal_table:
-            continue
-        cells = [c.strip() for c in line.strip("|").split("|")]
-        if len(cells) < 2 or set(cells[0]) <= set("-: "):
-            continue  # separator or malformed row
-        m = ROLE_KEY_IN_CELL_RE.match(cells[-1])
-        if not m:
-            continue
-        signals[m.group(1)] = cells[0]
-    return signals
+# Reuse the generic launch-pack engine from the zj-doc-collab base skill
+# (declared-set parsing, role-matrix parsing, signal-table parsing, pack
+# rendering, the Refusal guard). This skill keeps only its consumer-specific
+# content: the role matrix file, the PACK_TEMPLATE / PREP_TEMPLATE wording, the
+# per-role executor command (zj-discuss-view --role), and the role-method
+# reference path. The delegation is behavior-preserving.
+from pathlib import Path as _Path
+_BASE_SCRIPTS = _Path(__file__).resolve().parents[2] / "zj-doc-collab" / "scripts"
+if str(_BASE_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_BASE_SCRIPTS))
+from launch_pack_core import (
+    load_role_pool,
+    load_signals,
+    parse_declared_set,
+    render_pack,
+    _build_prep_row,
+    _ensure_dir,
+    Refusal,
+    SPLIT_RE,
+)
 
 
 PREP_TEMPLATE = """# 准备阶段角色推荐（zj-discuss 静态生成 · 单一数据源 = role-matrix.md）
@@ -148,13 +79,7 @@ BASE_REASON = {
 }
 
 
-def _build_prep_row(role, info, extra):
-    return "| {key} | {name} | {intro} | {extra} |".format(
-        key=role,
-        name=info.get("name") or role,
-        intro=info.get("intro") or "（见 role-matrix.md）",
-        extra=extra,
-    )
+# `_build_prep_row` is delegated to zj-doc-collab/scripts/launch_pack_core.
 
 
 def generate_prep(matrix_path, signals=None, limit=None):
@@ -231,25 +156,20 @@ zj-discuss-view --role {{key}} {{subdoc}}
 
 
 def build_pack(role, role_info, subdoc_path):
-    """Render one launch pack's text for a single role."""
-    return PACK_TEMPLATE.replace("{{key}}", role).replace(
-        "{{name}}", role_info.get("name") or role
-    ).replace("{{stance}}", role_info.get("stance") or "（见 role-matrix.md）").replace(
-        "{{intro}}", role_info.get("intro") or "（见 role-matrix.md）"
-    ).replace("{{subdoc}}", str(subdoc_path))
+    """Render one launch pack's text for a single role.
+
+    Delegates to the base engine's ``render_pack`` with this skill's pack
+    template plus the per-role executor command (zj-discuss-view --role) and
+    role-method reference path. Output is identical to the prior inline chain.
+    """
+    return render_pack(
+        role, role_info, subdoc_path, PACK_TEMPLATE,
+        "zj-discuss-view --role {key} {subdoc}",
+        "references/role-methods/{key}.md",
+    )
 
 
-def _ensure_dir(path):
-    path = Path(path)
-    if path.exists():
-        return
-    try:
-        path.mkdir(parents=True)
-    except OSError:
-        # The local sitecustomize shim can raise a non-FileExistsError here when
-        # the directory already exists; only propagate genuinely failed creation.
-        if not path.exists():
-            raise
+# `_ensure_dir` is delegated to zj-doc-collab/scripts/launch_pack_core.
 
 
 def generate(subdoc_path, roles, out_dir, matrix_path, allow_custom=False):
