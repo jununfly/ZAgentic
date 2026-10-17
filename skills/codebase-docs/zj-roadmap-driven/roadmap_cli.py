@@ -406,6 +406,8 @@ def cmd_edge(args: dict):
     action = args["positional"][0]
     r = _load_roadmap(args["positional"][1])
     if action == "add":
+        # 写边也要读两端 uid（add_edge 内部），老数据先补齐再校验（#170）。
+        r.migrate_legacy_uids()
         ends = [r.resolve_node(args["positional"][2]), r.resolve_node(args["positional"][3])]
         # 边也是写：两端都必须在 scope 内，否则 subagent 能把别人的子树拉进
         # 自己的依赖图。只查 scope 不查租约——加边此前就不受租约约束。
@@ -571,6 +573,10 @@ def _enforce_write_guard(r, node_id: str, args: dict, fields=frozenset()) -> Non
     三者退出码都是 1（都该"改调用或稍后重试"）。`fields` 为空 = 结构性写
     （add / delete / 撤回决策），一律过守卫。
     """
+    # P0 写入时升级：守卫的租约身份解析依赖 uid，必须先补齐老数据再校验，
+    # 否则缺 uid 的存量 roadmap 会卡在守卫上、永远无法被写命令迁移（#170）。
+    # ensure_uids / ensure_layer 对已是 P0 形态的数据幂等返回 0，无副作用。
+    r.migrate_legacy_uids()
     _enforce_scope(r, node_id, args)
     if args.get("if-rev") is not None:
         current = r.current_revision()

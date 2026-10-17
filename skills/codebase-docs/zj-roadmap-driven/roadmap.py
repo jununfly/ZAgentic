@@ -1686,6 +1686,20 @@ class Roadmap:
         atomic_write_text(self.json_path, content)
         return self.json_path
 
+    def migrate_legacy_uids(self) -> int:
+        """补齐存量节点缺失的 uid / layer（P0 写入时升级）。
+
+        写命令在跑守卫之前必须调一次：守卫的租约身份解析走 `_lease_identity`，
+        它依赖 uid；若老数据先被守卫拦下（RoadmapError: 缺少 uid），roadmap
+        就永远卡在「缺 uid」、无法被写命令补齐——这正是 #170 的根因。
+
+        这里只改内存里的 `self.data`；真正落盘仍由 `save()` 负责（幂等、可重复）。
+        single / sqlite 两 carrier 共用同一份 `self.data` 形状，方法直接对
+        `self.data["nodes"]` 操作，无需各自实现。返回本调用补了几条。
+        """
+        nodes = self.data.get("nodes", {})
+        return ensure_uids(nodes) + ensure_layer(nodes)
+
     # ── 初始化 ─────────────────────────────────────────
 
     def init(self, title: str, description: str = "", md_file: str = "") -> dict:
