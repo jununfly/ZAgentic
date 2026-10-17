@@ -14,10 +14,11 @@ spec：每个节点一个不可变 `uid`，一经生成永不变更、永不复�
 
 import json
 import os
+import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
+import uuid
 from pathlib import Path
 
 
@@ -29,15 +30,21 @@ CLI = SKILL_DIR / "roadmap_cli.py"
 
 FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
 
+# 显式 scratch 目录，放在仓库之外（$HOME/.cache），不依赖 tempfile 的
+# 探测式 gettempdir()——本机 Security Center 会拦 tempfile 探测时的探针
+# 删除，导致 cold cache 下所有 TemporaryDirectory 集体失败（噪音 ERROR）。
+# 这里直接用 Path.mkdir 建目录（不探测），清理时 best-effort 忽略删除失败。
+SCRATCH_ROOT = Path.home() / ".cache" / "zj-roadmap-tests"
+
 
 class UidContractTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.workdir = Path(self.tmp.name)
+        self.workdir = SCRATCH_ROOT / uuid.uuid4().hex
+        self.workdir.mkdir(parents=True, exist_ok=True)
         self.roadmap = self.workdir / "roadmap.json"
 
     def tearDown(self):
-        self.tmp.cleanup()
+        shutil.rmtree(self.workdir, ignore_errors=True)
 
     # ── helpers ──────────────────────────────────────────
 
