@@ -133,6 +133,7 @@ from roadmap import (
     roadmap_file_lock,
     status_icon,
     unlock_roadmap,
+    resolve_md_file,
 )
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
@@ -770,7 +771,9 @@ def cmd_link(args: dict):
     r = _load_roadmap(args["positional"][0])
     r.link_md_file(args["positional"][1])
     r.save()
-    print(f"Linked to: {os.path.abspath(args['positional'][1])}")
+    # 存的是相对路径（#169），打印时给出本机解析结果，免得 Human 以为存了 abs。
+    stored = r.data.get("metadata", {}).get("md_file", "")
+    print(f"Linked to: {resolve_md_file(stored, r.json_path)} (stored: {stored})")
 
 
 def cmd_stats(args: dict):

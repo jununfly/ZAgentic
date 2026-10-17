@@ -352,6 +352,19 @@ class PruneNoEdge(RoadmapError):
     exit_code = 1
 
 
+class MdFileNotPortable(RoadmapError):
+    """`metadata.md_file` 是**另一台机器**文件系统命名体系下的绝对路径。
+
+    `C:\\workspace\\...` 落在 POSIX 上、`/Users/...` 落在 Windows 上，都不是本机
+    路径——直接拿去写会在仓库根造出 `C:` / `Users` 开头的垃圾目录，而真正的
+    ROADMAP.md 反而不更新。宁可报错让调用方重新 `link`，也不要静默写错地方。
+    处置方式：改配置（重新 `link` 存成相对路径），不是重试。
+    """
+
+    code = "E_MD_PATH"
+    exit_code = 1
+
+
 ERROR_EXIT_CODES = {
     RoadmapError.code: RoadmapError.exit_code,
     BudgetExceeded.code: BudgetExceeded.exit_code,
@@ -369,6 +382,7 @@ ERROR_EXIT_CODES = {
     PromoteStateInvalid.code: PromoteStateInvalid.exit_code,
     ReferencedError.code: ReferencedError.exit_code,
     PruneNoEdge.code: PruneNoEdge.exit_code,
+    MdFileNotPortable.code: MdFileNotPortable.exit_code,
 }
 
 
@@ -378,6 +392,79 @@ ERROR_EXIT_CODES = {
 def exit_code_for(exc: BaseException) -> int:
     """把异常映射为进程退出码。"""
     return ERROR_EXIT_CODES.get(getattr(exc, "code", ""), 1)
+
+
+# ── md_file 可移植性（#169）─────────────────────────────
+# 与租约策略同一条纪律：判定只写一处，两个 carrier 只 differ 在字节落哪儿。
+# `md_file` 曾恒为 `os.path.abspath` 的结果——机器相关。同一份 roadmap 经 Git
+# 在 macOS ↔ Windows 间共享时，总有一台机的 `render` 把对方的绝对路径当相对
+# 路径，在仓库根造出 `C:\workspace\...` 形状的垃圾。存储形态改为"相对载体文件
+# 目录的 posix 相对路径"，绝对路径仅作兼容读入。
+
+_WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:[\\/]")
+_MSYS_ROOT_RE = re.compile(r"^/[A-Za-z]/")
+
+
+def md_file_is_absolute(md_file: str) -> bool:
+    """绝对路径判定，独立于**运行平台**的 `os.path`。
+
+    不能用 `os.path.isabs`：它按解释器所在平台判，`C:\\...` 在 POSIX 解释器
+    上是相对的、`/Users/...` 在 Windows 解释器上是绝对的 —— 而我们要判的是
+    "这条路径在**它自己那台机**上是不是绝对路径"，与本机无关。
+    """
+    return bool(_WINDOWS_DRIVE_RE.match(md_file)) or md_file.startswith("/")
+
+
+def md_file_is_foreign_absolute(md_file: str, os_name: str) -> bool:
+    """`md_file` 是不是**另一台机器命名体系**下的绝对路径。
+
+    - `C:\\workspace\\...`（盘符路径）只有本机是 Windows 时才成立；
+    - `/Users/...`（POSIX 路径）只有本机不是 Windows 时才成立 —— Windows 上唯一
+      的本机形态是 MSYS 风格 `/c/...`（Git Bash 用它表示 `C:\\`）。
+    """
+    if _WINDOWS_DRIVE_RE.match(md_file):
+        return os_name != "nt"
+    if md_file.startswith("/"):
+        return os_name == "nt" and not _MSYS_ROOT_RE.match(md_file)
+    return False
+
+
+def resolve_md_file(md_file: str, json_path: str, os_name: str = os.name) -> str:
+    """把 `metadata.md_file` 解析成本机可写路径。
+
+    相对路径相对**载体文件所在目录**解析 —— 跨机可移植的关键：载体与
+    ROADMAP.md 通常同目录，存 `"ROADMAP.md"` 两台机各自解析到自己仓库里的
+    那一份。本机绝对路径原样返回（兼容既有台账）；异机绝对路径抛
+    `MdFileNotPortable`，不静默写文件。
+    """
+    if not md_file:
+        return ""
+    if md_file_is_foreign_absolute(md_file, os_name):
+        raise MdFileNotPortable(
+            f"metadata.md_file 是另一台机器的绝对路径，本机无从解析: {md_file}。"
+            f" 用 `link <roadmap> <md_file>` 重新关联（会存成相对路径），"
+            f"跨机共享才不会写到仓库外的垃圾路径。"
+        )
+    if md_file_is_absolute(md_file):
+        return md_file
+    # 拼接用运行平台语义（本函数生产调用时 `os_name` 就是本机，两者一致）。
+    base = os.path.dirname(os.path.abspath(json_path))
+    return os.path.normpath(os.path.join(base, md_file))
+
+
+def to_relative_md_file(md_file: str, json_path: str) -> str:
+    """绝对路径 → 相对载体文件目录的 posix 相对路径。
+
+    正斜杠分隔符在两台机上都能被打开。无共同根（Windows 跨盘符）时相对化
+    没有意义，保留原绝对路径。
+    """
+    target = os.path.abspath(md_file)
+    base = os.path.dirname(os.path.abspath(json_path))
+    try:
+        rel = os.path.relpath(target, base)
+    except ValueError:  # Windows 跨盘符：relpath 无解
+        return target
+    return rel.replace(os.sep, "/")
 
 
 # ── 作用域令牌与字段级所有权 ────────────────────
@@ -1628,7 +1715,8 @@ class Roadmap:
             "metadata": {
                 "created": now,
                 "updated": now,
-                "md_file": md_file,
+                # 与 link 同一条存储形态（#169）：绝对路径进来，相对路径存。
+                "md_file": to_relative_md_file(md_file, self.json_path) if md_file else "",
             },
         }
         return self.data
@@ -2843,9 +2931,12 @@ class Roadmap:
         不存在则追加到文件末尾。
         返回写入的文件路径，无关联 md 文件则返回 None。
         """
-        md_file = self.data.get("metadata", {}).get("md_file", "")
-        if not md_file:
+        raw_md_file = self.data.get("metadata", {}).get("md_file", "")
+        if not raw_md_file:
             return None
+        # 相对路径相对**载体文件目录**解析（#169）：跨机共享时两台机各自落到
+        # 自己仓库里的那一份；异机绝对路径在此抛 E_MD_PATH，不静默写垃圾。
+        md_file = resolve_md_file(raw_md_file, self.json_path)
 
         section = self.render_light_section()
 
@@ -2889,10 +2980,24 @@ class Roadmap:
 
         return md_file
 
-    def link_md_file(self, md_file: str):
-        """关联一个 md 文件。"""
+    def link_md_file(self, md_file: str, *, relative: bool = True):
+        """关联一个 md 文件（#169）。
+
+        默认把目标**相对化到载体文件所在目录**并以 posix 分隔符存储：
+        `app/roadmap.json` + `app/ROADMAP.md` → 存 `"ROADMAP.md"`。这样同一份
+        roadmap 在 macOS 与 Windows 之间通过 Git 共享时，两台的 `render` 各自
+        解析到自己仓库里正确的文件，而不是在仓库根造出 `C:\\workspace\\...`
+        形状的垃圾目录。
+
+        `relative=False` 原样保存调用方给的字符串：既有绝对路径台账与"本机
+        就是要绝对路径"的用例靠它兼容。
+        """
         self.data.setdefault("metadata", {})
-        self.data["metadata"]["md_file"] = os.path.abspath(md_file)
+        if relative and os.path.isabs(md_file):
+            stored = to_relative_md_file(md_file, self.json_path)
+        else:
+            stored = md_file
+        self.data["metadata"]["md_file"] = stored
 
     # ── 验证 ───────────────────────────────────────────
 
