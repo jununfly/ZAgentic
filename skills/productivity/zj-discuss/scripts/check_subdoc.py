@@ -72,7 +72,24 @@ VIEWPOINT_BLOCK_RE = re.compile(r"^(#{4}\s*观点|\*\*观点)")
 # (the exact "狼来了" failure mode SKILL.md warns about). The `[\w./\-]+\s+`
 # group optionally consumes a path/identifier token between 原文 and the L/§/#
 # anchor; the trailing `第` covers the "原文 第9-13行" spelling.
-EVIDENCE_RE = re.compile(r"原文\s*(?:[\w./\-]+\s+)?[Ll#§（(第]")
+# Up to 2 path/identifier tokens, so a spaced identifier still works: ADR names
+# are written `ADR 0008`, and the one-token form rejected `原文 ADR 0008 L28` —
+# i.e. the gate would have rejected the very fix it recommends (#165).
+EVIDENCE_RE = re.compile(r"原文\s*(?:[\w./\-]+\s+){0,2}[Ll#§（(第]")
+# The bare cue: a citation exists but carries no locator. Distinguishing the two
+# is what turns "write more viewpoints" into "add a locator" (#165).
+CITATION_RE = re.compile(r"原文")
+# A viewpoint block can be a *template placeholder*: the generator emits one
+# block per declared role, each carrying a fake locator (`原文 L20`) inside
+# `<...>`. Old behavior counted those as evidence, so a zero-content stub with
+# ≥N placeholder blocks passed the gate — the template bypassed its own gate
+# (#166). Placeholders are matched by the marker vocabulary the template uses,
+# not by a bare `<...>` regex, so a legitimate `<tag>` in prose is not hit.
+PLACEHOLDER_TOKEN_RE = re.compile(r"<([^<>\n]{0,80})>")
+PLACEHOLDER_MARKERS = (
+    "主题", "未填", "留空", "从原文读到", "该发现对方案", "具体、可执行",
+    "主会话撰写", "若有", "...",
+)
 ROLE_METHODS_DIR = Path(__file__).resolve().parent.parent / "references" / "role-methods"
 # Fallback when a role has no gated-method file (custom / unknown role key).
 GATE_N_DEFAULT = 3
@@ -210,20 +227,26 @@ def _split_viewpoint_blocks(body):
     """Split a viewpoint body into viewpoint blocks by their delimiter.
 
     A block starts at a line matching ``#### 观点`` (h4) or ``**观点`` (bold),
-    and runs until the next delimiter or the end of the body. A body with no
-    delimiter is treated as a single (likely non-compliant) block.
+    and runs until the next delimiter or the end of the body.
+
+    The preamble before the first delimiter (the `视角来源:` line and any prose
+    above the first 观点) is **not** a viewpoint block and is dropped — it used
+    to be counted as block 1, which made per-block diagnostics report a phantom
+    "第 1 块没有原文引用" and shifted every real block's position by one (#165).
+    A body with no delimiter keeps its single (likely non-compliant) block, so
+    "wrote no viewpoint at all" still fails the gate instead of passing.
     """
     blocks = []
     current = []
     for line in body.splitlines():
         if VIEWPOINT_BLOCK_RE.match(line.strip()):
-            if current:
-                blocks.append("\n".join(current))
+            blocks.append("\n".join(current))
             current = [line]
         else:
             current.append(line)
-    if current:
-        blocks.append("\n".join(current))
+    blocks.append("\n".join(current))
+    if len(blocks) > 1:
+        blocks = blocks[1:]  # drop the preamble; keep the single-block fallback
     return blocks
 
 
@@ -250,26 +273,97 @@ def gate_n_for_role(role_key):
     return GATE_N_DEFAULT
 
 
+def placeholder_markers_in(block):
+    """Return the placeholder markers (`<...>` / `<主题>` …) in a viewpoint block.
+
+    Empty when the block is real content. See PLACEHOLDER_MARKERS.
+    """
+    found = []
+    for match in PLACEHOLDER_TOKEN_RE.finditer(block):
+        inner = match.group(1).strip()
+        if any(marker in inner for marker in PLACEHOLDER_MARKERS):
+            found.append(match.group(0))
+    return found
+
+
 def _check_viewpoint_gate(role, body):
     """Enforce gated-method ④: ≥N viewpoint blocks, each citing original evidence.
 
     Only criteria 1 (count) and 2 (evidence citation) of the gated method are
     mechanically checkable here; criterion 3 (anti-echo / independence) is left
     to the blind-adjudication protocol (roadmap node 1-3 B).
+
+    Two failure shapes this gate must NOT conflate:
+
+    - a **template placeholder block is not evidence** (#166). The template emits
+      N blocks per role, each with a fake `原文 Lxx` inside `<...>`; counting them
+      lets a zero-content stub claim full coverage.
+    - a **missing locator is a format failure, not a count shortage** (#165).
+      `原文 ADR 0008` and "I wrote too few viewpoints" have opposite fixes, so
+      the report names the reason per block instead of only printing a count.
     """
     n = gate_n_for_role(role)
     blocks = _split_viewpoint_blocks(body)
-    evidence_blocks = [b for b in blocks if EVIDENCE_RE.search(b)]
-    if len(evidence_blocks) < n:
-        return [
-            "视角 {} 的有效观点（带原文证据引用）仅 {} 条，低于闸门 N={}"
-            "（须 ≥N 条带证据引用的观点块：每块以「**观点 N**」或「#### 观点 N」"
-            " 起头，并含「原文 <file> Lxx / 原文 ## 章节 / 原文 §…」类证据定位"
-            "（行号或章节锚点均可））".format(
-                role, len(evidence_blocks), n
+
+    placeholder_at = []
+    missing_anchor_at = []
+    missing_citation_at = []
+    evidence = 0
+    for position, block in enumerate(blocks, start=1):
+        if placeholder_markers_in(block):
+            placeholder_at.append(position)
+        elif EVIDENCE_RE.search(block):
+            evidence += 1
+        elif CITATION_RE.search(block):
+            missing_anchor_at.append(position)
+        else:
+            missing_citation_at.append(position)
+
+    if evidence >= n:
+        return []
+
+    return [
+        "视角 {} 的观点闸门未过：有效观点（带原文证据引用）{} 条，低于闸门 N={}{}。{}".format(
+            role,
+            evidence,
+            n,
+            "（另有 {} 个未填占位块不计入）".format(len(placeholder_at)) if placeholder_at else "",
+            "；".join(_gate_details(placeholder_at, missing_anchor_at, missing_citation_at)),
+        )
+    ]
+
+
+def _gate_details(placeholder_at, missing_anchor_at, missing_citation_at):
+    """Per-block reasons, so the fix follows from the report (#165 / #166)."""
+    details = []
+    if placeholder_at:
+        details.append(
+            "第 {} 块是未填的模板占位块（`<...>` / `<主题>` 类标记），计 0 条 —— "
+            "模板骨架本身不是证据".format(_join_positions(placeholder_at))
+        )
+    if missing_anchor_at:
+        details.append(
+            "第 {} 块的「原文」引用缺定位锚点（行号 / 章节）：写法如 `原文 ADR 0008` "
+            "须补成 `原文 ADR 0008 L28` 或 `原文 ADR 0008 ## 小节`".format(
+                _join_positions(missing_anchor_at)
             )
-        ]
-    return []
+        )
+    if missing_citation_at:
+        details.append(
+            "第 {} 块没有「原文」引用，「发现」须能回溯到 Read 到的原文".format(
+                _join_positions(missing_citation_at)
+            )
+        )
+    if not details:
+        details.append(
+            "每块须以「**观点 N**」或「#### 观点 N」起头，并含「原文 <file> Lxx / "
+            "原文 ## 章节 / 原文 §…」类证据定位（行号或章节锚点均可）"
+        )
+    return details
+
+
+def _join_positions(positions):
+    return "、".join(str(p) for p in positions)
 
 
 def _check_non_degradation(conclusion_body, has_cross_session_anchor):
