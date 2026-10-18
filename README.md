@@ -105,6 +105,16 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - **Long-running uncertainty** — `/zj-wayfinder` carries decisions and
   blockers until the work is ready for a spec and tickets; `/zj-roadmap-driven`
   tracks an agreed execution route.
+- **Complex problem solving** — `/zj-discuss` turns a genuinely hard problem
+  into a master document plus independent sub-documents, runs role-based
+  multi-agent discussion per sub-problem, synthesizes the result, and hands off
+  to `/zj-docs-ontology`; for a single issue use its companion `/zj-discuss-view`
+  plus `/zj-steelman` directly instead.
+- **Goal-to-Plan composition** — `/zj-composer` assembles a reviewable,
+  versioned Plan from a goal, its constraints, and permission boundaries,
+  surfaces capability gaps in the current catalog, and stages a bounded handoff
+  to an execution chain. It stops at the Plan; it does not execute or own the
+  work.
 - **Research and design** — `/zj-research` produces evidence,
   `/zj-code-research` maps a repository, `/zj-tech-research-report` makes a
   technical recommendation, and `/zj-tech-design-review` tests a proposed
