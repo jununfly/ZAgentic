@@ -2,6 +2,8 @@
 name: zj-steelman
 description: Steelman a proposal before you let it get torn down — extract its core assumptions, write the strongest case for each, judge how strong that case actually is, and route to grilling only if it fails. Use when you have a plan or decision in front of you and want a quick reality check on whether it's worth defending, not as a generic "argue both sides" prompt. User-invoked.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # zj-steelman

@@ -2,6 +2,8 @@
 name: zj-merge-skill-pair
 description: Execute a single skill-pair merge as one atomic commit. Reads the strategy from a zj-roadmap-driven node's decisions, applies 12 classes of side effects (skill files, README sync, bucket README, setup-skills templates, ZJ-CONTEXT.md, ADR cross-refs, git mv for renames, deletion of replaced skills), updates the roadmap node to completed, and commits. Triggers on "merge this skill", "execute the plan for X", "absorb B into A". Pair with zj-merge-skills-wave — that one plans a whole wave, this one executes one pair.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # Merge One Skill-Pair

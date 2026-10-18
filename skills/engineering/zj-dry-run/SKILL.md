@@ -2,6 +2,8 @@
 name: zj-dry-run
 description: Rehearse a plan before you commit to it — walk each ticket in order, flag the friction points you'll hit, and hand the decision log to grilling if the plan needs re-cutting. Use when tickets exist and you want a quick pre-flight check on whether the plan actually runs end-to-end, not as a general "trace through the code" prompt. User-invoked.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # zj-dry-run

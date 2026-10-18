@@ -3,6 +3,8 @@ name: zj-composer
 description: Generate a reviewable, versioned task Plan from a goal, constraints, evidence needs, and permission boundaries. Use when a Human invokes /zj-composer to assemble ZAgentic capabilities, expose gaps, or prepare a bounded handoff to an existing execution chain.
 disable-model-invocation: true
 argument-hint: "目标、约束和期望产物"
+source: zagentic
+
 ---
 
 # zj-composer
@@ -15,14 +17,18 @@ approve or execute work, own skill semantics, or create a second runtime.
 
 1. Capture the goal, scope, constraints, desired output, evidence needs,
    permission boundary, and exclusions.
-2. Read the current recursive public-skill catalog with the bundled read-only
+2. Read the current installed skill catalog with the bundled read-only
    helper: `python skills/productivity/zj-composer/scripts/discover_catalog.py`.
    Generate a provenance artifact with
    `python skills/productivity/zj-composer/scripts/generate_snapshot.py`.
    Record its source revision or content digest, discovery time, source paths,
    declared inputs/outputs/dependencies/boundaries, and metadata warnings. See
    [the snapshot contract](references/snapshot-contract.md).
-   Treat the existing catalog as the authority.
+   Treat the existing catalog as the authority. The helper resolves the catalog
+   root from its own location and classifies each skill via its SKILL.md
+   `source: zagentic` frontmatter marker; if no skill packages are found it
+   reports `catalog_present: false` and exits non-zero rather than emitting an
+   empty catalog.
 3. Compose ordered capability steps. For every selected skill, record its role,
    selection reason, inputs, outputs, prerequisites, dependencies, and excluded
    alternatives. Keep conflicts visible and route unresolved choices to a Human.

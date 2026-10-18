@@ -1,6 +1,8 @@
 ---
 name: zj-tech-design-review
 description: Guide an evidence-backed technical design review from problem framing through architecture, metrics, risk, rollout, testing, and follow-up. Use when the user asks for a design doc, technical proposal, architecture review, launch review, or a structured critique of a proposed change.
+source: zagentic
+
 ---
 
 # Technical design review

@@ -5,6 +5,8 @@ license: MIT. See LICENSE
 metadata:
   author: Virxact
   version: "1.5.3"
+source: zagentic
+
 ---
 
 # AIHOT

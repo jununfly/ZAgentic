@@ -17,7 +17,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from discover_catalog import discover_catalog  # noqa: E402
+from discover_catalog import discover_catalog, resolve_root  # noqa: E402
 
 
 SNAPSHOT_SCHEMA = "zj-composer/catalog-snapshot/v1"
@@ -28,18 +28,15 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def source_paths(root: Path, catalog: dict[str, Any]) -> list[str]:
-    surfaces = catalog["index_surfaces"]
-    paths = set(surfaces["bucket_readmes"])
-    paths.update(
-        {
-            surfaces["root_readme"],
-            surfaces["guide"],
-            surfaces["install_list"],
-        }
-    )
-    paths.update(skill["path"] for skill in catalog["skills"])
-    return sorted(paths)
+def canonical_manifest_digest(manifest: list[dict[str, Any]]) -> str:
+    canonical = json.dumps(
+        manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return sha256_bytes(canonical)
+
+
+def source_paths(catalog: dict[str, Any]) -> list[str]:
+    return sorted(skill["path"] for skill in catalog["skills"])
 
 
 def source_manifest(root: Path, paths: Iterable[str]) -> list[dict[str, Any]]:
@@ -68,70 +65,48 @@ def source_manifest(root: Path, paths: Iterable[str]) -> list[dict[str, Any]]:
     return manifest
 
 
-def content_digest(manifest: list[dict[str, Any]]) -> str:
-    canonical = json.dumps(
-        manifest,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
-    return sha256_bytes(canonical)
-
-
 def metadata_warnings(catalog: dict[str, Any]) -> list[dict[str, Any]]:
     warnings: list[dict[str, Any]] = []
     for message in catalog.get("warnings", []):
         warnings.append({"code": "discovery_warning", "message": message})
-
     for skill in catalog["skills"]:
-        path = skill["path"]
         for message in skill.get("warnings", []):
             warnings.append(
                 {
                     "code": "skill_metadata_warning",
-                    "path": path,
+                    "path": skill["path"],
                     "message": message,
                 }
             )
-        for surface, present in sorted(skill["declarations"].items()):
-            if not present:
-                warnings.append(
-                    {
-                        "code": "missing_catalog_declaration",
-                        "path": path,
-                        "surface": surface,
-                        "message": f"{skill['directory']} is not registered by {surface}",
-                    }
-                )
-
     return sorted(
         warnings,
         key=lambda item: (
             item.get("path", ""),
             item.get("code", ""),
-            item.get("surface", ""),
             item["message"],
         ),
     )
 
 
 def build_snapshot(root: Path) -> dict[str, Any]:
-    root = root.resolve()
     catalog = discover_catalog(root)
-    files = source_manifest(root, source_paths(root, catalog))
-    digest = content_digest(files)
+    files = (
+        source_manifest(root, source_paths(catalog))
+        if catalog.get("catalog_present", False)
+        else []
+    )
+    digest = canonical_manifest_digest(files)
     snapshot_id = f"catalog-v1-{digest}"
     return {
         "schema": SNAPSHOT_SCHEMA,
         "snapshot_id": snapshot_id,
-        "generated_at": datetime.now(timezone.utc)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z"),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source": {
-            "root": ".",
+            "skills_root": catalog.get("skills_root"),
+            "layout": catalog.get("layout"),
             "content_digest": digest,
             "files": files,
-            "discovery_schema": catalog["schema"],
+            "discovery_schema": catalog.get("schema"),
         },
         "catalog": catalog,
         "metadata_warnings": metadata_warnings(catalog),
@@ -182,8 +157,12 @@ def parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate an immutable content-addressed Composer catalog snapshot."
     )
-    default_root = Path(__file__).resolve().parents[4]
-    parser.add_argument("--root", type=Path, default=default_root)
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=None,
+        help="Catalog root (directory holding the installed skills).",
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -194,7 +173,25 @@ def parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
     args = parse_args(argv)
-    root = args.root.resolve()
+    root = resolve_root(
+        explicit=args.root,
+        env=os.environ.get("ZAGENTIC_ROOT"),
+        start_script=Path(__file__),
+    )
+    catalog = discover_catalog(root)
+    if not catalog.get("catalog_present", False):
+        diagnostic = {
+            "catalog_present": False,
+            "layout": catalog.get("layout"),
+            "skills_root": catalog.get("skills_root"),
+            "diagnostics": catalog.get("diagnostics", []),
+        }
+        # Honest-failure diagnostics belong on stdout JSON, consistent with
+        # discover_catalog's contract (structured payload on stdout).
+        sys.stdout.write(
+            json.dumps(diagnostic, ensure_ascii=False, indent=2) + "\n"
+        )
+        return 1
     payload = build_snapshot(root)
     output = (args.output or default_output(root, payload["snapshot_id"])).resolve()
     created = write_snapshot(payload, output)

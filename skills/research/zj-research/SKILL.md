@@ -1,6 +1,8 @@
 ---
 name: zj-research
 description: Investigate a question against high-trust primary sources and capture cited findings in the repo. Use for documentation or API reading legwork and for multi-repository technical comparisons that need commit-pinned GitHub evidence.
+source: zagentic
+
 ---
 
 `zj-research` is the domain-neutral evidence seam. It produces re-verifiable

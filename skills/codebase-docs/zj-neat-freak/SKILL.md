@@ -17,6 +17,8 @@ compatibility: Requires filesystem read access. Writes and destructive actions f
 metadata:
   version: "3.0.0"
   category: knowledge-governance
+source: zagentic
+
 ---
 
 # 洁癖 — Knowledge and Governance Closeout

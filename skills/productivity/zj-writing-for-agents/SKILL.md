@@ -1,6 +1,8 @@
 ---
 name: zj-writing-for-agents
 description: Reference for writing any document an agent consumes — a skill, an AGENTS.md / CLAUDE.md, a doc reached by a pointer. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.
+source: zagentic
+
 ---
 
 Reference for writing any document an agent consumes — a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable — the agent taking the same _process_ every run, not producing the same output.

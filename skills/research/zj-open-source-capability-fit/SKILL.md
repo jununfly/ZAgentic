@@ -10,6 +10,8 @@ description: >-
   call `zj-tech-research-report` and let it reference this skill's output; this skill only
   produces the fit verdict and decision record, not the narrative report.
 argument-hint: "<目标需求描述，或一个已填好的 capability_fit 输入 JSON 路径>"
+source: zagentic
+
 ---
 
 # zj-open-source-capability-fit

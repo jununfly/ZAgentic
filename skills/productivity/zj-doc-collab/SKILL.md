@@ -1,6 +1,8 @@
 ---
 name: zj-doc-collab
 description: Base skill providing the generic substrate for document-backed multi-agent collaboration — a shared document set as SSOT plus per-agent scoped private memory, with a parameterized structural non-degradation gate. Reference this when building a zj-* skill where multiple Agents/SubAgents must collaborate over a shared document set (align goals/progress, share context, each keeping scoped memory). Not user-query triggered on its own; consumed by other skills.
+source: zagentic
+
 ---
 
 # zj-doc-collab

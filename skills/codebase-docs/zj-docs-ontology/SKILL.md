@@ -2,6 +2,8 @@
 name: zj-docs-ontology
 description: "Human-invoked governance of one codebase's documentation system: discover, classify, propose safe migration, validate drift, and report lifecycle work."
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # Govern a Codebase Documentation System

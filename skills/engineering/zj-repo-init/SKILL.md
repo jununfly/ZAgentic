@@ -2,6 +2,8 @@
 name: zj-repo-init
 description: "Configures a repository's collaboration entrypoints: issue tracker, triage vocabulary, and concise Agent rules. Use when tracker or triage setup is needed before `zj-to-tickets`, `zj-to-spec`, `zj-triage`, or `zj-wayfinder` can operate correctly."
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # Initialize Repository Collaboration

@@ -3,6 +3,8 @@ name: zj-merge-skills-wave
 description: >-
   Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from an upstream skills collection, another skills collection, or any directory of SKILL.md files. Triggers on "merge skills from", "absorb from source-name", "import skills from". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # Merge Skills From a Source Collection (Wave Planner)
