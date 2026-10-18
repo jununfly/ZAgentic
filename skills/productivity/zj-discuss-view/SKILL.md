@@ -2,6 +2,8 @@
 name: zj-discuss-view
 description: Load zj-discuss-view when a Human pastes a sub-document path and asks a separate independent Agent to take one role. It reads the original, writes one isolated viewpoint into ## Agent viewpoints, and refuses echo-chamber collapse. Use once per role, per sub-document.
 argument-hint: "--role <role-key-from-pool|自定义> <sub-doc-path>  (or --all <sub-doc-path>)"
+source: zagentic
+
 ---
 
 # zj-discuss-view

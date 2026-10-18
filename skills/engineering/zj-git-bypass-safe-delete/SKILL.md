@@ -10,6 +10,7 @@ description: >-
   or `fetch` reports success but the local ref doesn't move.
   SCOPE: Windows + WorkBuddy only. On macOS/Linux the shim defaults to off and LiteSandbox
   does not apply — do not load.
+source: zagentic
 ---
 
 > **Scope — Windows + WorkBuddy only.** This skill patches WorkBuddy's *forced*

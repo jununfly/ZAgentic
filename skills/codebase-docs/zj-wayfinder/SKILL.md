@@ -3,6 +3,8 @@ name: zj-wayfinder
 description: >-
   Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets, and resolve them one at a time until the way to the destination is clear. Dual-mode: a tracker-dependent carrier (teamwork, multi-agent) or a self-contained local-markdown carrier (context-complete, offline). Designed as a skill pair with zj-roadmap-driven (plan → track); zj-to-tickets is the seam converter.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 A loose idea has arrived — too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet. Wayfinding is about finding that way, not charging at the destination. This skill charts the way as a **shared map** on the repo's issue tracker, then works its **decision tickets** — questions whose resolution is a decision, not slices of a build to execute — one at a time until the route is clear.

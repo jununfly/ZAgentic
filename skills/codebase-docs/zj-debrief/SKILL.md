@@ -2,6 +2,8 @@
 name: zj-debrief
 description: Reflect on a finished task — walk through drift, surface new concepts, and capture concrete actions to do better next time. Use when a task wraps up and you want to close the loop with the planning step, not as a generic post-mortem or notes dump. User-invoked.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 # zj-debrief

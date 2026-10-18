@@ -1,6 +1,8 @@
 ---
 name: zj-docs-architecture
 description: "Maintains and validates a codebase's multi-view architecture handbook: map, layers, subsystems, flows, and cross-cutting rules. Use when creating, reviewing, migrating, or validating architecture documentation and its source maps."
+source: zagentic
+
 ---
 
 # Architecture Handbook

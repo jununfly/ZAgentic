@@ -6,6 +6,8 @@ description: >
   Use when user says "caveman mode", "talk like caveman", "use caveman",
   "less tokens", "be brief", or invokes /zj-caveman.
 disable-model-invocation: true
+source: zagentic
+
 ---
 
 Respond terse like smart caveman. All technical substance stay. Only fluff die.

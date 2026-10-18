@@ -1,6 +1,8 @@
 ---
 name: zj-tech-research-report
 description: Produce evidence-backed technical-solution research reports from cited findings and sealed ledgers, covering decision framing, alternatives, capability fit, ownership risks, validation gates, and recommendations. Use after zj-research for technical architecture decisions, technology comparisons, open-source selection, and prototype planning; do not use it as a generic domain-report skill.
+source: zagentic
+
 ---
 
 # Technical solution research report

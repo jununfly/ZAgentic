@@ -14,6 +14,8 @@ triggers:
   - "进度地图"
   - "节点推进"
   - "plan tree"
+source: zagentic
+
 ---
 
 # zj-roadmap-driven — 路线图驱动开发

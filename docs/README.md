@@ -59,9 +59,23 @@ architecture or rules.
 
 ## Evidence boundaries
 
-[research/](../research/) and [skills-outputs/](../skills-outputs/) are evidence
-surfaces. They may support a documented claim but are not long-lived
-documentation pages, and this map neither moves nor governs their storage.
+[research/](../research/) is **not a repository facility** — it is a *temporary
+holding container* in the personal workspace. Research skills write reusable
+knowledge-compounding output there because no dedicated knowledge-compounding
+tool exists yet. It is **not long-term documentation**, and this map does
+**not** register its contents as durable pages. Long term, its contents should
+migrate to a dedicated knowledge-compounding facility; until then they are
+parked here and excluded from the durable-doc lifecycle.
+
+[skills-outputs/](../skills-outputs/) is **not a repository facility** — it is a
+*temporary holding container* in the personal workspace. Research, composer, and
+similar skills write reusable knowledge-compounding output there because no
+dedicated knowledge-compounding tool exists yet. It is **not long-term
+documentation**, and this map does **not** register its contents as durable
+pages. Long term, its contents should migrate to a dedicated knowledge-compounding
+facility; until then they are parked here and excluded from the durable-doc
+lifecycle. (Its internal plans and outputs are therefore intentionally
+un-accounted in the durable-doc inventory above.)
 
 ### Primary architecture authorities
 

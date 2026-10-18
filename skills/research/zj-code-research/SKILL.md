@@ -7,6 +7,8 @@ description: >-
   orientation, architecture deep-reads, and codebase comparisons; use
   zj-tech-research-report when the result must select or recommend a technical
   solution.
+source: zagentic
+
 ---
 
 # Code-repository research
