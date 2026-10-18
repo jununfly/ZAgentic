@@ -1,0 +1,1341 @@
+{
+  "catalog": {
+    "catalog_present": true,
+    "layout": "monorepo-dev",
+    "schema": "zj-composer/catalog-discovery/v1",
+    "skills": [
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-debrief",
+        "frontmatter": {
+          "description": "Reflect on a finished task — walk through drift, surface new concepts, and capture concrete actions to do better next time. Use when a task wraps up and you want to close the loop with the planning step, not as a generic post-mortem or notes dump. User-invoked.",
+          "disable-model-invocation": true,
+          "name": "zj-debrief",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-debrief",
+        "path": "skills/codebase-docs/zj-debrief/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-docs-architecture",
+        "frontmatter": {
+          "description": "Maintains and validates a codebase's multi-view architecture handbook: map, layers, subsystems, flows, and cross-cutting rules. Use when creating, reviewing, migrating, or validating architecture documentation and its source maps.",
+          "name": "zj-docs-architecture",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-docs-architecture",
+        "path": "skills/codebase-docs/zj-docs-architecture/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-docs-ontology",
+        "frontmatter": {
+          "description": "Human-invoked governance of one codebase's documentation system: discover, classify, propose safe migration, validate drift, and report lifecycle work.",
+          "disable-model-invocation": true,
+          "name": "zj-docs-ontology",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-docs-ontology",
+        "path": "skills/codebase-docs/zj-docs-ontology/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-domain-modeling",
+        "frontmatter": {
+          "description": "Build and sharpen a project's domain model. Use when the user wants to pin down domain terminology or a ubiquitous language, record an architectural decision, or when another skill needs to maintain the domain model.",
+          "name": "zj-domain-modeling",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-domain-modeling",
+        "path": "skills/codebase-docs/zj-domain-modeling/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-grill-with-docs",
+        "frontmatter": {
+          "description": "A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.",
+          "disable-model-invocation": true,
+          "name": "zj-grill-with-docs",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-grill-with-docs",
+        "path": "skills/codebase-docs/zj-grill-with-docs/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-neat-freak",
+        "frontmatter": {
+          "compatibility": "Requires filesystem read access. Writes and destructive actions follow the active agent, workspace, and user authorization rules. Git and rg improve verification; scripts/audit-inventory.sh needs Bash — without it, do the equivalent checks manually. Works on any Agent Skills platform.",
+          "description": "Knowledge and governance closeout: reconcile project docs, rule files (CLAUDE.md/AGENTS.md), authorized agent memory, and workspace residue with what the code and runtime actually do, so the next session or the next person starts from one current answer. Trigger when the user names \"neat-freak\", \"洁癖\", or \"/neat\" — and also on clear knowledge-closeout intent without the name: syncing or tidying project docs/rules/memory after development (\"把文档和记忆整理一下\", \"收尾时把文档同步掉\", \"docs 和代码对不上了\"), stale or conflicting CLAUDE.md/memory, a clean handoff to a teammate or a fresh session, or auditing whether workspace rules are actually followed. Do not trigger for pure coding/refactoring/debugging tasks, tidying data or prose (JSON, 周报, changelog announcements), or a bare \"整理\" with no project-knowledge context.",
+          "metadata": {
+            "category": "knowledge-governance",
+            "version": "3.0.0"
+          },
+          "name": "zj-neat-freak",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-neat-freak",
+        "path": "skills/codebase-docs/zj-neat-freak/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-roadmap-driven",
+        "frontmatter": {
+          "description": "路线图驱动开发与验收：以树形 roadmap（编号节点 + 状态 checkbox）和随节点落盘的决策记录， 作为 Agent 与 Human 的共享地图；施工进度靠 `render` 出的 md 视图回看。节点执行前先做 scope gate， 区分产品实现路线与 legacy/技能验收路线，避免把验收场景误当成项目开发。 Use when 用户提到 路线图驱动 / roadmap driven / 导航式开发 / 进度地图 / 节点推进 / plan tree， 或需要把长任务拆成可追踪的树形计划并沉淀决策。载体支持单文件 JSON 与 SQLite， 与 zj-wayfinder（规划）、zj-to-tickets（转换）配合。",
+          "name": "zj-roadmap-driven",
+          "source": "zagentic",
+          "triggers": [
+            "路线图驱动",
+            "roadmap driven",
+            "导航式开发",
+            "进度地图",
+            "节点推进",
+            "plan tree"
+          ]
+        },
+        "is_zagentic": true,
+        "name": "zj-roadmap-driven",
+        "path": "skills/codebase-docs/zj-roadmap-driven/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/codebase-docs/zj-wayfinder",
+        "frontmatter": {
+          "description": "Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets, and resolve them one at a time until the way to the destination is clear. Dual-mode: a tracker-dependent carrier (teamwork, multi-agent) or a self-contained local-markdown carrier (context-complete, offline). Designed as a skill pair with zj-roadmap-driven (plan → track); zj-to-tickets is the seam converter.",
+          "disable-model-invocation": true,
+          "name": "zj-wayfinder",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-wayfinder",
+        "path": "skills/codebase-docs/zj-wayfinder/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-code-review",
+        "frontmatter": {
+          "description": "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\".",
+          "name": "zj-code-review",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-code-review",
+        "path": "skills/engineering/zj-code-review/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-codebase-design",
+        "frontmatter": {
+          "description": "Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary.",
+          "name": "zj-codebase-design",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-codebase-design",
+        "path": "skills/engineering/zj-codebase-design/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-diagnosing-bugs",
+        "frontmatter": {
+          "description": "Diagnosis loop for hard bugs and performance regressions. Use when the user says \"diagnose\"/\"debug this\", or reports something broken/throwing/failing/slow.",
+          "name": "zj-diagnosing-bugs",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-diagnosing-bugs",
+        "path": "skills/engineering/zj-diagnosing-bugs/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-dry-run",
+        "frontmatter": {
+          "description": "Rehearse a plan before you commit to it — walk each ticket in order, flag the friction points you'll hit, and hand the decision log to grilling if the plan needs re-cutting. Use when tickets exist and you want a quick pre-flight check on whether the plan actually runs end-to-end, not as a general \"trace through the code\" prompt. User-invoked.",
+          "disable-model-invocation": true,
+          "name": "zj-dry-run",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-dry-run",
+        "path": "skills/engineering/zj-dry-run/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-git-bypass-safe-delete",
+        "frontmatter": {
+          "description": "Diagnose and recover from git-repository corruption caused by WorkBuddy on Windows. Two independent mechanisms: (1) the safe-delete shim routes delete syscalls to the Recycle Bin; (2) the LiteSandbox filesystem-protection layer rolls back git's \"create nested ref dir + lock→rename\" transactions ~70ms after the write, inside the WorkBuddy process tree only. Use when `git status` shows all files as A, `git diff` fails with a missing tree, a branch ref vanishes after `git checkout -b`/`commit`/`push`, or `fetch` reports success but the local ref doesn't move. SCOPE: Windows + WorkBuddy only. On macOS/Linux the shim defaults to off and LiteSandbox does not apply — do not load.",
+          "name": "zj-git-bypass-safe-delete",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-git-bypass-safe-delete",
+        "path": "skills/engineering/zj-git-bypass-safe-delete/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-guide",
+        "frontmatter": {
+          "description": "Ask which skill or flow fits your situation. A router over the skills in this repo.",
+          "disable-model-invocation": true,
+          "name": "zj-guide",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-guide",
+        "path": "skills/engineering/zj-guide/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-implement",
+        "frontmatter": {
+          "description": "Implement a piece of work based on a spec or set of tickets.",
+          "disable-model-invocation": true,
+          "name": "zj-implement",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-implement",
+        "path": "skills/engineering/zj-implement/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-improve-codebase-architecture",
+        "frontmatter": {
+          "description": "Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.",
+          "disable-model-invocation": true,
+          "name": "zj-improve-codebase-architecture",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-improve-codebase-architecture",
+        "path": "skills/engineering/zj-improve-codebase-architecture/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-leader",
+        "frontmatter": {
+          "description": "把一句话的想法拆成 AI agent 能独立跑完的目标任务书。用户说「帮我给 agent 写个目标」「帮我详细拆一下这个目标」「写个任务书/brief 给 agent」「写个 goal 提示词」「让 agent 自己跑这个项目」「把活分给几个 agent 并行」时使用。先进代码库实测、必要时联网调研，再一次性提问（≤5 个），产出一份 ≤4000 字符、直接粘进 /goal 就能跑的任务书，含实测数字、白名单地界、防作弊验收和断点续跑。执行型与探索型（调研/选型/找方案）自动分流。",
+          "name": "zj-leader",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-leader",
+        "path": "skills/engineering/zj-leader/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-merge-skill-pair",
+        "frontmatter": {
+          "description": "Execute a single skill-pair merge as one atomic commit. Reads the strategy from a zj-roadmap-driven node's decisions, applies 12 classes of side effects (skill files, README sync, bucket README, setup-skills templates, ZJ-CONTEXT.md, ADR cross-refs, git mv for renames, deletion of replaced skills), updates the roadmap node to completed, and commits. Triggers on \"merge this skill\", \"execute the plan for X\", \"absorb B into A\". Pair with zj-merge-skills-wave — that one plans a whole wave, this one executes one pair.",
+          "disable-model-invocation": true,
+          "name": "zj-merge-skill-pair",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-merge-skill-pair",
+        "path": "skills/engineering/zj-merge-skill-pair/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-merge-skills-wave",
+        "frontmatter": {
+          "description": "Plan a multi-skill merge wave from a source skills collection (local path or github URL) into this repo. Discovers source skills, compares to base, produces a skill-pair plan as a roadmap tree, and routes each pair to zj-merge-skill-pair for execution. Use when you want to absorb/borrow skills from an upstream skills collection, another skills collection, or any directory of SKILL.md files. Triggers on \"merge skills from\", \"absorb from source-name\", \"import skills from\". Pair: zj-merge-skill-pair executes one pair; this one plans a whole wave.",
+          "disable-model-invocation": true,
+          "name": "zj-merge-skills-wave",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-merge-skills-wave",
+        "path": "skills/engineering/zj-merge-skills-wave/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-prototype",
+        "frontmatter": {
+          "description": "Build a throwaway prototype to answer a design question. Use when the user wants to sanity-check whether a state model or logic feels right, or explore what a UI should look like.",
+          "name": "zj-prototype",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-prototype",
+        "path": "skills/engineering/zj-prototype/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-repo-init",
+        "frontmatter": {
+          "description": "Configures a repository's collaboration entrypoints: issue tracker, triage vocabulary, and concise Agent rules. Use when tracker or triage setup is needed before `zj-to-tickets`, `zj-to-spec`, `zj-triage`, or `zj-wayfinder` can operate correctly.",
+          "disable-model-invocation": true,
+          "name": "zj-repo-init",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-repo-init",
+        "path": "skills/engineering/zj-repo-init/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-resolving-merge-conflicts",
+        "frontmatter": {
+          "description": "Use when you need to resolve an in-progress git merge/rebase conflict.",
+          "name": "zj-resolving-merge-conflicts",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-resolving-merge-conflicts",
+        "path": "skills/engineering/zj-resolving-merge-conflicts/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-steelman",
+        "frontmatter": {
+          "description": "Steelman a proposal before you let it get torn down — extract its core assumptions, write the strongest case for each, judge how strong that case actually is, and route to grilling only if it fails. Use when you have a plan or decision in front of you and want a quick reality check on whether it's worth defending, not as a generic \"argue both sides\" prompt. User-invoked.",
+          "disable-model-invocation": true,
+          "name": "zj-steelman",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-steelman",
+        "path": "skills/engineering/zj-steelman/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-tdd",
+        "frontmatter": {
+          "description": "Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions \"red-green-refactor\", or wants integration tests.",
+          "name": "zj-tdd",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-tdd",
+        "path": "skills/engineering/zj-tdd/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-tech-design-review",
+        "frontmatter": {
+          "description": "Guide an evidence-backed technical design review from problem framing through architecture, metrics, risk, rollout, testing, and follow-up. Use when the user asks for a design doc, technical proposal, architecture review, launch review, or a structured critique of a proposed change.",
+          "name": "zj-tech-design-review",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-tech-design-review",
+        "path": "skills/engineering/zj-tech-design-review/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-to-spec",
+        "frontmatter": {
+          "description": "Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.",
+          "disable-model-invocation": true,
+          "name": "zj-to-spec",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-to-spec",
+        "path": "skills/engineering/zj-to-spec/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-to-tickets",
+        "frontmatter": {
+          "description": "Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker — edges as text in one file per ticket locally, or native blocking links on a real tracker.",
+          "disable-model-invocation": true,
+          "name": "zj-to-tickets",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-to-tickets",
+        "path": "skills/engineering/zj-to-tickets/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-triage",
+        "frontmatter": {
+          "description": "Move issues and external PRs through a state machine of triage roles — categorise, verify, grill if needed, and write agent-ready briefs.",
+          "disable-model-invocation": true,
+          "name": "zj-triage",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-triage",
+        "path": "skills/engineering/zj-triage/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/engineering/zj-wizard",
+        "frontmatter": {
+          "description": "Generate an interactive bash wizard that walks a human through steps only they can perform. Use when provisioning infrastructure, setting up credentials or CI secrets, walking an unfamiliar third-party dashboard, or running a one-off migration or cutover. Don't invoke this for steps the agent can perform itself.",
+          "name": "zj-wizard",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-wizard",
+        "path": "skills/engineering/zj-wizard/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/misc/zj-aihot",
+        "frontmatter": {
+          "description": "查询 AIHOT 的中文 AI 资讯、精选、当前热点和日报。用户询问今天或最近的 AI 新闻、AI 圈动态、大模型或产品发布、OpenAI／Anthropic／Google 最新消息、AI 论文、AI 日报、AIHOT 精选、当前最热事件，或需要同步当前全部精选时使用。必须通过 aihot.virxact.com 的匿名只读 API 获取当前数据，不凭训练记忆回答新闻；不需要 API Key 或 MCP server。",
+          "license": "MIT. See LICENSE",
+          "metadata": {
+            "author": "Virxact",
+            "version": "1.5.3"
+          },
+          "name": "zj-aihot",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-aihot",
+        "path": "skills/misc/zj-aihot/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/misc/zj-git-guardrails-claude-code",
+        "frontmatter": {
+          "description": "Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, branch -D, etc.) before they execute. Use when user wants to prevent destructive git operations, add git safety hooks, or block git push/reset in Claude Code.",
+          "name": "zj-git-guardrails-claude-code",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-git-guardrails-claude-code",
+        "path": "skills/misc/zj-git-guardrails-claude-code/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/misc/zj-migrate-to-shoehorn",
+        "frontmatter": {
+          "description": "Migrate test files from `as` type assertions to @total-typescript/shoehorn. Use when user mentions shoehorn, wants to replace `as` in tests, or needs partial test data.",
+          "name": "zj-migrate-to-shoehorn",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-migrate-to-shoehorn",
+        "path": "skills/misc/zj-migrate-to-shoehorn/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/misc/zj-scaffold-exercises",
+        "frontmatter": {
+          "description": "Create exercise directory structures with sections, problems, solutions, and explainers that pass linting. Use when user wants to scaffold exercises, create exercise stubs, or set up a new course section.",
+          "name": "zj-scaffold-exercises",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-scaffold-exercises",
+        "path": "skills/misc/zj-scaffold-exercises/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/misc/zj-setup-pre-commit",
+        "frontmatter": {
+          "description": "Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing.",
+          "name": "zj-setup-pre-commit",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-setup-pre-commit",
+        "path": "skills/misc/zj-setup-pre-commit/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/misc/zj-storage-analyzer",
+        "frontmatter": {
+          "description": "macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出 占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出 可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可 起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景 使用：用户说\"存储分析\"\"磁盘满了\"\"C盘/硬盘满了\"\"空间不够\"\"清理空间\" \"清理磁盘\"\"占空间\"\"哪些东西占地方\"\"帮我看看存储\"\"看一下电脑存储/空间\" \"存储空间\"\"电脑空间不够\"\"内存满了/不够/不足\"\"看下内存/存储\"（中文口语里 \"内存\"常指存储空间）\"storage analysis\"\"disk cleanup\"\"清缓存\"\"磁盘清理\"； 或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确 指运行内存/RAM（如\"哪个进程吃内存\"\"内存占用高\"想看活动监视器），那是 RAM 不是存储，不属于本 skill。\n",
+          "name": "zj-storage-analyzer",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-storage-analyzer",
+        "path": "skills/misc/zj-storage-analyzer/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-caveman",
+        "frontmatter": {
+          "description": "Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /zj-caveman.\n",
+          "disable-model-invocation": true,
+          "name": "zj-caveman",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-caveman",
+        "path": "skills/productivity/zj-caveman/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-composer",
+        "frontmatter": {
+          "argument-hint": "目标、约束和期望产物",
+          "description": "Generate a reviewable, versioned task Plan from a goal, constraints, evidence needs, and permission boundaries. Use when a Human invokes /zj-composer to assemble ZAgentic capabilities, expose gaps, or prepare a bounded handoff to an existing execution chain.",
+          "disable-model-invocation": true,
+          "name": "zj-composer",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-composer",
+        "path": "skills/productivity/zj-composer/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-discuss",
+        "frontmatter": {
+          "argument-hint": "<complex problem description, or an existing discussions/ (slug) path to resume>",
+          "description": "Run zj-discuss when the user faces a genuinely complex problem that flat chat cannot fully resolve, or points to an existing discussions/ (slug) directory to resume. It decomposes the problem into a master doc + independent sub-documents, runs role-based multi-agent discussion via a fixed+dynamic agenda, synthesizes, and hands off to zj-docs-ontology. For a single issue, use zj-discuss-view + zj-steelman directly instead.",
+          "name": "zj-discuss",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-discuss",
+        "path": "skills/productivity/zj-discuss/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-discuss-view",
+        "frontmatter": {
+          "argument-hint": "--role <role-key-from-pool|自定义> <sub-doc-path>  (or --all <sub-doc-path>)",
+          "description": "Load zj-discuss-view when a Human pastes a sub-document path and asks a separate independent Agent to take one role. It reads the original, writes one isolated viewpoint into",
+          "name": "zj-discuss-view",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-discuss-view",
+        "path": "skills/productivity/zj-discuss-view/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-doc-collab",
+        "frontmatter": {
+          "description": "Base skill providing the generic substrate for document-backed multi-agent collaboration — a shared document set as SSOT plus per-agent scoped private memory, with a parameterized structural non-degradation gate. Reference this when building a zj-* skill where multiple Agents/SubAgents must collaborate over a shared document set (align goals/progress, share context, each keeping scoped memory). Not user-query triggered on its own; consumed by other skills.",
+          "name": "zj-doc-collab",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-doc-collab",
+        "path": "skills/productivity/zj-doc-collab/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-grilling",
+        "frontmatter": {
+          "description": "Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.",
+          "name": "zj-grilling",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-grilling",
+        "path": "skills/productivity/zj-grilling/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-handoff",
+        "frontmatter": {
+          "argument-hint": "What will the next session be used for?",
+          "description": "Compact the current conversation into a handoff document for another agent to pick up.",
+          "name": "zj-handoff",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-handoff",
+        "path": "skills/productivity/zj-handoff/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-show-me",
+        "frontmatter": {
+          "argument-hint": "What should I visualize?",
+          "description": "Help the user understand the current topic visually with concise diagrams, code-shape sketches, and focused HTML artifacts. Use when the user asks to visualize, sketch, or diagram something, wants to see structure or flow, or says things like 画一下 / 直观一点 / 看看结构.",
+          "disable-model-invocation": true,
+          "name": "zj-show-me",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-show-me",
+        "path": "skills/productivity/zj-show-me/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-teach",
+        "frontmatter": {
+          "argument-hint": "What would you like to learn about?",
+          "description": "Teach the user a new skill or concept, within this workspace.",
+          "disable-model-invocation": true,
+          "name": "zj-teach",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-teach",
+        "path": "skills/productivity/zj-teach/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-to-questionnaire",
+        "frontmatter": {
+          "description": "Turn a decision you can't fully answer into a questionnaire for someone else to fill in.",
+          "disable-model-invocation": true,
+          "name": "zj-to-questionnaire",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-to-questionnaire",
+        "path": "skills/productivity/zj-to-questionnaire/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-wait-what",
+        "frontmatter": {
+          "description": "Stop. That last message did not land — re-pitch it.",
+          "disable-model-invocation": true,
+          "name": "zj-wait-what",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-wait-what",
+        "path": "skills/productivity/zj-wait-what/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-write-a-skill",
+        "frontmatter": {
+          "description": "Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.",
+          "name": "zj-write-a-skill",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-write-a-skill",
+        "path": "skills/productivity/zj-write-a-skill/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/productivity/zj-writing-for-agents",
+        "frontmatter": {
+          "description": "Reference for writing any document an agent consumes — a skill, an AGENTS.md / CLAUDE.md, a doc reached by a pointer. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.",
+          "name": "zj-writing-for-agents",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-writing-for-agents",
+        "path": "skills/productivity/zj-writing-for-agents/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/research/zj-code-research",
+        "frontmatter": {
+          "description": "Research a code repository through two complementary passes: build a commit-scoped Repository Map for breadth, then perform an evidence-linked Architecture Study for selected modules or flows. Use for repository orientation, architecture deep-reads, and codebase comparisons; use zj-tech-research-report when the result must select or recommend a technical solution.",
+          "name": "zj-code-research",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-code-research",
+        "path": "skills/research/zj-code-research/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/research/zj-open-source-capability-fit",
+        "frontmatter": {
+          "argument-hint": "<目标需求描述，或一个已填好的 capability_fit 输入 JSON 路径>",
+          "description": "用本仓库《开源能力拟合决策模型》评估是否直接采用 / 扩展采用 / 选择性复用 / 继续搜索某个外部开源项目，产出可复核的 R×O 证据矩阵与 A/B1/B2/B3/C/D 分类。 带机械闸门（矩阵完整性、版本固定、证据非空、关键能力缺失→D、可控 B 边界校验）， 不是薄 prompt。Use when deciding whether to ingest/merge an external OSS capability, or to re-evaluate a prior OSS-fit decision after upstream change. For a full selection report (problem framing → options → evidence → fit → ownership risk → gates → recommendation), call `zj-tech-research-report` and let it reference this skill's output; this skill only produces the fit verdict and decision record, not the narrative report.",
+          "name": "zj-open-source-capability-fit",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-open-source-capability-fit",
+        "path": "skills/research/zj-open-source-capability-fit/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/research/zj-research",
+        "frontmatter": {
+          "description": "Investigate a question against high-trust primary sources and capture cited findings in the repo. Use for documentation or API reading legwork and for multi-repository technical comparisons that need commit-pinned GitHub evidence.",
+          "name": "zj-research",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-research",
+        "path": "skills/research/zj-research/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/research/zj-systematic-research",
+        "frontmatter": {
+          "description": "对产品、公司、概念、技术或人物进行系统性研究：重建其从起源到当下的演进脉络，分析当前竞品/同类格局，并综合两条线索形成判断。\n当用户想要系统性了解一个对象的来龙去脉、发展逻辑、竞争位置或整体画像时使用；不要用于单个事实查找、API/文档阅读、局部技术问题或只比较方案的技术选型报告。\n",
+          "name": "zj-systematic-research",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-systematic-research",
+        "path": "skills/research/zj-systematic-research/SKILL.md",
+        "warnings": []
+      },
+      {
+        "declared": {
+          "boundaries": null,
+          "dependencies": null,
+          "inputs": null,
+          "outputs": null
+        },
+        "directory": "skills/research/zj-tech-research-report",
+        "frontmatter": {
+          "description": "Produce evidence-backed technical-solution research reports from cited findings and sealed ledgers, covering decision framing, alternatives, capability fit, ownership risks, validation gates, and recommendations. Use after zj-research for technical architecture decisions, technology comparisons, open-source selection, and prototype planning; do not use it as a generic domain-report skill.",
+          "name": "zj-tech-research-report",
+          "source": "zagentic"
+        },
+        "is_zagentic": true,
+        "name": "zj-tech-research-report",
+        "path": "skills/research/zj-tech-research-report/SKILL.md",
+        "warnings": []
+      }
+    ],
+    "skills_root": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic",
+    "warnings": []
+  },
+  "generated_at": "2026-10-18T03:26:14Z",
+  "metadata_warnings": [],
+  "schema": "zj-composer/catalog-snapshot/v1",
+  "snapshot_id": "catalog-v1-df316e12beb071712f283a80fc86a6139bda2bbea38d188fd2d4a94d07e721d0",
+  "source": {
+    "content_digest": "df316e12beb071712f283a80fc86a6139bda2bbea38d188fd2d4a94d07e721d0",
+    "discovery_schema": "zj-composer/catalog-discovery/v1",
+    "files": [
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-debrief/SKILL.md",
+        "sha256": "d2b1d654966578a3d80671665e131bdcf386cf9259881e98332acb086bd1bd0c",
+        "size": 3509
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-docs-architecture/SKILL.md",
+        "sha256": "62c21c99ab5997ab8b8849ff9ee06d6c78c2461b44a5914f809fe32246a19402",
+        "size": 4352
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-docs-ontology/SKILL.md",
+        "sha256": "5de1e8c6f0e2dd1d94cd5be77bda0c368fa249666599a2b40a0c48b0bb95a706",
+        "size": 2913
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-domain-modeling/SKILL.md",
+        "sha256": "55f20a9135b491800dae53476c53f3de27be3c0512ebd92e1bb108408fcf29bd",
+        "size": 3499
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-grill-with-docs/SKILL.md",
+        "sha256": "0149be7a58ceeb8537c9d040971c46950d47922d7d3959c70bf19dd07a0a4be6",
+        "size": 272
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-neat-freak/SKILL.md",
+        "sha256": "2f3659171051e3710263e47fe16339f83bfae76d03b314796bfa9e467e8d749a",
+        "size": 15475
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-roadmap-driven/SKILL.md",
+        "sha256": "a8251158a678ad0a9ad8aa96b2d6f939f34c320858540285ce3e88f7ca80277e",
+        "size": 10807
+      },
+      {
+        "exists": true,
+        "path": "skills/codebase-docs/zj-wayfinder/SKILL.md",
+        "sha256": "a434dfca01b0bb09c750d6b1247e6911714acd5a0acf47e9ee109891cda7c8eb",
+        "size": 17218
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-code-review/SKILL.md",
+        "sha256": "1d2736795f01220327d181e44f122d89c4e8af08c7460a490d730e00d40fb203",
+        "size": 6681
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-codebase-design/SKILL.md",
+        "sha256": "eaa0302051bbbc1f52a4cedba07b1daf6b2777d3dc906cad40ad6db5d1c79c67",
+        "size": 6509
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-diagnosing-bugs/SKILL.md",
+        "sha256": "372211dc36721d717565892d796cede8e7bcb76b61f6b8619498dc0ee09d40a3",
+        "size": 8996
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-dry-run/SKILL.md",
+        "sha256": "2194c9d77f725662d26755d13b37d4af65289e2cbbe90c68531cdc6fa961f843",
+        "size": 4414
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-git-bypass-safe-delete/SKILL.md",
+        "sha256": "0ba781fde74b57c0821dd2f3ee80e8bc5a4fc435825f1a0a2c60d5574bd2a88a",
+        "size": 50867
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-guide/SKILL.md",
+        "sha256": "a0a1d821c3c8c79706fbbb730af675a028c342bb209a85bd956fe0378f24dd5a",
+        "size": 20023
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-implement/SKILL.md",
+        "sha256": "301081f9871bda04a9a06e7470663d192d06a80506265cd5bdb33212c668da79",
+        "size": 460
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-improve-codebase-architecture/SKILL.md",
+        "sha256": "c27a4a0d9c19194a704738740cbb0ab863c06d480c7a2c0c7e19c579f0e2122e",
+        "size": 6069
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-leader/SKILL.md",
+        "sha256": "2d7be1f37ffa8a094fe607a449b48f37ff51f3af04202fed964a90cfc6b83c9d",
+        "size": 7190
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-merge-skill-pair/SKILL.md",
+        "sha256": "36fac49efdb1460dc12b7e9f08dd38310853b27c89e8b4d7f91dafe82bd232cf",
+        "size": 4941
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-merge-skills-wave/SKILL.md",
+        "sha256": "b3787d8ba68493cfdb63e1155c4ed755478de0b7c716ab8810e7283c1aac3bb4",
+        "size": 5543
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-prototype/SKILL.md",
+        "sha256": "41772307f302d9255d0cfea9a6cb893b61bea345becf0b4b64168737bbabbbe0",
+        "size": 2975
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-repo-init/SKILL.md",
+        "sha256": "19e5eb3d7e9a22f45ca577223befc436a117c137ccf2709209359d22ad30381e",
+        "size": 3061
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-resolving-merge-conflicts/SKILL.md",
+        "sha256": "60b02657769d84cd44995166839e83fd6dec24c68d989de27e4a23fc13c21cc2",
+        "size": 942
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-steelman/SKILL.md",
+        "sha256": "8c11562bc41eac278ad1d8904731748f55dd2a62696886afc0004c061b21f6db",
+        "size": 3519
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-tdd/SKILL.md",
+        "sha256": "e9b7e9d9d9f9251312fed1217f92c7733c2886bf3268317e2fd8829a8c47ab65",
+        "size": 3599
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-tech-design-review/SKILL.md",
+        "sha256": "bf3e3a69b35354cbd90e065bc55b4ee9c080b9f8f919f37e5e0c4515432259d3",
+        "size": 4626
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-to-spec/SKILL.md",
+        "sha256": "b3c4706679d369ecf49605a39a9b6e6f0d0b0f1d98f84ee912a0b0cedad3feb2",
+        "size": 3044
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-to-tickets/SKILL.md",
+        "sha256": "d12a4e45ebbc8bb3af5608c0050433edafe2883bb6cfd4fa3724761e9b76fb5a",
+        "size": 5704
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-triage/SKILL.md",
+        "sha256": "f41a08551b2e41c48ae21b6a1e7f78fa4325c9b81b828cd5cefd734aa71f187a",
+        "size": 6749
+      },
+      {
+        "exists": true,
+        "path": "skills/engineering/zj-wizard/SKILL.md",
+        "sha256": "fca682acb2f6416dd511cac414a0083b014621e2ab54a2b4cf4096c503467c88",
+        "size": 4192
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-aihot/SKILL.md",
+        "sha256": "7f52393f15028bbee79fa0058d0231655d429963bc8e1fac8448e4256b13ad9c",
+        "size": 11230
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-git-guardrails-claude-code/SKILL.md",
+        "sha256": "9e5f2c3a06128a91cec33b04ca9337623802dbca7c8bf7a6866bb2ee4acb60d3",
+        "size": 2333
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-migrate-to-shoehorn/SKILL.md",
+        "sha256": "f42bfb99a23d2251379591c71bddeb42dd61335a233eeb2126ef2337b103ee1a",
+        "size": 2816
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-scaffold-exercises/SKILL.md",
+        "sha256": "f23d983b392e6e677e19980f74abaee5b32f317610ad1e0d587452a387fa553a",
+        "size": 3610
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-setup-pre-commit/SKILL.md",
+        "sha256": "fd1f767a0705e08b2468e0e452f5eb93d0eecacb5c60c37bdb8cf44ddf921981",
+        "size": 2282
+      },
+      {
+        "exists": true,
+        "path": "skills/misc/zj-storage-analyzer/SKILL.md",
+        "sha256": "2fd67d3a14facf8aabb667f620015df18fed51b97f7ab47748c2bd7fef9cdf74",
+        "size": 11431
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-caveman/SKILL.md",
+        "sha256": "60c536b3cb8ef20afdec06da2b4ba1b4c56ab5637e1d4f5b6801bd025de8d74e",
+        "size": 1971
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-composer/SKILL.md",
+        "sha256": "b5a44a669bafd72554631b71ac0dd4eedd58124da2752570f8722dcdd88b0ca6",
+        "size": 3647
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-discuss-view/SKILL.md",
+        "sha256": "cf61574b7596a55cf77ca25e05b145e8f52ffb661464f554588b90d5d41fa01b",
+        "size": 3691
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-discuss/SKILL.md",
+        "sha256": "60211bdf05ca7046a1e7a6baa60eee49b6603085df9150201baef32d988d9d01",
+        "size": 14097
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-doc-collab/SKILL.md",
+        "sha256": "d7fcf6c601148e675b884ac66d4249c8aeb8d6dc57812834178ae24fcc9c8d5d",
+        "size": 7600
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-grilling/SKILL.md",
+        "sha256": "337182c422281d1eeed98df953e406806a5c737f51a8b60b377fd6e4e48ebfb2",
+        "size": 1893
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-handoff/SKILL.md",
+        "sha256": "459c93999dfc0e6c823c35732df23d319b3e4ce35847ef5d4a9654760dd16419",
+        "size": 868
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-show-me/SKILL.md",
+        "sha256": "b72a2081ee2701f2ca943df1e4c7103197554c033dd72325dcee8f97d06b5845",
+        "size": 3565
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-teach/SKILL.md",
+        "sha256": "650b0040f866957017e46f9c034ca393f1ac26a38afcd45d235f824f22dbc2b5",
+        "size": 9528
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-to-questionnaire/SKILL.md",
+        "sha256": "4edc3b462ce180e25a80493fb962ab9e14e7e3391b0bb0ecd2b4497471587d84",
+        "size": 2942
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-wait-what/SKILL.md",
+        "sha256": "ef888e98b2af4263da46bd01e2572ab8518974c46b81a3c900492922aeeaa539",
+        "size": 349
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-write-a-skill/SKILL.md",
+        "sha256": "c453a5a786908829600e6498c5e80c2c98005199875d703f77701995617e18ec",
+        "size": 4206
+      },
+      {
+        "exists": true,
+        "path": "skills/productivity/zj-writing-for-agents/SKILL.md",
+        "sha256": "ed9208aa92cf6f65d671417c4e1b6b1118c60c980eba661476570208ca3ed6e3",
+        "size": 11077
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-code-research/SKILL.md",
+        "sha256": "623c4d7ed770c274b2a3a21ac9edb9aa31c1a367b847f649618a63dedf3898c0",
+        "size": 5334
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-open-source-capability-fit/SKILL.md",
+        "sha256": "dba187220a232206903005ee866ba5af66872ae4d921d7ed1d3f8512bb59770b",
+        "size": 5794
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-research/SKILL.md",
+        "sha256": "42cfad2147a2e45d462aab26960b910b4cba747e23206921a12a591b0d2fe718",
+        "size": 3731
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-systematic-research/SKILL.md",
+        "sha256": "a8588a1fde5b105860991fc98ee91d4cc976148294b2ae8bcbc7df9cc8956ba8",
+        "size": 18784
+      },
+      {
+        "exists": true,
+        "path": "skills/research/zj-tech-research-report/SKILL.md",
+        "sha256": "50afc21e71e4feef44fc6139a7834c7ba802b3c8bf09d3e240b347e73de33328",
+        "size": 14881
+      }
+    ],
+    "layout": "monorepo-dev",
+    "skills_root": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic"
+  }
+}

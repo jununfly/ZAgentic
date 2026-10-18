@@ -12,6 +12,6 @@
   "permission_boundary": "Read current local capability metadata and write only bounded Plan evidence; no automatic execution, unapproved writes, network publication, credentials, or irreversible actions.",
   "required_skill_gap": "required skill：跨工具组合的统一执行能力",
   "expected_plan_id": "tool-combination-design-v1-plan",
-  "source_revision": "catalog-v1-762896ae543a87d50757d3320845357e6efc3b4a69fa74057d5b21abdb760767",
-  "snapshot_id": "catalog-v1-762896ae543a87d50757d3320845357e6efc3b4a69fa74057d5b21abdb760767"
+  "source_revision": "catalog-v1-df316e12beb071712f283a80fc86a6139bda2bbea38d188fd2d4a94d07e721d0",
+  "snapshot_id": "catalog-v1-df316e12beb071712f283a80fc86a6139bda2bbea38d188fd2d4a94d07e721d0"
 }

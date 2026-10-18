@@ -21,13 +21,6 @@
       "nested_skill_discovered": true,
       "passed": true,
       "record": {
-        "bucket": "productivity",
-        "declarations": {
-          "bucket_readme": true,
-          "guide": true,
-          "install_list": true,
-          "root_readme": true
-        },
         "declared": {
           "boundaries": [
             "local fixture only"
@@ -42,7 +35,7 @@
             "nested result"
           ]
         },
-        "directory": "group/zj-nested-skill",
+        "directory": "skills/productivity/group/zj-nested-skill",
         "frontmatter": {
           "boundaries": [
             "local fixture only"
@@ -57,12 +50,12 @@
           "name": "zj-nested-skill",
           "outputs": [
             "nested result"
-          ]
+          ],
+          "source": "zagentic"
         },
-        "metadata_warnings": [],
+        "is_zagentic": true,
         "name": "zj-nested-skill",
         "path": "skills/productivity/group/zj-nested-skill/SKILL.md",
-        "source_reference": "skills/productivity/group/zj-nested-skill/SKILL.md",
         "warnings": []
       },
       "snapshot_contains_nested_source": true,
@@ -463,7 +456,7 @@
       "filesystem_writes": 1,
       "git_publications": 1,
       "irreversible_actions": 1,
-      "network_calls": 1
+      "network_calls": 474
     },
     "credential_reads": 0,
     "declared": {

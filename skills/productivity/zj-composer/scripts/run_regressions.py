@@ -790,7 +790,7 @@ def write_catalog_fixture(fixture_root: Path, ledger: EffectLedger) -> dict[Path
         fixture_root / "skills/misc/README.md": "# misc\n",
         fixture_root / "skills/research/README.md": "# research\n",
         fixture_root / "skills/engineering/zj-guide/SKILL.md": (
-            "---\nname: zj-guide\ndescription: Route fixture capabilities.\n---\n"
+            "---\nname: zj-guide\ndescription: Route fixture capabilities.\nsource: zagentic\n---\n"
             f"Available capability: {skill_name}.\n"
         ),
         fixture_root / "scripts/zagentic-skills-list": f"zj-guide\n{skill_name}\n",
@@ -798,6 +798,7 @@ def write_catalog_fixture(fixture_root: Path, ledger: EffectLedger) -> dict[Path
             "---\n"
             "name: zj-nested-skill\n"
             "description: Exercise recursive Composer discovery.\n"
+            "source: zagentic\n"
             "inputs:\n  - nested request\n"
             "outputs:\n  - nested result\n"
             "dependencies:\n  - zj-guide\n"
@@ -818,10 +819,8 @@ def write_catalog_fixture(fixture_root: Path, ledger: EffectLedger) -> dict[Path
     return files
 
 
-def canonical_json_digest(value: Any) -> str:
-    return hashlib.sha256(
-        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+# Canonical digest canonicalization is shared with validate_plan.canonical_manifest_digest
+# (imported above) — kept as a single source of truth, no local redefinition.
 
 
 def execute_original_fixture_path(fixture_root: Path) -> dict[str, Any]:
@@ -856,8 +855,8 @@ def run_recursive_catalog_regression(temp_root: Path, ledger: EffectLedger) -> d
     )
     passed = bool(
         record
-        and record.get("directory") == "group/zj-nested-skill"
-        and record.get("source_reference") == source_path
+        and record.get("directory") == "skills/productivity/group/zj-nested-skill"
+        and record.get("path") == source_path
         and record.get("declared")
         == {
             "inputs": ["nested request"],
@@ -865,8 +864,8 @@ def run_recursive_catalog_regression(temp_root: Path, ledger: EffectLedger) -> d
             "dependencies": ["zj-guide"],
             "boundaries": ["local fixture only"],
         }
-        and record.get("metadata_warnings") == []
-        and all(record.get("declarations", {}).values())
+        and record.get("warnings") == []
+        and record.get("is_zagentic") is True
         and source_path in manifest_paths
         and digest_verified
     )
@@ -984,7 +983,7 @@ def run_removal_regression(
     baseline_files = write_catalog_fixture(simulation, ledger)
     catalog_before = discover_catalog(simulation)
     original_before = execute_original_fixture_path(simulation)
-    original_digest_before = canonical_json_digest(original_before)
+    original_digest_before = canonical_manifest_digest(original_before)
     historical = simulation / "historical-artifacts" / "composer-v0-plan.md"
     ledger.write_temporary(historical, plan_text)
     historical_digest = sha256(historical)
@@ -1017,7 +1016,7 @@ def run_removal_regression(
         ledger.write_temporary(path, baseline_files[path])
     catalog_after = discover_catalog(simulation)
     original_after = execute_original_fixture_path(simulation)
-    original_digest_after = canonical_json_digest(original_after)
+    original_digest_after = canonical_manifest_digest(original_after)
     historical_preserved = historical.is_file() and sha256(historical) == historical_digest
     original_path = simulation / "skills/productivity/group/zj-nested-skill/SKILL.md"
     output_equal = original_before == original_after and original_digest_before == original_digest_after
@@ -1203,13 +1202,28 @@ def run_regressions(root: Path, output: Path) -> dict[str, Any]:
     return result
 
 
+def _repo_root() -> Path:
+    """Locate the repository root by content, not by a fixed ancestor depth.
+
+    The harness lives at a fixed depth today, but relying on ``parents[N]`` is
+    exactly the brittle assumption issue #177 removed from the discovery scripts.
+    We walk up to the first directory that carries a repo marker instead.
+    """
+
+    here = Path(__file__).resolve()
+    for candidate in [here, *here.parents]:
+        if (candidate / "ZJ-CONTEXT.md").is_file() or (candidate / ".git").is_dir():
+            return candidate
+    return here.parents[4]  # monorepo-depth fallback if no marker is present
+
+
 def parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run local Composer negative, safety, handoff, and removal regressions.")
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[4])
+    parser.add_argument("--root", type=Path, default=_repo_root())
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).resolve().parents[4] / "skills-outputs/zj-composer/regression/regression-result.json",
+        default=_repo_root() / "skills-outputs/zj-composer/regression/regression-result.json",
     )
     return parser.parse_args(list(argv) if argv is not None else None)
 
