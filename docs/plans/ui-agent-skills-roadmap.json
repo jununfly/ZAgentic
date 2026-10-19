@@ -1,0 +1,1414 @@
+{
+  "title": "UI Agent Skills 全生命周期落地路线",
+  "description": "依据 discussions/ui-agent-skills-complete-solution/MASTER.md，将 ZAgentic-owned canonical artifact、10 个 UI skills、deny-first trust boundary、可移除 adapter、确定性验证和 Experience Version graduation 编排为可执行路线。产品实现路线；本轮仅建立计划，不实现产品代码。",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "uid": "01a154234149-f35fe96a32",
+      "label": "UI Agent Skills 全生命周期落地路线",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3",
+        "1-4",
+        "1-5",
+        "1-6",
+        "1-7",
+        "1-8",
+        "1-9",
+        "1-10"
+      ],
+      "decisions": [
+        {
+          "q": "本路线属于产品实现还是技能验收？",
+          "answer": "产品实现路线",
+          "note": "Human 要求把完整方案编排为可落地路线；后续实现节点可修改目标仓库，但本轮只建立路线图。"
+        },
+        {
+          "q": "方案的 SSOT 和外部能力边界是什么？",
+          "answer": "ZAgentic 自有 canonical artifact 与编排能力为 SSOT；外部项目仅选择性复用或通过可移除薄 adapter 接入。",
+          "note": "对应 MASTER 的 C/B1 边界，任何外部 provider ID 都不得成为恢复前提。"
+        },
+        {
+          "q": "实现为什么按 Wave 0→1→2→3 排序？",
+          "answer": "先锁范围/契约/安全/验证，再做十个本地 skill，再接 adapter，最后做三次 paired run 与 graduation。",
+          "note": "避免先做漂亮 demo 再补权限、证据和回退。"
+        }
+      ],
+      "notes": "产品实现路线；方案事实源为 discussions/ui-agent-skills-complete-solution/MASTER.md。路线只允许 ZAgentic-owned canonical artifact 与编排能力成为 SSOT；外部能力通过选择性复用或可移除 adapter 纳入。",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "10 个阶段均有可执行节点、负责人边界、blocks 依赖和失败回退",
+        "remaining-risks 均映射到硬门禁、失败 fixture、Human gate、quarantine 或降级状态",
+        "事实源通过 roadmap CLI validate，Markdown 视图由 render 生成且与事实源一致"
+      ]
+    },
+    "1-1": {
+      "id": "1-1",
+      "uid": "01a154254bff-2c66d411be",
+      "label": "范围闸门与 Experience Version manifest",
+      "status": "in_progress",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-1-1",
+        "1-1-2",
+        "1-1-3",
+        "1-1-4"
+      ],
+      "decisions": [
+        {
+          "q": "Experience Version 首个样例选什么？",
+          "answer": "固定一个 React/Next.js 表单或审批流，锁角色、状态、环境和数据边界。",
+          "note": "范围足够证明全生命周期，又避免跨框架通用化扩张。"
+        }
+      ],
+      "notes": "Wave 0；先锁边界和可测基线，未完成前不进入 skill 实现或 adapter 接入。",
+      "layer": "plan",
+      "rounds": 1,
+      "exit_criteria": [
+        "scope manifest 明确 in-scope/out-of-scope、React/Next.js 表单或审批样例、角色/状态/环境/owner",
+        "direct-prompt baseline、三项毕业指标、无效 run 规则和阈值已预注册",
+        "资源、许可证、fixture、风险和责任人账本完整，缺项只能以 NEEDS_CONTEXT 退出"
+      ]
+    },
+    "1-2": {
+      "id": "1-2",
+      "uid": "01a154254c39-492054d600",
+      "label": "Canonical artifact 契约与 ui-flow/v1",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-2-1",
+        "1-2-2",
+        "1-2-3",
+        "1-2-4"
+      ],
+      "decisions": [
+        {
+          "q": "跨会话、文档编辑和 adapter 删除后的恢复边界是什么？",
+          "answer": "六类 ZAgentic-owned canonical artifact，尤其是 ui-flow/v1；adapter 只能提交带 source_revision/projection_id 的投影。",
+          "note": "远程服务消失时以最后一个完整 canonical revision 恢复。"
+        }
+      ],
+      "notes": "canonical artifact 是跨会话、文档编辑和 adapter 删除后的唯一恢复边界。",
+      "layer": "plan",
+      "exit_criteria": [
+        "六类 canonical artifact 的 schema、字段 owner/source/requiredness/unknown policy 已冻结",
+        "ui-flow/v1 的语义 round-trip、迁移、schema lock、golden fixture 和离线恢复均通过",
+        "必填字段保留率 100%，静默丢失与未声明 warning 均为 0"
+      ]
+    },
+    "1-3": {
+      "id": "1-3",
+      "uid": "01a154254c82-e31f1ee66c",
+      "label": "Skill capability manifest 与 resolver 编排",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-3-1",
+        "1-3-2",
+        "1-3-3",
+        "1-3-4"
+      ],
+      "decisions": [
+        {
+          "q": "多个 skill 对同一字段或阶段冲突时如何处理？",
+          "answer": "manifest 声明唯一 owner 与 precedence；以 plan hash、lease 和幂等键冻结冲突，不自动改派或抢占。",
+          "note": "冲突进入 NEEDS_CONTEXT，由 Human 仲裁。"
+        }
+      ],
+      "notes": "编排必须是可恢复的纯数据计划；skill 不得自行改派、扩权或跳过 Human gate。",
+      "layer": "plan",
+      "exit_criteria": [
+        "十个 skill manifest 都有 input/output/forbidden/dependencies/stop conditions/owner/failure fixtures",
+        "resolver 对每个 plan 产生唯一 owner、precedence、plan hash，并在冲突时冻结而非猜测",
+        "lease、幂等、失败阶梯和 revision/decision/handoff 记录可重放"
+      ]
+    },
+    "1-4": {
+      "id": "1-4",
+      "uid": "01a154254cd0-1a14756343",
+      "label": "Trust boundary、provenance 与 deny-first policy",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-4-1",
+        "1-4-2",
+        "1-4-3",
+        "1-4-4"
+      ],
+      "decisions": [
+        {
+          "q": "effect 执行需要经过哪些不可跳过的门？",
+          "answer": "catalog allowlist→intent→policy→approval→sandbox lease→executor→provenance→receipt，任一缺失均 fail closed。",
+          "note": "plan 是无副作用纯数据，effect 是受控副作用。"
+        }
+      ],
+      "notes": "唯一信任链：catalog allowlist → intent → policy → approval → sandbox lease → executor → provenance → receipt。",
+      "layer": "plan",
+      "exit_criteria": [
+        "无完整 intent、approval、sandbox lease、provenance 时任何 effect 均不可执行",
+        "未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixture 全部 fail closed",
+        "素材 license/source/owner 缺失进入 quarantine，不进入默认产物"
+      ]
+    },
+    "1-5": {
+      "id": "1-5",
+      "uid": "01a154254d60-ad8d724137",
+      "label": "Deterministic verification、fixture 与 receipt",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-5-1",
+        "1-5-2",
+        "1-5-3",
+        "1-5-4"
+      ],
+      "decisions": [
+        {
+          "q": "验证如何处理自动检查和不可形式化判断？",
+          "answer": "锁定 baseline/degraded 双 lane 和 receipt；自动硬门禁与 Human 对视觉层级、可理解性、恢复体验、审美和法律判断分离。",
+          "note": "截图 pass 不能单独宣称设计完成。"
+        }
+      ],
+      "notes": "自动硬门禁与不可形式化的 Human gate 分离；截图不能单独证明设计完成。",
+      "layer": "plan",
+      "exit_criteria": [
+        "fixture-manifest、verification-matrix、baseline/degraded runner 和 environment fingerprint 已锁定",
+        "所有适用 cell 完成 DOM/ARIA、focus、contrast、overflow、responsive、motion 和状态检查",
+        "receipt 含 claim/check/risk/fixture/env/oracle/threshold/command/commit/artifact/observed/status/reviewer/expiry",
+        "关键 fail/visual blocker/证据缺失/无法归因分别得到 FAIL、BLOCKED、HUMAN_REVIEW_REQUIRED、QUARANTINED"
+      ]
+    },
+    "1-6": {
+      "id": "1-6",
+      "uid": "01a154254db2-6676d55f80",
+      "label": "十个 UI skills 的契约化本地闭环",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-6-1",
+        "1-6-2",
+        "1-6-3",
+        "1-6-4",
+        "1-6-5"
+      ],
+      "decisions": [
+        {
+          "q": "十个目标 skill 采用新开发还是整体吸收外部 skill？",
+          "answer": "十个 skill 均在本仓库新开发；外部项目只抽取方法、检查表或受控 adapter 能力。",
+          "note": "每个 SKILL.md 必须包含 input/output/forbidden/dependencies/stop conditions/owner/failure fixtures。"
+        }
+      ],
+      "notes": "本地闭环优先；十个 skill 均为新开发，外部项目只提供可选择性复用的方法或 adapter。",
+      "layer": "plan",
+      "exit_criteria": [
+        "十个 skill 目录、SKILL.md、递归发现、bucket README、top-level README 和术语登记同步",
+        "每个 skill 均通过正常、冲突、失败 fixture，且不绕过唯一 owner、Human gate 或 trust boundary",
+        "从 brief 到 handoff 的本地 artifact/plan/receipt 可脱离远程服务恢复"
+      ]
+    },
+    "1-7": {
+      "id": "1-7",
+      "uid": "01a154254df7-69ab92657f",
+      "label": "AdapterBoundary 与 adapter 生命周期",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-7-1",
+        "1-7-2",
+        "1-7-3",
+        "1-7-4",
+        "1-7-5"
+      ],
+      "decisions": [
+        {
+          "q": "哪些外部项目进入 active 路径？",
+          "answer": "Storybook 为首个 active 本地验证 adapter；json-render/A2UI/M3E 仅 opt-in 兼容性 fixture；Figma MCP/Superdesign 不进入核心毕业路径。",
+          "note": "所有候选仍须固定版本并经 zj-open-source-capability-fit 的 G1–G4 证据闸门。"
+        }
+      ],
+      "notes": "外部项目纳入前必须固定版本并运行 capability-fit；Storybook 是首个 active 本地验证 adapter，其余 adapter 不进入核心毕业路径。",
+      "layer": "plan",
+      "exit_criteria": [
+        "每个候选有版本/commit、许可证、依赖/SBOM、R×O 证据、owner/reviewer、风险和重评日期",
+        "AdapterBoundary v1 的 schema lock、mapping、fallback、removal test 和生命周期状态已实现",
+        "Storybook active adapter 通过；json-render/A2UI/M3E 仅在 opt-in fixture 中验证，Figma/Superdesign 不阻塞毕业",
+        "删除 adapter、断网或远程故障后 canonical artifact、静态 preview 和本地验证仍可用"
+      ],
+      "budget": {
+        "max_children": 5,
+        "max_rounds": 2
+      }
+    },
+    "1-8": {
+      "id": "1-8",
+      "uid": "01a154254e3c-ade69f7788",
+      "label": "Experience Version 表单/审批 sample flow",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-8-1",
+        "1-8-2",
+        "1-8-3",
+        "1-8-4",
+        "1-8-5"
+      ],
+      "decisions": [
+        {
+          "q": "非专家如何参与界面编辑而不直接触发危险写回？",
+          "answer": "对话和 UI-BRIEF.md 都只生成可审阅 patch/revision；Human 接受后生成 plan，effect 另行走 approval/sandbox。",
+          "note": "用户负责目标、选择和不可形式化判断；skill 负责结构化转换与验证。"
+        }
+      ],
+      "notes": "Experience Version 是一条受控的表单/审批路径，用来证明对话、文档编辑、选择式设计和安全执行可以串起来。",
+      "layer": "plan",
+      "exit_criteria": [
+        "同一个 case 可由对话或 UI-BRIEF.md diff 进入同一 canonical revision 和 plan",
+        "方向卡、tokens/catalog、flow/action/intent、prototype/preview、approval 和 receipt 可追溯",
+        "远程服务、未知字段、素材 quarantine 等失败场景均有本地 fallback 且不伪造成功"
+      ]
+    },
+    "1-9": {
+      "id": "1-9",
+      "uid": "01a154254e83-0c5f77ec7a",
+      "label": "三次 paired run 与 graduation gate",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1",
+      "children": [
+        "1-9-1",
+        "1-9-2",
+        "1-9-3",
+        "1-9-4"
+      ],
+      "decisions": [
+        {
+          "q": "什么条件才算 graduation？",
+          "answer": "三次同 case/environment/config 的有效 paired run；返工率改善≥20%、决策时间改善≥15%、escaped defect 三次汇总改善≥20%，且关键 blocker/越权/receipt/provenance 问题为零。",
+          "note": "无效运行不计数，必须补跑；不满足则停在 PILOT/QUARANTINED。"
+        }
+      ],
+      "notes": "毕业是证据判定，不是实现完成的同义词；无法证明的 run 不计数并必须补跑。",
+      "layer": "plan",
+      "exit_criteria": [
+        "三次同 case/environment/config 的有效 paired run 均保留原始日志、receipt、review 和无效判定依据",
+        "返工率改善至少 20%、用户决策时间改善至少 15%、escaped UI defects 三次汇总改善至少 20% 且单次不恶化",
+        "visual/a11y blocker、越权 action、provenance 缺失、receipt 不完整均能阻断毕业",
+        "输出 graduation packet，或明确 PILOT/QUARANTINED、fallback、补跑与责任人"
+      ]
+    },
+    "1-10": {
+      "id": "1-10",
+      "uid": "01a154254edb-cf2d0fde0c",
+      "label": "长期文档、维护治理与 rollout 决策",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-10-1",
+        "1-10-2",
+        "1-10-3",
+        "1-10-4"
+      ],
+      "decisions": [
+        {
+          "q": "生成式审美、法律判断、用户价值外推和长期 provider drift 如何处理？",
+          "answer": "不宣称彻底解决；用 Human gate、证据/责任人/期限、quarantine、fallback、到期复核、变更触发重评和状态降级控制。",
+          "note": "这是长期治理边界，不是一次性补代码。"
+        }
+      ],
+      "notes": "长期治理节点；生成式审美、法律判断、跨项目价值和 provider drift 不宣称彻底解决，只通过 Human gate、quarantine、重评和状态降级控制。",
+      "layer": "plan",
+      "exit_criteria": [
+        "稳定契约/决策/风险/验收标准完成 Human review 后才迁移到 docs 权威页",
+        "skill 索引、ZJ-CONTEXT.md、owner、维护预算、RTO/RPO、版本重评和容量治理同步",
+        "rollout/pilot/kill-switch/adapter 移除/revalidation 决策有明确触发条件和责任人"
+      ],
+      "budget": {
+        "max_children": 4,
+        "max_rounds": 2
+      }
+    },
+    "1-1-1": {
+      "id": "1-1-1",
+      "uid": "01a15426b309-b7cd1b9ff0",
+      "label": "冻结 Experience Version scope manifest、in-scope/out-of-scope 与成功标准",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "scope manifest、排除项、成功/失败状态与 Experience Version 版本均可由 Human 复核"
+      ]
+    },
+    "1-1-2": {
+      "id": "1-1-2",
+      "uid": "01a15426b35f-fe77d4c9c1",
+      "label": "锁定 React/Next.js 表单或审批流样例、角色、状态、环境和责任人",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "表单/审批样例的角色、状态、关键任务、框架版本、浏览器与数据边界已固定"
+      ]
+    },
+    "1-1-3": {
+      "id": "1-1-3",
+      "uid": "01a15426b3aa-87bed6e0da",
+      "label": "预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "baseline、三项毕业指标、阈值、paired run 与 invalid-run 规则在运行前记录"
+      ]
+    },
+    "1-1-4": {
+      "id": "1-1-4",
+      "uid": "01a15426b3ec-40bdc9d67e",
+      "label": "建立 Wave 0 资源、许可证、fixture、owner 与风险账本",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "资源/许可证/fixture/owner/risk ledger 无 unknown 漏洞，缺失项有 NEEDS_CONTEXT 处置"
+      ]
+    },
+    "1-2-1": {
+      "id": "1-2-1",
+      "uid": "01a15426b44a-b752e3bd2f",
+      "label": "定义六类 canonical artifact 的 schema、字段 owner、source 与 requiredness",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "六类 artifact 的字段 owner、source、requiredness、unknown policy 和版本校验通过"
+      ]
+    },
+    "1-2-2": {
+      "id": "1-2-2",
+      "uid": "01a15426b4c2-0e898b5f9e",
+      "label": "实现 UI-BRIEF/UI-DESIGN 的文档编辑、patch/diff、unknown/source 语义",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "文档编辑可产生可审阅 patch/diff，不直接执行 effect，拒绝非法字段"
+      ]
+    },
+    "1-2-3": {
+      "id": "1-2-3",
+      "uid": "01a15426b50d-3e26208691",
+      "label": "定义 ui-flow/v1 的 screen/component/state/action/intent/acceptance 与迁移规则",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "ui-flow/v1 可离线表达并重放 screen/component/state/action/intent/acceptance"
+      ]
+    },
+    "1-2-4": {
+      "id": "1-2-4",
+      "uid": "01a15426b54f-980fd0a186",
+      "label": "完成字段保留、semantic round-trip、离线恢复、schema lock 与 golden fixtures",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "golden round-trip、迁移、schema lock 和删除 adapter 后恢复测试通过"
+      ]
+    },
+    "1-3-1": {
+      "id": "1-3-1",
+      "uid": "01a15426b58f-e03efd56c1",
+      "label": "定义十个 skill 的 capability manifest、输入输出、禁止事项、依赖和停止条件",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "十个 manifest 字段齐全，且每个 skill 的 failure fixture 可定位 owner"
+      ]
+    },
+    "1-3-2": {
+      "id": "1-3-2",
+      "uid": "01a15426b5d5-4192b80588",
+      "label": "实现唯一 owner、precedence、resolver、plan hash 与冲突冻结机制",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "相同输入得到稳定 plan hash 与唯一 owner；冲突冻结而非自动抢占"
+      ]
+    },
+    "1-3-3": {
+      "id": "1-3-3",
+      "uid": "01a15426b615-8de1f8f063",
+      "label": "实现 lease、幂等键、失败阶梯、NEEDS_CONTEXT/quarantine/degraded 状态",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "lease、幂等键、重试上限和 NEEDS_CONTEXT/quarantine/degraded 状态可观测"
+      ]
+    },
+    "1-3-4": {
+      "id": "1-3-4",
+      "uid": "01a15426b655-fef2fbedbe",
+      "label": "持久化 plan、decision、revision 与 handoff 的可恢复编排记录",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "跨会话可从 revision、decision、plan、receipt、handoff 重建当前工作"
+      ]
+    },
+    "1-4-1": {
+      "id": "1-4-1",
+      "uid": "01a15426b6a1-df92304e0d",
+      "label": "建立 component/action catalog allowlist、effect intent 与 unknown 语义",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "catalog 只允许注册组件/action，未知项只能形成 deny/unknown intent"
+      ]
+    },
+    "1-4-2": {
+      "id": "1-4-2",
+      "uid": "01a15426b6e4-c7d9705156",
+      "label": "实现 policy→approval→sandbox lease→executor 单入口的 deny-first 信任链",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "effect 单入口严格检查 policy、approval、sandbox lease 和 request digest"
+      ]
+    },
+    "1-4-3": {
+      "id": "1-4-3",
+      "uid": "01a15426b725-ecf74af6a8",
+      "label": "实现 provenance、asset-manifest.json、secret redaction 与许可证 quarantine",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "provenance 与 asset-manifest 记录 hash/source/license/credit/owner/replacement/approval"
+      ]
+    },
+    "1-4-4": {
+      "id": "1-4-4",
+      "uid": "01a15426b769-9b84101dde",
+      "label": "覆盖未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixtures",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "deny fixtures 在无网络、无凭据、未注册组件和远程失败时均 fail closed"
+      ]
+    },
+    "1-5-1": {
+      "id": "1-5-1",
+      "uid": "01a15426b7aa-1e74614588",
+      "label": "冻结 fixture-manifest、verification-matrix 与 browser/environment fingerprint",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "verification matrix key 与 fixture/env fingerprint 完整且可重算"
+      ]
+    },
+    "1-5-2": {
+      "id": "1-5-2",
+      "uid": "01a15426b7ed-e00ade97d7",
+      "label": "实现 baseline 与 degraded 双 lane、固定字体/网络回放/时钟/seed",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "baseline/degraded 双 lane 固定 browser/font/network/clock/seed 并可复跑"
+      ]
+    },
+    "1-5-3": {
+      "id": "1-5-3",
+      "uid": "01a15426b82f-4e0b7efd62",
+      "label": "实现 DOM/ARIA、focus、contrast、overflow、响应式、motion 与状态硬门禁",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态"
+      ]
+    },
+    "1-5-4": {
+      "id": "1-5-4",
+      "uid": "01a15426b872-3480a90ef3",
+      "label": "定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "receipt 聚合、过期重评和无法归因 quarantine 状态可审计"
+      ]
+    },
+    "1-6-1": {
+      "id": "1-6-1",
+      "uid": "01a15426b8b2-b3ee083380",
+      "label": "创建十个公共 skill 目录、SKILL.md 模板、递归索引、README 与术语登记",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "十个公共 skill 可被递归发现，索引和 ZJ-CONTEXT 记录已同步"
+      ]
+    },
+    "1-6-2": {
+      "id": "1-6-2",
+      "uid": "01a15426b8f5-5f2f2fd5e3",
+      "label": "实现 zj-ui-brief、zj-ui-discover、zj-ui-direction、zj-ui-design-system",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "brief/discover/direction/design-system 四个 skill 具备契约、实现和失败 fixture"
+      ]
+    },
+    "1-6-3": {
+      "id": "1-6-3",
+      "uid": "01a15426b935-be3abf76ce",
+      "label": "实现 zj-ui-flow、zj-ui-prototype、zj-ui-visual-review、zj-ui-break",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "flow/prototype/visual-review/break 四个 skill 具备契约、实现和失败 fixture"
+      ]
+    },
+    "1-6-4": {
+      "id": "1-6-4",
+      "uid": "01a15426b974-fcad43876a",
+      "label": "实现 zj-ui-verify、zj-ui-handoff 及其 receipt/handoff 产物",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "verify/handoff 具备 receipt/handoff 输出和不完整时的阻断条件"
+      ]
+    },
+    "1-6-5": {
+      "id": "1-6-5",
+      "uid": "01a15426b9b6-e3dc50f756",
+      "label": "接通本地 resolver 与十个 skill 的正常/冲突/失败 fixture 闭环",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-6",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "十个 skill 串联的本地闭环能生成 artifact、plan、preview、receipt、handoff"
+      ]
+    },
+    "1-7-1": {
+      "id": "1-7-1",
+      "uid": "01a15426ba25-3c421090f3",
+      "label": "对 Storybook、json-render、A2UI、M3E Canvas 等候选固定版本并完成 capability-fit 证据账本",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "候选版本固定且完成 capability-fit G1–G4 证据矩阵；未通过者不得标为可采用"
+      ]
+    },
+    "1-7-2": {
+      "id": "1-7-2",
+      "uid": "01a15426ba67-0057af691b",
+      "label": "定义 AdapterBoundary v1、manifest、schema lock、mapping、owner、fallback 与 removal test",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "adapter manifest、schema lock、mapping、fallback、owner、removal test 字段齐全"
+      ]
+    },
+    "1-7-3": {
+      "id": "1-7-3",
+      "uid": "01a15426baa7-c835a2240a",
+      "label": "实现 Storybook active 本地验证 adapter：stories、a11y、viewport、interaction、docs",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "Storybook 验证 adapter 可执行 stories/a11y/viewport/interaction 并产出 receipt"
+      ]
+    },
+    "1-7-4": {
+      "id": "1-7-4",
+      "uid": "01a15426bae9-cde85d5cb5",
+      "label": "为 json-render/A2UI/M3E 建立 opt-in projection/协议/输入兼容性 golden fixtures",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "json-render/A2UI/M3E 的 opt-in golden fixture 能检测语义丢失和版本漂移"
+      ]
+    },
+    "1-7-5": {
+      "id": "1-7-5",
+      "uid": "01a15426bb4f-cf6a5f5bef",
+      "label": "验证 adapter 删除、断网、远程服务失败时的本地恢复、degraded/disabled/quarantine",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "adapter 删除/断网/服务失败后 canonical artifact 和本地 preview/verify 仍可工作"
+      ]
+    },
+    "1-8-1": {
+      "id": "1-8-1",
+      "uid": "01a15426bb94-b76513f5db",
+      "label": "为表单/审批 Experience Version 固化 PRD、角色状态、canonical artifact 与 fixture",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-8",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "sample PRD、artifact、角色状态和 fixture manifest 固定且与 scope 一致"
+      ]
+    },
+    "1-8-2": {
+      "id": "1-8-2",
+      "uid": "01a15426bbd8-e02f1e4f37",
+      "label": "打通对话输入与 UI-BRIEF.md 编辑 diff → Human 接受 patch → 下一步 plan",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-8",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "对话与文档 diff 生成同一 patch/revision，Human 接受前不进入 effect"
+      ]
+    },
+    "1-8-3": {
+      "id": "1-8-3",
+      "uid": "01a15426bc1a-bdb070febf",
+      "label": "完成 direction cards、token/catalog、flow/action/intent 与组件选择的人机协作",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-8",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "方向选择、token/catalog、flow/action/intent 与理由/provenance 可追踪"
+      ]
+    },
+    "1-8-4": {
+      "id": "1-8-4",
+      "uid": "01a15426bc5a-32fce04d78",
+      "label": "从 ui-flow/v1 生成本地 prototype/preview，并演练 effect approval 与安全边界",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-8",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "prototype/preview 仅使用 catalog，effect approval、sandbox 和 receipt 链路完整"
+      ]
+    },
+    "1-8-5": {
+      "id": "1-8-5",
+      "uid": "01a15426bc9a-1ce41ed485",
+      "label": "演练远程 adapter 关闭、素材 quarantine、未知字段与本地静态 preview fallback",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-8",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "远程关闭、未知字段、license 缺失时状态正确降级并保留恢复路径"
+      ]
+    },
+    "1-9-1": {
+      "id": "1-9-1",
+      "uid": "01a15426bcde-047ad0e889",
+      "label": "按同一 case/environment/config 预注册 paired run、无效运行规则与原始日志留存",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "paired run 预注册、同 case/environment/config 约束和无效 run 规则可查"
+      ]
+    },
+    "1-9-2": {
+      "id": "1-9-2",
+      "uid": "01a15426bd1e-7b8a4a756e",
+      "label": "执行第 1 次 paired run：direct-prompt 与 skills path 并行并生成 receipt",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "第 1 次 paired run 产出两条可比日志、receipt、review 和指标"
+      ]
+    },
+    "1-9-3": {
+      "id": "1-9-3",
+      "uid": "01a15426bd5d-e524233306",
+      "label": "执行第 2、3 次 paired run 并完成视觉/a11y/interaction/人工审阅闭环",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "第 2/3 次 paired run 完成人工审阅且不存在未结 blocker"
+      ]
+    },
+    "1-9-4": {
+      "id": "1-9-4",
+      "uid": "01a15426bd9d-9b90016b3c",
+      "label": "聚合指标、剩余风险与 fallback 演练，形成 graduation packet 或 pilot/quarantine 结论",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "graduation packet 或 pilot/quarantine packet 含指标、风险、fallback 和签名责任人"
+      ]
+    },
+    "1-10-1": {
+      "id": "1-10-1",
+      "uid": "01a15426bdde-ce41ce2957",
+      "label": "将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-10",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "Human review 前不删除讨论过程；稳定材料迁移后有来源和决策回链"
+      ]
+    },
+    "1-10-2": {
+      "id": "1-10-2",
+      "uid": "01a15426be1f-97310024b4",
+      "label": "同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-10",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "所有公共 skill 的索引、术语与仓库发现规则通过递归检查"
+      ]
+    },
+    "1-10-3": {
+      "id": "1-10-3",
+      "uid": "01a15426be60-1e7f7bdc7f",
+      "label": "建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-10",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "owner、预算、RTO/RPO、重评和容量/WIP 规则落盘"
+      ]
+    },
+    "1-10-4": {
+      "id": "1-10-4",
+      "uid": "01a15426bea1-13b926982f",
+      "label": "输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-10",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "rollout、kill-switch、adapter 移除和 revalidation 的触发条件可执行"
+      ]
+    }
+  },
+  "metadata": {
+    "created": "2026-10-19 20:29:19",
+    "updated": "2026-10-19 20:40:06",
+    "md_file": "ui-agent-skills-roadmap.md"
+  },
+  "edges": [
+    {
+      "id": "e1",
+      "from": "01a154254bff-2c66d411be",
+      "to": "01a154254c39-492054d600",
+      "type": "blocks"
+    },
+    {
+      "id": "e2",
+      "from": "01a154254bff-2c66d411be",
+      "to": "01a154254c82-e31f1ee66c",
+      "type": "blocks"
+    },
+    {
+      "id": "e3",
+      "from": "01a154254bff-2c66d411be",
+      "to": "01a154254cd0-1a14756343",
+      "type": "blocks"
+    },
+    {
+      "id": "e4",
+      "from": "01a154254bff-2c66d411be",
+      "to": "01a154254d60-ad8d724137",
+      "type": "blocks"
+    },
+    {
+      "id": "e5",
+      "from": "01a154254c39-492054d600",
+      "to": "01a154254c82-e31f1ee66c",
+      "type": "blocks"
+    },
+    {
+      "id": "e6",
+      "from": "01a154254c39-492054d600",
+      "to": "01a154254cd0-1a14756343",
+      "type": "blocks"
+    },
+    {
+      "id": "e7",
+      "from": "01a154254c82-e31f1ee66c",
+      "to": "01a154254db2-6676d55f80",
+      "type": "blocks"
+    },
+    {
+      "id": "e8",
+      "from": "01a154254cd0-1a14756343",
+      "to": "01a154254db2-6676d55f80",
+      "type": "blocks"
+    },
+    {
+      "id": "e9",
+      "from": "01a154254cd0-1a14756343",
+      "to": "01a154254df7-69ab92657f",
+      "type": "blocks"
+    },
+    {
+      "id": "e10",
+      "from": "01a154254cd0-1a14756343",
+      "to": "01a154254e3c-ade69f7788",
+      "type": "blocks"
+    },
+    {
+      "id": "e11",
+      "from": "01a154254d60-ad8d724137",
+      "to": "01a154254db2-6676d55f80",
+      "type": "blocks"
+    },
+    {
+      "id": "e12",
+      "from": "01a154254d60-ad8d724137",
+      "to": "01a154254e83-0c5f77ec7a",
+      "type": "blocks"
+    },
+    {
+      "id": "e13",
+      "from": "01a154254db2-6676d55f80",
+      "to": "01a154254df7-69ab92657f",
+      "type": "blocks"
+    },
+    {
+      "id": "e14",
+      "from": "01a154254db2-6676d55f80",
+      "to": "01a154254e3c-ade69f7788",
+      "type": "blocks"
+    },
+    {
+      "id": "e15",
+      "from": "01a154254db2-6676d55f80",
+      "to": "01a154254e83-0c5f77ec7a",
+      "type": "blocks"
+    },
+    {
+      "id": "e16",
+      "from": "01a154254df7-69ab92657f",
+      "to": "01a154254e3c-ade69f7788",
+      "type": "blocks"
+    },
+    {
+      "id": "e17",
+      "from": "01a154254e3c-ade69f7788",
+      "to": "01a154254e83-0c5f77ec7a",
+      "type": "blocks"
+    },
+    {
+      "id": "e18",
+      "from": "01a154254e83-0c5f77ec7a",
+      "to": "01a154254edb-cf2d0fde0c",
+      "type": "blocks"
+    },
+    {
+      "id": "e19",
+      "from": "01a15426b309-b7cd1b9ff0",
+      "to": "01a15426b35f-fe77d4c9c1",
+      "type": "blocks"
+    },
+    {
+      "id": "e20",
+      "from": "01a15426b35f-fe77d4c9c1",
+      "to": "01a15426b3aa-87bed6e0da",
+      "type": "blocks"
+    },
+    {
+      "id": "e21",
+      "from": "01a15426b3aa-87bed6e0da",
+      "to": "01a15426b3ec-40bdc9d67e",
+      "type": "blocks"
+    },
+    {
+      "id": "e22",
+      "from": "01a15426b44a-b752e3bd2f",
+      "to": "01a15426b4c2-0e898b5f9e",
+      "type": "blocks"
+    },
+    {
+      "id": "e23",
+      "from": "01a15426b4c2-0e898b5f9e",
+      "to": "01a15426b50d-3e26208691",
+      "type": "blocks"
+    },
+    {
+      "id": "e24",
+      "from": "01a15426b50d-3e26208691",
+      "to": "01a15426b54f-980fd0a186",
+      "type": "blocks"
+    },
+    {
+      "id": "e25",
+      "from": "01a15426b58f-e03efd56c1",
+      "to": "01a15426b5d5-4192b80588",
+      "type": "blocks"
+    },
+    {
+      "id": "e26",
+      "from": "01a15426b5d5-4192b80588",
+      "to": "01a15426b615-8de1f8f063",
+      "type": "blocks"
+    },
+    {
+      "id": "e27",
+      "from": "01a15426b615-8de1f8f063",
+      "to": "01a15426b655-fef2fbedbe",
+      "type": "blocks"
+    },
+    {
+      "id": "e28",
+      "from": "01a15426b6a1-df92304e0d",
+      "to": "01a15426b6e4-c7d9705156",
+      "type": "blocks"
+    },
+    {
+      "id": "e29",
+      "from": "01a15426b6e4-c7d9705156",
+      "to": "01a15426b725-ecf74af6a8",
+      "type": "blocks"
+    },
+    {
+      "id": "e30",
+      "from": "01a15426b725-ecf74af6a8",
+      "to": "01a15426b769-9b84101dde",
+      "type": "blocks"
+    },
+    {
+      "id": "e31",
+      "from": "01a15426b7aa-1e74614588",
+      "to": "01a15426b7ed-e00ade97d7",
+      "type": "blocks"
+    },
+    {
+      "id": "e32",
+      "from": "01a15426b7ed-e00ade97d7",
+      "to": "01a15426b82f-4e0b7efd62",
+      "type": "blocks"
+    },
+    {
+      "id": "e33",
+      "from": "01a15426b82f-4e0b7efd62",
+      "to": "01a15426b872-3480a90ef3",
+      "type": "blocks"
+    },
+    {
+      "id": "e34",
+      "from": "01a15426b8b2-b3ee083380",
+      "to": "01a15426b8f5-5f2f2fd5e3",
+      "type": "blocks"
+    },
+    {
+      "id": "e35",
+      "from": "01a15426b8f5-5f2f2fd5e3",
+      "to": "01a15426b935-be3abf76ce",
+      "type": "blocks"
+    },
+    {
+      "id": "e36",
+      "from": "01a15426b935-be3abf76ce",
+      "to": "01a15426b974-fcad43876a",
+      "type": "blocks"
+    },
+    {
+      "id": "e37",
+      "from": "01a15426b974-fcad43876a",
+      "to": "01a15426b9b6-e3dc50f756",
+      "type": "blocks"
+    },
+    {
+      "id": "e38",
+      "from": "01a15426ba25-3c421090f3",
+      "to": "01a15426ba67-0057af691b",
+      "type": "blocks"
+    },
+    {
+      "id": "e39",
+      "from": "01a15426ba67-0057af691b",
+      "to": "01a15426baa7-c835a2240a",
+      "type": "blocks"
+    },
+    {
+      "id": "e40",
+      "from": "01a15426baa7-c835a2240a",
+      "to": "01a15426bae9-cde85d5cb5",
+      "type": "blocks"
+    },
+    {
+      "id": "e41",
+      "from": "01a15426bae9-cde85d5cb5",
+      "to": "01a15426bb4f-cf6a5f5bef",
+      "type": "blocks"
+    },
+    {
+      "id": "e42",
+      "from": "01a15426bb94-b76513f5db",
+      "to": "01a15426bbd8-e02f1e4f37",
+      "type": "blocks"
+    },
+    {
+      "id": "e43",
+      "from": "01a15426bbd8-e02f1e4f37",
+      "to": "01a15426bc1a-bdb070febf",
+      "type": "blocks"
+    },
+    {
+      "id": "e44",
+      "from": "01a15426bc1a-bdb070febf",
+      "to": "01a15426bc5a-32fce04d78",
+      "type": "blocks"
+    },
+    {
+      "id": "e45",
+      "from": "01a15426bc5a-32fce04d78",
+      "to": "01a15426bc9a-1ce41ed485",
+      "type": "blocks"
+    },
+    {
+      "id": "e46",
+      "from": "01a15426bcde-047ad0e889",
+      "to": "01a15426bd1e-7b8a4a756e",
+      "type": "blocks"
+    },
+    {
+      "id": "e47",
+      "from": "01a15426bd1e-7b8a4a756e",
+      "to": "01a15426bd5d-e524233306",
+      "type": "blocks"
+    },
+    {
+      "id": "e48",
+      "from": "01a15426bd5d-e524233306",
+      "to": "01a15426bd9d-9b90016b3c",
+      "type": "blocks"
+    },
+    {
+      "id": "e49",
+      "from": "01a15426bdde-ce41ce2957",
+      "to": "01a15426be1f-97310024b4",
+      "type": "blocks"
+    },
+    {
+      "id": "e50",
+      "from": "01a15426be1f-97310024b4",
+      "to": "01a15426be60-1e7f7bdc7f",
+      "type": "blocks"
+    },
+    {
+      "id": "e51",
+      "from": "01a15426be60-1e7f7bdc7f",
+      "to": "01a15426bea1-13b926982f",
+      "type": "blocks"
+    },
+    {
+      "id": "e52",
+      "from": "01a15426b3ec-40bdc9d67e",
+      "to": "01a15426b44a-b752e3bd2f",
+      "type": "blocks"
+    },
+    {
+      "id": "e53",
+      "from": "01a15426b3ec-40bdc9d67e",
+      "to": "01a15426b58f-e03efd56c1",
+      "type": "blocks"
+    },
+    {
+      "id": "e54",
+      "from": "01a15426b3ec-40bdc9d67e",
+      "to": "01a15426b6a1-df92304e0d",
+      "type": "blocks"
+    },
+    {
+      "id": "e55",
+      "from": "01a15426b3ec-40bdc9d67e",
+      "to": "01a15426b7aa-1e74614588",
+      "type": "blocks"
+    },
+    {
+      "id": "e56",
+      "from": "01a15426b54f-980fd0a186",
+      "to": "01a15426b58f-e03efd56c1",
+      "type": "blocks"
+    },
+    {
+      "id": "e57",
+      "from": "01a15426b54f-980fd0a186",
+      "to": "01a15426b6a1-df92304e0d",
+      "type": "blocks"
+    },
+    {
+      "id": "e58",
+      "from": "01a15426b655-fef2fbedbe",
+      "to": "01a15426b8b2-b3ee083380",
+      "type": "blocks"
+    },
+    {
+      "id": "e59",
+      "from": "01a15426b769-9b84101dde",
+      "to": "01a15426b8b2-b3ee083380",
+      "type": "blocks"
+    },
+    {
+      "id": "e60",
+      "from": "01a15426b769-9b84101dde",
+      "to": "01a15426ba25-3c421090f3",
+      "type": "blocks"
+    },
+    {
+      "id": "e61",
+      "from": "01a15426b769-9b84101dde",
+      "to": "01a15426bb94-b76513f5db",
+      "type": "blocks"
+    },
+    {
+      "id": "e62",
+      "from": "01a15426b872-3480a90ef3",
+      "to": "01a15426b8b2-b3ee083380",
+      "type": "blocks"
+    },
+    {
+      "id": "e63",
+      "from": "01a15426b872-3480a90ef3",
+      "to": "01a15426bcde-047ad0e889",
+      "type": "blocks"
+    },
+    {
+      "id": "e64",
+      "from": "01a15426b9b6-e3dc50f756",
+      "to": "01a15426ba25-3c421090f3",
+      "type": "blocks"
+    },
+    {
+      "id": "e65",
+      "from": "01a15426b9b6-e3dc50f756",
+      "to": "01a15426bb94-b76513f5db",
+      "type": "blocks"
+    },
+    {
+      "id": "e66",
+      "from": "01a15426b9b6-e3dc50f756",
+      "to": "01a15426bcde-047ad0e889",
+      "type": "blocks"
+    },
+    {
+      "id": "e67",
+      "from": "01a15426bb4f-cf6a5f5bef",
+      "to": "01a15426bb94-b76513f5db",
+      "type": "blocks"
+    },
+    {
+      "id": "e68",
+      "from": "01a15426bc9a-1ce41ed485",
+      "to": "01a15426bcde-047ad0e889",
+      "type": "blocks"
+    },
+    {
+      "id": "e69",
+      "from": "01a15426bd9d-9b90016b3c",
+      "to": "01a15426bdde-ce41ce2957",
+      "type": "blocks"
+    }
+  ],
+  "edge_seq": 69
+}
