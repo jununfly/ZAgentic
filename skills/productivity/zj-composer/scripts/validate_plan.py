@@ -12,12 +12,24 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable, Optional
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from discover_catalog import (  # noqa: E402
+    detect_layout,
+    normalize_catalog_root,
+    resolve_root,
+    skill_files,
+)
 
 
 PLAN_SCHEMA = "zj-composer/plan/v1"
@@ -289,12 +301,46 @@ def canonical_manifest_digest(manifest: list[dict[str, Any]]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def composer_package(root: Path) -> Optional[Path]:
+    """Locate this Composer package from the detected catalog layout."""
+
+    root = normalize_catalog_root(root)
+    layout = detect_layout(root)
+    if layout is None:
+        return None
+    package_name = Path(__file__).resolve().parent.parent.name
+    matches = [
+        skill_md.parent
+        for skill_md in skill_files(root, layout)
+        if skill_md.parent.name == package_name
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
 def validate_template_pin(root: Path, version: Optional[str], diagnostics: list[Diagnostic]) -> None:
     """Bind a Plan version to the exact bundled template bytes."""
 
-    registry_path = root / "skills/productivity/zj-composer/references/template-versions.json"
+    package = composer_package(root)
+    registry_path = package / "references/template-versions.json" if package else None
+    if registry_path is None:
+        diagnostics.append(
+            Diagnostic(
+                "template_registry_invalid",
+                "unable to locate the zj-composer package in the resolved catalog root",
+            )
+        )
+        return
     try:
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        diagnostics.append(
+            Diagnostic(
+                "template_registry_missing",
+                "template version registry is not bundled; template pin could not be verified",
+                severity="warning",
+            )
+        )
+        return
     except (OSError, json.JSONDecodeError) as exc:
         diagnostics.append(
             Diagnostic("template_registry_invalid", f"unable to read template version registry: {exc}")
@@ -321,12 +367,12 @@ def validate_template_pin(root: Path, version: Optional[str], diagnostics: list[
             Diagnostic("template_registry_invalid", f"template_version {version!r} has no path/digest binding")
         )
         return
-    template_path = (root / relative).resolve()
+    template_path = (package / relative).resolve()
     try:
-        template_path.relative_to(root.resolve())
+        template_path.relative_to(package.resolve())
     except ValueError:
         diagnostics.append(
-            Diagnostic("template_registry_invalid", f"template path escapes repository root: {relative}")
+            Diagnostic("template_registry_invalid", f"template path escapes Composer package root: {relative}")
         )
         return
     if not template_path.is_file():
@@ -670,6 +716,7 @@ def validate_text_gates(lines: list[str], sections: dict[str, dict[str, Any]], d
 
 
 def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> dict[str, Any]:
+    root = normalize_catalog_root(root)
     text, lines, diagnostics = read_plan(path)
     sections, headings = parse_sections(lines, diagnostics)
     for section, fields in (
@@ -828,14 +875,19 @@ def validate_plan(path: Path, root: Path, explicit_snapshot: Optional[Path]) -> 
 def parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate an external Composer Plan Markdown artifact.")
     parser.add_argument("plan", type=Path, help="Plan Markdown path")
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[4], help="ZAgentic repository root")
+    parser.add_argument("--root", type=Path, help="Catalog root, repository root, or user-level installation wrapper")
     parser.add_argument("--snapshot", type=Path, help="Explicit catalog snapshot JSON path")
     return parser.parse_args(list(argv) if argv is not None else None)
 
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
     args = parse_args(argv)
-    result = validate_plan(args.plan.resolve(), args.root.resolve(), args.snapshot)
+    root = resolve_root(
+        explicit=args.root,
+        env=os.environ.get("ZAGENTIC_ROOT"),
+        start_script=Path(__file__),
+    )
+    result = validate_plan(args.plan.resolve(), root, args.snapshot)
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["valid"] else 1
 

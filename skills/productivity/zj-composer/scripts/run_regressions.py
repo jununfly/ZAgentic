@@ -880,8 +880,10 @@ def run_recursive_catalog_regression(temp_root: Path, ledger: EffectLedger) -> d
 
 def run_template_pinning_regression(root: Path, temp_root: Path, ledger: EffectLedger) -> dict[str, Any]:
     fixture = temp_root / "template-pinning"
+    relative_package = Path("skills/productivity/zj-composer/SKILL.md")
     relative_template = Path("skills/productivity/zj-composer/references/plan-template.md")
     relative_registry = Path("skills/productivity/zj-composer/references/template-versions.json")
+    ledger.write_temporary(fixture / relative_package, (root / relative_package).read_text(encoding="utf-8"))
     ledger.write_temporary(fixture / relative_template, (root / relative_template).read_text(encoding="utf-8"))
     ledger.write_temporary(fixture / relative_registry, (root / relative_registry).read_text(encoding="utf-8"))
     baseline: list[Any] = []
@@ -922,6 +924,7 @@ def run_stale_source_regression(
     for relative in selected_paths:
         ledger.write_temporary(fixture / relative, (root / relative).read_text(encoding="utf-8"))
     for relative in (
+        Path("skills/productivity/zj-composer/SKILL.md"),
         Path("skills/productivity/zj-composer/references/plan-template.md"),
         Path("skills/productivity/zj-composer/references/template-versions.json"),
     ):

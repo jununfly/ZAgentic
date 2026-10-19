@@ -144,9 +144,9 @@ def resolve_root(
     """
 
     if explicit is not None:
-        return Path(explicit).resolve()
+        return normalize_catalog_root(Path(explicit))
     if env:
-        return Path(env).resolve()
+        return normalize_catalog_root(Path(env))
     here = (start_script or Path(__file__)).resolve()
     package_dir = here.parent.parent  # the <skill> package directory
     flat_root = package_dir.parent  # the <skills> directory in a flat install
@@ -167,6 +167,25 @@ def detect_layout(root: Path) -> Optional[str]:
     if (root / "skills").is_dir() and _has_bucket_structure(root / "skills"):
         return "monorepo-dev"
     return None
+
+
+def normalize_catalog_root(root: Path) -> Path:
+    """Normalize a repository or installation wrapper to its catalog root.
+
+    Issue #177 defines the catalog root as the directory that owns the skill
+    packages.  A user-level installation may pass its parent (for example
+    ``~/.workbuddy``) even though the flat catalog is under ``skills/``.  Keep
+    the content-based layout detection and return the nested flat root without
+    naming a bucket.
+    """
+
+    root = Path(root).resolve()
+    if detect_layout(root) is not None:
+        return root
+    nested = root / "skills"
+    if detect_layout(nested) == "installed-flat":
+        return nested.resolve()
+    return root
 
 
 def skill_files(root: Path, layout: str) -> list[Path]:

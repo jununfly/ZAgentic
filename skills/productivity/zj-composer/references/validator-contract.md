@@ -9,18 +9,25 @@ It never executes a capability named by the Plan.
 
 ```bash
 python skills/productivity/zj-composer/scripts/validate_plan.py PLAN.md \
-  [--root REPOSITORY] [--snapshot SNAPSHOT.json]
+  [--root ROOT_OR_INSTALLATION_WRAPPER] [--snapshot SNAPSHOT.json]
 ```
 
-The repository root defaults to this checkout. The snapshot path defaults to
-`skills-outputs/zj-composer/catalog-snapshots/<snapshot_id>.json`, where the
-identifier comes from the Plan's `skill_index_snapshot` field.
+The root is resolved with the same Issue #177 precedence as discovery:
+explicit `--root`, then `ZAGENTIC_ROOT`, then the validator script's location.
+The resolver accepts a monorepo root, a flat catalog root, or a user-level
+installation wrapper such as `~/.workbuddy` and normalizes it to the directory
+that owns the installed skill packages. The snapshot path defaults to
+`skills-outputs/zj-composer/catalog-snapshots/<snapshot_id>.json` under that
+resolved catalog root, where the identifier comes from the Plan's
+`skill_index_snapshot` field.
 
 ## Hard gates
 
 - all nine v1 headings and required fields are present;
-- `template_version` is registered in `template-versions.json`, its bundled
-  template matches the pinned SHA-256, and identity fields are valid;
+- when `template-versions.json` is bundled, `template_version` is registered,
+  its package-relative template matches the pinned SHA-256, and identity fields
+  are valid; a missing optional registry is retained as a visible warning and
+  does not by itself block a valid Plan;
 - each capability step has a skill/workflow, role, selection reason, inputs,
   outputs, prerequisite assessment, dependencies, and excluded alternatives;
 - the referenced snapshot exists, its content digest matches its manifest, and
@@ -34,8 +41,10 @@ identifier comes from the Plan's `skill_index_snapshot` field.
 - Human approval and side-effect authorization checkpoints remain explicit, and
   the handoff states that Composer has no execution authority.
 
-A changed or missing selected source produces `provenance_stale` and blocks
-handoff. An approved Human may preserve an explicit
+A malformed registry, invalid schema, path escape, missing registered template,
+or template digest mismatch remains a hard validation error. A changed or
+missing selected source produces `provenance_stale` and blocks handoff. An
+approved Human may preserve an explicit
 `stale source reviewed: <source path>` marker in `unknowns`; the validator then
 keeps a `provenance_stale_reviewed` warning and allows eligibility only when
 status, Human review, and Plan acceptance are all approved/passed. A rejected

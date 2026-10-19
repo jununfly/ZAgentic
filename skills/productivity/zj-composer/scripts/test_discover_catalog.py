@@ -20,6 +20,7 @@ from discover_catalog import (  # noqa: E402
     detect_layout,
     discover_catalog,
     main as discover_main,
+    normalize_catalog_root,
     resolve_root,
     skill_files,
 )
@@ -163,6 +164,27 @@ class ResolveRootTest(unittest.TestCase):
         root = Path(tempfile.mkdtemp())
         other = Path(tempfile.mkdtemp())
         self.assertEqual(resolve_root(explicit=other, start_script=root / "disc.py"), other.resolve())
+
+    def test_user_level_wrapper_normalizes_to_flat_catalog_root(self) -> None:
+        root = Path(tempfile.mkdtemp())
+        write_skill(root / "skills" / "zj-x")
+        self.assertEqual(
+            normalize_catalog_root(root),
+            (root / "skills").resolve(),
+        )
+        self.assertEqual(
+            resolve_root(explicit=root),
+            (root / "skills").resolve(),
+        )
+
+    def test_environment_root_precedes_location_derived_root(self) -> None:
+        root = Path(tempfile.mkdtemp())
+        write_skill(root / "zj-from-env")
+        unrelated_script = Path(tempfile.mkdtemp()) / "scripts" / "disc.py"
+        self.assertEqual(
+            resolve_root(env=str(root), start_script=unrelated_script),
+            root.resolve(),
+        )
 
 
 class SnapshotDigestTest(unittest.TestCase):

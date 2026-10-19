@@ -22,8 +22,9 @@ registry.
 Discovery is deterministic and no longer hardcodes the ZAgentic bucket layout:
 
 - The catalog root is resolved explicitly (`--root` / `ZAGENTIC_ROOT`) when
-  provided, otherwise derived from the script's location. It is never assumed to
-  be a fixed ancestor depth (`parents[N]`).
+  provided, otherwise derived from the script's location. A user-level
+  installation wrapper may be normalized to its nested flat catalog root. It is
+  never assumed to be a fixed ancestor depth (`parents[N]`).
 - Skills are enumerated generically: a flat install keeps packages directly
   under a `skills` directory (`<root>/<skill>/SKILL.md`); a monorepo checkout
   nests them under `<root>/skills/<bucket>/<skill>/SKILL.md`. The layout is
