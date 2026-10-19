@@ -1,0 +1,174 @@
+{
+  "schema": "zj-research-collection-status/v1",
+  "protocol": "zj-research-cli/v1",
+  "operation": "collect",
+  "state": "fresh-collection",
+  "brief": {
+    "schema": "zj-research-brief/v1",
+    "topic": "用于界面开发全生命周期的可组合 Agent skills：设计意图、UI 风格、交互、生成式 UI、文档驱动编辑与工程验证",
+    "criteria": [
+      {
+        "id": "design-direction",
+        "question": "候选如何把用户目标转译为视觉方向、参考图、风格、版式、配色、字体、动效和设计约束，而不是只生成通用页面？",
+        "critical": true,
+        "keywords": [
+          "taste",
+          "art direction",
+          "reference",
+          "style",
+          "palette",
+          "typography",
+          "design"
+        ]
+      },
+      {
+        "id": "agent-composition",
+        "question": "候选提供哪些可被 Agent 调用的 skill、plugin、tool、命令、资源或扩展机制，边界和组合方式是什么？",
+        "critical": true,
+        "keywords": [
+          "skill",
+          "plugin",
+          "tool",
+          "command",
+          "agent",
+          "extension"
+        ]
+      },
+      {
+        "id": "ui-protocol-rendering",
+        "question": "候选如何表达界面、组件、动作、状态和数据，并在模型输出与客户端渲染之间形成稳定协议或类型边界？",
+        "critical": true,
+        "keywords": [
+          "protocol",
+          "schema",
+          "JSON",
+          "component",
+          "surface",
+          "render",
+          "catalog",
+          "state"
+        ]
+      },
+      {
+        "id": "edit-feedback-loop",
+        "question": "候选是否支持通过自然语言、设计文档、画布、截图、浏览器或视觉反馈持续编辑界面，并把反馈回写到代码或结构化描述？",
+        "critical": true,
+        "keywords": [
+          "prompt",
+          "canvas",
+          "screenshot",
+          "browser",
+          "feedback",
+          "edit",
+          "iterate",
+          "Figma"
+        ]
+      },
+      {
+        "id": "frontend-engineering",
+        "question": "候选如何落到真实前端代码、组件复用、响应式、可访问性、设计令牌、组件文档、视觉测试和回归验证？",
+        "critical": true,
+        "keywords": [
+          "React",
+          "component",
+          "responsive",
+          "accessibility",
+          "token",
+          "Storybook",
+          "test",
+          "visual"
+        ]
+      },
+      {
+        "id": "lifecycle-ownership",
+        "question": "候选的许可证、运行时依赖、数据边界、版本治理和退出路径是否适合作为本仓库可维护的 skill 组合？",
+        "critical": true,
+        "keywords": [
+          "license",
+          "architecture",
+          "security",
+          "maintenance",
+          "version",
+          "MCP",
+          "integration"
+        ]
+      }
+    ],
+    "repositories": [
+      {
+        "owner": "a2ui-project",
+        "name": "a2ui"
+      },
+      {
+        "owner": "anthropics",
+        "name": "claude-code"
+      },
+      {
+        "owner": "Leonxlnx",
+        "name": "taste-skill"
+      },
+      {
+        "owner": "vercel-labs",
+        "name": "json-render"
+      },
+      {
+        "owner": "lnkiai",
+        "name": "m3e-canvas"
+      },
+      {
+        "owner": "emilkowalski",
+        "name": "skills"
+      },
+      {
+        "owner": "nextlevelbuilder",
+        "name": "ui-ux-pro-max-skill"
+      },
+      {
+        "owner": "oil-oil",
+        "name": "oil-ui"
+      },
+      {
+        "owner": "superdesigndev",
+        "name": "superdesign-skill"
+      },
+      {
+        "owner": "storybookjs",
+        "name": "storybook"
+      },
+      {
+        "owner": "figma",
+        "name": "mcp-server-guide"
+      }
+    ],
+    "policyVersion": "ui-agent-skills-selection/v1",
+    "budget": {
+      "maxFiles": 42,
+      "maxBytes": 2400000,
+      "deadlineMs": 240000
+    }
+  },
+  "briefFingerprint": "d54e436a1203d193e47bd40d310a4d895d515506155c5258079b19b8b3a53c22",
+  "preflight": {
+    "schema": "zj-research-github-preflight/v1",
+    "provider": "github",
+    "authentication": {
+      "mode": "authenticated",
+      "tokenConfigured": true
+    },
+    "rateLimit": {
+      "resource": "core",
+      "limit": 5000,
+      "remaining": 4999,
+      "resetAt": "2026-10-19T08:00:08Z"
+    },
+    "canCollect": true
+  },
+  "ledger": {
+    "relationship": "fresh-collection",
+    "source": null
+  },
+  "fallback": {
+    "automatic": false,
+    "oldLedgerUsed": false
+  }
+}

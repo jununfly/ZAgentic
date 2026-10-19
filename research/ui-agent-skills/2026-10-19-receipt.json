@@ -1,0 +1,67 @@
+{
+  "markdownPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/research/ui-agent-skills/2026-10-19-report.md",
+  "htmlPath": "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/research/ui-agent-skills/2026-10-19-report.html",
+  "reportHash": "fcc580e17a9160b6ebe713aec6db4bbc990dfbad95fef5e95eb3651c789a1e6a",
+  "publishCount": 1,
+  "evaluation": {
+    "reportHash": "fcc580e17a9160b6ebe713aec6db4bbc990dfbad95fef5e95eb3651c789a1e6a",
+    "reportFamily": "technical-c4/v1",
+    "compilerVersion": "research/v1",
+    "healthy": true,
+    "correctness": {
+      "revisionPinned": true,
+      "provenanceComplete": true,
+      "criticalClaimsEvidence": true,
+      "scoringAxesSeparated": true,
+      "publishExactlyOnce": true,
+      "receiptConsistent": true
+    },
+    "evidenceCount": 61,
+    "unknownCount": 5,
+    "navigationFailureCount": 0,
+    "collection": {
+      "filesRead": 61,
+      "sourceBytesRead": 255526,
+      "durationMs": 52763,
+      "cacheHit": false
+    }
+  },
+  "qualityGate": {
+    "healthy": true,
+    "schema": "technical-research-quality-gate/v1",
+    "briefSchema": "technical-decision-brief/v1",
+    "reportFamily": "technical-c4/v1",
+    "checks": {
+      "decisionFrame": true,
+      "diagramCoverage": true,
+      "candidateScoresFromLedger": true,
+      "criticalClaimsEvidence": true,
+      "comparisonTraceability": true,
+      "recommendationTraceability": true,
+      "metricCoverage": true,
+      "riskRegisterCoverage": true,
+      "unknownsSurfaced": true
+    },
+    "counts": {
+      "concepts": 6,
+      "candidates": 11,
+      "cards": 11,
+      "claims": 12,
+      "comparisons": 5,
+      "recommendations": 5,
+      "metrics": 8,
+      "riskRegister": 6,
+      "ledgerEvidence": 61,
+      "ledgerUnknownCriteria": 5,
+      "graduationCriteria": 6,
+      "versionSkew": false
+    },
+    "brief": {
+      "schema": "technical-decision-brief/v1",
+      "stage": "experience-version",
+      "constraintCount": 5,
+      "optionCount": 4,
+      "goalCount": 5
+    }
+  }
+}

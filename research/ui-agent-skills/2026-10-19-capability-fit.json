@@ -1,0 +1,176 @@
+{
+  "goal": "为 ZAgentic 的界面开发 skills 选择可拆分、可组合、可复核的外部 OSS 能力，而不把任何外部项目误用为全生命周期平台",
+  "requirements": [
+    {
+      "id": "R1",
+      "statement": "候选提供一个边界清晰、可由 Agent 调用或作为工程 seam 使用的可复用能力",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "能指出一个独立职责、输入、输出和调用入口"
+    },
+    {
+      "id": "R2",
+      "statement": "候选产出可检查、可传递或可回滚的结构化 artifact/output",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "至少有 spec、文档、截图、代码、测试结果或明确的设计记录"
+    },
+    {
+      "id": "R3",
+      "statement": "候选可以通过薄适配层接入 ZAgentic，而不接管本仓库的产品语义和 SSOT",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "适配范围限于身份/查询/状态/来源转换，主体能力可移除"
+    },
+    {
+      "id": "R4",
+      "statement": "候选具有可固定版本、可审计的源码/许可证/外部依赖责任边界",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "能记录 commit、许可证、升级风险和退出路径"
+    },
+    {
+      "id": "R5",
+      "statement": "候选直接补足至少一个界面生命周期缺口：设计方向、协议渲染、原型输入、动效、实现或验证",
+      "priority": "want",
+      "critical": false,
+      "acceptance": "在一个垂直切片中能观察到质量或效率改善"
+    },
+    {
+      "id": "R6",
+      "statement": "候选支持跨会话反馈、跨项目复用或跨框架迁移中的至少一种",
+      "priority": "want",
+      "critical": false,
+      "acceptance": "artifact、组件、prompt、renderer 或规则能被下一次工作复用"
+    }
+  ],
+  "candidates": [
+    { "id": "a2ui", "name": "A2UI", "url": "https://github.com/a2ui-project/a2ui", "version": "cbaa5ee62c737b50d0695c1e5794d0f648b61dca", "license": "Apache-2.0" },
+    { "id": "claude-frontend-design", "name": "Claude Code frontend-design plugin", "url": "https://github.com/anthropics/claude-code/tree/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design", "version": "ef7bfdca55d906929fe6b782025b93758c325074", "license": "plugin terms in LICENSE.txt" },
+    { "id": "taste", "name": "Taste Skill", "url": "https://github.com/Leonxlnx/taste-skill", "version": "b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2", "license": "MIT" },
+    { "id": "json-render", "name": "json-render", "url": "https://github.com/vercel-labs/json-render", "version": "72568f990e5502c4d3115691facb8ca928a5c9fc", "license": "Apache-2.0" },
+    { "id": "m3e-canvas", "name": "M3E Canvas", "url": "https://github.com/lnkiai/m3e-canvas", "version": "627e42321bcf080979da87f40a17dcd432425a95", "license": "MIT" },
+    { "id": "emil-skills", "name": "Emil Kowalski skills", "url": "https://github.com/emilkowalski/skills", "version": "2d228630ba1446365f614a108cb8252f1feda202", "license": "MIT" },
+    { "id": "uupm", "name": "UI UX Pro Max", "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill", "version": "56ea9cf174ed86786187daa9de0e6247cb0747e4", "license": "MIT" },
+    { "id": "oil-ui", "name": "Oil UI", "url": "https://github.com/oil-oil/oil-ui", "version": "feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc", "license": "MIT" },
+    { "id": "superdesign", "name": "Superdesign skill", "url": "https://github.com/superdesigndev/superdesign-skill", "version": "f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b", "license": "MIT" },
+    { "id": "storybook", "name": "Storybook", "url": "https://github.com/storybookjs/storybook", "version": "064c650498ad8411c74984ee3188a64be8bd0f20", "license": "MIT" },
+    { "id": "figma-guide", "name": "Figma MCP server guide", "url": "https://github.com/figma/mcp-server-guide", "version": "f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5", "license": "external Figma terms" }
+  ],
+  "matrix": {
+    "a2ui": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/a2ui-project/a2ui/cbaa5ee62c737b50d0695c1e5794d0f648b61dca/README.md", "notes": "协议、SDK、renderer 和 catalog 都是独立能力" },
+      "R2": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/a2ui-project/a2ui/cbaa5ee62c737b50d0695c1e5794d0f648b61dca/README.md", "notes": "声明式 JSON、增量消息和 catalog" },
+      "R3": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "adapted", "evidence": "https://raw.githubusercontent.com/a2ui-project/a2ui/cbaa5ee62c737b50d0695c1e5794d0f648b61dca/README.md", "notes": "需把 ZAgentic ui-flow 映射到 A2UI messages" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/a2ui-project/a2ui/cbaa5ee62c737b50d0695c1e5794d0f648b61dca/README.md", "notes": "Apache-2.0；README 明确 public preview 和版本演进风险" },
+      "R5": { "coverage": 0.9, "semantic_match": 0.85, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/a2ui-project/a2ui/cbaa5ee62c737b50d0695c1e5794d0f648b61dca/README.md", "notes": "协议渲染强，视觉方向弱" },
+      "R6": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/a2ui-project/a2ui/cbaa5ee62c737b50d0695c1e5794d0f648b61dca/README.md", "notes": "跨 web/Flutter/Swift 与 agent framework" }
+    },
+    "claude-frontend-design": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/anthropics/claude-code/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design/README.md", "notes": "Claude Code plugin/skill" },
+      "R2": { "coverage": 0.9, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/anthropics/claude-code/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design/skills/frontend-design/SKILL.md", "notes": "token plan、wireframe、代码和自评过程" },
+      "R3": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.95, "status": "adapted", "evidence": "https://raw.githubusercontent.com/anthropics/claude-code/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design/.claude-plugin/plugin.json", "notes": "需转成 ZAgentic skill contract" },
+      "R4": { "coverage": 0.8, "semantic_match": 0.8, "composability": 0.85, "status": "adapted", "evidence": "https://raw.githubusercontent.com/anthropics/claude-code/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design/skills/frontend-design/SKILL.md", "notes": "插件声明 Complete terms in LICENSE.txt，需做许可与上游变更复核" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/anthropics/claude-code/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design/skills/frontend-design/SKILL.md", "notes": "视觉方向/类型/颜色/布局/内容/质量底线" },
+      "R6": { "coverage": 0.7, "semantic_match": 0.8, "composability": 0.85, "status": "adapted", "evidence": "https://raw.githubusercontent.com/anthropics/claude-code/ef7bfdca55d906929fe6b782025b93758c325074/plugins/frontend-design/README.md", "notes": "依赖 Claude Code 运行环境" }
+    },
+    "taste": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/Leonxlnx/taste-skill/b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2/skills/taste-skill/SKILL.md", "notes": "独立 skill 与 scripts" },
+      "R2": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/Leonxlnx/taste-skill/b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2/README.md", "notes": "direction sheet、screenshots、critique、credits" },
+      "R3": { "coverage": 0.85, "semantic_match": 0.9, "composability": 0.9, "status": "adapted", "evidence": "https://raw.githubusercontent.com/Leonxlnx/taste-skill/b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2/skills/taste-skill/SKILL.md", "notes": "需把 .taste-skill artifact 接入本仓库契约" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/Leonxlnx/taste-skill/b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2/README.md", "notes": "MIT；要求 Node 22 与浏览器，图片许可需记录" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/Leonxlnx/taste-skill/b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2/skills/taste-skill/SKILL.md", "notes": "防 AI slop、方向、图片、浏览器检查" },
+      "R6": { "coverage": 0.85, "semantic_match": 0.85, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/Leonxlnx/taste-skill/b9ca2fd8047f4c72d7da90ebc1c1203e57c72cd2/README.md", "notes": "跨 HTML/CSS/React/Vue/Svelte 等" }
+    },
+    "json-render": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/vercel-labs/json-render/72568f990e5502c4d3115691facb8ca928a5c9fc/README.md", "notes": "core、renderer、catalog、actions" },
+      "R2": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/vercel-labs/json-render/72568f990e5502c4d3115691facb8ca928a5c9fc/README.md", "notes": "typed spec、streaming、state、YAML" },
+      "R3": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "adapted", "evidence": "https://raw.githubusercontent.com/vercel-labs/json-render/72568f990e5502c4d3115691facb8ca928a5c9fc/README.md", "notes": "需要把自有 ui-flow 编译成 catalog/spec" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/vercel-labs/json-render/72568f990e5502c4d3115691facb8ca928a5c9fc/README.md", "notes": "Apache-2.0；多 package 版本和 runtime 责任需锁定" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.9, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/vercel-labs/json-render/72568f990e5502c4d3115691facb8ca928a5c9fc/README.md", "notes": "生成式 UI、actions、devtools" },
+      "R6": { "coverage": 1.0, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/vercel-labs/json-render/72568f990e5502c4d3115691facb8ca928a5c9fc/README.md", "notes": "多框架、MCP、codegen" }
+    },
+    "m3e-canvas": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/lnkiai/m3e-canvas/627e42321bcf080979da87f40a17dcd432425a95/README.md", "notes": "独立浏览器应用和 prompt 输出" },
+      "R2": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/lnkiai/m3e-canvas/627e42321bcf080979da87f40a17dcd432425a95/README.md", "notes": "screens/flow/theme/share link/PNG" },
+      "R3": { "coverage": 0.8, "semantic_match": 0.8, "composability": 0.9, "status": "adapted", "evidence": "https://raw.githubusercontent.com/lnkiai/m3e-canvas/627e42321bcf080979da87f40a17dcd432425a95/README.md", "notes": "需要从浏览器设计模型映射到本地 ui-flow" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/lnkiai/m3e-canvas/627e42321bcf080979da87f40a17dcd432425a95/README.md", "notes": "MIT、static export、BYO key" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/lnkiai/m3e-canvas/627e42321bcf080979da87f40a17dcd432425a95/README.md", "notes": "拖拽画布、流程预览、主题和 prompt" },
+      "R6": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/lnkiai/m3e-canvas/627e42321bcf080979da87f40a17dcd432425a95/README.md", "notes": "share link、跨语言 prompt、跨 Agent" }
+    },
+    "emil-skills": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/emilkowalski/skills/2d228630ba1446365f614a108cb8252f1feda202/README.md", "notes": "多个职责单一的 skills" },
+      "R2": { "coverage": 0.9, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/emilkowalski/skills/2d228630ba1446365f614a108cb8252f1feda202/skills/break-ui/SKILL.md", "notes": "review table、break report、prototype harness" },
+      "R3": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.95, "status": "adapted", "evidence": "https://raw.githubusercontent.com/emilkowalski/skills/2d228630ba1446365f614a108cb8252f1feda202/README.md", "notes": "需转成 ZAgentic 的独立 skills" },
+      "R4": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.9, "status": "adapted", "evidence": "https://raw.githubusercontent.com/emilkowalski/skills/2d228630ba1446365f614a108cb8252f1feda202/README.md", "notes": "需核验各 skill 的许可和外部依赖" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/emilkowalski/skills/2d228630ba1446365f614a108cb8252f1feda202/skills/animate/SKILL.md", "notes": "动效构建、review、prototype、break" },
+      "R6": { "coverage": 0.8, "semantic_match": 0.85, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/emilkowalski/skills/2d228630ba1446365f614a108cb8252f1feda202/README.md", "notes": "按职责组合，支持多 Agent 安装" }
+    },
+    "uupm": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/56ea9cf174ed86786187daa9de0e6247cb0747e4/README.md", "notes": "skill + CLI + data/search" },
+      "R2": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/56ea9cf174ed86786187daa9de0e6247cb0747e4/README.md", "notes": "design-system output、persist master/override" },
+      "R3": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.95, "status": "adapted", "evidence": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/56ea9cf174ed86786187daa9de0e6247cb0747e4/README.md", "notes": "本地消费数据和规则，不接管项目语义" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/56ea9cf174ed86786187daa9de0e6247cb0747e4/README.md", "notes": "MIT、Python stdlib search、CLI versioning" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/56ea9cf174ed86786187daa9de0e6247cb0747e4/README.md", "notes": "行业规则、风格、palette、typography、UX" },
+      "R6": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/56ea9cf174ed86786187daa9de0e6247cb0747e4/README.md", "notes": "跨平台 stack 和持久化 design system" }
+    },
+    "oil-ui": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/oil-oil/oil-ui/feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc/README.md", "notes": "独立 Agent skill" },
+      "R2": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/oil-oil/oil-ui/feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc/README.md", "notes": "比较页、选择语句、截图 review" },
+      "R3": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.95, "status": "adapted", "evidence": "https://raw.githubusercontent.com/oil-oil/oil-ui/feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc/README.md", "notes": "可抽取流程但不应复制完整服务" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/oil-oil/oil-ui/feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc/README.md", "notes": "MIT；update check 可关闭" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/oil-oil/oil-ui/feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc/README.md", "notes": "多方向、方向差异、截图和用户选择" },
+      "R6": { "coverage": 0.85, "semantic_match": 0.85, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/oil-oil/oil-ui/feb1f95e8cec48bb8ba35181cb66f94f23b1b6fc/README.md", "notes": "可跨网站/app/dashboard/component" }
+    },
+    "superdesign": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/superdesigndev/superdesign-skill/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b/README.md", "notes": "skill + CLI + canvas" },
+      "R2": { "coverage": 1.0, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/superdesigndev/superdesign-skill/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b/README.md", "notes": "design-system.md、replica、draft、branch" },
+      "R3": { "coverage": 0.8, "semantic_match": 0.8, "composability": 0.85, "status": "adapted", "evidence": "https://raw.githubusercontent.com/superdesigndev/superdesign-skill/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b/README.md", "notes": "CLI 服务和 external canvas 是较厚的接缝" },
+      "R4": { "coverage": 0.75, "semantic_match": 0.8, "composability": 0.8, "status": "adapted", "evidence": "https://raw.githubusercontent.com/superdesigndev/superdesign-skill/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b/README.md", "notes": "MIT skill，但 CLI/login/service 责任外置" },
+      "R5": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/superdesigndev/superdesign-skill/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b/README.md", "notes": "设计系统、方向、分支、页面 flow" },
+      "R6": { "coverage": 0.95, "semantic_match": 0.9, "composability": 0.85, "status": "native", "evidence": "https://raw.githubusercontent.com/superdesigndev/superdesign-skill/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b/README.md", "notes": "跨 70+ agent、跨 session continuity" }
+    },
+    "storybook": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/storybookjs/storybook/064c650498ad8411c74984ee3188a64be8bd0f20/README.md", "notes": "组件开发/文档/测试边界清晰" },
+      "R2": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/storybookjs/storybook/064c650498ad8411c74984ee3188a64be8bd0f20/README.md", "notes": "stories、docs、addons、测试结果" },
+      "R3": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "adapted", "evidence": "https://raw.githubusercontent.com/storybookjs/storybook/064c650498ad8411c74984ee3188a64be8bd0f20/README.md", "notes": "接入项目既有组件，不承接 UI design semantics" },
+      "R4": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/storybookjs/storybook/064c650498ad8411c74984ee3188a64be8bd0f20/README.md", "notes": "MIT；monorepo/版本升级成本较高" },
+      "R5": { "coverage": 0.9, "semantic_match": 0.85, "composability": 0.9, "status": "native", "evidence": "https://raw.githubusercontent.com/storybookjs/storybook/064c650498ad8411c74984ee3188a64be8bd0f20/README.md", "notes": "实现/文档/测试强，视觉方向弱" },
+      "R6": { "coverage": 0.95, "semantic_match": 0.95, "composability": 0.95, "status": "native", "evidence": "https://raw.githubusercontent.com/storybookjs/storybook/064c650498ad8411c74984ee3188a64be8bd0f20/README.md", "notes": "多 renderer 和 addons" }
+    },
+    "figma-guide": {
+      "R1": { "coverage": 0.8, "semantic_match": 0.85, "composability": 0.8, "status": "adapted", "evidence": "https://raw.githubusercontent.com/figma/mcp-server-guide/f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5/README.md", "notes": "仓库是 guide，不是本地 runtime；能力来自远程 Figma MCP" },
+      "R2": { "coverage": 0.85, "semantic_match": 0.9, "composability": 0.85, "status": "adapted", "evidence": "https://raw.githubusercontent.com/figma/mcp-server-guide/f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5/README.md", "notes": "design context、variables、screenshots、Code Connect" },
+      "R3": { "coverage": 0.7, "semantic_match": 0.75, "composability": 0.75, "status": "adapted", "evidence": "https://raw.githubusercontent.com/figma/mcp-server-guide/f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5/README.md", "notes": "远程 MCP 和 Figma seat/terms 是厚责任" },
+      "R4": { "coverage": 0.65, "semantic_match": 0.7, "composability": 0.7, "status": "adapted", "evidence": "https://raw.githubusercontent.com/figma/mcp-server-guide/f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5/README.md", "notes": "外部服务、Beta、调用额度和 Developer Terms" },
+      "R5": { "coverage": 0.9, "semantic_match": 0.9, "composability": 0.85, "status": "native", "evidence": "https://raw.githubusercontent.com/figma/mcp-server-guide/f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5/README.md", "notes": "设计到代码、设计系统、Code Connect" },
+      "R6": { "coverage": 0.95, "semantic_match": 0.9, "composability": 0.85, "status": "native", "evidence": "https://raw.githubusercontent.com/figma/mcp-server-guide/f2789420e7e8b4e2465dfeb1e12e1fc6a31397e5/README.md", "notes": "多客户端 MCP、Make resources、插件 skills" }
+    }
+  },
+  "cost": {
+    "a2ui": { "initial_dev": 18, "integration": 24, "maintenance": 16, "upstream_adapt": 20, "ops": 8, "security_gov": 15 },
+    "claude-frontend-design": { "initial_dev": 8, "integration": 15, "maintenance": 14, "upstream_adapt": 10, "ops": 5, "security_gov": 12 },
+    "taste": { "initial_dev": 12, "integration": 14, "maintenance": 12, "upstream_adapt": 12, "ops": 5, "security_gov": 8 },
+    "json-render": { "initial_dev": 16, "integration": 22, "maintenance": 12, "upstream_adapt": 15, "ops": 10, "security_gov": 18 },
+    "m3e-canvas": { "initial_dev": 14, "integration": 22, "maintenance": 14, "upstream_adapt": 15, "ops": 8, "security_gov": 12 },
+    "emil-skills": { "initial_dev": 10, "integration": 15, "maintenance": 12, "upstream_adapt": 10, "ops": 5, "security_gov": 8 },
+    "uupm": { "initial_dev": 10, "integration": 12, "maintenance": 10, "upstream_adapt": 12, "ops": 5, "security_gov": 8 },
+    "oil-ui": { "initial_dev": 10, "integration": 15, "maintenance": 10, "upstream_adapt": 12, "ops": 4, "security_gov": 7 },
+    "superdesign": { "initial_dev": 15, "integration": 25, "maintenance": 15, "upstream_adapt": 15, "ops": 20, "security_gov": 18 },
+    "storybook": { "initial_dev": 15, "integration": 20, "maintenance": 16, "upstream_adapt": 14, "ops": 12, "security_gov": 14 },
+    "figma-guide": { "initial_dev": 8, "integration": 20, "maintenance": 25, "upstream_adapt": 22, "ops": 30, "security_gov": 25 }
+  },
+  "adaptation": {
+    "a2ui": { "scope": ["state-transform", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "同一表单/审批流分别编译为 ui-flow 与 A2UI，测试增量更新、事件、catalog 拒绝和恢复" },
+    "claude-frontend-design": { "scope": ["provenance-adapt"], "mode": "plugin", "responsibility_uncontrolled": false, "poc_plan": "在 ZAgentic skill contract 中重写一个垂直切片，确认上下文、输出和许可证边界" },
+    "taste": { "scope": ["provenance-adapt", "state-transform"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "运行一次三方向、三视口、截图修复闭环并把 artifact 转为本地格式" },
+    "json-render": { "scope": ["state-transform", "query-adapt", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "在 React 项目用 catalog/spec/actions 实现动态表单，测试未注册组件、流式不完整和状态恢复" },
+    "m3e-canvas": { "scope": ["state-transform", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "导出一个两屏移动流程和主题，往返 ui-flow/v1 后比较信息损失" },
+    "emil-skills": { "scope": ["provenance-adapt"], "mode": "plugin", "responsibility_uncontrolled": false, "poc_plan": "分别运行 animate、review、prototype、break，确认每个输出能独立交接" },
+    "uupm": { "scope": ["query-adapt", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "为同一产品生成 master 与 page override，检查可解释性、版本锁定和离线退化" },
+    "oil-ui": { "scope": ["provenance-adapt", "state-transform"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "生成三方向比较页，记录用户选择并将选择结果交给下一阶段" },
+    "superdesign": { "scope": ["state-transform", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": true, "poc_plan": "不接入生产代码，验证 replica→branch→feedback→export 的可恢复性和外部服务失败路径" },
+    "storybook": { "scope": ["state-transform", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "从 ui-flow 生成 stories、a11y 和 viewport fixtures，测试仅保留测试产物的退出路径" },
+    "figma-guide": { "scope": ["identity-map", "state-transform", "provenance-adapt"], "mode": "adapter", "responsibility_uncontrolled": true, "poc_plan": "用一份公开/测试 Figma frame 验证 context、variables、screenshot、Code Connect 和限额失败" }
+  }
+}

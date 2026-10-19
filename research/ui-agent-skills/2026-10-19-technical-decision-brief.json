@@ -1,0 +1,53 @@
+{
+  "schema": "technical-decision-brief/v1",
+  "user": {
+    "actor": "本仓库中的程序员/Agent 使用者，尤其是不擅长视觉设计、交互设计和 UI 质量判断的开发者",
+    "job": "从自然语言、设计文档、画布或已有代码出发，完成可审阅、可实现、可验证、可继续编辑的界面开发"
+  },
+  "baseline": {
+    "workflow": "程序员通常直接向 coding agent 描述页面，Agent 生成代码；设计方向、配色、交互状态、响应式、无障碍、极端数据和视觉回归依赖个人经验或事后补救",
+    "failureModes": [
+      "页面落入通用 AI 模板，用户无法比较不同设计方向",
+      "设计意图只存在于对话，下一轮或换 Agent 后不可恢复",
+      "动态 UI 输出没有受信组件目录和动作边界",
+      "只用 demo data 检查，长文本、空态、窄屏和错误态在交付后才暴露",
+      "截图检查、动效审查和组件回归没有明确的停止条件"
+    ]
+  },
+  "targetOutcome": "在一个真实前端项目中，用户能够通过对话或本地文档选择设计方向，得到可 diff 的 UI-DESIGN.md 与 ui-flow/v1，Agent 据此实现组件，并自动生成浏览器/Storybook/a11y/极端数据验证证据；删除任一外部 adapter 后核心流程仍可继续",
+  "goals": [
+    "覆盖从 brief、方向、设计系统、流程、原型、实现到验证/交接的最小全生命周期",
+    "把 UI 质量判断拆成可独立调用、可组合、可复核的 skills",
+    "让非 UI 专家的开发者拥有比较、选择、反馈和编辑的控制点",
+    "把本地 Markdown/JSON artifact 作为跨会话、跨 Agent 的 SSOT",
+    "以固定版本和能力拟合矩阵约束外部 OSS 的复用边界"
+  ],
+  "nonGoals": [
+    "第一阶段不构建通用低代码平台或替代 Figma 的完整画布",
+    "第一阶段不承诺自动生成最终生产代码而无需 Human 选择/审查",
+    "第一阶段不把某一个外部项目作为全生命周期底座",
+    "第一阶段不解决企业级协作权限、设计资产版权审计平台或跨团队发布运营",
+    "第一阶段不把 A2UI/json-render 的 runtime 直接强加到所有项目"
+  ],
+  "constraints": [
+    { "id": "repository-rules", "statement": "遵守本仓库 skills/ 分桶、递归发现、README 注册、skills-outputs 暂存和 AGENTS.md 规则" },
+    { "id": "artifact-ownership", "statement": "brief、design system、ui flow、选择记录、证据和退出路径由 ZAgentic 自有格式持有" },
+    { "id": "external-oss", "statement": "外部能力必须固定 commit、保留一手证据、通过 R×O 拟合闸门并明确 adapter/退出责任" },
+    { "id": "security", "statement": "模型生成的组件、动作、远程 MCP、素材下载和代码执行必须有 catalog、审批、来源和恢复边界" },
+    { "id": "stage", "statement": "当前只做到 experience-version，后续 usefulness-validation/dogfood/release 需有新的证据和升级策略" }
+  ],
+  "assumptions": [
+    "首个垂直切片以 React/Next.js Web 项目为目标，后续才扩展到 Vue/移动端",
+    "浏览器截图/检查工具可以在本地或 CI 运行，但具体 runner 尚未定案",
+    "用户愿意在关键节点选择一个设计方向并确认可交付范围",
+    "当前外部项目的语义发现来自固定 commit 的一手仓库文件；正式发布前必须补齐 sealed ledger"
+  ],
+  "stage": "experience-version",
+  "decisionScope": "ZAgentic 中面向界面开发全生命周期的 composable skills 组合、artifact contract 和外部 capability ownership",
+  "options": [
+    { "id": "owned-composition", "name": "ZAgentic 自有 artifact/编排 + 外部 unit capability 的 B1 adapters" },
+    { "id": "single-design-platform", "name": "以一个完整外部设计 Agent/平台为主，ZAgentic 只做包装" },
+    { "id": "protocol-first", "name": "以 A2UI 或 json-render 为统一 UI runtime，再补设计 skills" },
+    { "id": "design-first", "name": "以 Taste/Oil/UUPM/Superdesign 类设计 skill 为主，再补工程验证" }
+  ]
+}

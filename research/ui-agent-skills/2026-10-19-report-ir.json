@@ -1,0 +1,111 @@
+{
+  "schema": "zj-research-report-ir/v1",
+  "family": "technical-c4/v1",
+  "title": "界面开发全生命周期 Agent skills 的组合式选型与开发方案",
+  "summary": "没有一个候选同时覆盖视觉判断、结构化 UI 协议、非专家输入、真实代码实现、浏览器反馈、极端数据和组件回归。推荐由 ZAgentic 自有 artifact 与编排承担产品语义和证据链，再以 B1 adapter 选择性接入 Taste/Oil UI/UI UX Pro Max/Emil skills、A2UI/json-render、M3E Canvas 和 Storybook；Superdesign 与 Figma MCP 保持可选 connector，不进入核心底座。",
+  "ledgerFingerprint": "6f5fa6704d73090ff08633a59baba422f3abd41cea68b7bf2b9053de9bf74f12",
+  "informationGaps": {
+    "status": "has-gaps",
+    "rationale": "Ledger 的 unknownCriteria 有 5 项：Emil skills 的 edit-feedback-loop、json-render 的 design-direction、Oil UI 与 Superdesign 的 agent-composition 尚未被当前固定证据充分证明，因此这些项必须通过 PoC 验证，不能解释为不支持。"
+  },
+  "concepts": [
+    { "key": "decision-frame", "value": "服务不擅长 UI 设计的程序员，让其通过对话或本地文档完成可审阅、可实现、可验证的界面开发。" },
+    { "key": "lifecycle", "value": "本轮是 experience-version：brief、方向、设计系统、flow、prototype、实现、视觉/动效/数据验证和交接；生产 rollout 暂不承诺。" },
+    { "key": "unit-capability", "value": "外部项目按设计判断、动态 UI 协议、画布输入和工程验证拆成 unit capability，不按整个平台采用。" },
+    { "key": "artifact-ownership", "value": "ZAgentic 自有 UI-BRIEF.md、UI-DESIGN.md、ui-flow/v1、review/verification receipt 和 handoff；外部项目只能通过可移除 adapter 读写。" },
+    { "key": "fit-model", "value": "用 R×O 矩阵区分 native/adapted/unknown/unsupported，并用 capability-fit 的 A/B/C/D 闸门判断直接采用、B1 adapter、自有主体或继续搜索。" },
+    { "key": "security-and-provenance", "value": "模型生成组件/动作、远程 MCP、素材和浏览器截图都需要 catalog、审批、来源、许可证、隔离和恢复边界。" }
+  ],
+  "diagrams": [
+    {
+      "title": "候选能力全景与 ZAgentic 边界",
+      "kind": "landscape",
+      "mermaid": "flowchart LR\n  U[Programmer / Human] --> B[UI Brief and conversation]\n  B --> Z[ZAgentic UI skills]\n  Z --> D[Design direction and UI-DESIGN.md]\n  Z --> F[ui-flow/v1 and prototype]\n  Z --> I[Implementation in existing codebase]\n  I --> V[Browser / Storybook / a11y / break verification]\n  V --> H[Handoff and receipt]\n  Z -.B1 adapter.-> A[A2UI / json-render]\n  Z -.input adapter.-> M[M3E Canvas / Figma]\n  Z -.method adapter.-> T[Taste / Oil / UUPM / Emil]\n  Z -.verification adapter.-> S[Storybook]"
+    },
+    {
+      "title": "核心容器与外部 adapter 的所有权",
+      "kind": "container",
+      "mermaid": "flowchart TB\n  subgraph Core[ZAgentic-owned core]\n    O[Orchestrator]\n    BR[UI-BRIEF.md]\n    DS[UI-DESIGN.md and tokens]\n    FL[ui-flow/v1]\n    VR[Review and verification receipts]\n    HO[Handoff and exit path]\n  end\n  subgraph Adapters[Removable external adapters]\n    A2[A2UI]\n    JR[json-render]\n    MC[M3E Canvas]\n    SB[Storybook]\n    FG[Figma / Superdesign optional]\n  end\n  O --> BR\n  BR --> DS\n  DS --> FL\n  FL --> VR\n  VR --> HO\n  FL <--> A2\n  FL <--> JR\n  FL <--> MC\n  VR <--> SB\n  DS <--> FG"
+    }
+  ],
+  "candidates": [
+    { "repository": { "owner": "a2ui-project", "name": "a2ui" }, "stars": 16738, "topicMatch": 2, "evidenceIds": ["e81904980ddf4b1d27b97743", "f6953a4127c68a86005995ed", "bdbee860fef6348d41daea8e", "d47b00cd5d171b250165af94"] },
+    { "repository": { "owner": "anthropics", "name": "claude-code" }, "stars": 152299, "topicMatch": 0, "evidenceIds": ["3ae62d14a0a10b188170186b", "8a8f0deb234e876e80069c7a", "8c3077504ffae0bd1d791c76", "5dbf30c47a4ed0236c75134b"] },
+    { "repository": { "owner": "Leonxlnx", "name": "taste-skill" }, "stars": 98994, "topicMatch": 5, "evidenceIds": ["5756cd53618056f488895a9a", "2ac08054a8ac9d133d8ee8f1", "d20c1cf467a0817df8a2160e", "51da5eb7b81e0bd894f7dc58", "aeb41de7a8ff06ba9faa2fed"] },
+    { "repository": { "owner": "vercel-labs", "name": "json-render" }, "stars": 18717, "topicMatch": 2, "evidenceIds": ["102a08a78a10e54c903ea9a8", "039a71f2bb48723561081395", "68c3f85dff59434e0066931a", "f1866754163fa26a5926fa96", "193ed3f0de7799b718a7efab"] },
+    { "repository": { "owner": "lnkiai", "name": "m3e-canvas" }, "stars": 9490, "topicMatch": 7, "evidenceIds": ["a6ea210ec38b5379d3e72b25", "12c19b4a1d9d52c54738ecea", "674ec01c1d21e029d52e6cc8", "937d273d9551c93e93e42a51", "a1dbb907118a427879d6cf70"] },
+    { "repository": { "owner": "emilkowalski", "name": "skills" }, "stars": 47448, "topicMatch": 0, "evidenceIds": ["6e374106843639a1c5496660", "40a40b0b102a7cfa64c30caf", "144b85e2b4e9b15b82277d9a", "275593f73c756ad84fcfcabc"] },
+    { "repository": { "owner": "nextlevelbuilder", "name": "ui-ux-pro-max-skill" }, "stars": 137339, "topicMatch": 2, "evidenceIds": ["4b2e010be5b5f41a9c804861", "4b0465cebec839f924a3ef17", "a31db8dcd9b57f91d0e8c7ef", "607b9a4456dd19beb064121b"] },
+    { "repository": { "owner": "oil-oil", "name": "oil-ui" }, "stars": 1795, "topicMatch": 5, "evidenceIds": ["676dee71fe8778d04c9b15e9", "81db8563ce3f1db1c5bfc8b8", "7d04d454413ee27aa1128d9f", "1b68fcb27e67be6b5b7126c3", "06a65f09dce70400dc325691"] },
+    { "repository": { "owner": "superdesigndev", "name": "superdesign-skill" }, "stars": 841, "topicMatch": 0, "evidenceIds": ["5a7913cd752c15c8da22d60c", "8afa15922deb0a9bd366c2ba", "7f3e75c801efd87954000d55", "75b258aa03a3a5950a3e24af", "1278c0b9f51f6843b8d1f5a8"] },
+    { "repository": { "owner": "storybookjs", "name": "storybook" }, "stars": 91332, "topicMatch": 4, "evidenceIds": ["9726a10d926aa17c21a5431c", "e576da0141c82d48bf43a74c", "a78d51f6387fc0e664f172eb", "0506a88ec421b1cf9306368a", "04f77c927e83ab25ff2e5196", "d992cb06901b1b037d3be389"] },
+    { "repository": { "owner": "figma", "name": "mcp-server-guide" }, "stars": 2089, "topicMatch": 5, "evidenceIds": ["20da0c338563a126316eb5b8", "b7412f0c32c1b377eb9b86d6", "6d0197e8be902530f6bdf5e9", "aab1563aebb2a6ef794b8618"] }
+  ],
+  "cards": [
+    { "title": "a2ui-project/a2ui", "summary": "受 catalog 约束的 streaming-first、跨框架声明式 UI protocol；适合做动态 UI adapter，不负责视觉方向和全生命周期编排。", "claimIds": ["C01"] },
+    { "title": "anthropics/claude-code frontend-design", "summary": "官方 plugin 中的 frontend-design skill 提供视觉方向、字体、配色、动效和上下文实现方法；适合作为方法和 packaging 参考。", "claimIds": ["C02"] },
+    { "title": "Leonxlnx/taste-skill", "summary": "把 art direction、真实素材、浏览器 inspect 和截图修复组成 anti-slop workflow；适合抽取到方向与视觉复审。", "claimIds": ["C03"] },
+    { "title": "vercel-labs/json-render", "summary": "通过 catalog prompt、render-ui MCP tool、json spec 和 React app 形成 generative UI seam；适合 React 垂直切片 PoC。", "claimIds": ["C04"] },
+    { "title": "lnkiai/m3e-canvas", "summary": "以 JSON document、画布 refinement、屏幕 flow 和 coding prompt 连接非专家与 Agent；适合输入适配器。", "claimIds": ["C05"] },
+    { "title": "emilkowalski/skills", "summary": "将 motion build/review、prototype、library choice 和 break UI 拆成单一职责 skills；edit-feedback-loop 仍有证据缺口。", "claimIds": ["C06"] },
+    { "title": "nextlevelbuilder/ui-ux-pro-max-skill", "summary": "以行业/风格/颜色/字体/UX 数据和 checklist 生成 design-system；适合选择性复用数据组织与检索思想。", "claimIds": ["C07"] },
+    { "title": "oil-oil/oil-ui", "summary": "通过多方向比较页、用户选择和截图 refinement 形成设计循环；适合抽取交互形态而非整体采用。", "claimIds": ["C08"] },
+    { "title": "superdesigndev/superdesign-skill", "summary": "提供外部 canvas、design system、replica、branch 和 flow；CLI/service/login 责任较厚，保留 connector/PoC。", "claimIds": ["C09"] },
+    { "title": "storybookjs/storybook", "summary": "以 stories、Agent eval、Playwright/Vitest、a11y/docs addons 承接组件文档与回归验证；不是视觉方向引擎。", "claimIds": ["C10"] },
+    { "title": "figma/mcp-server-guide", "summary": "提供 Figma design context、variables、Code Connect 和远程 canvas 写回的 connector 参考；外部服务/seat/terms 责任不可内化。", "claimIds": ["C11"] }
+  ],
+  "claims": [
+    { "id": "C01", "text": "A2UI 的 canonical evidence 将其定位为 platform-agnostic、streaming-first 的 UI protocol，并通过 catalog 声明 Agent 可引用的 components/functions，适合动态 UI 的 transport/render seam。", "critical": true, "evidenceIds": ["e81904980ddf4b1d27b97743", "f6953a4127c68a86005995ed", "bdbee860fef6348d41daea8e"] },
+    { "id": "C02", "text": "Claude Code 的 frontend-design plugin 明确要求 bold aesthetic choices、distinctive typography/color palettes、animations 和 context-aware implementation，plugin-dev 资料展示了 skill/agent/command 的组合和验证入口。", "critical": true, "evidenceIds": ["3ae62d14a0a10b188170186b", "8a8f0deb234e876e80069c7a", "8c3077504ffae0bd1d791c76"] },
+    { "id": "C03", "text": "Taste Skill 的固定版本将 art direction、client-specific inventory、browser inspect 和截图复审组成 anti-slop workflow，并在三个视口检查 house rules 和素材 credits。", "critical": true, "evidenceIds": ["5756cd53618056f488895a9a", "d20c1cf467a0817df8a2160e", "51da5eb7b81e0bd894f7dc58", "aeb41de7a8ff06ba9faa2fed"] },
+    { "id": "C04", "text": "json-render 的 MCP example 注册 render-ui tool，以 catalog prompt 约束模型生成 json-render spec，并把 React app、useJsonRenderApp、catalog 和 renderer 组合起来。", "critical": true, "evidenceIds": ["102a08a78a10e54c903ea9a8", "039a71f2bb48723561081395", "68c3f85dff59434e0066931a", "f1866754163fa26a5926fa96"] },
+    { "id": "C05", "text": "M3E Canvas 的 agent guide 将设计定义为一个 JSON document，由 Agent 交给人继续在画布 refinement，再转成 coding prompt，并支持 link/share；它适合结构化设计输入。", "critical": true, "evidenceIds": ["a6ea210ec38b5379d3e72b25", "12c19b4a1d9d52c54738ecea", "674ec01c1d21e029d52e6cc8"] },
+    { "id": "C06", "text": "Emil skills README 将 animate、review-animations、improve-animations、find-animation-opportunities、prototype、break-ui 等拆成独立职责；本轮没有充分证据证明 edit-feedback-loop 可回写本地 artifact。", "critical": true, "evidenceIds": ["6e374106843639a1c5496660", "40a40b0b102a7cfa64c30caf", "144b85e2b4e9b15b82277d9a", "275593f73c756ad84fcfcabc"] },
+    { "id": "C07", "text": "UI UX Pro Max 的 canonical evidence 展示了按行业生成 pattern/style/colors/typography/effects/checklist 的 design-system 结构，并有 accessibility/anti-pattern 数据刷新记录。", "critical": true, "evidenceIds": ["4b2e010be5b5f41a9c804861", "4b0465cebec839f924a3ef17", "a31db8dcd9b57f91d0e8c7ef"] },
+    { "id": "C08", "text": "Oil UI 将产品理解、真正不同的设计方向、并排比较页、用户选择和真实截图 refinement 组织成连续工作流。", "critical": true, "evidenceIds": ["676dee71fe8778d04c9b15e9", "81db8563ce3f1db1c5bfc8b8", "7d04d454413ee27aa1128d9f"] },
+    { "id": "C09", "text": "Superdesign skill 通过 CLI 驱动外部 design canvas，提供 design system、replica template、draft branch、flow pages 和 resume；其仓库资料明确指出这是 prose skill 而非有 build/test suite 的本地 runtime。", "critical": true, "evidenceIds": ["5a7913cd752c15c8da22d60c", "8afa15922deb0a9bd366c2ba", "7f3e75c801efd87954000d55", "1278c0b9f51f6843b8d1f5a8"] },
+    { "id": "C10", "text": "Storybook 的 Agent eval 与 addons evidence 覆盖 stories、Storybook/Playwright/Vitest、WCAG a11y、docs 和 responsive/custom-elements 文档，适合承接组件验证。", "critical": true, "evidenceIds": ["9726a10d926aa17c21a5431c", "e576da0141c82d48bf43a74c", "a78d51f6387fc0e664f172eb", "0506a88ec421b1cf9306368a", "04f77c927e83ab25ff2e5196"] },
+    { "id": "C11", "text": "Figma MCP guide 的 canonical evidence 指向 design context/variables/screenshot、Code Connect 和远程 canvas/diagram workflow，因此更适合作为外部 connector 而非本地开源 runtime。", "critical": true, "evidenceIds": ["20da0c338563a126316eb5b8", "b7412f0c32c1b377eb9b86d6", "6d0197e8be902530f6bdf5e9", "aab1563aebb2a6ef794b8618"] },
+    { "id": "C12", "text": "候选能力按角色分成设计判断、声明式动态 UI、工程验证和外部设计上下文四组；没有一个候选覆盖全生命周期，因此产品语义、artifact、编排、权限和退出路径必须由 ZAgentic 自有核心承担。", "critical": true, "evidenceIds": ["5756cd53618056f488895a9a", "e81904980ddf4b1d27b97743", "102a08a78a10e54c903ea9a8", "a6ea210ec38b5379d3e72b25", "9726a10d926aa17c21a5431c"] }
+  ],
+  "comparisons": [
+    { "id": "role-families", "text": "设计判断候选（Claude frontend-design、Taste、Oil UI、UUPM、Superdesign、Emil）互补但不能拥有 ZAgentic artifact；它们的共同增量是把 taste/方向/复审/动效/极端数据从隐性经验变成可执行流程。", "claimIds": ["C02", "C03", "C06", "C07", "C08", "C09"] },
+    { "id": "protocol-vs-design", "text": "A2UI 和 json-render 解决的是模型输出到受信组件 renderer 的协议与 catalog 问题，M3E 解决的是人和 Agent 之间的结构化画布输入；三者都不能替代设计方向和页面语义。", "claimIds": ["C01", "C04", "C05"] },
+    { "id": "feedback-and-input", "text": "M3E 的 JSON document/refinement、Taste 的浏览器 inspect、Oil UI 的比较页和 Superdesign 的 branch/replica 分别覆盖输入、检查、选择和连续迭代；本地 artifact 必须把这些结果统一起来。", "claimIds": ["C03", "C05", "C08", "C09"] },
+    { "id": "engineering-verification", "text": "Storybook 的 stories/a11y/docs/test seam 最适合作为实现后的工程验证入口；视觉方向和动效判断应由独立 skills 先完成，再生成验证 fixtures。", "claimIds": ["C06", "C10"] },
+    { "id": "ownership-and-alternatives", "text": "全平台采用会把远程服务、runtime、版本、凭据和设计语义责任一起引入；协议优先会遗漏设计质量；设计优先会遗漏安全 catalog 与回归。因此自有核心 + 可移除 B1 adapters 是风险最小且可验证的组合。", "claimIds": ["C01", "C04", "C09", "C11", "C12"] }
+  ],
+  "recommendations": [
+    { "id": "overall-choice", "text": "选择 ZAgentic 自有 artifact/编排为主体（C），外部 unit capability 采用不维护 fork 的 B1 adapter。核心持有 UI-BRIEF.md、UI-DESIGN.md、ui-flow/v1、review/verification receipt 和 handoff；Taste/Oil/UUPM/Emil 先以方法或 adapter 进入，A2UI/json-render/M3E/Storybook 按项目启用。", "comparisonIds": ["role-families", "protocol-vs-design", "ownership-and-alternatives"] },
+    { "id": "core-development", "text": "先开发 `zj-ui-brief`、`zj-ui-discover`、`zj-ui-direction`、`zj-ui-design-system`、`zj-ui-flow`、`zj-ui-prototype`、`zj-ui-visual-review`、`zj-ui-break`、`zj-ui-verify` 和 `zj-ui-handoff`，用一个 React/Next.js 表单/审批流完成 experience-version。", "comparisonIds": ["feedback-and-input", "engineering-verification"] },
+    { "id": "adapter-path", "text": "第一轮 adapter PoC 采用 json-render（React 动态 UI）+ A2UI（协议/跨框架对照）+ M3E（两屏移动 flow 输入）+ Storybook（stories/a11y/viewport/interaction 验证）。每个 adapter 必须有版本锁、golden fixture、丢失字段 warning、服务失败 fallback 和删除后的本地回退。", "comparisonIds": ["protocol-vs-design", "engineering-verification", "ownership-and-alternatives"] },
+    { "id": "paths-to-avoid", "text": "不要把 Superdesign、Figma MCP 或任一设计 skill 作为唯一 SSOT；不要让 A2UI/json-render runtime 侵入所有项目；不要把 screenshot pass 当作设计质量完成；不要把 unregistered model actions 直接执行。", "comparisonIds": ["feedback-and-input", "ownership-and-alternatives"] },
+    { "id": "remaining-risks", "text": "剩余风险是：外部 schema/skill 变化会造成 adapter 漂移；Figma/Superdesign 等远程服务可能不可用；生成式 UI 可能输出未注册组件或危险动作；浏览器、字体和网络会造成视觉检查不稳定；素材许可证和 provenance 可能缺失；多个 skills 可能抢占同一请求。必须用 schema lock、golden fixtures、本地 artifact、catalog/approval、容器化 browser、asset manifest 和 capability precedence 约束这些风险。", "comparisonIds": ["role-families", "protocol-vs-design", "ownership-and-alternatives"] }
+  ],
+  "metrics": [
+    { "key": "direction-choice-time", "definition": "用户从 brief 看到可比较方向到选定一个方向的耗时", "unit": "minutes", "method": "记录 direction workflow timestamps 和 user choice", "condition": "固定 demo brief，三次独立运行", "expected": "中位数 <= 10 分钟" },
+    { "key": "direction-divergence", "definition": "三个候选方向在 layout/type/palette/key imagery 四轴中的独立差异数", "unit": "axes", "method": "由 direction card checklist 和截图审查计数", "condition": "每两个方向至少两个差异轴", "expected": "所有 pair >= 2 axes" },
+    { "key": "artifact-resume-rate", "definition": "新会话只读本地 artifacts 后能恢复的既有设计决策占比", "unit": "%", "method": "resume fixture 对比决策清单和恢复结果", "condition": "不读取旧对话，不访问远程服务", "expected": ">= 90%" },
+    { "key": "implementation-slice-rate", "definition": "选定方向能生成可运行页面并至少产出一个 component story 的比例", "unit": "%", "method": "对固定 React/Next.js slice 运行 implement + components", "condition": "三次从 brief 到代码的完整运行", "expected": "100%" },
+    { "key": "visual-blocker-rate", "definition": "390/768/1440 视口和键盘/reduced-motion 检查中的 blocker 数量", "unit": "blockers/run", "method": "browser screenshot + deterministic review receipt", "condition": "固定字体、素材和浏览器版本", "expected": "0 blockers" },
+    { "key": "worst-case-coverage", "definition": "长文本、空态、错误态、一条数据、1000 条数据、多语言等 fixture 被执行的覆盖率", "unit": "%", "method": "zj-ui-break fixture manifest 对运行日志做集合比对", "condition": "每个 component story 至少一次", "expected": ">= 95%" },
+    { "key": "adapter-removability", "definition": "删除单个外部 adapter 后仍可读取/编辑核心 artifact 并完成本地流程的比例", "unit": "%", "method": "逐 adapter 删除环境并运行 golden fixtures", "condition": "不允许重新生成核心语义", "expected": "100%" },
+    { "key": "verification-provenance", "definition": "verification receipt 中可回溯到 source artifact、commit、fixture 和命令的结果比例", "unit": "%", "method": "receipt schema audit", "condition": "每次 Experience Version 运行", "expected": "100%" }
+  ],
+  "riskRegister": [
+    { "risk": "外部 A2UI/json-render/skill schema 变化导致 adapter 静默丢失 UI 状态或语义", "trigger": "固定版本升级后 golden fixture 的字段映射、事件或渲染快照发生变化", "impact": "用户选择的设计和实现结果不可复现，验证结论失真", "mitigation": "为每个 adapter 锁定 commit/package 版本，运行 schema diff、golden fixture 和丢失字段 warning，未通过时禁止升级", "residualRisk": "上游仍可能改变未覆盖的边缘语义，需按版本重跑 PoC", "owner": "ZAgentic UI adapter maintainer" },
+    { "risk": "Figma/Superdesign 等远程服务不可用或额度/seat/terms 变化", "trigger": "MCP/CLI 登录失败、调用限额耗尽、远程服务或 Beta 行为变化", "impact": "设计反馈或导入流程中断，用户无法继续当前外部工具路径", "mitigation": "核心 artifacts 本地可读写，connector 只写可重建缓存，并提供 Markdown/JSON/截图 fallback 与明确停止提示", "residualRisk": "外部 connector 的高级写回能力仍不可用，用户需改走本地路径", "owner": "UI workflow maintainer" },
+    { "risk": "模型生成未注册组件、危险 action 或带敏感数据的远程 UI", "trigger": "spec 引用 catalog 外类型、action 包含任意代码/网络写入或 payload 含 secret", "impact": "执行任意行为、越权写入或泄露项目数据", "mitigation": "catalog allowlist、schema validation、Human approval、sandboxed renderer、secret redaction 和 provenance audit 在执行前拦截", "residualRisk": "合法组件内部的业务漏洞仍需宿主项目安全测试", "owner": "Host application security owner" },
+    { "risk": "浏览器/字体/网络差异造成视觉检查不稳定或错误通过", "trigger": "CI 与本地字体、浏览器版本、图片网络或动画时序不一致", "impact": "真实视觉缺陷被掩盖，或开发者被无意义 diff 阻塞", "mitigation": "容器化固定 browser/font/assets，关闭非必要网络，等待稳定状态后截图，并把人工 critique 与 machine gate 分开", "residualRisk": "真实设备和第三方字体仍可能出现未覆盖差异", "owner": "UI verification maintainer" },
+    { "risk": "素材来源、许可证或生成 provenance 缺失", "trigger": "asset manifest 没有 source/author/license/credit，或生成素材没有 provider/approval 记录", "impact": "发布后产生版权、品牌或合规风险", "mitigation": "asset manifest schema、默认拒绝未知许可证、页面 credit、替换点和发布前 provenance gate", "residualRisk": "许可证条款解释仍可能需要人工法务判断", "owner": "Project maintainer and content owner" },
+    { "risk": "多个 UI skills 自动触发同一请求并产生互相矛盾的修改", "trigger": "brief、direction、motion、implement、verify 的触发条件重叠或阶段状态缺失", "impact": "重复工作、artifact 冲突、未获用户选择就修改生产代码", "mitigation": "capability manifest、阶段路由、优先级/互斥规则、Human gate 和 immutable handoff state 统一编排", "residualRisk": "新 skill 加入时仍需要回归触发矩阵", "owner": "zj-ui-orchestrator maintainer" }
+  ],
+  "graduationCriteria": [
+    { "condition": "固定 brief 能生成三个可解释且用户可比较的方向", "threshold": "方向两两至少在两个独立轴不同，且用户能在中位数 10 分钟内选择并说明理由", "metric": "direction-divergence,direction-choice-time", "promoteTo": "usefulness-validation" },
+    { "condition": "新会话能仅依赖本地 artifacts 恢复设计上下文", "threshold": "artifact-resume-rate >= 90%", "metric": "artifact-resume-rate", "promoteTo": "usefulness-validation" },
+    { "condition": "选定方向完成一个真实 React/Next.js 页面和组件 story", "threshold": "三次完整运行均能运行页面并生成至少一个 story", "metric": "implementation-slice-rate", "promoteTo": "usefulness-validation" },
+    { "condition": "多视口和基本交互质量达到 experience-version 底线", "threshold": "visual-blocker-rate = 0，键盘 focus、reduced-motion 和错误/空态均有 receipt", "metric": "visual-blocker-rate", "promoteTo": "usefulness-validation" },
+    { "condition": "极端数据 fixture 被执行且缺陷可追踪", "threshold": "worst-case-coverage >= 95%，每个 blocker 有 field/source/fix", "metric": "worst-case-coverage", "promoteTo": "usefulness-validation" },
+    { "condition": "外部 adapter 可替换而不破坏本地核心流程", "threshold": "adapter-removability = 100%，verification-provenance = 100%", "metric": "adapter-removability,verification-provenance", "promoteTo": "usefulness-validation" }
+  ]
+}
