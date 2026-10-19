@@ -52,7 +52,7 @@
       "id": "1-1",
       "uid": "01a154254bff-2c66d411be",
       "label": "范围闸门与 Experience Version manifest",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -463,16 +463,43 @@
       "id": "1-1-4",
       "uid": "01a15426b3ec-40bdc9d67e",
       "label": "建立 Wave 0 资源、许可证、fixture、owner 与风险账本",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "Wave 0 账本如何组织？",
+          "answer": "资源/许可证/fixture/owner/风险 五张账合入单文件 ui-agent-skills-wave0-ledger.md，与 scope-manifest/ev-metrics/ev-form-lock 三件配套",
+          "note": ""
+        },
+        {
+          "q": "许可证缺口如何处置？",
+          "answer": "技术栈主体 MIT/BSD/Apache 宽松许可可商用；确定性渲染所需字体许可为唯一真实缺口，标 NEEDS_CONTEXT 不编造",
+          "note": ""
+        },
+        {
+          "q": "fixture 在 1-1-4 是否提前实现？",
+          "answer": "否。表单六类 + 适配器两类仅登记意图/owner/状态=planned，落地归 1-5/1-7/1-8",
+          "note": ""
+        },
+        {
+          "q": "资源环境缺项如何暴露？",
+          "answer": "托管 Python 缺 PyYAML（今日 #180 已撞）记入 R-RISK-2，缓解=改用系统 Python；Chromium 固定版本作硬约束资源登记",
+          "note": ""
+        },
+        {
+          "q": "owner 如何落地？",
+          "answer": "沿用 1-1-2 已确认：产品/验收=zj、实现=zjj，并按账本领域细分登记",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "资源/许可证/fixture/owner/risk ledger 无 unknown 漏洞，缺失项有 NEEDS_CONTEXT 处置"
-      ]
+      ],
+      "rounds": 1
     },
     "1-2-1": {
       "id": "1-2-1",
@@ -1062,7 +1089,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-19 21:25:24",
+    "updated": "2026-10-19 22:19:25",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

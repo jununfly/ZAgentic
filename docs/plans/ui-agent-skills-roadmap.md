@@ -1,16 +1,16 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-19 21:25:24
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-19 22:19:25
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
-├── [~][Y+] 1-1. 范围闸门与 Experience Version manifest
+├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest
 │   ├── [x][Y+] 1-1-1. 冻结 Experience Version scope manifest、in-scope/out-of-scope 与成功标准
 │   ├── [x][Y+] 1-1-2. 锁定 React/Next.js 表单或审批流样例、角色、状态、环境和责任人
 │   ├── [x][Y+] 1-1-3. 预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛
-│   └── [ ][Y+] 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本
-├── [!][Y+] 1-2. Canonical artifact 契约与 ui-flow/v1
-│   ├── [!][Y+] 1-2-1. 定义六类 canonical artifact 的 schema、字段 owner、source 与 requiredness
+│   └── [x][Y+] 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本
+├── [ ][Y+] 1-2. Canonical artifact 契约与 ui-flow/v1
+│   ├── [ ][Y+] 1-2-1. 定义六类 canonical artifact 的 schema、字段 owner、source 与 requiredness
 │   ├── [!][Y+] 1-2-2. 实现 UI-BRIEF/UI-DESIGN 的文档编辑、patch/diff、unknown/source 语义
 │   ├── [!][Y+] 1-2-3. 定义 ui-flow/v1 的 screen/component/state/action/intent/acceptance 与迁移规则
 │   └── [!][Y+] 1-2-4. 完成字段保留、semantic round-trip、离线恢复、schema lock 与 golden fixtures
@@ -24,8 +24,8 @@
 │   ├── [!][Y+] 1-4-2. 实现 policy→approval→sandbox lease→executor 单入口的 deny-first 信任链
 │   ├── [!][Y+] 1-4-3. 实现 provenance、asset-manifest.json、secret redaction 与许可证 quarantine
 │   └── [!][Y+] 1-4-4. 覆盖未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixtures
-├── [!][Y+] 1-5. Deterministic verification、fixture 与 receipt
-│   ├── [!][Y+] 1-5-1. 冻结 fixture-manifest、verification-matrix 与 browser/environment fingerprint
+├── [ ][Y+] 1-5. Deterministic verification、fixture 与 receipt
+│   ├── [ ][Y+] 1-5-1. 冻结 fixture-manifest、verification-matrix 与 browser/environment fingerprint
 │   ├── [!][Y+] 1-5-2. 实现 baseline 与 degraded 双 lane、固定字体/网络回放/时钟/seed
 │   ├── [!][Y+] 1-5-3. 实现 DOM/ARIA、focus、contrast、overflow、响应式、motion 与状态硬门禁
 │   └── [!][Y+] 1-5-4. 定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine
@@ -57,19 +57,21 @@
     ├── [!][X+] 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md
     ├── [!][X+] 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理
     └── [!][X+] 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策
-<details><summary>阻塞链：48 个节点被阻塞</summary>
+<details><summary>阻塞链：44 个节点被阻塞</summary>
 
 - 1-10. 长期文档、维护治理与 rollout 决策 ← e18: 1-9. 三次 paired run 与 graduation gate [ ]
 - 1-10-1. 将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核 ← e69: 1-9-4. 聚合指标、剩余风险与 fallback 演练，形成 graduation packet 或 pilot/quarantine 结论 [ ]
 - 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md ← e49: 1-10-1. 将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核 [ ]
 - 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理 ← e50: 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md [ ]
 - 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策 ← e51: 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理 [ ]
-- ... 另有 43 个节点被阻塞未列出
+- ... 另有 39 个节点被阻塞未列出
 
 </details>
 
 
 ### 下一步可开工（ready 前 3）
 
-- 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本 [ ]
+- 1-2. Canonical artifact 契约与 ui-flow/v1 [ ]
+- 1-2-1. 定义六类 canonical artifact 的 schema、字段 owner、source 与 requiredness [ ]
+- 1-5. Deterministic verification、fixture 与 receipt [ ]
 <!-- ROADMAP_SECTION_END -->
