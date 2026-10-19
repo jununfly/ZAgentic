@@ -347,31 +347,70 @@
       "id": "1-1-1",
       "uid": "01a15426b309-b7cd1b9ff0",
       "label": "冻结 Experience Version scope manifest、in-scope/out-of-scope 与成功标准",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "Experience Version 首个样例锁哪个？",
+          "answer": "锁定 React/Next.js 表单样例：用户资料编辑表单（User Profile Edit Form）。覆盖字段校验、loading/error/submit 状态、client+server 校验，复杂度可控且足以证明 10 个 skill 全生命周期。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "scope manifest、排除项、成功/失败状态与 Experience Version 版本均可由 Human 复核"
-      ]
+      ],
+      "rounds": 1
     },
     "1-1-2": {
       "id": "1-1-2",
       "uid": "01a15426b35f-fe77d4c9c1",
       "label": "锁定 React/Next.js 表单或审批流样例、角色、状态、环境和责任人",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "框架版本锁哪个组合？",
+          "answer": "Next.js 14 (App Router) + React 18 + TypeScript 5.x。固定此组合，避免 15/19 breaking change 引入基线噪声。",
+          "note": ""
+        },
+        {
+          "q": "浏览器/验证环境锁哪个？",
+          "answer": "Chromium（major 版本固定），与 1-5 确定性验证的指纹/字体基线对齐。",
+          "note": ""
+        },
+        {
+          "q": "数据边界？",
+          "answer": "本地 mock / 内存态，无真实后端写回；持久化以本地 fixture 模拟，远程写回仅作 1-5/1-8 演练项。",
+          "note": ""
+        },
+        {
+          "q": "角色/状态机/关键任务？",
+          "answer": "角色=用户+系统；状态机 idle→validating→submitting→success|error + 字段级 valid/invalid；关键任务 7 步（加载/编辑/客户端校验/提交/服务端校验模拟/持久化/反馈恢复）已定义于锁定文档。",
+          "note": ""
+        },
+        {
+          "q": "责任人归属？",
+          "answer": "建议：产品/验收负责人=zj，实现负责人=zjj（AI）。待 zj 确认；不影响其余锁定项。",
+          "note": ""
+        },
+        {
+          "q": "责任人归属是否确认？",
+          "answer": "确认：产品/验收负责人=zj，实现负责人=zjj（AI）。覆盖先前 PENDING_CONFIRM 的建议值。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "表单/审批样例的角色、状态、关键任务、框架版本、浏览器与数据边界已固定"
-      ]
+      ],
+      "rounds": 1
     },
     "1-1-3": {
       "id": "1-1-3",
@@ -991,7 +1030,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-19 20:40:06",
+    "updated": "2026-10-19 21:11:13",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
