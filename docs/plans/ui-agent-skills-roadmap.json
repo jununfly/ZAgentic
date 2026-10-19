@@ -81,7 +81,7 @@
       "id": "1-2",
       "uid": "01a154254c39-492054d600",
       "label": "Canonical artifact 契约与 ui-flow/v1",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -554,16 +554,23 @@
       "id": "1-2-4",
       "uid": "01a15426b54f-980fd0a186",
       "label": "完成字段保留、semantic round-trip、离线恢复、schema lock 与 golden fixtures",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-2",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-2-4 交付物形态：冻结 golden fixture 规范，还是现在写可执行 fixture？",
+          "answer": "冻结规范（计划层）：本节点产出 golden fixture 的清单/覆盖矩阵/round-trip 与离线恢复协议/schema lock 流程/闸门阈值；可执行 fixture 断言待 Experience Version 把技能实现后再跑。理由：1-2 整路线本轮仅建立计划，暂无产品代码可供断言，现在写可执行 fixture 无消费方。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "golden round-trip、迁移、schema lock 和删除 adapter 后恢复测试通过"
-      ]
+      ],
+      "rounds": 1
     },
     "1-3-1": {
       "id": "1-3-1",
@@ -1093,7 +1100,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 00:34:36",
+    "updated": "2026-10-20 00:47:33",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
