@@ -1,14 +1,14 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-19 21:11:13
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-19 21:25:24
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [~][Y+] 1-1. 范围闸门与 Experience Version manifest
 │   ├── [x][Y+] 1-1-1. 冻结 Experience Version scope manifest、in-scope/out-of-scope 与成功标准
 │   ├── [x][Y+] 1-1-2. 锁定 React/Next.js 表单或审批流样例、角色、状态、环境和责任人
-│   ├── [ ][Y+] 1-1-3. 预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛
-│   └── [!][Y+] 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本
+│   ├── [x][Y+] 1-1-3. 预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛
+│   └── [ ][Y+] 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本
 ├── [!][Y+] 1-2. Canonical artifact 契约与 ui-flow/v1
 │   ├── [!][Y+] 1-2-1. 定义六类 canonical artifact 的 schema、字段 owner、source 与 requiredness
 │   ├── [!][Y+] 1-2-2. 实现 UI-BRIEF/UI-DESIGN 的文档编辑、patch/diff、unknown/source 语义
@@ -57,19 +57,19 @@
     ├── [!][X+] 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md
     ├── [!][X+] 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理
     └── [!][X+] 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策
-<details><summary>阻塞链：49 个节点被阻塞</summary>
+<details><summary>阻塞链：48 个节点被阻塞</summary>
 
-- 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本 ← e21: 1-1-3. 预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛 [ ]
 - 1-10. 长期文档、维护治理与 rollout 决策 ← e18: 1-9. 三次 paired run 与 graduation gate [ ]
 - 1-10-1. 将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核 ← e69: 1-9-4. 聚合指标、剩余风险与 fallback 演练，形成 graduation packet 或 pilot/quarantine 结论 [ ]
 - 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md ← e49: 1-10-1. 将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核 [ ]
 - 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理 ← e50: 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md [ ]
-- ... 另有 44 个节点被阻塞未列出
+- 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策 ← e51: 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理 [ ]
+- ... 另有 43 个节点被阻塞未列出
 
 </details>
 
 
 ### 下一步可开工（ready 前 3）
 
-- 1-1-3. 预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛 [ ]
+- 1-1-4. 建立 Wave 0 资源、许可证、fixture、owner 与风险账本 [ ]
 <!-- ROADMAP_SECTION_END -->

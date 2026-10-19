@@ -416,16 +416,48 @@
       "id": "1-1-3",
       "uid": "01a15426b3aa-87bed6e0da",
       "label": "预注册 direct-prompt baseline、返工/决策时间/escaped defect 指标与毕业门槛",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "direct-prompt baseline 以什么形态预注册？",
+          "answer": "可复现 control manifest：固定任务/fixture ID、仓库提交、环境快照、模型/工具预算、参与者、起止事件、defect 分类；不是一句 direct-prompt 或单次演示。",
+          "note": "来自 sub-06 观点 4 / P 观点 4"
+        },
+        {
+          "q": "三项毕业指标的操作化口径如何固定？",
+          "answer": "返工率=返工次数/任务数；决策时间=任务开始到用户确认决定的时间（等待单列）；escaped defect=任务完成后独立观察员按严重度发现的 UI 缺陷。",
+          "note": "分母与采集事件预注册，禁止事后改写"
+        },
+        {
+          "q": "毕业门槛阈值取多少？",
+          "answer": "沿用 MASTER L122：返工率≥20%、决策时间≥15%、escaped defect 每次不恶化且三次汇总≥20%；且零 critical/high gate 失败、零越权、零 provenance/receipt 缺失。",
+          "note": "任何 run 出现未接受 critical/high escaped defect 即不毕业"
+        },
+        {
+          "q": "paired run 如何配对与排序？",
+          "answer": "R1/R2/R3 各为同一任务集的一对（direct-prompt + Experience Version），same case/environment/config；顺序 counterbalance 隔离学习效应，原始日志留存。",
+          "note": "不能用一次 baseline 支撑三个 Experience 版本"
+        },
+        {
+          "q": "哪些 run 计为无效、需补跑？",
+          "answer": "配置漂移、环境变化、日志缺失、人工救援、范围变更、选择偏差 → 标 invalid，不计入三次有效样本，以新 run ID 补跑；运行责任人不得自行裁定。",
+          "note": "来自 sub-06 P 观点 4"
+        },
+        {
+          "q": "graduation 与 release 如何分离？",
+          "answer": "graduation 只产出 graduated-experience，不授予 release/rollout/version-skew 权限；critical/high escaped defect 或不可解释恶化 → 降级 NEEDS_CONTEXT。",
+          "note": "本轮明确不承诺发布（MASTER L7）"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "baseline、三项毕业指标、阈值、paired run 与 invalid-run 规则在运行前记录"
-      ]
+      ],
+      "rounds": 1
     },
     "1-1-4": {
       "id": "1-1-4",
@@ -1030,7 +1062,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-19 21:11:13",
+    "updated": "2026-10-19 21:25:24",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
