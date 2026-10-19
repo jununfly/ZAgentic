@@ -522,7 +522,7 @@
       "id": "1-2-2",
       "uid": "01a15426b4c2-0e898b5f9e",
       "label": "实现 UI-BRIEF/UI-DESIGN 的文档编辑、patch/diff、unknown/source 语义",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-2",
       "children": [],
@@ -531,7 +531,8 @@
       "layer": "plan",
       "exit_criteria": [
         "文档编辑可产生可审阅 patch/diff，不直接执行 effect，拒绝非法字段"
-      ]
+      ],
+      "rounds": 1
     },
     "1-2-3": {
       "id": "1-2-3",
@@ -1091,7 +1092,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-19 23:40:38",
+    "updated": "2026-10-20 00:21:06",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
