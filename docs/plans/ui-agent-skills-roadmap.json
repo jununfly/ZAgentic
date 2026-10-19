@@ -538,7 +538,7 @@
       "id": "1-2-3",
       "uid": "01a15426b50d-3e26208691",
       "label": "定义 ui-flow/v1 的 screen/component/state/action/intent/acceptance 与迁移规则",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-2",
       "children": [],
@@ -547,7 +547,8 @@
       "layer": "plan",
       "exit_criteria": [
         "ui-flow/v1 可离线表达并重放 screen/component/state/action/intent/acceptance"
-      ]
+      ],
+      "rounds": 1
     },
     "1-2-4": {
       "id": "1-2-4",
@@ -1092,7 +1093,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 00:21:06",
+    "updated": "2026-10-20 00:34:36",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
