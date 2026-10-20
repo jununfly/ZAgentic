@@ -1,0 +1,9 @@
+{
+  "fixture_id": "FF-DIR-03",
+  "status": "QUARANTINED",
+  "writes": 0,
+  "quarantined": ["card-x"],
+  "candidates": ["card-y"],
+  "rejected_fields": [],
+  "artifact_present": false
+}

@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-DS-01",
+  "status": "OK",
+  "writes": 1,
+  "rejected_fields": [],
+  "quarantined": [],
+  "artifact_present": true,
+  "revision_is_sha256": true,
+  "artifact_expect": {
+    "artifact_kind": "UI-DESIGN.md",
+    "content.direction_choice": "card-b",
+    "content.color.on_surface": "#1F1F1F",
+    "content.typography.license": "OFL-1.1",
+    "content.components": ["Button", "Input", "Table"]
+  }
+}

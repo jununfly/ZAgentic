@@ -1,0 +1,24 @@
+{
+  "fixture_id": "FF-DISC-01",
+  "stage": "discover",
+  "description": "三处缺口由可归因证据补齐：unknown 清零，只增一轮 revision",
+  "request": {
+    "brief_revision": "rev-brief-ff-02",
+    "idempotency_key": "ff-disc-01",
+    "question_budget": 2,
+    "questions_asked": 1,
+    "brief": {
+      "goal_users": ["财务审批人", "报销提交人"],
+      "unknown": [
+        {"path": "goal_task", "raw": null, "reason": "未声明要完成的任务", "source": "dialog#7"},
+        {"path": "constraints", "raw": null, "reason": "未声明约束（或显式 empty-with-reason）", "source": "dialog#7"},
+        {"path": "success_criteria", "raw": null, "reason": "未声明成功标准", "source": "dialog#7"}
+      ]
+    },
+    "evidence": [
+      {"path": "goal_task", "value": "提交报销单并跟踪审批状态", "source": "dialog#8"},
+      {"path": "constraints", "value": ["必须复用现有 SSO"], "source": "dialog#8"},
+      {"path": "success_criteria", "value": ["提交后 3 秒内看到受理状态"], "source": "dialog#8"}
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "fixture_id": "FF-DIR-03",
+  "stage": "direction",
+  "description": "参考 license unknown：quarantine，不进默认产物，零写入",
+  "request": {
+    "brief_revision": "rev-brief-ff-01",
+    "idempotency_key": "ff-dir-03",
+    "human_choice": null,
+    "cards": [
+      {
+        "id": "card-x",
+        "name": "来源不明的暗色稿",
+        "color": {"surface": "#0E0E10", "accent": "#7C3AED"},
+        "typography": {"family": "Unknown Grotesk", "scale": ["14/22"]},
+        "density": "comfortable",
+        "motion": {"duration_ms": 200},
+        "tradeoffs": ["视觉冲击强", "来源不可归因"],
+        "reference": {"source": "screenshot", "reference": "unsourced-dribbble", "license": "unknown"}
+      },
+      {
+        "id": "card-y",
+        "name": "轻盈卡片流",
+        "color": {"surface": "#FAFAF7", "accent": "#0B57D0"},
+        "typography": {"family": "Source Han Sans", "scale": ["14/22"]},
+        "density": "comfortable",
+        "motion": {"duration_ms": 180},
+        "tradeoffs": ["移动端友好", "同屏信息量下降"],
+        "reference": {"source": "public-gallery", "reference": "material-3", "license": "Apache-2.0"}
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "fixture_id": "FF-DS-03",
+  "status": "BLOCKED",
+  "writes": 0,
+  "rejected_fields": ["color.body"],
+  "artifact_present": false
+}

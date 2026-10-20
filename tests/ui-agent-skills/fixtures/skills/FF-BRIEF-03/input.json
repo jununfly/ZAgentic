@@ -1,0 +1,17 @@
+{
+  "fixture_id": "FF-BRIEF-03",
+  "stage": "brief",
+  "description": "草稿含未注册字段（camelCase 笔误）：deny-first 拒绝，绝不静默丢弃",
+  "request": {
+    "input_revision": "dialog-2026-10-20#9",
+    "idempotency_key": "ff-brief-03",
+    "questions_asked": 0,
+    "candidate": {
+      "goal_users": ["财务审批人"],
+      "goal_task": "提交报销单",
+      "constraints": ["必须复用现有 SSO"],
+      "success_criteria": ["提交后 3 秒内看到受理状态"],
+      "successCriteria": ["这条是笔误，必须被拒绝"]
+    }
+  }
+}

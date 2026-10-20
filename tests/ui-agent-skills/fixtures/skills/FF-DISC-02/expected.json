@@ -1,0 +1,12 @@
+{
+  "fixture_id": "FF-DISC-02",
+  "status": "OK",
+  "writes": 1,
+  "unknown": [
+    {"path": "goal_task", "reason": "证据不足：无可归因来源，不作猜测写入"}
+  ],
+  "unknown_quartets_complete": true,
+  "rejected_fields": [],
+  "artifact_present": true,
+  "artifact_absent": ["content.goal_task"]
+}
