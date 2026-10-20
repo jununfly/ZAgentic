@@ -1,0 +1,6 @@
+{
+  "status": "BLOCKED",
+  "writes": 1,
+  "artifact_present": true,
+  "artifact_expect": {"content.cells[0].status": "FAIL"}
+}

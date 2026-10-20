@@ -1,0 +1,12 @@
+{
+  "fixture_id": "FF-BRK-03",
+  "stage": "break",
+  "description": "fixture matrix 缺失（cells 为空） → BLOCKED + 零写入，不得冒充 PASS",
+  "request": {
+    "input_revision": "rev-brk-03",
+    "candidate": {
+      "cells": [],
+      "viewports": ["390x844", "768x1024", "1440x900"]
+    }
+  }
+}

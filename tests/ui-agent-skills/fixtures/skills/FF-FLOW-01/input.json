@@ -1,0 +1,17 @@
+{
+  "fixture_id": "FF-FLOW-01",
+  "stage": "flow",
+  "description": "六义齐全 + 引用闭合 → OK + 原子提交",
+  "request": {
+    "input_revision": "rev-flow-01",
+    "candidate": {
+      "screens": [{"id": "scr-login"}],
+      "components": [{"id": "c-login-form"}],
+      "states": [{"id": "s-idle"}, {"id": "s-done"}],
+      "actions": [{"id": "a-submit", "from_state": "s-idle", "to_state": "s-done", "intent": "i-submit"}],
+      "intents": [{"id": "i-submit"}],
+      "acceptances": [{"id": "acc-ok"}],
+      "source": {"version": "ui-flow/v1"}
+    }
+  }
+}

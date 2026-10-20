@@ -4,10 +4,10 @@ description: >-
   S6 BUILD：从 ui-flow/v1 生成可交互的本地 preview 或实现切片，只用 catalog 内组件；
   任何代码执行、网络、凭据、远程写回都先出 effect intent，经 policy / approval / sandbox 才执行。
   Use when flow 已成型，需要把人能看见、能点的 preview 做出来，而不是直接改生产代码。
-  当前为契约骨架（1-6-1），可执行实现未落地。
+  已实现于 1-6-3（run_prototype，确定性实现见 ui_stages.py）。
 argument-hint: "<ui-flow/v1 路径与 preview 输出目录>"
 metadata:
-  status: contract-skeleton
+  status: implemented
   implemented_in: 1-6-3
 source: zagentic
 ---
@@ -16,9 +16,10 @@ source: zagentic
 
 S6 · BUILD · `emit`（只产出显式声明的非 canonical 产物 `preview`）
 
-> **状态：契约骨架（1-6-1）。** 本文件冻结 capability manifest、输入输出、禁止事项、停止条件
-> 与失败 fixture id；可执行实现归 1-6-3，fixture 运行归 1-6-5。实现落地前不要把本 skill
-> 当作可用能力。
+> **状态：已实现（1-6-3）。** capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
+> 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_prototype`（复用
+> `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
+> `tests/ui-agent-skills/fixtures/skills/FF-PROTO-*` 验收。
 
 ## Capability Manifest
 

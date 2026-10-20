@@ -59,6 +59,10 @@ def worst(*statuses: str) -> str:
 
 BRIEF = "UI-BRIEF.md"
 DESIGN = "UI-DESIGN.md"
+UI_FLOW = "UI-FLOW.md"
+UI_PREVIEW = "UI-PREVIEW.md"
+UI_REVIEW = "UI-REVIEW.md"
+UI_BREAK_CELL = "UI-BREAK-CELL.md"
 
 # field -> (python type name, owner, required, unknown policy)
 SCHEMAS = {
@@ -80,6 +84,36 @@ SCHEMAS = {
         "provenance": ("dict", "direction/design owner", "required-if-external", "unknown source -> quarantine"),
         "unknown": ("list", "direction/design owner", "conditional", "quartet preserved"),
     },
+    UI_FLOW: {
+        "screens": ("list", "flow/schema owner", "yes", "missing -> unknown quartet"),
+        "components": ("list", "flow/schema owner", "yes", "missing -> unknown quartet"),
+        "states": ("list", "flow/schema owner", "yes", "missing -> unknown quartet"),
+        "actions": ("list", "flow/schema owner", "yes", "missing -> unknown quartet"),
+        "intents": ("list", "flow/schema owner", "yes", "missing -> unknown quartet"),
+        "acceptances": ("list", "flow/schema owner", "yes", "missing -> unknown quartet"),
+        "source": ("dict", "flow/schema owner", "no", "adapter reference only"),
+        "unknown": ("list", "flow/schema owner", "conditional", "quartet preserved"),
+    },
+    UI_PREVIEW: {
+        "reference": ("dict", "prototype owner", "yes", "missing -> unknown quartet"),
+        "frames": ("list", "prototype owner", "yes", "missing -> unknown quartet"),
+        "components": ("list", "prototype owner", "yes", "missing -> unknown quartet"),
+        "human_approval": ("dict", "prototype owner", "conditional", "human gate"),
+        "unknown": ("list", "prototype owner", "conditional", "quartet preserved"),
+    },
+    UI_REVIEW: {
+        "target": ("dict", "review owner", "yes", "missing -> unknown quartet"),
+        "tasks": ("dict", "review owner", "yes", "missing -> unknown quartet"),
+        "fingerprint": ("dict", "review owner", "yes", "missing -> QUARANTINED"),
+        "findings": ("list", "review owner", "yes", "missing -> unknown quartet"),
+        "human_signature": ("dict", "review owner", "conditional", "human gate"),
+        "unknown": ("list", "review owner", "conditional", "quartet preserved"),
+    },
+    UI_BREAK_CELL: {
+        "cells": ("list", "verification owner", "yes", "missing -> BLOCKED (no matrix)"),
+        "viewports": ("list", "verification owner", "yes", "missing -> BLOCKED"),
+        "unknown": ("list", "verification owner", "conditional", "quartet preserved"),
+    },
 }
 
 #: Which fields each stage is responsible for producing. A stage validates the
@@ -93,6 +127,13 @@ STAGE_FIELDS = {
         DESIGN,
         ("tokens", "typography", "color", "component_principles", "tradeoffs"),
     ),
+    "flow": (
+        UI_FLOW,
+        ("screens", "components", "states", "actions", "intents", "acceptances"),
+    ),
+    "prototype": (UI_PREVIEW, ("reference", "frames")),
+    "visual_review": (UI_REVIEW, ("target", "tasks", "findings")),
+    "break": (UI_BREAK_CELL, ("cells",)),
 }
 
 #: Why a gap exists, in the words the human will read back. Kept next to the
@@ -109,6 +150,18 @@ GAP_REASONS = {
     "color": "未产出色板",
     "component_principles": "未产出组件原则",
     "tradeoffs": "未产出取舍说明",
+    "screens": "未声明 screen",
+    "components": "未声明组件清单",
+    "states": "未声明状态",
+    "actions": "未声明动作",
+    "intents": "未声明意图",
+    "acceptances": "未声明验收",
+    "reference": "未声明所引用的已提交 revision",
+    "frames": "未声明 preview 帧",
+    "target": "未声明审阅对象",
+    "tasks": "未声明用户任务与风险等级",
+    "findings": "未声明审阅发现",
+    "fingerprint": "环境 fingerprint 缺失或无法归因",
 }
 
 PY_TYPES = {"list": list, "str": str, "dict": dict}

@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-FLOW-02",
+  "stage": "flow",
+  "description": "重复 state id（双 owner / 歧义） → REJECTED + 零写入",
+  "request": {
+    "input_revision": "rev-flow-02",
+    "candidate": {
+      "screens": [{"id": "scr-login"}],
+      "components": [{"id": "c-1"}],
+      "states": [{"id": "s-dup"}, {"id": "s-dup"}],
+      "actions": [{"id": "a-1", "from_state": "s-dup", "to_state": "s-dup", "intent": "i-1"}],
+      "intents": [{"id": "i-1"}],
+      "acceptances": [{"id": "acc-1"}]
+    }
+  }
+}

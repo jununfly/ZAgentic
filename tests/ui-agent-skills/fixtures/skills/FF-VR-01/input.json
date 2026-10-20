@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-VR-01",
+  "stage": "visual_review",
+  "description": "Human 签署 + fingerprint 可归因 + 发现齐全 → OK + 提交 review record",
+  "request": {
+    "input_revision": "rev-vr-01",
+    "candidate": {
+      "target": {"preview": "rev-proto-01"},
+      "tasks": {"task": "提交报销", "risk": "medium"},
+      "fingerprint": {"hash": "fp-a1b2c3", "env": "baseline"},
+      "findings": [{"code": "VR-1", "decision": "keep", "reason": "对齐规范"}],
+      "human_signature": {"name": "zj", "signed_at": "2026-10-20T00:00:00+00:00"},
+      "unknown": []
+    }
+  }
+}

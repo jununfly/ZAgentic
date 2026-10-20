@@ -1,0 +1,6 @@
+{
+  "status": "BLOCKED",
+  "writes": 0,
+  "artifact_present": false,
+  "rejected_fields": ["cells"]
+}

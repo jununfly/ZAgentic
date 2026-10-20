@@ -46,6 +46,18 @@ EXPECTED_FIXTURES = {
     "FF-DS-01": "design_system",
     "FF-DS-02": "design_system",
     "FF-DS-03": "design_system",
+    "FF-FLOW-01": "flow",
+    "FF-FLOW-02": "flow",
+    "FF-FLOW-03": "flow",
+    "FF-PROTO-01": "prototype",
+    "FF-PROTO-02": "prototype",
+    "FF-PROTO-03": "prototype",
+    "FF-VR-01": "visual_review",
+    "FF-VR-02": "visual_review",
+    "FF-VR-03": "visual_review",
+    "FF-BRK-01": "break",
+    "FF-BRK-02": "break",
+    "FF-BRK-03": "break",
 }
 
 REQUIRED_EXPECTATION_KEYS = ("status", "writes")

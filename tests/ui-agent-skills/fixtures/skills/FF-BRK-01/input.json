@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-BRK-01",
+  "stage": "break",
+  "description": "全矩阵 + 三档视口跑完 → OK + receipt 记录实测值",
+  "request": {
+    "input_revision": "rev-brk-01",
+    "candidate": {
+      "cells": [
+        {"cell": "overflow/form", "dimension": "overflow", "class": "form", "gate": "A", "status": "PASS", "oracle": ["pixel-calc"], "observed": {"checked": 6}},
+        {"cell": "focus/form", "dimension": "focus", "class": "form", "gate": "A", "status": "PASS", "oracle": ["interaction-sim"], "observed": {"checked": 6}}
+      ],
+      "viewports": ["390x844", "768x1024", "1440x900"],
+      "unknown": []
+    }
+  }
+}

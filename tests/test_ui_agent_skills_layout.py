@@ -55,6 +55,10 @@ IMPLEMENTED_SKILLS = {
     "zj-ui-discover",
     "zj-ui-direction",
     "zj-ui-design-system",
+    "zj-ui-flow",
+    "zj-ui-prototype",
+    "zj-ui-visual-review",
+    "zj-ui-break",
 }
 SKELETON_SKILLS = [skill for skill in EXPECTED_SKILLS if skill not in IMPLEMENTED_SKILLS]
 
@@ -260,7 +264,7 @@ class SkeletonIsNotClaimedAsWorking(unittest.TestCase):
                 frontmatter = frontmatter_of(skill)
                 self.assertIn("status: implemented", frontmatter)
                 body = read(UI_ROOT / skill / "SKILL.md")
-                self.assertIn("状态：已实现（1-6-2）", body)
+                self.assertIn("状态：已实现（1-6-", body)
                 self.assertIn("ui_stages.py", body)
                 self.assertNotIn("契约骨架", body)
 

@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-BRK-02",
+  "stage": "break",
+  "description": "1440 下 overflow → FAIL，receipt 记录实测值（不降级为 warning）",
+  "request": {
+    "input_revision": "rev-brk-02",
+    "candidate": {
+      "cells": [
+        {"cell": "overflow/form", "dimension": "overflow", "class": "form", "gate": "A", "status": "FAIL", "oracle": ["pixel-calc"], "observed": {"overflow_px": 12, "checked": 6}},
+        {"cell": "focus/form", "dimension": "focus", "class": "form", "gate": "A", "status": "PASS", "oracle": ["interaction-sim"], "observed": {"checked": 6}}
+      ],
+      "viewports": ["390x844", "768x1024", "1440x900"],
+      "unknown": []
+    }
+  }
+}

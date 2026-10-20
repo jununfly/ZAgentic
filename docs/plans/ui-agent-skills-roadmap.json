@@ -1058,7 +1058,7 @@
       "id": "1-6-3",
       "uid": "01a15426b935-be3abf76ce",
       "label": "实现 zj-ui-flow、zj-ui-prototype、zj-ui-visual-review、zj-ui-break",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-6",
       "children": [],
@@ -1067,7 +1067,8 @@
       "layer": "plan",
       "exit_criteria": [
         "flow/prototype/visual-review/break 四个 skill 具备契约、实现和失败 fixture"
-      ]
+      ],
+      "rounds": 1
     },
     "1-6-4": {
       "id": "1-6-4",
@@ -1400,7 +1401,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 17:03:55",
+    "updated": "2026-10-20 17:42:15",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-PROTO-03",
+  "stage": "prototype",
+  "description": "远程 adapter 不可用且未声明本地 fallback → 不得伪造成功，HUMAN_REVIEW_REQUIRED + 零写入",
+  "request": {
+    "input_revision": "rev-proto-03",
+    "remote_available": false,
+    "allow_local_fallback": false,
+    "candidate": {
+      "reference": {"revision": "rev-flow-01"},
+      "frames": [{"id": "f-1"}],
+      "components": ["Button"],
+      "human_approval": {"name": "zj", "signed_at": "2026-10-20T00:00:00+00:00"}
+    }
+  }
+}
