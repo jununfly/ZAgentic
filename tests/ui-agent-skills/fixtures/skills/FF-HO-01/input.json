@@ -1,0 +1,19 @@
+{
+  "fixture_id": "FF-HO-01",
+  "stage": "handoff",
+  "description": "完整 handoff：六项齐全 + receipt 已 PASS → OK + 提交 handoff",
+  "request": {
+    "input_revision": "rev-ho-01",
+    "receipt": {"status": "OK", "artifact": {"aggregate_status": "OK"}},
+    "candidate": {
+      "change_summary": "为报销流程新增移动端预览与 a11y 修复",
+      "run_commands": ["npm run dev", "pytest tests/ui-agent-skills"],
+      "risks": ["窄屏 overflow 回归"],
+      "known_limits": ["Storybook adapter 仅本地可用"],
+      "fallback": "回退至 S6 revision rev-proto-01，预览切片可从 UI-PREVIEW.md 重放",
+      "owner": "zj",
+      "artifacts_revisions": ["UI-BRIEF.md@sha1", "UI-DESIGN.md@sha2", "VERIFICATION-RECEIPT.md@sha3"],
+      "commit_sha": "abc123def456"
+    }
+  }
+}

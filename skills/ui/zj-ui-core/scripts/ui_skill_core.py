@@ -63,6 +63,8 @@ UI_FLOW = "UI-FLOW.md"
 UI_PREVIEW = "UI-PREVIEW.md"
 UI_REVIEW = "UI-REVIEW.md"
 UI_BREAK_CELL = "UI-BREAK-CELL.md"
+VERIFICATION_RECEIPT = "VERIFICATION-RECEIPT.md"
+HANDOFF = "UI-HANDOFF.md"
 
 # field -> (python type name, owner, required, unknown policy)
 SCHEMAS = {
@@ -114,6 +116,23 @@ SCHEMAS = {
         "viewports": ("list", "verification owner", "yes", "missing -> BLOCKED"),
         "unknown": ("list", "verification owner", "conditional", "quartet preserved"),
     },
+    VERIFICATION_RECEIPT: {
+        "checks": ("list", "verification owner", "yes", "missing -> BLOCKED (no matrix)"),
+        "fingerprint": ("dict", "verification owner", "yes", "missing -> QUARANTINED"),
+        "checked": ("int", "verification owner", "no", "checked==0 -> HUMAN_REVIEW_REQUIRED"),
+        "unknown": ("list", "verification owner", "conditional", "quartet preserved"),
+    },
+    HANDOFF: {
+        "change_summary": ("str", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "run_commands": ("list", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "risks": ("list", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "known_limits": ("list", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "fallback": ("str", "handoff owner", "yes", "missing -> WAIT_HUMAN (no exit path)"),
+        "owner": ("str", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "artifacts_revisions": ("list", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "commit_sha": ("str", "handoff owner", "yes", "missing -> WAIT_HUMAN"),
+        "unknown": ("list", "handoff owner", "conditional", "quartet preserved"),
+    },
 }
 
 #: Which fields each stage is responsible for producing. A stage validates the
@@ -134,6 +153,20 @@ STAGE_FIELDS = {
     "prototype": (UI_PREVIEW, ("reference", "frames")),
     "visual_review": (UI_REVIEW, ("target", "tasks", "findings")),
     "break": (UI_BREAK_CELL, ("cells",)),
+    "verify": (VERIFICATION_RECEIPT, ("checks", "fingerprint")),
+    "handoff": (
+        HANDOFF,
+        (
+            "change_summary",
+            "run_commands",
+            "risks",
+            "known_limits",
+            "fallback",
+            "owner",
+            "artifacts_revisions",
+            "commit_sha",
+        ),
+    ),
 }
 
 #: Why a gap exists, in the words the human will read back. Kept next to the
@@ -162,9 +195,18 @@ GAP_REASONS = {
     "tasks": "未声明用户任务与风险等级",
     "findings": "未声明审阅发现",
     "fingerprint": "环境 fingerprint 缺失或无法归因",
+    "checks": "未提供验证单元（缺 matrix）",
+    "change_summary": "未提供变更摘要",
+    "run_commands": "未提供可复现运行命令",
+    "risks": "未声明风险",
+    "known_limits": "未声明已知限制",
+    "fallback": "未声明 fallback（无退路不叫交接）",
+    "owner": "未指定责任人",
+    "artifacts_revisions": "未附 canonical artifact revision",
+    "commit_sha": "未附 commit sha",
 }
 
-PY_TYPES = {"list": list, "str": str, "dict": dict}
+PY_TYPES = {"list": list, "str": str, "dict": dict, "int": int}
 
 UNKNOWN_KEYS = ("path", "raw", "reason", "source")
 

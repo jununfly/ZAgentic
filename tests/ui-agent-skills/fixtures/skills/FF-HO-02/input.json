@@ -1,0 +1,18 @@
+{
+  "fixture_id": "FF-HO-02",
+  "stage": "handoff",
+  "description": "缺 fallback → handoff incomplete，逐项列缺口，不标记完成",
+  "request": {
+    "input_revision": "rev-ho-02",
+    "receipt": {"status": "OK", "artifact": {"aggregate_status": "OK"}},
+    "candidate": {
+      "change_summary": "为报销流程新增移动端预览",
+      "run_commands": ["npm run dev"],
+      "risks": ["窄屏 overflow 回归"],
+      "known_limits": ["Storybook adapter 仅本地可用"],
+      "owner": "zj",
+      "artifacts_revisions": ["UI-BRIEF.md@sha1"],
+      "commit_sha": "abc123def456"
+    }
+  }
+}

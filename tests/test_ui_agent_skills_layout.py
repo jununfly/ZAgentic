@@ -59,6 +59,8 @@ IMPLEMENTED_SKILLS = {
     "zj-ui-prototype",
     "zj-ui-visual-review",
     "zj-ui-break",
+    "zj-ui-verify",
+    "zj-ui-handoff",
 }
 SKELETON_SKILLS = [skill for skill in EXPECTED_SKILLS if skill not in IMPLEMENTED_SKILLS]
 
