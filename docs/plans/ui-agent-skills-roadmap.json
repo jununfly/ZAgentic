@@ -1260,12 +1260,22 @@
       "mode": "explore",
       "parent": "1-7",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-7-5 explore 预算上限设多少？",
+          "answer": "max-children=5 / max-rounds=2~3（本节点先设 2，若需合法重开再升 3）；与父 1-7 的 max_rounds=2 及兄弟 1-7-4 的 max_children=5 对齐",
+          "note": "zj 选推荐值 5/2~3（22:4x）"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "adapter 删除/断网/服务失败后 canonical artifact 和本地 preview/verify 仍可工作"
-      ]
+      ],
+      "budget": {
+        "max_children": 5,
+        "max_rounds": 2
+      }
     },
     "1-8-1": {
       "id": "1-8-1",
@@ -1582,7 +1592,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 21:48:46",
+    "updated": "2026-10-20 22:49:27",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

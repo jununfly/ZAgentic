@@ -1,0 +1,137 @@
+{
+  "storybook-local-verify": {
+    "id": "storybook-local-verify",
+    "role": "active-verify",
+    "version": "10.6.1",
+    "source_commit": "0000000000000000000000000000000000000000",
+    "license": "MIT",
+    "dependencies": {
+      "sbom_ref": "bom/storybook-10.6.1.cyclonedx.json",
+      "lockfile_ref": "package-lock.json",
+      "direct": ["storybook@10.6.1", "@storybook/react@10.6.1", "@storybook/addon-a11y@10.6.1", "@storybook/test@10.6.1"]
+    },
+    "provides": ["stories", "a11y", "viewport", "interaction", "docs"],
+    "requires_canonical": [
+      {"artifact": "ui-flow/v1", "schema_version": "1.0.0", "fields": ["screen", "component", "state", "action", "intent", "acceptance"]}
+    ],
+    "mapping": [
+      {"canonical_field": "screen.id", "adapter_field": "story.id", "rule": "direct", "unknown": "error"},
+      {"canonical_field": "component", "adapter_field": "story.component", "rule": "direct", "unknown": "error"},
+      {"canonical_field": "state", "adapter_field": "story.args", "rule": "transform", "unknown": "error"},
+      {"canonical_field": "action", "adapter_field": "story.play", "rule": "transform", "unknown": "error"},
+      {"canonical_field": "acceptance", "adapter_field": "story.a11yChecks", "rule": "merge", "unknown": "error"}
+    ],
+    "owner": "ui-agent-skills-team",
+    "reviewer": "zj",
+    "lifecycle": "active",
+    "fallback": {
+      "on_failure": "local-verify",
+      "on_network_loss": "static-preview",
+      "on_remote_failure": "static-preview",
+      "static_preview_ref": "preview/ui-flow.static.html",
+      "local_verify_ref": "scripts/verify-local.sh"
+    },
+    "removal_test": {
+      "invariants": [
+        {"id": "R1", "description": "canonical artifact 仍可从本地 store 解析", "verify": "ui-flow/v1 解析测试不依赖本 adapter"},
+        {"id": "R2", "description": "静态 preview 仍可构建/服务", "verify": "preview/ui-flow.static.html 构建命令退出码 0"},
+        {"id": "R3", "description": "本地验证(a11y/interaction baseline)不依赖被删 adapter 仍可跑", "verify": "scripts/verify-local.sh 独立可跑"},
+        {"id": "R4", "description": "活跃 manifest/plan 无指向被删 adapter 的悬空引用", "verify": "grep registry 无 storybook-local-verify 引用"},
+        {"id": "R5", "description": "resolver 仍能解析体验或显式报 degraded", "verify": "resolver 解析返回 success 或 degraded，不崩溃"}
+      ]
+    },
+    "reeval_date": "2027-01-20",
+    "risk": [
+      "Storybook 大版本升级须重跑 capability-fit 与 mapping 校验",
+      "a11y addon 缺失时降级为 degraded，须标记缺口"
+    ]
+  },
+  "json-render-core": {
+    "id": "json-render-core",
+    "role": "opt-in-projection",
+    "version": "0.8.0",
+    "source_commit": "0a40430",
+    "license": "MIT",
+    "dependencies": {
+      "sbom_ref": "bom/json-render-0.8.0.cyclonedx.json",
+      "lockfile_ref": "package-lock.json",
+      "direct": ["@json-render/core@0.8.0"]
+    },
+    "provides": ["canonical-projection"],
+    "requires_canonical": [
+      {"artifact": "ui-flow/v1", "schema_version": "1.0.0", "fields": ["screen", "component", "state", "action", "intent", "acceptance"]}
+    ],
+    "mapping": [
+      {"canonical_field": "screen", "adapter_field": "element", "rule": "transform", "unknown": "error"},
+      {"canonical_field": "component", "adapter_field": "element.children", "rule": "direct", "unknown": "error"},
+      {"canonical_field": "action", "adapter_field": "element.event", "rule": "transform", "unknown": "error"}
+    ],
+    "owner": "ui-agent-skills-team",
+    "reviewer": "zj",
+    "lifecycle": "active",
+    "fallback": {
+      "on_failure": "static-preview",
+      "on_network_loss": "static-preview",
+      "on_remote_failure": "static-preview",
+      "static_preview_ref": "preview/ui-flow.static.html"
+    },
+    "removal_test": {
+      "invariants": [
+        {"id": "R1", "description": "canonical artifact 仍可从本地 store 解析", "verify": "ui-flow/v1 解析测试不依赖本 adapter"},
+        {"id": "R2", "description": "静态 preview 仍可构建/服务", "verify": "preview/ui-flow.static.html 构建命令退出码 0"},
+        {"id": "R3", "description": "本地验证(a11y/interaction baseline)不依赖被删 adapter 仍可跑", "verify": "scripts/verify-local.sh 独立可跑"},
+        {"id": "R4", "description": "活跃 manifest/plan 无指向被删 adapter 的悬空引用", "verify": "grep registry 无 json-render-core 引用"},
+        {"id": "R5", "description": "resolver 仍能解析体验或显式报 degraded", "verify": "resolver 解析返回 success 或 degraded，不崩溃"}
+      ]
+    },
+    "reeval_date": "2027-01-20",
+    "risk": [
+      "opt-in 投影；source_commit 前缀 0a40430 待 1-7-5 钉死完整 40 位 hash",
+      "无运行时投影引擎，R3 本地验证回退到 Storybook local-verify"
+    ]
+  },
+  "a2ui": {
+    "id": "a2ui",
+    "role": "opt-in-protocol",
+    "version": "0.8.0",
+    "source_commit": "0000000000000000000000000000000000000000",
+    "license": "MIT",
+    "dependencies": {
+      "sbom_ref": "bom/a2ui-0.8.cyclonedx.json",
+      "lockfile_ref": "package-lock.json",
+      "direct": ["a2ui@0.8.0"]
+    },
+    "provides": ["protocol-bridge"],
+    "requires_canonical": [
+      {"artifact": "ui-flow/v1", "schema_version": "1.0.0", "fields": ["screen", "component", "state", "action", "intent", "acceptance"]}
+    ],
+    "mapping": [
+      {"canonical_field": "screen", "adapter_field": "surface", "rule": "transform", "unknown": "error"},
+      {"canonical_field": "component", "adapter_field": "surface.component", "rule": "direct", "unknown": "error"},
+      {"canonical_field": "action", "adapter_field": "surface.action", "rule": "transform", "unknown": "error"}
+    ],
+    "owner": "ui-agent-skills-team",
+    "reviewer": "zj",
+    "lifecycle": "active",
+    "fallback": {
+      "on_failure": "static-preview",
+      "on_network_loss": "static-preview",
+      "on_remote_failure": "static-preview",
+      "static_preview_ref": "preview/ui-flow.static.html"
+    },
+    "removal_test": {
+      "invariants": [
+        {"id": "R1", "description": "canonical artifact 仍可从本地 store 解析", "verify": "ui-flow/v1 解析测试不依赖本 adapter"},
+        {"id": "R2", "description": "静态 preview 仍可构建/服务", "verify": "preview/ui-flow.static.html 构建命令退出码 0"},
+        {"id": "R3", "description": "本地验证(a11y/interaction baseline)不依赖被删 adapter 仍可跑", "verify": "scripts/verify-local.sh 独立可跑"},
+        {"id": "R4", "description": "活跃 manifest/plan 无指向被删 adapter 的悬空引用", "verify": "grep registry 无 a2ui 引用"},
+        {"id": "R5", "description": "resolver 仍能解析体验或显式报 degraded", "verify": "resolver 解析返回 success 或 degraded，不崩溃"}
+      ]
+    },
+    "reeval_date": "2027-01-20",
+    "risk": [
+      "公开协议（a2ui.org），非运行时；source_commit 待 1-7-5 钉死",
+      "无运行时投影引擎，R3 本地验证回退到 Storybook local-verify"
+    ]
+  }
+}
