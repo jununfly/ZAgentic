@@ -1074,16 +1074,33 @@
       "id": "1-6-4",
       "uid": "01a15426b974-fcad43876a",
       "label": "实现 zj-ui-verify、zj-ui-handoff 及其 receipt/handoff 产物",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-6",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "verify/handoff 的实现落点？",
+          "answer": "自包含实现于 skills/ui/zj-ui-core/scripts/ui_stages.py（run_verify/run_handoff），复用 ui_skill_core 原语；不依赖 research/ui-agent-skills/verification_receipt.py，保持与 S1-S8 单一确定性实现一致。",
+          "note": ""
+        },
+        {
+          "q": "receipt 成功判据与 handoff 闸门如何对齐链内状态枚举？",
+          "answer": "receipt 成功沿用链内 OK 枚举（不以独立 PASS 字符串）；handoff 以入参 receipt.status == OK 作为唯一接手闸门（对应契约 status=PASS）。",
+          "note": ""
+        },
+        {
+          "q": "stale 基线与 baseline 冒充如何处理？",
+          "answer": "check.env_hash 与 fingerprint.hash 不一致 → STALE（HUMAN_REVIEW_REQUIRED，仍产出 receipt，旧基线只作 fallback）；check 标 evidence_new=false 却声称 PASS → 视为 baseline 冒充，BLOCKED 不生成成功 receipt。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "verify/handoff 具备 receipt/handoff 输出和不完整时的阻断条件"
-      ]
+      ],
+      "rounds": 1
     },
     "1-6-5": {
       "id": "1-6-5",
@@ -1401,7 +1418,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 17:42:15",
+    "updated": "2026-10-20 18:16:01",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
