@@ -131,7 +131,7 @@ matrix_key    = sha256( manifest_hash + env_hash
 | 真实 observation 证据（浏览器捕获） | ⏳ 待 adapter | 1-7-3 |
 | 契约维度断言（round_trip / migration / offline_recovery） | ⏳ 待 engine/投影 | 1-6 / 1-9 |
 | `browser_major` 真实值 | ⏳ 占位 PENDING@1-7-3 | 1-7-3 |
-| 完整 verification receipt 格式 | ⏳ 待定稿 | 1-5-4 |
+| 完整 verification receipt 格式 | ✅ 已定稿（R-RCP-1） | 1-5-4 |
 
 ---
 
@@ -144,5 +144,7 @@ matrix_key    = sha256( manifest_hash + env_hash
   契约见 `ui-agent-skills-hard-gates.md`。
 - **向下（1-5-4）**：本节点 receipt 为结构占位；receipt 完整字段（claim/check/risk/fixture/env/
   oracle/threshold/command/commit/artifact/observed/status/reviewer/expiry）由 1-5-4 定稿，
-  须携带 `matrix_key` 与每个 cell 的 `observed/status`，保证可归因、可重算。
+  须携带 `matrix_key` 与每个 cell 的 `observed/status`，保证可归因、可重算。→ 已于 1-5-4 定稿：
+  `ui-agent-skills-verification-receipt.md` §1（schema v1）+ `verification_receipt.py`
+  （`build_receipt` 把本文件的 lane receipt 升格为完整收据，`observed.checked` 由本节点提供）。
 - **向下（1-9）**：每次 paired run 须比对 `env_hash`，失配则 run 无效（invalid-run 规则，scope-manifest §4）。

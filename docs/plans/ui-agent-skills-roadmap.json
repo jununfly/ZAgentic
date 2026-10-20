@@ -172,7 +172,7 @@
       "id": "1-5",
       "uid": "01a154254d60-ad8d724137",
       "label": "Deterministic verification、fixture 与 receipt",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -937,16 +937,43 @@
       "id": "1-5-4",
       "uid": "01a15426b872-3480a90ef3",
       "label": "定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-5",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "verification receipt 的形态与字段集如何定？",
+          "answer": "R-RCP-1 收据 schema v1（ui-agent-skills/verification-receipt/v1），14 段固定：claim/checks/risks/fixtures/env/oracles/thresholds/command/commit/artifacts/observed/status/reviewer/expiry，另加 schema/receipt_id/run_id/lane/issued_at 身份段。checks 每项对应一个 cell（dimension×class），携带该 cell 的 thresholds/oracles 快照与 observed.findings，使收据可离线复核、无需重跑即可看出判据。",
+          "note": ""
+        },
+        {
+          "q": "聚合状态如何分层、分母怎么算才不出现假绿？",
+          "answer": "三层聚合：finding→cell（dimension×class）→lane→receipt（多 lane 合并取最坏）。status 优先级 FAIL > HUMAN_REVIEW_REQUIRED > QUARANTINED > WARNING > PASS；PASS 的判据是 passed_cells == planned_cells 且 quarantined==0 且每个 cell checked>0，而不是通过率达标——通过率只作报告字段（attributable 分母 = PASS+FAIL+WARNING+HUMAN_REVIEW_REQUIRED，QUARANTINED/NOT_EXECUTED/DEGRADED_SKIP 不进分母也不许变成 PASS）。counts 必须与 checks 逐项可核对，算术不自洽即判 RCP-A-04。",
+          "note": ""
+        },
+        {
+          "q": "stale 与 revalidation_required 如何判定、影响面怎么收敛？",
+          "answer": "收据冻结 env_hash/manifest_hash/matrix_key/config_hash + 每 cell 的 thresholds/oracles 快照 + 每 fixture 的稳定字段 sha256。重算当前事实源后：STALE=可精确收敛到部分 cell 的漂移（fixture 内容/class 变化→该 class 的 cell；阈值→该维度 cell）；REVALIDATION_REQUIRED=无法收敛或代价等同全量（env 轴变化、维度集合/cell 门禁变化、schema 升版、收据过期、事实源不可读）。过期用 TTL 14 天（expires_at 可显式覆盖），过期即 REVALIDATION_REQUIRED——时间失效不因 hash 未变而豁免。判定实现为纯函数，输出 changed[] + revalidate{cells, scope, reason_codes[]}，不重跑不写盘。",
+          "note": ""
+        },
+        {
+          "q": "无法归因 quarantine 怎么判定、解除与记账？",
+          "answer": "quarantine 记录必须能映射到 fixture×dimension×viewport 并带 evidence[] 与 release_condition；任一缺失即 unattributable（RCP-Q-01/Q-02）。两类都判 QUARANTINED，但 attribution=attributed|unattributable 分开计数：前者可定位待修，后者只能补采集重跑，不得转成 FAIL（把不知道伪装成已验证失败）。QUARANTINED 不进通过率分母、不得写成 PASS/FAIL（RCP-Q-03），解除必须新 run_id + 复核人签署（RCP-Q-04），收据本身 append-only 不改写。",
+          "note": ""
+        },
+        {
+          "q": "PASS 的签发条件与收据落盘约定？",
+          "answer": "PASS 额外要求：commit 为具名 40 位 sha（UNPINNED/工作树脏则降级 HUMAN_REVIEW_REQUIRED，RCP-A-08）+ reviewer.name/signed_at 签署（RCP-A-07，缺签不签 PASS）。收据按 <run_id>.json 落 docs/plans/receipts/<lane>/（1-5-2 既有 print-only 约定不变，本节点不新增写盘副作用），文件名含 lane 与 run_id，append-only；同一 receipt_id 内容变化即 RCP-V-07。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "receipt 聚合、过期重评和无法归因 quarantine 状态可审计"
-      ]
+      ],
+      "rounds": 1
     },
     "1-6-1": {
       "id": "1-6-1",
@@ -1324,7 +1351,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 15:51:04",
+    "updated": "2026-10-20 16:08:46",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

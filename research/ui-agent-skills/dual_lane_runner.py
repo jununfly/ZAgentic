@@ -326,7 +326,7 @@ def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
     for c in cells:
         dim, cls = c["dimension"], c["class"]
         detail = {"gate": dim, "fixtures_seen": 0, "bundles": 0,
-                  "missing_fixtures": [], "findings": []}
+                  "missing_fixtures": [], "findings": [], "checked": 0}
         reason = ""
         if lane == "degraded":
             status = "DEGRADED_SKIP"      # 离线恢复路径需 1-6 engine；adapter 相关一律跳过
@@ -358,6 +358,8 @@ def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
                     gate_results.append(hg.missing_fixtures_result(dim, missing, cls))
                 detail["missing_fixtures"] = missing
                 detail["findings"] = [f for r in gate_results for f in r["findings"]]
+                # checked>0 是 1-5-4 收据判"非空转"的唯一凭据（RCP-A-05），必须在 runner 就留下
+                detail["checked"] = sum(int(r.get("checked") or 0) for r in gate_results)
                 status = hg.aggregate(gate_results)
                 if missing:
                     reason = "部分 fixture 缺 observation（%d/%d），证据不全不判 PASS" % (
