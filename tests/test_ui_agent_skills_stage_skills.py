@@ -58,6 +58,12 @@ EXPECTED_FIXTURES = {
     "FF-BRK-01": "break",
     "FF-BRK-02": "break",
     "FF-BRK-03": "break",
+    "FF-VER-01": "verify",
+    "FF-VER-02": "verify",
+    "FF-VER-03": "verify",
+    "FF-HO-01": "handoff",
+    "FF-HO-02": "handoff",
+    "FF-HO-03": "handoff",
 }
 
 REQUIRED_EXPECTATION_KEYS = ("status", "writes")

@@ -1,0 +1,19 @@
+{
+  "fixture_id": "FF-HO-03",
+  "stage": "handoff",
+  "description": "adapter 已删除 → 仍能产出完整 handoff，证明可脱离 adapter 维护",
+  "request": {
+    "input_revision": "rev-ho-03",
+    "receipt": {"status": "OK", "artifact": {"aggregate_status": "OK"}},
+    "candidate": {
+      "change_summary": "修复窄屏 overflow 并补充 fallback 说明",
+      "run_commands": ["npm run dev"],
+      "risks": ["外部组件库升级风险"],
+      "known_limits": ["adapter 已删除，回退纯本地"],
+      "fallback": "回退至 S6 revision，预览由 UI-PREVIEW.md 重放，不依赖外部服务",
+      "owner": "zj",
+      "artifacts_revisions": ["UI-DESIGN.md@sha2", "VERIFICATION-RECEIPT.md@sha3"],
+      "commit_sha": "feedface1234"
+    }
+  }
+}

@@ -745,6 +745,211 @@ def run_break(request: dict, store: dict | None = None) -> dict:
     return core.result("zj-ui-break", status, writes=committed["writes"], reason=reason, artifact=artifact)
 
 
+# --------------------------------------------------------------------------- #
+# S9 · zj-ui-verify
+# --------------------------------------------------------------------------- #
+
+VERIFY_CHAIN_FIELDS = ("claim", "threshold", "command", "commit", "fixture_hash", "env_hash", "artifact", "status")
+
+
+def _verify_content(candidate, fingerprint, checks, aggregate, stale) -> dict:
+    """The receipt keeps the full chain so it can be audited offline: who ran it,
+    what ran, which environment. Dropping any of these is what let a lie become a
+    checkbox."""
+    return {
+        "checks": checks,
+        "fingerprint": fingerprint,
+        "checked": candidate.get("checked", len(checks)),
+        "aggregate_status": aggregate,
+        "stale": stale,
+        "unknown": list(candidate.get("unknown") or []),
+    }
+
+
+def run_verify(request: dict, store: dict | None = None) -> dict:
+    store = {} if store is None else store
+    candidate = request.get("candidate") or {}
+    input_revision = request.get("input_revision") or ""
+
+    # deny-first at the receipt surface: an unregistered top-level field means the
+    # contract drifted and the sentence "unknown stays unknown" must not be quietly
+    # dropped.
+    problems = core.validate_document(core.VERIFICATION_RECEIPT, candidate)
+    if problems:
+        return core.result(
+            "zj-ui-verify", core.REJECTED,
+            reason="deny-first：receipt 含未注册字段，未生成 receipt", rejected=problems,
+        )
+
+    # 缺基础链路字段（checks/fingerprint）→ 不构成 receipt，零写入，下游冻结。
+    gaps = core.stage_gaps("verify", candidate)
+    if gaps:
+        unknown = core.gaps_as_unknown(gaps, candidate, input_revision)
+        return core.result(
+            "zj-ui-verify", core.BLOCKED, writes=0,
+            reason="receipt 缺基础链路字段，不生成成功 receipt，下游冻结", unknown=unknown,
+        )
+
+    # fingerprint 缺失或无法归因 → 隔离，不产出成功结论（与 S7 一致）。
+    fingerprint = candidate.get("fingerprint") or {}
+    if not (isinstance(fingerprint, dict) and core.is_attributable(fingerprint.get("hash"))):
+        return core.result(
+            "zj-ui-verify", core.QUARANTINED, writes=0,
+            reason="fingerprint 缺失或无法归因，隔离，不生成成功 receipt",
+            quarantined=["fingerprint"],
+        )
+
+    checks = candidate.get("checks") or []
+    # 空证据不放行：checked==0 一律 HUMAN_REVIEW_REQUIRED，不判 PASS（1-5-3 框架兜底）。
+    if not checks:
+        return core.result(
+            "zj-ui-verify", core.HUMAN_REVIEW_REQUIRED, writes=0,
+            reason="checked==0：空证据不放行，不判 PASS", questions=[],
+        )
+
+    baseline_only = False
+    stale = False
+    for index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            return core.result(
+                "zj-ui-verify", core.REJECTED, writes=0,
+                reason=f"checks[{index}] 不是对象",
+                rejected=[core.reject(f"checks[{index}]", "check must be an object")],
+            )
+        missing = [f for f in VERIFY_CHAIN_FIELDS if not core.is_filled(check.get(f))]
+        if missing:
+            # 缺链路字段 → 不生成成功 receipt（不是"部分通过"）。
+            return core.result(
+                "zj-ui-verify", core.BLOCKED, writes=0,
+                reason=f"check[{index}] 缺链路字段 {missing}，不生成成功 receipt",
+                rejected=[core.reject(f"checks[{index}].{f}", "receipt 链路字段缺失") for f in missing],
+            )
+        # baseline 冒充新通过：baseline-only 却声称 PASS。
+        if check.get("status") == "PASS" and not check.get("evidence_new", True):
+            baseline_only = True
+        # stale 基线：check 的环境指纹与当前 fingerprint 不一致。
+        if core.is_filled(check.get("env_hash")) and check["env_hash"] != fingerprint.get("hash"):
+            stale = True
+
+    if baseline_only:
+        return core.result(
+            "zj-ui-verify", core.BLOCKED, writes=0,
+            reason="用 baseline 冒充新通过，不生成成功 receipt",
+            rejected=[core.reject("checks", "baseline-only check cannot claim PASS", "verification owner")],
+        )
+
+    # stale：旧证据作废为 revalidation_required，仍产出 receipt 但状态非 PASS。
+    if stale:
+        content = _verify_content(candidate, fingerprint, checks, core.HUMAN_REVIEW_REQUIRED, stale=True)
+        artifact = _artifact(core.VERIFICATION_RECEIPT, "receipt_schema_version", "1.0.0", input_revision, content)
+        committed = core.commit(
+            store, core.VERIFICATION_RECEIPT, artifact,
+            request.get("idempotency_key") or f"{core.VERIFICATION_RECEIPT}:{input_revision}",
+        )
+        if committed["conflict"]:
+            return core.result(
+                "zj-ui-verify", core.REJECTED, writes=0,
+                reason="幂等键重放但内容不同，拒绝覆盖",
+                rejected=[core.reject("idempotency_key", committed["reason"])],
+            )
+        return core.result(
+            "zj-ui-verify", core.HUMAN_REVIEW_REQUIRED, writes=committed["writes"],
+            reason="stale 基线，旧证据作废为 revalidation_required，下游冻结", artifact=artifact,
+        )
+
+    # 正常：聚合各 check 状态；任一 FAIL → BLOCKED（不生成成功 receipt），全 PASS → OK。
+    statuses = [str(check.get("status", "")) for check in checks]
+    if "FAIL" in statuses:
+        aggregate = core.BLOCKED
+    elif all(status == "PASS" for status in statuses):
+        aggregate = core.OK
+    else:
+        aggregate = core.HUMAN_REVIEW_REQUIRED
+    content = _verify_content(candidate, fingerprint, checks, aggregate, stale=False)
+    artifact = _artifact(core.VERIFICATION_RECEIPT, "receipt_schema_version", "1.0.0", input_revision, content)
+    committed = core.commit(
+        store, core.VERIFICATION_RECEIPT, artifact,
+        request.get("idempotency_key") or f"{core.VERIFICATION_RECEIPT}:{input_revision}",
+    )
+    if committed["conflict"]:
+        return core.result(
+            "zj-ui-verify", core.REJECTED, writes=0,
+            reason="幂等键重放但内容不同，拒绝覆盖",
+            rejected=[core.reject("idempotency_key", committed["reason"])],
+        )
+    return core.result(
+        "zj-ui-verify", aggregate, writes=committed["writes"],
+        reason=("receipt 链路完整、非 baseline 冒充、非 stale → 成功 receipt" if aggregate == core.OK
+                else "receipt 聚合出非 PASS 状态，不生成成功 receipt"),
+        artifact=artifact,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# S10 · zj-ui-handoff
+# --------------------------------------------------------------------------- #
+
+def run_handoff(request: dict, store: dict | None = None) -> dict:
+    store = {} if store is None else store
+    candidate = request.get("candidate") or {}
+    receipt = request.get("receipt") or {}
+    input_revision = request.get("input_revision") or ""
+
+    problems = core.validate_document(core.HANDOFF, candidate)
+    if problems:
+        return core.result(
+            "zj-ui-handoff", core.REJECTED,
+            reason="deny-first：handoff 含未注册字段，未生成 handoff", rejected=problems,
+        )
+
+    # 缺任一必填 → handoff incomplete，逐项列缺口，不标记完成（不自行补齐）。
+    gaps = core.stage_gaps("handoff", candidate)
+    if gaps:
+        unknown = core.gaps_as_unknown(gaps, candidate, input_revision)
+        return core.result(
+            "zj-ui-handoff", core.HUMAN_REVIEW_REQUIRED, writes=0,
+            reason="handoff 不完整，逐项列缺口，不标记完成",
+            unknown=unknown,
+            questions=[f"{field}：{core.GAP_REASONS.get(field, field)}" for field in gaps],
+        )
+
+    # receipt 非 PASS → 不产出完整 handoff（可产出缺口清单）。
+    if (receipt or {}).get("status") != core.OK:
+        return core.result(
+            "zj-ui-handoff", core.HUMAN_REVIEW_REQUIRED, writes=0,
+            reason="receipt 非 PASS，不产出完整 handoff（可产出缺口清单）",
+            questions=["verification receipt 必须 status=OK 才能接手"],
+        )
+
+    content = {
+        "change_summary": candidate["change_summary"],
+        "run_commands": candidate["run_commands"],
+        "risks": candidate["risks"],
+        "known_limits": candidate["known_limits"],
+        "fallback": candidate["fallback"],
+        "owner": candidate["owner"],
+        "artifacts_revisions": candidate["artifacts_revisions"],
+        "commit_sha": candidate["commit_sha"],
+        "unknown": list(candidate.get("unknown") or []),
+    }
+    artifact = _artifact(core.HANDOFF, "handoff_schema_version", "1.0.0", input_revision, content)
+    committed = core.commit(
+        store, core.HANDOFF, artifact,
+        request.get("idempotency_key") or f"{core.HANDOFF}:{input_revision}",
+    )
+    if committed["conflict"]:
+        return core.result(
+            "zj-ui-handoff", core.REJECTED, writes=0,
+            reason="幂等键重放但内容不同，拒绝覆盖",
+            rejected=[core.reject("idempotency_key", committed["reason"])],
+        )
+    # adapter 不可用也走这条路径：handoff 不依赖任何外部链接，可脱离 adapter 维护。
+    return core.result(
+        "zj-ui-handoff", core.OK, writes=committed["writes"],
+        reason="六项齐全、receipt 已 PASS，handoff 原子提交（不依赖 adapter）", artifact=artifact,
+    )
+
+
 STAGES = {
     "brief": run_brief,
     "discover": run_discover,
@@ -754,4 +959,6 @@ STAGES = {
     "prototype": run_prototype,
     "visual_review": run_visual_review,
     "break": run_break,
+    "verify": run_verify,
+    "handoff": run_handoff,
 }

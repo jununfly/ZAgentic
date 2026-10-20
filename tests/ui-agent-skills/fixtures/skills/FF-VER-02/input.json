@@ -1,0 +1,15 @@
+{
+  "fixture_id": "FF-VER-02",
+  "stage": "verify",
+  "description": "a11y blocker：某 check status=FAIL → 不生成成功 receipt，下游冻结",
+  "request": {
+    "input_revision": "rev-ver-02",
+    "candidate": {
+      "checks": [
+        {"dimension": "dom_aria", "claim": "所有交互元素有可访问名", "threshold": "无违规", "command": "axe --tags wcag21a", "commit": "abc123", "fixture_hash": "fh-1", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "FAIL", "evidence_new": true}
+      ],
+      "fingerprint": {"hash": "fp-a1b2c3", "env": "baseline"},
+      "checked": 1
+    }
+  }
+}

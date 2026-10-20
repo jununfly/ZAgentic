@@ -1,0 +1,6 @@
+{
+  "status": "HUMAN_REVIEW_REQUIRED",
+  "writes": 0,
+  "artifact_present": false,
+  "unknown": [{"path": "fallback", "reason": "未声明 fallback（无退路不叫交接）"}]
+}

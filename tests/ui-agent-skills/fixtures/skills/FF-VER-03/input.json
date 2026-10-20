@@ -1,0 +1,15 @@
+{
+  "fixture_id": "FF-VER-03",
+  "stage": "verify",
+  "description": "fingerprint mismatch：check.env_hash 与 fingerprint.hash 不一致 → STALE（HUMAN_REVIEW_REQUIRED），旧基线只作 fallback",
+  "request": {
+    "input_revision": "rev-ver-03",
+    "candidate": {
+      "checks": [
+        {"dimension": "dom_aria", "claim": "所有交互元素有可访问名", "threshold": "无违规", "command": "axe", "commit": "abc123", "fixture_hash": "fh-1", "env_hash": "fp-OLD99", "artifact": "preview-03", "status": "PASS", "evidence_new": true}
+      ],
+      "fingerprint": {"hash": "fp-a1b2c3", "env": "baseline"},
+      "checked": 1
+    }
+  }
+}

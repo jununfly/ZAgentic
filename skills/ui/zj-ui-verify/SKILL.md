@@ -5,10 +5,10 @@ description: >-
   产出带完整链路字段的 verification receipt 并聚合状态；receipt 缺链路、用 baseline 冒充新通过、
   把 stale 基线当当前证据，都不生成成功 receipt。Use when 视觉复审与极限测试都过了，
   需要一次可归因、可重放的自动化验证结论。
-  当前为契约骨架（1-6-1），可执行实现未落地。
+  已实现于 1-6-4（run_verify，确定性实现见 ui_stages.py）。
 argument-hint: "<preview 路径、verification matrix 与 environment fingerprint>"
 metadata:
-  status: contract-skeleton
+  status: implemented
   implemented_in: 1-6-4
 source: zagentic
 ---
@@ -17,9 +17,10 @@ source: zagentic
 
 S9 · VERIFY · `write` owner of `verification receipt`（a11y / interaction / motion cell）
 
-> **状态：契约骨架（1-6-1）。** 本文件冻结 capability manifest、输入输出、禁止事项、停止条件
-> 与失败 fixture id；可执行实现归 1-6-4，fixture 运行归 1-6-5。实现落地前不要把本 skill
-> 当作可用能力。
+> **状态：已实现（1-6-4）。** capability manifest、输入输出、禁止事项、停止条件与失败
+> fixture id 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_verify`
+> （复用 `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
+> `tests/ui-agent-skills/fixtures/skills/FF-VER-*` 验收。
 
 ## Capability Manifest
 
