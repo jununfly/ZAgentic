@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zagentic.dev/schemas/adapter-manifest/v1.json",
+  "title": "AdapterBoundary Adapter Manifest",
+  "description": "AdapterBoundary v1 adapter manifest schema. 每个外部渲染/验证工具（Storybook、json-render、A2UI、M3E 等）须以本 schema 校验通过的 manifest 登记，方能进入 AdapterBoundary 的 active / opt-in 路径。",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "id",
+    "role",
+    "version",
+    "source_commit",
+    "license",
+    "dependencies",
+    "provides",
+    "requires_canonical",
+    "mapping",
+    "owner",
+    "reviewer",
+    "lifecycle",
+    "fallback",
+    "removal_test",
+    "reeval_date",
+    "risk"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,63}$",
+      "description": "稳定 adapter 标识（如 storybook-local-verify）。一旦发布不可改名，改名视为新 adapter。"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["active-verify", "opt-in-projection", "opt-in-protocol", "opt-in-input", "out-of-core"],
+      "description": "架构角色。active-verify=A 群本地验证面；opt-in-*=B 群投影/协议/输入兼容；out-of-core=不进入核心毕业路径（如 M3E，仅 PoC 后重评）。"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "被纳管外部项目的固定 semver（capability-fit G3 精神）。禁止 floating / latest。"
+    },
+    "source_commit": {
+      "type": "string",
+      "minLength": 7,
+      "description": "被纳管外部项目的精确 commit / tag，用于可复现构建。集成前必须钉死（见 capability-fit G3）。"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX 许可证标识（来自 capability-fit 证据账本）。out-of-core 或无明确许可者不得进入 active。"
+    },
+    "dependencies": {
+      "type": "object",
+      "required": ["sbom_ref", "lockfile_ref"],
+      "properties": {
+        "sbom_ref": {"type": "string", "description": "SBOM 文件引用（如 bom.json / cyclonedx），钉版本后扫描产出。"},
+        "lockfile_ref": {"type": "string", "description": "依赖锁文件引用（package-lock.json / Cargo.lock 等）。"},
+        "direct": {"type": "array", "items": {"type": "string"}, "description": "直接依赖清单（name@version）。"}
+      },
+      "additionalProperties": false
+    },
+    "provides": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "本 adapter 兑现的能力（如 a11y、viewport、interaction、docs、canonical-projection、protocol-bridge）。"
+    },
+    "requires_canonical": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["artifact", "schema_version"],
+        "properties": {
+          "artifact": {"type": "string", "description": "消费的 canonical artifact 类型（如 ui-flow/v1、UI-BRIEF）。"},
+          "schema_version": {"type": "string", "description": "所消费 canonical schema 的锁版本（schema lock 锚点之一）。"},
+          "fields": {"type": "array", "items": {"type": "string"}, "description": "实际消费的字段白名单；不在 canonical schema 内的字段一律非法。"}
+        },
+        "additionalProperties": false
+      },
+      "description": "adapter 消费的 canonical artifact 及其锁版本与字段白名单。"
+    },
+    "mapping": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["canonical_field", "adapter_field", "rule", "unknown"],
+        "properties": {
+          "canonical_field": {"type": "string", "description": "源 canonical 字段路径。"},
+          "adapter_field": {"type": "string", "description": "目标 adapter 输入字段路径。"},
+          "rule": {"type": "string", "enum": ["direct", "transform", "split", "merge", "drop"], "description": "映射规则：直传/转换/拆分/合并/丢弃。"},
+          "unknown": {"type": "string", "enum": ["error", "ignore", "pass-through"], "default": "error", "description": "遇到未知 canonical 字段的 deny-first 默认策略；默认 error，可显式声明 ignore/pass-through。"}
+        },
+        "additionalProperties": false
+      },
+      "description": "canonical → adapter 投影的声明式映射规则。required 字段不得 silent drop。"
+    },
+    "owner": {
+      "type": "string",
+      "description": "adapter 责任人（人/团队）。"
+    },
+    "reviewer": {
+      "type": "string",
+      "description": "adapter 复核人（人/团队），独立于 owner。"
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": ["active", "degraded", "disabled", "quarantine"],
+      "description": "当前生命周期状态。removal 是经 removal_test 校验的瞬态，不持久化为状态。"
+    },
+    "fallback": {
+      "type": "object",
+      "required": ["on_failure", "on_network_loss", "on_remote_failure"],
+      "properties": {
+        "on_failure": {"type": "string", "enum": ["static-preview", "local-verify", "degrade", "disable", "quarantine"], "description": "adapter 自身运行失败时的处置。"},
+        "on_network_loss": {"type": "string", "enum": ["static-preview", "local-verify", "degrade", "disable", "quarantine"], "description": "断网时的处置。"},
+        "on_remote_failure": {"type": "string", "enum": ["static-preview", "local-verify", "degrade", "disable", "quarantine"], "description": "远程服务失败时的处置。"},
+        "static_preview_ref": {"type": "string", "description": "回退所用的静态 preview 产物引用。"},
+        "local_verify_ref": {"type": "string", "description": "回退所用的本地验证入口引用。"}
+      },
+      "additionalProperties": false,
+      "description": "降级/回退语义：保证 canonical artifact、静态 preview、本地验证在 adapter 不可用或网络/远程故障时仍可用。"
+    },
+    "removal_test": {
+      "type": "object",
+      "required": ["invariants"],
+      "properties": {
+        "invariants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "verify"],
+            "properties": {
+              "id": {"type": "string"},
+              "description": {"type": "string"},
+              "verify": {"type": "string", "description": "校验方式（命令/断言/人工）。"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "删除本 adapter 后必须仍成立的不变量集合（见规格说明 removal test 章节）。"
+    },
+    "reeval_date": {
+      "type": "string",
+      "format": "date",
+      "description": "capability-fit 必须重跑的日期（账本约定 2027-01-20）。"
+    },
+    "risk": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "已知风险（bus factor、协议成熟度、版本未钉等）。"
+    }
+  },
+  "additionalProperties": false
+}

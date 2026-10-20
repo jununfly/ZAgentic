@@ -1129,7 +1129,7 @@
       "id": "1-7-1",
       "uid": "01a15426ba25-3c421090f3",
       "label": "对 Storybook、json-render、A2UI、M3E Canvas 等候选固定版本并完成 capability-fit 证据账本",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-7",
       "children": [],
@@ -1151,16 +1151,38 @@
       "id": "1-7-2",
       "uid": "01a15426ba67-0057af691b",
       "label": "定义 AdapterBoundary v1、manifest、schema lock、mapping、owner、fallback 与 removal test",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-7",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "AdapterBoundary v1 的 artifact 形态与落点？",
+          "answer": "spec md + adapter-manifest JSON Schema(v1)，置于 docs/plans/adapter-boundary-v1/；附 Storybook 示例 manifest 供 1-7-3 消费。",
+          "note": ""
+        },
+        {
+          "q": "生命周期状态集如何定义？",
+          "answer": "四态 active/degraded/disabled/quarantine；removal 是经 removal test 校验的瞬态，不持久化为状态。degraded=部分能力可用，disabled=主动关闭，quarantine=安全/能力闸门失败被隔离。",
+          "note": ""
+        },
+        {
+          "q": "schema lock 锚点与 unknown 字段默认策略？",
+          "answer": "锚点=canonical schema 版本 + adapter manifest schema 版本；canonical 字段增删须 bump schema-lock major 并重跑 adapter mapping 校验。adapter 对未知 canonical 字段默认 deny-first=error（可显式声明 ignore/pass-through）。",
+          "note": ""
+        },
+        {
+          "q": "removal test 必须守住哪些不变量？",
+          "answer": "① canonical artifact 仍可从本地 store 解析；② 静态 preview 仍可构建/服务；③ 本地验证(a11y/interaction baseline)不依赖被删 adapter 仍可跑；④ 活跃 manifest/plan 无指向被删 adapter 的悬空引用；⑤ resolver 仍能解析体验或显式报 degraded。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "adapter manifest、schema lock、mapping、fallback、owner、removal test 字段齐全"
-      ]
+      ],
+      "rounds": 1
     },
     "1-7-3": {
       "id": "1-7-3",
@@ -1433,7 +1455,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 19:18:23",
+    "updated": "2026-10-20 19:29:31",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
