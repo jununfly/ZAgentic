@@ -73,6 +73,6 @@
 ### 下一步可开工（ready 前 3）
 
 - 1-7-4-3. M3E：opt-in projection/协议/输入兼容性 golden fixtures [ ]
-- 1-7-4-4. 共享 golden-diff / 版本漂移检测 harness [ ]
+- 1-7-4-4. 共享 golden-diff / 版本漂移检测 harness [~]
 - 1-9-5. 持久化/重放实测闸门回写（G-19..G-25） [ ]
 <!-- ROADMAP_SECTION_END -->
