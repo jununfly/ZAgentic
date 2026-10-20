@@ -1,0 +1,14 @@
+{
+  "adapter_id": "storybook-active-verify",
+  "status": "OK",
+  "receipt_present": true,
+  "revision_is_sha256": true,
+  "stories_count": 4,
+  "dimension_status": {
+    "stories": "PASS",
+    "a11y": "PASS",
+    "viewport": "PASS",
+    "interaction": "PASS",
+    "docs": "PASS"
+  }
+}

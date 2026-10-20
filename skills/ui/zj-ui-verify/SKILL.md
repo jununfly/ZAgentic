@@ -49,7 +49,7 @@ S9 · VERIFY · `write` owner of `verification receipt`（a11y / interaction / m
   ],
   "dependencies": [
     "S7 与 S8 完成",
-    "Storybook active adapter（B1，1-7-3）",
+    "Storybook active adapter（B1，1-7-3，已实现：skills/ui/zj-ui-core/scripts/adapters/storybook_adapter.py，确定性引擎产出 checks 后由本 skill 聚合 receipt）",
     "verification receipt 契约（1-5-4）"
   ],
   "required_capabilities": [

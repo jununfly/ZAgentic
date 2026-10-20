@@ -1,0 +1,39 @@
+{
+  "fixture_id": "FF-SB-02",
+  "description": "冲突：正文对比度不达标（on_surface #999999 on #FFFFFF ≈2.84 < 4.5）→ a11y FAIL → receipt BLOCKED，但 receipt 仍写出",
+  "request": {
+    "input_revision": "rev-sb-02",
+    "engine": "deterministic",
+    "candidate": {
+      "ui_flow": {
+        "screens": [
+          {"id": "login", "description": "登录页", "components": ["Input", "Button"]},
+          {"id": "dashboard", "description": "仪表盘", "components": ["Table", "Card", "Button"]}
+        ],
+        "components": [
+          {"id": "Input", "min_width": 48},
+          {"id": "Button", "min_width": 48},
+          {"id": "Table", "min_width": 48},
+          {"id": "Card", "min_width": 48}
+        ],
+        "states": [{"id": "idle"}, {"id": "loading"}],
+        "actions": [
+          {"id": "submit_login", "component": "Button", "target": "Button"},
+          {"id": "refresh", "component": "Button", "target": "Button"}
+        ],
+        "intents": [{"label": "提交登录信息"}, {"label": "刷新数据"}],
+        "acceptances": [{"covers": ["submit_login", "refresh"]}]
+      },
+      "design": {
+        "color": {
+          "on_surface": "#999999",
+          "surface": "#FFFFFF",
+          "on_primary": "#FFFFFF",
+          "primary": "#003366"
+        }
+      },
+      "break_cell": {"viewports": ["390x844", "768x1024", "1440x900"]},
+      "fingerprint": {"hash": "fp-sb02", "env": "baseline"}
+    }
+  }
+}
