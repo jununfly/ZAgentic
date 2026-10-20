@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-20 09:47:01
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-20 11:29:50
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest
@@ -14,11 +14,11 @@
 │   ├── [x][Y+] 1-2-2. 实现 UI-BRIEF/UI-DESIGN 的文档编辑、patch/diff、unknown/source 语义
 │   ├── [x][Y+] 1-2-3. 定义 ui-flow/v1 的 screen/component/state/action/intent/acceptance 与迁移规则
 │   └── [x][Y+] 1-2-4. 完成字段保留、semantic round-trip、离线恢复、schema lock 与 golden fixtures
-├── [ ][Y+] 1-3. Skill capability manifest 与 resolver 编排
+├── [x][Y+] 1-3. Skill capability manifest 与 resolver 编排
 │   ├── [x][Y+] 1-3-1. 定义十个 skill 的 capability manifest、输入输出、禁止事项、依赖和停止条件
 │   ├── [x][Y+] 1-3-2. 实现唯一 owner、precedence、resolver、plan hash 与冲突冻结机制
 │   ├── [x][Y+] 1-3-3. 实现 lease、幂等键、失败阶梯、NEEDS_CONTEXT/quarantine/degraded 状态
-│   └── [ ][Y+] 1-3-4. 持久化 plan、decision、revision 与 handoff 的可恢复编排记录
+│   └── [x][Y+] 1-3-4. 持久化 plan、decision、revision 与 handoff 的可恢复编排记录
 ├── [ ][Y+] 1-4. Trust boundary、provenance 与 deny-first policy
 │   ├── [ ][Y+] 1-4-1. 建立 component/action catalog allowlist、effect intent 与 unknown 语义
 │   ├── [!][Y+] 1-4-2. 实现 policy→approval→sandbox lease→executor 单入口的 deny-first 信任链
@@ -71,7 +71,7 @@
 
 ### 下一步可开工（ready 前 3）
 
-- 1-3. Skill capability manifest 与 resolver 编排 [ ]
-- 1-3-4. 持久化 plan、decision、revision 与 handoff 的可恢复编排记录 [ ]
 - 1-4. Trust boundary、provenance 与 deny-first policy [ ]
+- 1-4-1. 建立 component/action catalog allowlist、effect intent 与 unknown 语义 [ ]
+- 1-5. Deterministic verification、fixture 与 receipt [ ]
 <!-- ROADMAP_SECTION_END -->

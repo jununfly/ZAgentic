@@ -110,7 +110,7 @@
       "id": "1-3",
       "uid": "01a154254c82-e31f1ee66c",
       "label": "Skill capability manifest 与 resolver 编排",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -642,16 +642,23 @@
       "id": "1-3-4",
       "uid": "01a15426b655-fef2fbedbe",
       "label": "持久化 plan、decision、revision 与 handoff 的可恢复编排记录",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-3",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-3-4 的交付物形态与范围边界是什么？",
+          "answer": "冻结单一契约文档 ui-agent-skills-persistence-replay-contract.md：定义 plan/decision/revision/handoff/receipt 五类记录的持久化结构、append-only 日志 + canonical revision 快照的存储模型、跨会话重放协议、崩溃恢复不变式与一致性闸门 G-19..G-25。不写存储引擎、不写重放代码、不跑断言。",
+          "note": "与 1-3-1/2/3 一致：计划层只冻结契约。PlanRecord 字段复用 1-3-2 §5.1 不重定义；存储引擎与重放实现归 1-6 落地，G-19..G-25 实测证据归 1-9 真实 skill + fixture 回写。exit 判据'跨会话重建当前工作'由重放协议+闸门覆盖，属实测不宣称通过。"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "跨会话可从 revision、decision、plan、receipt、handoff 重建当前工作"
-      ]
+      ],
+      "rounds": 1
     },
     "1-4-1": {
       "id": "1-4-1",
@@ -1121,7 +1128,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 09:47:01",
+    "updated": "2026-10-20 11:29:50",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
