@@ -49,6 +49,11 @@ env_hash = sha256(
 - 任一轴变化 → `env_hash` 变化 → 指纹失配 → `stale / revalidation_required`。
 - 字体从 NEEDS_CONTEXT 改为具体值属"轴变化"，须重新冻结指纹并触发全量 revalidation——该规则已于 2026-10-20 首次执行（font 轴回填，发生于首跑前，无既有结论需作废）。
 - `env_hash` 由 1-5-2 runner 在首跑时计算并写入 `env-fingerprint.json`；本冻结版先锁定**过程**与**轴组成**。
+- `config_hash` 于 1-5-3 重算（config v0.2）：viewport 集从占位 `1280x800/375x667` 对齐为
+  `390x844/768x1024/1440x900`（1-3 capability manifest S8 FF-BRK 必测断点），阈值集改由
+  `hard_gates.GATE_THRESHOLDS` 单一供给 → `config_hash` → `env_hash` → `matrix_key` 全部变化。
+  轴变化发生于任何 cell 产生结论之前（1-5-2 两条 lane 全 `NOT_EXECUTED`/`DEGRADED_SKIP`），
+  故无既有结论作废；旧值见 `ui-agent-skills-dual-lane-runner.md` §4.1 历史记录。
 
 ---
 

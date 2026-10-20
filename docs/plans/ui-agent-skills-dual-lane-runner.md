@@ -35,7 +35,7 @@ concrete 环境值、计算 `manifest_hash` / `env_hash` / `matrix_key`。
 | 目的 | 全维度硬门禁（verification-matrix §2 全部 A/W cell） | adapter-off / 离线恢复路径，验证无网络/无 adapter 仍可闭环 |
 | 依赖 | 浏览器 + active adapter（1-7-3）+ flow engine（1-6） | 仅需本地 canonical（flow engine，1-6） |
 | 触发 | `run --lane baseline` | `run --lane degraded` |
-| 当前状态 | 所有 cell `NOT_EXECUTED`（等 1-6/1-7） | 所有 cell `DEGRADED_SKIP`（等 1-6 engine） |
+| 当前状态 | 有 observation bundle 的 cell 执行 7 类硬门禁（1-5-3）；无证据 → `NOT_EXECUTED` / `HUMAN_REVIEW_REQUIRED` | 所有 cell `DEGRADED_SKIP`（等 1-6 engine） |
 | 失败语义 | 任一 A cell 失败 → `FAIL`；缺证据 → `HUMAN_REVIEW_REQUIRED` | adapter 相关一律跳过；离线恢复失败 → `BLOCKED` |
 
 两条 lane 共享同一套确定性控制与 hash 派生，保证同一 case 在任一 lane 内可复跑、可比对。
@@ -52,7 +52,8 @@ concrete 环境值、计算 `manifest_hash` / `env_hash` / `matrix_key`。
 | 随机 `seed` | `random.Random(SEED)` 固定种子，保证截图/布局随机性可复现 | `20261020` |
 | 浏览器 `browser_major` | 占位（无内置引擎），1-7-3 回填真实 major | `PENDING@1-7-3` |
 | 运行时 `node_version` | 目标 EV 运行时约束（Next.js 14） | `>=18.17` |
-| 配置 `config_hash` | viewport 集 + 断言阈值 + oracle 集 的 sha256（本节点定义） | `e5d3f6c0…86de7e` |
+| 视口 `viewports` | 必测断点（1-3 capability manifest S8 FF-BRK：390/768/1440） | v0.2：`390x844, 768x1024, 1440x900`（1-5-2 占位 `1280x800, 375x667` 已废弃） |
+| 配置 `config_hash` | viewport 集 + 断言阈值 + oracle 集 的 sha256（阈值集自 1-5-3 起由 `hard_gates.GATE_THRESHOLDS` 单一供给） | v0.2：`70ecd3879750d8e70f365e8d78f5ae284c37189f2ae137f69f63f89c348b1830`（1-5-2 首跑为 `e5d3f6c0dda4fd74fa6fbb50f808b0a1b826900aca9ec7c2b13396346486de7e`） |
 
 > 确定性不依赖 `PYTHONHASHSEED`：runner 所有序列化走 `canonical_json`（sort_keys +
 > 固定分隔），dict/set 迭代显式 `sorted()`，跨进程/跨时间稳定（与本仓库跨 carrier 回放约束一致）。
@@ -65,10 +66,15 @@ concrete 环境值、计算 `manifest_hash` / `env_hash` / `matrix_key`。
 dual_lane_runner.py init [--plans DIR]      # 幂等建立 fixture 目录骨架 + 计算 manifest_hash（--write 落盘）
 dual_lane_runner.py fingerprint [--plans DIR] # 捕获 env 轴 + config_hash + env_hash + matrix_key
 dual_lane_runner.py plan [--lane baseline|degraded]  # 输出 cell 计划
-dual_lane_runner.py run  --lane <baseline|degraded>  # 执行 lane，输出 fail-closed receipt 占位
+dual_lane_runner.py run  --lane <baseline|degraded> [--observations DIR]  # 执行 lane
 dual_lane_runner.py selfcheck [--plans DIR]  # 复跑幂等自检（rerun_idempotent）
 dual_lane_runner.py demo                     # 确定性控制自检（虚拟时钟 + seed）
 ```
+
+`--observations DIR`（1-5-3 起）：指向 `<fixture_id>/<viewport>.json` 的 observation bundle 根目录。
+未给该参数时 baseline 全 `NOT_EXECUTED`（与 1-5-2 行为一致，fail-closed）；给了但覆盖不全时
+缺证据的 fixture 记 `HG-EVID-02`，cell 最好只能到 `HUMAN_REVIEW_REQUIRED`。
+门禁判定逻辑本身见 `ui-agent-skills-hard-gates.md`。
 
 本会话采用 **print-only**（默认不写盘），由专用工具把计算结果写回 `docs/plans/*.json`，
 规避工作区写沙箱；runner 自身保留 `--write` 落盘逻辑，未来环境可直接冻结。
@@ -97,6 +103,19 @@ matrix_key    = sha256( manifest_hash + env_hash
   - `config_hash`   = `e5d3f6c0dda4fd74fa6fbb50f808b0a1b826900aca9ec7c2b13396346486de7e`
 - `rerun_idempotent = true`：同输入两次运行得到相同三 hash（可复跑证据）。
 
+### 4.1 config v0.2 重算（1-5-3）
+
+1-5-3 把 viewport 集对齐 1-3 capability manifest（必测 390/768/1440），阈值集并入
+`hard_gates.GATE_THRESHOLDS`，`config_hash` 因此变化并按 §4 公式重算三 hash：
+
+- `config_hash` = `70ecd3879750d8e70f365e8d78f5ae284c37189f2ae137f69f63f89c348b1830`
+- `env_hash`    = `57efae87180b2e27b1a43d02593c97f98b4c7ecc3b047fa72ab8c4f42149e02e`
+- `matrix_key`  = `10ac66d18f56143e74a834907a6c2c318915164afd42e05cb9c32287ecfc0633`
+- `manifest_hash` 不变（fixture-manifest 未改）
+
+重算不覆盖任何既有结论：1-5-2 两条 lane 的 21 个 cell 全部 `NOT_EXECUTED` / `DEGRADED_SKIP`，
+轴变化发生在首份结论产生之前（与 L-FONT 先例一致）。旧值保留在本节作为历史。
+
 ---
 
 ## 5. 已落地 / 待落地 清单
@@ -108,7 +127,9 @@ matrix_key    = sha256( manifest_hash + env_hash
 | `manifest_hash` / `env_hash` / `matrix_key` 计算 + 冻结 | ✅ 已计算写回 | 1-5-2 |
 | fixture 目录骨架（19 个 landed_at 目录） | ✅ 已建立（空，待数据） | 1-5-2 |
 | 真实 fixture 数据文件（F-1…GF-11） | ⏳ 待落地 | 1-6 / 1-7 |
-| 真实 cell 断言执行（DOM/ARIA/a11y/像素/round-trip…） | ⏳ 待 adapter/engine | 1-5-3 / 1-6 / 1-7 |
+| 真实 cell 断言（7 类硬门禁逻辑 + 自检 61 例） | ✅ 已实现（`hard_gates.py`） | 1-5-3 |
+| 真实 observation 证据（浏览器捕获） | ⏳ 待 adapter | 1-7-3 |
+| 契约维度断言（round_trip / migration / offline_recovery） | ⏳ 待 engine/投影 | 1-6 / 1-9 |
 | `browser_major` 真实值 | ⏳ 占位 PENDING@1-7-3 | 1-7-3 |
 | 完整 verification receipt 格式 | ⏳ 待定稿 | 1-5-4 |
 
@@ -119,7 +140,8 @@ matrix_key    = sha256( manifest_hash + env_hash
 - **向上**：消费 1-5-1 冻结的 fixture-manifest / verification-matrix / env-fingerprint（过程），
   把"冻结过程"转为可执行 runner 与 concrete 值。
 - **向下（1-5-3）**：DOM/ARIA/focus/contrast/overflow/responsive/motion/state 硬门禁在 baseline
-  lane 上实现（需 adapter）。
+  lane 上实现（需 adapter）。→ 已于 1-5-3 落地：`hard_gates.py`（R-HAR-2）+ `--observations` 接线，
+  契约见 `ui-agent-skills-hard-gates.md`。
 - **向下（1-5-4）**：本节点 receipt 为结构占位；receipt 完整字段（claim/check/risk/fixture/env/
   oracle/threshold/command/commit/artifact/observed/status/reviewer/expiry）由 1-5-4 定稿，
   须携带 `matrix_key` 与每个 cell 的 `observed/status`，保证可归因、可重算。

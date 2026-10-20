@@ -79,6 +79,9 @@ matrix_key = sha256(
 - `matrix_key` 随 `fixture-manifest`（fixture 增删/内容变）、`env-fingerprint`（任一轴变）、维度集合或 cell 门禁变化而确定性变化。
 - 变化即判定 `stale / revalidation_required`，须重跑受影响 cell 并重新出具 receipt（1-5-4）。
 - 本冻结版锁定**集合与派生过程**；`matrix_key` 具体值由 1-5-2 runner 在 fixture/env 落地后计算。
+- **当前冻结值**（1-5-3 config v0.2 重算，viewport 集对齐 390/768/1440）：
+  `matrix_key = 10ac66d18f56143e74a834907a6c2c318915164afd42e05cb9c32287ecfc0633`
+  （1-5-2 首跑值 `010a2f83…05a69c` 仅作历史——当时 21 个 cell 全未执行，不存在被覆盖的结论）。
 
 ---
 

@@ -902,6 +902,14 @@ _Avoid_: 把适配层做成主体, 误判为 A, 忽视红线
 canonical 语义：`D` 是搜索循环的**回环态**——该候选不满足、引入新候选后回到拆解重评，不是"永不采用"的终态否决。单候选评估时功能接近"不选"，但语义不同；zj-discuss design.md §2 曾误读为"否决/拒绝"，已在 SSOT 标注偏离。
 _Avoid_: 把 D 当否决, 在单候选下混用两语义
 
+**观察包 (observation bundle)**:
+采集端（浏览器/adapter）产出的**结构化证据**，按 `<fixture_id>/<viewport>.json` 落盘，契约 R-OBS-1 见 `docs/plans/ui-agent-skills-hard-gates.md` §1。门禁只吃观察包、不做采集：DOM 节点（含 computed accessible name / ARIA / tabindex）、焦点序列与可见样式、对比度采样、布局盒模型、动效描述、状态机 trace。**"没有观察包"是一种结论（证据缺失），不是"没问题"**。
+_Avoid_: 把浏览器截图当观察包, 让门禁自己抓 DOM, 用空段代表零缺陷
+
+**硬门禁 (hard gate)**:
+对观察包做确定性判定的纯函数（`research/ui-agent-skills/hard_gates.py`，R-HAR-2），产出 `FAIL / HUMAN_REVIEW_REQUIRED / QUARANTINED / WARNING / PASS`。核心语义是 **fail-closed**：证据缺失一律 `HUMAN_REVIEW_REQUIRED`，绝不落 `PASS`；`overflow`/`focus`/恢复类失败不得降级成 warning。与"评分/建议"的区别在于它没有"差不多"档。
+_Avoid_: 把 hard gate 叫 lint, 用 warning 表示硬失败, 允许部分覆盖算通过
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:
