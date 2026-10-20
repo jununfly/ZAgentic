@@ -1,0 +1,35 @@
+{
+  "fixture_id": "CHAIN-FAIL-01",
+  "description": "design_system contrast 不达标 → BLOCKED：brief/discover/direction 已写，design_system PLANNED 但 run 返回 BLOCKED（contrast 1.0 < 4.5），下游 flow→handoff 全部零写入，不产出 handoff。",
+  "request_id": "chain-fail-01",
+  "gate_state": "APPROVED",
+  "root_revision": "seed-rev-fail",
+  "seed": {
+    "goal_users": ["报销员工"],
+    "goal_task": "提交差旅报销单",
+    "constraints": ["移动端优先"],
+    "success_criteria": ["3 步内完成提交"]
+  },
+  "agent_inputs": {
+    "discover": {
+      "evidence": []
+    },
+    "direction": {
+      "cards": [
+        {"id": "card-a", "name": "简约蓝", "color": "#0B57D0", "typography": "Source Han Sans", "density": "comfortable", "motion": "subtle", "tradeoffs": ["保守"], "reference": {"source": "in-house", "reference": "brand-2024", "license": "MIT"}},
+        {"id": "card-b", "name": "暖橙", "color": "#E8590C", "typography": "Noto Sans", "density": "comfortable", "motion": "subtle", "tradeoffs": ["活泼"], "reference": {"source": "in-house", "reference": "brand-alt", "license": "MIT"}}
+      ],
+      "human_choice": "card-a"
+    },
+    "design_system": {
+      "tokens": {
+        "typography": {"family": "Source Han Sans", "license": "OFL-1.1", "scale": ["14/22"]},
+        "color": {"surface": "#FFFFFF", "on_surface": "#F5F5F5", "primary": "#FFFFFF", "on_primary": "#F5F5F5"},
+        "spacing": {"unit": 4},
+        "density": "comfortable",
+        "motion": {"duration_ms": 180}
+      },
+      "components": [{"name": "Button"}, {"name": "Input"}]
+    }
+  }
+}

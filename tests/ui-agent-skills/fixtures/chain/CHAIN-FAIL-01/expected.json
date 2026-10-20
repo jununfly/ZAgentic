@@ -1,0 +1,11 @@
+{
+  "chain_status": "STOPPED",
+  "stopped_at": "design_system",
+  "total_writes": 3,
+  "plan_hash_count": 4,
+  "produced_artifact_kinds": [
+    "UI-BRIEF.md",
+    "UI-BRIEF.md",
+    "UI-DESIGN.md"
+  ]
+}

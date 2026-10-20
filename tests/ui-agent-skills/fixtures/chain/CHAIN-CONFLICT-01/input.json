@@ -1,0 +1,25 @@
+{
+  "fixture_id": "CHAIN-CONFLICT-01",
+  "description": "resolver 冻结零下游写入：gate_state=PENDING 时，direction（human_gate=required）在 resolver R6 即冻结为 WAITING_FOR_HUMAN，brief/discover 已写，direction 及下游全部零写入。",
+  "request_id": "chain-conflict-01",
+  "gate_state": "PENDING",
+  "root_revision": "seed-rev-conflict",
+  "seed": {
+    "goal_users": ["报销员工"],
+    "goal_task": "提交差旅报销单",
+    "constraints": ["移动端优先"],
+    "success_criteria": ["3 步内完成提交"]
+  },
+  "agent_inputs": {
+    "discover": {
+      "evidence": []
+    },
+    "direction": {
+      "cards": [
+        {"id": "card-a", "name": "简约蓝", "color": "#0B57D0", "typography": "Source Han Sans", "density": "comfortable", "motion": "subtle", "tradeoffs": ["保守"], "reference": {"source": "in-house", "reference": "brand-2024", "license": "MIT"}},
+        {"id": "card-b", "name": "暖橙", "color": "#E8590C", "typography": "Noto Sans", "density": "comfortable", "motion": "subtle", "tradeoffs": ["活泼"], "reference": {"source": "in-house", "reference": "brand-alt", "license": "MIT"}}
+      ],
+      "human_choice": "card-a"
+    }
+  }
+}

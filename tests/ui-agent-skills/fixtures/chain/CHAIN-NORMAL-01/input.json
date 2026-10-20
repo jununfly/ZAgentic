@@ -1,0 +1,96 @@
+{
+  "fixture_id": "CHAIN-NORMAL-01",
+  "description": "十阶段全链闭环：brief→discover→direction→design_system→flow→prototype→visual_review→break→verify→handoff，全部 PLANNED→OK，产出 10 个 canonical artifact + 10 个 plan_hash，最终 handoff 落盘。",
+  "request_id": "chain-normal-01",
+  "gate_state": "APPROVED",
+  "root_revision": "seed-rev-01",
+  "seed": {
+    "goal_users": ["报销员工", "财务审核"],
+    "goal_task": "提交差旅报销单并跟踪审批",
+    "constraints": ["移动端优先", "需离线可填"],
+    "success_criteria": ["3 步内完成提交", "断网可暂存"]
+  },
+  "agent_inputs": {
+    "discover": {
+      "evidence": []
+    },
+    "direction": {
+      "cards": [
+        {"id": "card-a", "name": "简约蓝", "color": "#0B57D0", "typography": "Source Han Sans", "density": "comfortable", "motion": "subtle", "tradeoffs": ["保守"], "reference": {"source": "in-house", "reference": "brand-2024", "license": "MIT"}},
+        {"id": "card-b", "name": "暖橙", "color": "#E8590C", "typography": "Noto Sans", "density": "comfortable", "motion": "subtle", "tradeoffs": ["活泼"], "reference": {"source": "in-house", "reference": "brand-alt", "license": "MIT"}}
+      ],
+      "human_choice": "card-a"
+    },
+    "design_system": {
+      "tokens": {
+        "typography": {"family": "Source Han Sans", "license": "OFL-1.1", "scale": ["14/22"]},
+        "color": {"surface": "#FFFFFF", "on_surface": "#1F1F1F", "primary": "#0B57D0", "on_primary": "#FFFFFF"},
+        "spacing": {"unit": 4},
+        "density": "comfortable",
+        "motion": {"duration_ms": 180}
+      },
+      "components": [{"name": "Button"}, {"name": "Input"}, {"name": "Card"}]
+    },
+    "flow": {
+      "candidate": {
+        "screens": [{"id": "s1", "name": "报销首页"}],
+        "components": [{"name": "Button"}],
+        "states": [{"id": "idle"}, {"id": "submitted"}],
+        "actions": [{"id": "a1", "from_state": "idle", "to_state": "submitted", "intent": "submit"}],
+        "intents": [{"id": "submit", "label": "提交报销"}],
+        "acceptances": [{"id": "acc1", "given": "在首页", "when": "点提交", "then": "进入已提交"}]
+      }
+    },
+    "prototype": {
+      "candidate": {
+        "reference": {"revision": "chain:flow"},
+        "frames": [{"name": "mobile", "viewport": "390x844"}],
+        "components": ["Button", "Input"],
+        "human_approval": {"name": "zj", "signed_at": "2026-01-01T00:00:00Z"}
+      },
+      "remote_available": true,
+      "allow_local_fallback": true
+    },
+    "visual_review": {
+      "candidate": {
+        "target": {"artifact": "UI-PREVIEW.md", "revision": "chain:prototype"},
+        "tasks": {"task": "提交报销", "risk_class": "medium"},
+        "fingerprint": {"hash": "fp-vr-01", "runtime": "browser-1.0"},
+        "findings": [{"id": "f1", "severity": "none", "note": "ok"}],
+        "human_signature": {"name": "zj", "signed_at": "2026-01-01T00:00:00Z"}
+      }
+    },
+    "break": {
+      "candidate": {
+        "cells": [
+          {"id": "c1", "status": "PASS", "viewport": "390x844"},
+          {"id": "c2", "status": "PASS", "viewport": "768x1024"},
+          {"id": "c3", "status": "PASS", "viewport": "1440x900"}
+        ],
+        "viewports": ["390x844", "768x1024", "1440x900"]
+      }
+    },
+    "verify": {
+      "candidate": {
+        "checks": [
+          {"claim": "报销提交成功", "threshold": "status==submitted", "command": "pytest tests", "commit": "abc", "fixture_hash": "h1", "env_hash": "fp-vr-01", "artifact": "UI-PREVIEW.md", "status": "PASS", "evidence_new": true},
+          {"claim": "a11y 无 critical", "threshold": "no-criticals", "command": "axe", "commit": "abc", "fixture_hash": "h2", "env_hash": "fp-vr-01", "artifact": "UI-PREVIEW.md", "status": "PASS", "evidence_new": true}
+        ],
+        "fingerprint": {"hash": "fp-vr-01", "runtime": "browser-1.0"},
+        "checked": 2
+      }
+    },
+    "handoff": {
+      "candidate": {
+        "change_summary": "报销流程移动端预览与 a11y 修复",
+        "run_commands": ["npm run dev", "pytest tests/ui-agent-skills"],
+        "risks": ["窄屏 overflow 回归"],
+        "known_limits": ["Storybook adapter 仅本地可用"],
+        "fallback": "回退至 UI-PREVIEW.md revision chain:prototype",
+        "owner": "zj",
+        "artifacts_revisions": ["UI-BRIEF.md@a", "UI-DESIGN.md@b", "VERIFICATION-RECEIPT.md@c"],
+        "commit_sha": "abc123def456"
+      }
+    }
+  }
+}

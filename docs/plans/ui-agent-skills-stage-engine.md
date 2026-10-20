@@ -121,8 +121,10 @@ tests/ui-agent-skills/fixtures/skills/<FF-ID>/
 
 - **1-6-3 / 1-6-4**：往 `ui_stages.py` 追加 S5..S10 的 runner，复用同一套原语；不得新起一套
   unknown/commit 实现。
-- **1-6-5**：resolver 用同一批 fixture 串链；本节点**不**做端到端串联（决策见 roadmap 1-6-2），
-  因此这里通过不代表链能跑通。
+- **1-6-5**：resolver 落 `ui_resolver.py`（R1-R7 + plan_hash + route_fingerprint + 冲突冻结），
+  编排器落 `ui_chain.py`（按 `CHAIN_ORDER` 串 S1..S10、每步先 `resolve` 再执行、穿接 canonical
+  artifact、冻结/失败即停、零下游写入），链 fixture 落 `tests/ui-agent-skills/fixtures/chain/`。
+  孤立跑单阶段 fixture 通过**已不再**代表链能跑通——1-6-5 补的就是这个闭环证据。
 - **1-7+（adapter）**：只能提交带 `projection_id` / `source_revision` 的投影，不得改写 canonical
   字段，也不得扩 `COMPONENT_REGISTRY`。
 
@@ -135,6 +137,8 @@ tests/ui-agent-skills/fixtures/skills/<FF-ID>/
 | 12 条 failure fixture | `python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive` | 12/12 matched，退出码 0 |
 | 引擎不变量 13 项 | `python -m unittest tests.test_ui_agent_skills_stage_skills` | OK |
 | 布局/manifest 守卫 | `python -m unittest tests.test_ui_agent_skills_layout` | OK |
+| 10 阶段闭环 + resolver 门禁 | `python -m unittest tests.test_ui_agent_skills_chain` | 16/16 OK（resolver FF-ORCH-01/04/05 + G-1/G-2/G-4/G-7 + 链 normal/conflict/fail + 100 次幂等） |
+| 链 fixture 3 条 | `python skills/ui/zj-ui-core/scripts/run_chain_fixture.py tests/ui-agent-skills/fixtures/chain --recursive` | 3/3 matched，退出码 0 |
 
 `tests/test_ui_agent_skills_stage_skills.py` 额外守四类**fixture 抽不到**的语义：100 次幂等重放
 只写一次、同键改内容被拒、contrast 失败不返回替换色板、无来源证据的值不进入产物。
@@ -146,6 +150,7 @@ tests/ui-agent-skills/fixtures/skills/<FF-ID>/
 - **对话 → 结构化 request 的质量**：由 agent 负责，本节点不测，也无法用 fixture 测。
 - **`UI-BRIEF.md` / `UI-DESIGN.md` 的文件级 patch/diff**：属 1-2-2 语义，本节点只做字段级校验，
   未实现文档 diff 解析。
-- **端到端链**：归 1-6-5；本节点四条 stage 各自闭合，不代表 `brief → … → handoff` 能跑通。
+- **端到端链**：已由 1-6-5 闭环验证（resolver 门禁 + 十阶段串联 + 冻结/失败零下游写入），见
+  `ui_chain.py` 与 `tests/test_ui_agent_skills_chain.py`；残留诚实边界见下两条。
 - **contrast 只覆盖两对**：`on_surface/surface`、`on_primary/primary`。更多语义色对（link、
   disabled、focus ring）未纳入，1-6-4 的 verify 阶段需补。
