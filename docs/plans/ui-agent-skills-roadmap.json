@@ -846,6 +846,11 @@
           "q": "渲染字体未定（L-FONT/R-RISK-3）如何处理？",
           "answer": "font 轴显式 NEEDS_CONTEXT 占位并标 non-portable，不伪装跨机可比；zj 选定自由许可字体后回填并重冻结指纹、触发全量 revalidation。",
           "note": ""
+        },
+        {
+          "q": "L-FONT 渲染字体选定？（回填 NEEDS_CONTEXT 占位）",
+          "answer": "zj 于 2026-10-20 选定：Noto Sans SC（主，中文+拉丁）+ Inter（拉丁 UI）+ JetBrains Mono（代码 fixture 条件启用），许可均 SIL OFL 1.1 可商用可再分发，经 @fontsource npm 包自托管锁版本；env 指纹 font 轴回填定值并重冻结；轴变化发生于 1-5-2 首跑前，无既有验证结论需作废，revalidation 规则对未来结论生效；wave0-ledger L-FONT 条目与 R-RISK-3 同步关闭。",
+          "note": ""
         }
       ],
       "notes": "",
@@ -1275,7 +1280,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 14:04:51",
+    "updated": "2026-10-20 14:52:16",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

@@ -1,11 +1,11 @@
 {
   "version": "0.1",
   "wave": "EV-v0.1",
-  "note": "机器可读环境指纹（1-5-1 冻结版）。concrete 值由 1-5-2 runner 首次运行捕获并冻结；env_hash 届时计算回填。",
+  "note": "机器可读环境指纹（1-5-1 冻结版；2026-10-20 font 轴回填重冻结）。concrete 值由 1-5-2 runner 首次运行捕获并冻结；env_hash 届时计算回填。font 轴定值发生于首跑前，无既有验证结论需作废，revalidation 规则对未来结论生效。",
   "axes": {
     "browser_major": {"value": "PENDING@1-5-2", "policy": "Chromium 固定 major；首跑捕获后冻结，变更须 revalidation", "source": "R-BRW-1/R-RISK-1"},
     "node_version": {"value": ">=18.17", "policy": "固定到运行 harness 的 Node 主版本", "source": "R-ENV-1"},
-    "font": {"value": "NEEDS_CONTEXT", "policy": "L-FONT 未定；占位 non-portable，选定自由许可字体后回填并重新冻结", "source": "L-FONT/R-RISK-3"},
+    "font": {"value": "noto-sans-sc+inter+jetbrains-mono(conditional)", "policy": "主字体 Noto Sans SC（SIL OFL 1.1，中文+拉丁）+ Inter（SIL OFL，拉丁 UI）+ JetBrains Mono（SIL OFL，代码 fixture 条件启用）；经 @fontsource npm 包自托管锁版本；2026-10-20 zj 选定回填，轴已定值；后续字体变更须重新冻结并全量 revalidation", "source": "L-FONT(resolved)/R-RISK-3(mitigated)"},
     "network_mode": {"value": "replay", "policy": "无真实网络；本地 mock 层", "source": "R-MOCK-1/R-RISK-5"},
     "clock_source": {"value": "PENDING@1-5-2", "policy": "fixed virtual time，无墙钟依赖", "source": "1-5-2 退出判据"},
     "seed": {"value": "PENDING@1-5-2", "policy": "固定 RNG seed", "source": "1-5-2 退出判据"},
