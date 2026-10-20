@@ -172,7 +172,7 @@
       "id": "1-5",
       "uid": "01a154254d60-ad8d724137",
       "label": "Deterministic verification、fixture 与 receipt",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -195,7 +195,8 @@
         "所有适用 cell 完成 DOM/ARIA、focus、contrast、overflow、responsive、motion 和状态检查",
         "receipt 含 claim/check/risk/fixture/env/oracle/threshold/command/commit/artifact/observed/status/reviewer/expiry",
         "关键 fail/visual blocker/证据缺失/无法归因分别得到 FAIL、BLOCKED、HUMAN_REVIEW_REQUIRED、QUARANTINED"
-      ]
+      ],
+      "rounds": 1
     },
     "1-6": {
       "id": "1-6",
@@ -821,11 +822,32 @@
       "id": "1-5-1",
       "uid": "01a15426b7aa-1e74614588",
       "label": "冻结 fixture-manifest、verification-matrix 与 browser/environment fingerprint",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-5",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "fixture 存储根目录定在哪？",
+          "answer": "tests/ui-agent-skills/fixtures/（form/adapters/contract 三子目录）；R-FIX-1 原'待定'本节点冻结；具体数据文件于 1-5-2 落地并计算 manifest_hash 回填。",
+          "note": ""
+        },
+        {
+          "q": "环境指纹由哪些轴构成、如何保证可重算？",
+          "answer": "browser_major/node_version/font(当前 NEEDS_CONTEXT)/network_mode/clock_source/seed/config_hash；env_hash=sha256 串接；任一轴变化→指纹失配→stale/revalidation_required。",
+          "note": ""
+        },
+        {
+          "q": "verification matrix key 如何可重算？",
+          "answer": "matrix_key=sha256(manifest_hash+env_hash+sorted维度集合+cell_gate_map)；随 fixture/env/维度/门禁变化确定性派生；变化即 revalidation_required。",
+          "note": ""
+        },
+        {
+          "q": "渲染字体未定（L-FONT/R-RISK-3）如何处理？",
+          "answer": "font 轴显式 NEEDS_CONTEXT 占位并标 non-portable，不伪装跨机可比；zj 选定自由许可字体后回填并重冻结指纹、触发全量 revalidation。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
@@ -1253,7 +1275,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 13:47:32",
+    "updated": "2026-10-20 14:04:51",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
