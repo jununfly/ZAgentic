@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-20 13:25:18
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-20 13:47:32
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest
@@ -19,11 +19,11 @@
 │   ├── [x][Y+] 1-3-2. 实现唯一 owner、precedence、resolver、plan hash 与冲突冻结机制
 │   ├── [x][Y+] 1-3-3. 实现 lease、幂等键、失败阶梯、NEEDS_CONTEXT/quarantine/degraded 状态
 │   └── [x][Y+] 1-3-4. 持久化 plan、decision、revision 与 handoff 的可恢复编排记录
-├── [~][Y+] 1-4. Trust boundary、provenance 与 deny-first policy
+├── [x][Y+] 1-4. Trust boundary、provenance 与 deny-first policy
 │   ├── [x][Y+] 1-4-1. 建立 component/action catalog allowlist、effect intent 与 unknown 语义
 │   ├── [x][Y+] 1-4-2. 实现 policy→approval→sandbox lease→executor 单入口的 deny-first 信任链
 │   ├── [x][Y+] 1-4-3. 实现 provenance、asset-manifest.json、secret redaction 与许可证 quarantine
-│   └── [ ][Y+] 1-4-4. 覆盖未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixtures
+│   └── [x][Y+] 1-4-4. 覆盖未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixtures
 ├── [ ][Y+] 1-5. Deterministic verification、fixture 与 receipt
 │   ├── [ ][Y+] 1-5-1. 冻结 fixture-manifest、verification-matrix 与 browser/environment fingerprint
 │   ├── [!][Y+] 1-5-2. 实现 baseline 与 degraded 双 lane、固定字体/网络回放/时钟/seed
@@ -72,7 +72,7 @@
 
 ### 下一步可开工（ready 前 3）
 
-- 1-4-4. 覆盖未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixtures [ ]
 - 1-5. Deterministic verification、fixture 与 receipt [ ]
 - 1-5-1. 冻结 fixture-manifest、verification-matrix 与 browser/environment fingerprint [ ]
+- 1-9-5. 持久化/重放实测闸门回写（G-19..G-25） [ ]
 <!-- ROADMAP_SECTION_END -->

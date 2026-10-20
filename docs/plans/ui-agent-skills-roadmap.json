@@ -138,7 +138,7 @@
       "id": "1-4",
       "uid": "01a154254cd0-1a14756343",
       "label": "Trust boundary、provenance 与 deny-first policy",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -779,16 +779,43 @@
       "id": "1-4-4",
       "uid": "01a15426b769-9b84101dde",
       "label": "覆盖未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixtures",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "deny fixture 命名空间",
+          "answer": "1-4-4 deny fixtures 用 DF-* 前缀（区别于 golden GF-* 与 skill 级 FF-*），避免与 1-4-1/2/3 闸门 ID（G-CAT/G-POL/G-PRV）混淆；每条 fixture 显式 carries 'proves' 字段指向其证明的 1-4-x 闸门",
+          "note": ""
+        },
+        {
+          "q": "范围收敛",
+          "answer": "1-4-4 只定义 fixture 契约（ID/setup/assert/proves/失败分类），不写可执行断言代码；可执行断言归 1-6（真实技能落地）+ 1-9（paired run 实测），沿用 1-2-4 边界",
+          "note": ""
+        },
+        {
+          "q": "离线可运行",
+          "answer": "所有 deny fixture 必须能在无网络/无凭据/无外部设计工具下运行（沿用 golden-fixtures-spec §8 fail-closed 要求）；这是退出判据'在无网络、无凭据、未注册组件和远程失败时均 fail closed'的承载",
+          "note": ""
+        },
+        {
+          "q": "失败分类口径",
+          "answer": "deny fixture 违反 deny-first 或 fail-closed → 契约失败（非 warning）；与 golden-fixtures-spec §1 失败分类一致：关键语义被静默丢弃/伪造成功=失败",
+          "note": ""
+        },
+        {
+          "q": "证明矩阵覆盖",
+          "answer": "1-4-1/2/3 的全部 deny 与 fail-closed 闸门须被至少一个 DF-* 覆盖（no gate left unproven）；DF-OFF-* 四例直接承载退出判据的四条件",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "deny fixtures 在无网络、无凭据、未注册组件和远程失败时均 fail closed"
-      ]
+      ],
+      "rounds": 1
     },
     "1-5-1": {
       "id": "1-5-1",
@@ -1226,7 +1253,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 13:25:18",
+    "updated": "2026-10-20 13:47:32",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
