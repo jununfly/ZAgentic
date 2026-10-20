@@ -4,25 +4,177 @@
   "storage_root": "tests/ui-agent-skills/fixtures/",
   "note": "机器可读 fixture 目录（1-5-1 冻结版）。manifest_hash 由 1-5-2 runner 在数据落地时计算并回填。",
   "fixtures": [
-    {"id": "F-1", "class": "form", "source": "ui-agent-skills-wave0-ledger.md#F-1", "trigger": "idle->validating->submitting->success", "expected": "mock 200 + 本地持久化", "landed_at": "tests/ui-agent-skills/fixtures/form/F-1", "status": "planned"},
-    {"id": "F-2", "class": "form", "source": "ui-agent-skills-wave0-ledger.md#F-2", "trigger": "必填校验", "expected": "字段级 error，禁止提交", "landed_at": "tests/ui-agent-skills/fixtures/form/F-2", "status": "planned"},
-    {"id": "F-3", "class": "form", "source": "ui-agent-skills-wave0-ledger.md#F-3", "trigger": "实时校验", "expected": "字段级 error message", "landed_at": "tests/ui-agent-skills/fixtures/form/F-3", "status": "planned"},
-    {"id": "F-4", "class": "form", "source": "ui-agent-skills-wave0-ledger.md#F-4", "trigger": "submitting 锁输入", "expected": "第二次提交被拒/忽略", "landed_at": "tests/ui-agent-skills/fixtures/form/F-4", "status": "planned"},
-    {"id": "F-5", "class": "form", "source": "ui-agent-skills-wave0-ledger.md#F-5", "trigger": "模拟 mock 422", "expected": "error 态 + 可恢复回 editable", "landed_at": "tests/ui-agent-skills/fixtures/form/F-5", "status": "planned"},
-    {"id": "F-6", "class": "form", "source": "ui-agent-skills-wave0-ledger.md#F-6", "trigger": "模拟服务端超时", "expected": "fallback 到稳定路径 / 显式标记", "landed_at": "tests/ui-agent-skills/fixtures/form/F-6", "status": "planned"},
-    {"id": "F-A1", "class": "adapter", "source": "ui-agent-skills-wave0-ledger.md#F-A1", "trigger": "Storybook stories/a11y/viewport/interaction/docs", "expected": "active adapter 本地验证通过", "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A1", "status": "planned"},
-    {"id": "F-A2", "class": "adapter", "source": "ui-agent-skills-wave0-ledger.md#F-A2", "trigger": "json-render/A2UI/M3E Canvas 投影", "expected": "opt-in golden fixtures 通过", "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2", "status": "planned"},
-    {"id": "GF-01", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-01", "trigger": "canonical->projection->canonical", "expected": "state/action/intent/acceptance 语义集合等价", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-01", "status": "planned"},
-    {"id": "GF-02", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-02", "trigger": "必需字段缺失", "expected": "阻断（hard fail）", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-02", "status": "planned"},
-    {"id": "GF-03", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-03", "trigger": "未知字段", "expected": "保留 unknown 四元组 + 声明性 warning", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-03", "status": "planned"},
-    {"id": "GF-04", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-04", "trigger": "adapter 越权改 intent/acceptance", "expected": "失败并报字段路径（hard fail）", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-04", "status": "planned"},
-    {"id": "GF-05", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-05", "trigger": "unknown 被压成空值", "expected": "fail", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-05", "status": "planned"},
-    {"id": "GF-06", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-06", "trigger": "重复/冲突 action", "expected": "拒绝提交", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-06", "status": "planned"},
-    {"id": "GF-07", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-07", "trigger": "幂等键相同输入并发提交", "expected": "无重复/半套结果", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-07", "status": "planned"},
-    {"id": "GF-08", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-08", "trigger": "schema 迁移", "expected": "v1 加字段通过；破坏性变更需迁移器", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-08", "status": "planned"},
-    {"id": "GF-09", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-09", "trigger": "schema/adapter 修改后重跑", "expected": "失败保留旧 artifact", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-09", "status": "planned"},
-    {"id": "GF-10", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-10", "trigger": "服务关闭", "expected": "仅凭本地 canonical 重建/恢复/重放", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-10", "status": "planned"},
-    {"id": "GF-11", "class": "contract", "source": "ui-agent-skills-golden-fixtures-spec.md#GF-11", "trigger": "adapter 删除", "expected": "从最后完整 canonical revision 恢复", "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-11", "status": "planned"}
+    {
+      "id": "F-1",
+      "class": "form",
+      "source": "ui-agent-skills-wave0-ledger.md#F-1",
+      "trigger": "idle->validating->submitting->success",
+      "expected": "mock 200 + 本地持久化",
+      "landed_at": "tests/ui-agent-skills/fixtures/form/F-1",
+      "status": "planned"
+    },
+    {
+      "id": "F-2",
+      "class": "form",
+      "source": "ui-agent-skills-wave0-ledger.md#F-2",
+      "trigger": "必填校验",
+      "expected": "字段级 error，禁止提交",
+      "landed_at": "tests/ui-agent-skills/fixtures/form/F-2",
+      "status": "planned"
+    },
+    {
+      "id": "F-3",
+      "class": "form",
+      "source": "ui-agent-skills-wave0-ledger.md#F-3",
+      "trigger": "实时校验",
+      "expected": "字段级 error message",
+      "landed_at": "tests/ui-agent-skills/fixtures/form/F-3",
+      "status": "planned"
+    },
+    {
+      "id": "F-4",
+      "class": "form",
+      "source": "ui-agent-skills-wave0-ledger.md#F-4",
+      "trigger": "submitting 锁输入",
+      "expected": "第二次提交被拒/忽略",
+      "landed_at": "tests/ui-agent-skills/fixtures/form/F-4",
+      "status": "planned"
+    },
+    {
+      "id": "F-5",
+      "class": "form",
+      "source": "ui-agent-skills-wave0-ledger.md#F-5",
+      "trigger": "模拟 mock 422",
+      "expected": "error 态 + 可恢复回 editable",
+      "landed_at": "tests/ui-agent-skills/fixtures/form/F-5",
+      "status": "planned"
+    },
+    {
+      "id": "F-6",
+      "class": "form",
+      "source": "ui-agent-skills-wave0-ledger.md#F-6",
+      "trigger": "模拟服务端超时",
+      "expected": "fallback 到稳定路径 / 显式标记",
+      "landed_at": "tests/ui-agent-skills/fixtures/form/F-6",
+      "status": "planned"
+    },
+    {
+      "id": "F-A1",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A1",
+      "trigger": "Storybook stories/a11y/viewport/interaction/docs",
+      "expected": "active adapter 本地验证通过",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A1",
+      "status": "planned"
+    },
+    {
+      "id": "F-A2",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "json-render/A2UI/M3E Canvas 投影",
+      "expected": "opt-in golden fixtures 通过",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2",
+      "status": "planned"
+    },
+    {
+      "id": "GF-01",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-01",
+      "trigger": "canonical->projection->canonical",
+      "expected": "state/action/intent/acceptance 语义集合等价",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-01",
+      "status": "planned"
+    },
+    {
+      "id": "GF-02",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-02",
+      "trigger": "必需字段缺失",
+      "expected": "阻断（hard fail）",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-02",
+      "status": "planned"
+    },
+    {
+      "id": "GF-03",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-03",
+      "trigger": "未知字段",
+      "expected": "保留 unknown 四元组 + 声明性 warning",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-03",
+      "status": "planned"
+    },
+    {
+      "id": "GF-04",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-04",
+      "trigger": "adapter 越权改 intent/acceptance",
+      "expected": "失败并报字段路径（hard fail）",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-04",
+      "status": "planned"
+    },
+    {
+      "id": "GF-05",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-05",
+      "trigger": "unknown 被压成空值",
+      "expected": "fail",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-05",
+      "status": "planned"
+    },
+    {
+      "id": "GF-06",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-06",
+      "trigger": "重复/冲突 action",
+      "expected": "拒绝提交",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-06",
+      "status": "planned"
+    },
+    {
+      "id": "GF-07",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-07",
+      "trigger": "幂等键相同输入并发提交",
+      "expected": "无重复/半套结果",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-07",
+      "status": "planned"
+    },
+    {
+      "id": "GF-08",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-08",
+      "trigger": "schema 迁移",
+      "expected": "v1 加字段通过；破坏性变更需迁移器",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-08",
+      "status": "planned"
+    },
+    {
+      "id": "GF-09",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-09",
+      "trigger": "schema/adapter 修改后重跑",
+      "expected": "失败保留旧 artifact",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-09",
+      "status": "planned"
+    },
+    {
+      "id": "GF-10",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-10",
+      "trigger": "服务关闭",
+      "expected": "仅凭本地 canonical 重建/恢复/重放",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-10",
+      "status": "planned"
+    },
+    {
+      "id": "GF-11",
+      "class": "contract",
+      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-11",
+      "trigger": "adapter 删除",
+      "expected": "从最后完整 canonical revision 恢复",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-11",
+      "status": "planned"
+    }
   ],
-  "manifest_hash": "PENDING@1-5-2"
+  "manifest_hash": "5c72b455a1b7b91a347dea10db7fd0a0116b321188ea0475a26fa2abe5743825"
 }
