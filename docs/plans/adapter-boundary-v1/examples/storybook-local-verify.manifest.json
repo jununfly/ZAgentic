@@ -9,7 +9,7 @@
     "lockfile_ref": "package-lock.json",
     "direct": ["storybook@10.6.1", "@storybook/react@10.6.1", "@storybook/addon-a11y@10.6.1", "@storybook/test@10.6.1"]
   },
-  "provides": ["a11y", "viewport", "interaction", "docs"],
+  "provides": ["stories", "a11y", "viewport", "interaction", "docs"],
   "requires_canonical": [
     {
       "artifact": "ui-flow/v1",
@@ -48,6 +48,6 @@
   "risk": [
     "Storybook 大版本升级须重跑 capability-fit 与 mapping 校验",
     "a11y addon 缺失时降级为 degraded，须标记缺口",
-    "source_commit / sbom_ref / lockfile_ref 须在 1-7-3 集成时钉死（当前为占位）"
+    "1-7-3 已落地 in-repo 离线确定性引擎（skills/ui/zj-ui-core/scripts/adapters/storybook_adapter.py，engine=deterministic 默认）；本 version 10.6.1 为概念上游投影参考，engine=storybook 接缝待接入真实 Storybook/Playwright 运行时后再钉死 sbom_ref/lockfile_ref"
   ]
 }

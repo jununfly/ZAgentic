@@ -1188,16 +1188,38 @@
       "id": "1-7-3",
       "uid": "01a15426baa7-c835a2240a",
       "label": "实现 Storybook active 本地验证 adapter：stories、a11y、viewport、interaction、docs",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-7",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "Storybook adapter 落点与形态？",
+          "answer": "作为离线确定性引擎 skills/ui/zj-ui-core/scripts/adapters/storybook_adapter.py；不注册为 chain S 阶段（它是 verify 的依赖 B1），由专属测试驱动 fixture。",
+          "note": ""
+        },
+        {
+          "q": "五维验证语义如何保证不是假绿？",
+          "answer": "在 canonical ui-flow/v1+design tokens+break-cell 上做确定性度量：stories 枚举、a11y 对比度与可访问名、viewport 视口适配、interaction 动作-验收接线+组件注册、docs 文档完整性；如实产出含 8 链路字段的 checks 再委托 run_verify 聚合，不伪造 PASS、不声称渲染像素。",
+          "note": ""
+        },
+        {
+          "q": "真实 Storybook 运行时怎么办？",
+          "answer": "默认 engine=deterministic（本仓无 Storybook 运行时，离线可复现）；预留 engine=storybook 接缝（storybook test/Playwright 返回同构 checks）并在 manifest risk 标注；当前 fixture 只覆盖 deterministic 引擎。",
+          "note": ""
+        },
+        {
+          "q": "adapter 产出契约？",
+          "answer": "run(request) 返回 {adapter_id,status,stories[],checks[],receipt,report}；receipt 复用 VERIFICATION_RECEIPT 契约（8 链路字段+fingerprint+checked）。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "Storybook 验证 adapter 可执行 stories/a11y/viewport/interaction 并产出 receipt"
-      ]
+      ],
+      "rounds": 1
     },
     "1-7-4": {
       "id": "1-7-4",
@@ -1455,7 +1477,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 19:29:31",
+    "updated": "2026-10-20 19:47:12",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
