@@ -1,0 +1,18 @@
+{
+  "_comment": "调用面索引（test-side）。刻意不写进 adapter manifest：manifest schema 是 additionalProperties:false，新增字段须 major bump + 存量 adapter 全部补字段并重过 capability-fit（adapter-boundary-v1.md §3）。本索引是测试侧事实源，deny-first：registry 里每个 id 必须在此声明调用面，否则 assert_invocation_surface_declared 报错。",
+  "storybook-local-verify": {
+    "invocation_surface": "runtime",
+    "seam": "real",
+    "reason": "1-7-3 落地的唯一真实运行时 adapter；离线确定性引擎，可真实观测 ok 与 failure 两类 outcome。"
+  },
+  "json-render-core": {
+    "invocation_surface": "none",
+    "seam": "simulated",
+    "reason": "opt-in 投影（@json-render/core@0.8.0），仓库内无运行时投影引擎。退出 invocation/回退执行测试面，仅参与 lifecycle + removal R1–R5 + manifest 契约测试。"
+  },
+  "a2ui": {
+    "invocation_surface": "none",
+    "seam": "simulated",
+    "reason": "公开协议（a2ui.org v0.8），非运行时。退出 invocation/回退执行测试面，仅参与 lifecycle + removal R1–R5 + manifest 契约测试。"
+  }
+}

@@ -41,8 +41,19 @@ def load(path):
         return json.load(handle)
 
 
+#: 本测试只消费 Storybook adapter 自己的 fixture 族。1-7-4 起 adapters/ 下新增了
+#: F-A2 族（FF-JR-* / FF-A2UI-*，json-render/A2UI golden，expected.json 形状与本族
+#: 不同），全树 rglob 会把它扫进来并让断言崩在 KeyError 上。故按命名空间前缀限定：
+#: 既能抓到本族内未登记的 FF-SB-04，又不会被别的族污染。
+FIXTURE_NAMESPACE = "FF-SB-"
+
+
 def fixture_dirs():
-    return sorted(path.parent for path in FIXTURES.rglob("input.json"))
+    return sorted(
+        path.parent
+        for path in FIXTURES.rglob("input.json")
+        if path.parent.name.startswith(FIXTURE_NAMESPACE)
+    )
 
 
 class FixtureInventory(unittest.TestCase):

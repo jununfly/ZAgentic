@@ -56,6 +56,8 @@ manifest 必须包含以下字段（完整 schema 见 `adapter-manifest.schema.j
 | `disabled` | 主动关闭 | 人为关闭；canonical artifact + 静态 preview 仍服务 |
 | `quarantine` | 被隔离 | 安全闸门/capability-fit 失败；永不调用，待修复或移除 |
 
+> ⚠️ **术语消歧**：本处的 `quarantine` 是 **adapter 生命周期状态**（manifest `lifecycle` 枚举值，小写 `"quarantine"`，持久、管理隔离）。它**不等于** verification receipt 里的 `QUARANTINED` 状态（大写带 D，瞬态、单次运行证据不可信的判定，来源 `ui_skill_core` / `hard_gates`）。二者机制、层级、触发、持久性全不同，1-7-5 不得混淆。完整辨析见 [`quarantine-disambiguation.md`](./quarantine-disambiguation.md)。
+
 > `removal`（删除）是 **经 removal_test 校验的瞬态**，不持久化为状态：删除动作完成后 adapter 从 registry 消失，不保留 `removed` 状态位。
 
 ### 6.2 故障回退（fallback）
@@ -64,6 +66,8 @@ manifest 必须包含以下字段（完整 schema 见 `adapter-manifest.schema.j
 
 - **本地恢复不变量**（任何回退都必须保证）：canonical artifact、静态 preview、本地验证（a11y/interaction baseline）在 adapter 不可用或断网/远程故障时仍可用。
 - 对 A 群 `active-verify`（Storybook）默认 `on_failure: local-verify`、`on_network_loss: static-preview`、`on_remote_failure: static-preview`——本地验证优先，远程/网络问题回落静态 preview。
+
+> 📐 **测试主体分层（1-7-5）**：回退决策的被测对象是 **boundary 在 adapter 调用 seam 上的行为**，与 adapter 自身有无运行时**正交**。故 Storybook（有真实运行时）作 L1 保真基准 + `SimulatedAdapterSeam` 作 L2 故障注入穷举矩阵；json-render / A2UI 无运行时投影引擎，声明式**退出** invocation/回退执行测试面（`invocation_surface: none`，deny-first 未声明即报错）。另：`network_loss` / `remote_failure` 在本仓库**无真实运行时观测支撑**（Storybook 为离线确定性引擎），属 seam 契约定义，不得声称已真实验证。完整契约见 [`invocation-seam.md`](./invocation-seam.md)。
 
 ## 7. removal test（删除后不变量）
 
@@ -82,6 +86,8 @@ manifest 必须包含以下字段（完整 schema 见 `adapter-manifest.schema.j
 - `adapter-manifest.schema.json` — adapter manifest JSON Schema v1（字段集事实源）。
 - `adapter-boundary-v1.md` — 本规格说明。
 - `examples/storybook-local-verify.manifest.json` — Storybook active adapter 示例 manifest（模板，供 `1-7-3` 消费；`source_commit` / `sbom_ref` / `lockfile_ref` 须在集成时钉死）。
+- `quarantine-disambiguation.md` — `quarantine`(adapter 生命周期) vs `QUARANTINED`(receipt 判定) 消歧事实源。
+- `invocation-seam.md` — adapter 调用 seam 契约：三层测试主体、故障注入保真度护栏、调用面 deny-first 索引、诚实账本。
 
 ## 9. 退出标准核对（1-7-2）
 
