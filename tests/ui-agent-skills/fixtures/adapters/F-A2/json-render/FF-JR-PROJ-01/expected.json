@@ -1,0 +1,40 @@
+{
+  "adapter_id": "json-render-opt-in",
+  "status": "OK",
+  "pin_version": "0.8.0",
+  "projection_present": true,
+  "catalog_present": true,
+  "capture_method": "runtime-captured; the projection below is the flat Spec emitted by the adapter and validated with the REAL @json-render/core@0.8.0 package via validateSpec() (structural) + per-element catalog zod conformance. Reproduction: /tmp/jr-verify.mjs (pinned @json-render/core@0.8.0).",
+  "projection": {
+    "root": "home",
+    "elements": {
+      "home": {
+        "type": "Card",
+        "props": { "title": "首页" },
+        "children": ["btn-detail"]
+      },
+      "btn-detail": {
+        "type": "Button",
+        "props": { "label": "打开详情" },
+        "children": [],
+        "on": { "press": { "action": "open", "params": {} } }
+      }
+    }
+  },
+  "validation": {
+    "package": "@json-render/core@0.8.0",
+    "structural": { "valid": true, "issues": [] },
+    "catalog_conformance": {
+      "component_names": ["Card", "Button"],
+      "action_names": ["open"],
+      "elements_ok": true
+    }
+  },
+  "semantic_equivalence": {
+    "screens": 1,
+    "components": 2,
+    "actions": 1,
+    "intents": 1,
+    "acceptances": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "fixture_id": "FF-JR-PROTO-01",
+  "description": "opt-in 协议：adapter 声明 @json-render/core + 钉版本 + canonical schema lock，握手被接受 → OK",
+  "request": {
+    "input_revision": "rev-jr-proto-01",
+    "engine": "json-render",
+    "opt_in": true,
+    "pin_ref": "anchor.json#0.8.0",
+    "protocol": {
+      "handshake": {
+        "adapter": "@json-render/core",
+        "version": "0.8.0",
+        "canonical_schema_version": "ui-flow/v1",
+        "capabilities": ["projection", "input-compat"]
+      }
+    }
+  }
+}

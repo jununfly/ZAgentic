@@ -1,0 +1,40 @@
+{
+  "fixture_id": "FF-A2UI-IN-01",
+  "description": "输入兼容性：A2UI 文档含一个标准 catalog 未知组件类型（经 inline catalog 声明），未知组件须保留 + 记录 inline catalog 依赖，不得静默丢弃",
+  "request": {
+    "input_revision": "rev-a2ui-in-01",
+    "engine": "A2UI",
+    "opt_in": true,
+    "pin_ref": "anchor.json#0.8",
+    "candidate": {
+      "a2ui_document": {
+        "messages": [
+          {
+            "surfaceUpdate": {
+              "surfaceId": "home",
+              "components": [
+                { "id": "root", "component": { "Column": { "children": { "explicitList": ["pad"] } } } },
+                { "id": "pad", "component": { "SignaturePad": { "penColor": { "literalString": "#000000" } } } }
+              ]
+            }
+          },
+          { "dataModelUpdate": { "surfaceId": "home", "contents": {} } },
+          {
+            "beginRendering": {
+              "surfaceId": "home",
+              "root": "root",
+              "catalogId": "https://my-company.com/a2ui/v0.8/my_custom_catalog.json"
+            }
+          }
+        ]
+      },
+      "inline_catalog": {
+        "catalogId": "https://my-company.com/a2ui/v0.8/my_custom_catalog.json",
+        "components": {
+          "SignaturePad": { "type": "object", "properties": { "penColor": { "type": "string" } } }
+        },
+        "styles": {}
+      }
+    }
+  }
+}

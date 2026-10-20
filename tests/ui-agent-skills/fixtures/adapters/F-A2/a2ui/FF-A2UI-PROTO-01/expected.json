@@ -1,0 +1,11 @@
+{
+  "adapter_id": "a2ui-opt-in",
+  "status": "OK",
+  "protocol_accepted": true,
+  "version_negotiated": "0.8",
+  "schema_lock_anchored": "a2ui-v0.8-adjacency-list",
+  "schema_lock_meaning": "A2UI v0.8 document contract: surfaceUpdate/dataModelUpdate/beginRendering messages, adjacency-list components, BoundValue literals; version pinned via catalogId + A2A extension URI.",
+  "capabilities_ack": ["projection", "input-compat"],
+  "transport": "JSONL over SSE",
+  "capture_method": "spec-conformant; negotiated against A2UI v0.8 specification (a2ui.org/specification/v0.8-a2ui/). No runtime handshake execution."
+}

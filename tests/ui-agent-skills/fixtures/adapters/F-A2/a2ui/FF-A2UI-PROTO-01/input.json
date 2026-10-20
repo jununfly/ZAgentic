@@ -1,0 +1,20 @@
+{
+  "fixture_id": "FF-A2UI-PROTO-01",
+  "description": "opt-in 协议握手：声明 A2UI v0.8 + 通过 catalogId / A2A extension URI 协商版本 + 声明传输，握手被接受 → OK",
+  "request": {
+    "input_revision": "rev-a2ui-proto-01",
+    "engine": "A2UI",
+    "opt_in": true,
+    "pin_ref": "anchor.json#0.8",
+    "protocol": {
+      "handshake": {
+        "protocol": "A2UI",
+        "version": "0.8",
+        "catalogId": "https://a2ui.org/specification/v0_8/standard_catalog_definition.json",
+        "a2a_extension_uri": "https://a2ui.org/a2a-extension/a2ui/v0.8",
+        "transport": "JSONL over SSE (text/event-stream)",
+        "mime_note": "application/a2ui+json standardized in v0.9.1; v0.8 uses JSONL and negotiates version via catalogId / A2A extension, not a MIME type."
+      }
+    }
+  }
+}

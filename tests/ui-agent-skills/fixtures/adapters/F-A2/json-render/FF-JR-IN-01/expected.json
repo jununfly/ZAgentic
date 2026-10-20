@@ -1,0 +1,13 @@
+{
+  "adapter_id": "json-render-opt-in",
+  "status": "OK",
+  "input_compat": "PASS",
+  "known_fields_accepted": true,
+  "unknown_preserved": true,
+  "unknown_not_dropped": true,
+  "unknown_not_empty": true,
+  "deviation_flagged": true,
+  "warning_emitted": true,
+  "contract": "An unknown component type / extension field in the canonical input MUST be preserved verbatim (never silently dropped or emptied). The adapter records it as a deviation and emits a warning; it does NOT pass catalog conformance silently. The drift harness (1-7-4-4) then decides: version drift = report only; semantic loss (field deletion / unknown dropped) = hard fail.",
+  "capture_method": "declarative-contract; the preservation rule is validated at the adapter boundary (1-7-2) and exercised by the drift harness. The unknown field is carried through the flat Spec as an element whose `type` is absent from the pinned catalog, surfaced by catalog conformance (FF-JR-PROJ-01 validation block) rather than discarded."
+}

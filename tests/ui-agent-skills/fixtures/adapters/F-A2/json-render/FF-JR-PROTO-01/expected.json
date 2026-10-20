@@ -1,0 +1,15 @@
+{
+  "adapter_id": "json-render-opt-in",
+  "status": "OK",
+  "protocol_accepted": true,
+  "version_negotiated": "0.8.0",
+  "schema_lock_anchored": "json-render-flat-spec@0.8.0",
+  "schema_lock_meaning": "The adapter emits the flat Spec shape { root: string, elements: Record<key, UIElement> } consumed by @json-render/core@0.8.0; the catalog (component type -> zod props) is frozen at the pinned version.",
+  "capabilities_ack": ["projection", "input-compat"],
+  "validation_under_lock": {
+    "package": "@json-render/core@0.8.0",
+    "structurally_valid": true,
+    "catalog_conformant": true
+  },
+  "capture_method": "runtime-backed; the schema lock = the flat Spec format validated by @json-render/core@0.8.0 validateSpec(). See FF-JR-PROJ-01 expected.json for the validated golden under this lock."
+}

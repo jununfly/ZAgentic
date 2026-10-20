@@ -1,0 +1,20 @@
+{
+  "spec_id": "F-A2-JR-DRIFT",
+  "purpose": "对两版 golden fixture（baseline + candidate）检测语义丢失与版本漂移；实现归属 1-7-4-4 共享 golden-diff / 版本漂移检测 harness。",
+  "inputs": {
+    "baseline_golden": "FF-JR-*-XX/expected.json @ pin.version baseline",
+    "candidate_golden": "FF-JR-*-XX/expected.json @ pin.version candidate",
+    "pin_baseline": "anchor.json#<commit/tag>",
+    "pin_candidate": "anchor.json#<commit/tag>"
+  },
+  "signals": {
+    "version_drift": "pin.version 或 pin.source_commit 变化 → 触发重测 + 版本漂移报告（仅报告，不直接判 fail）",
+    "semantic_loss": "candidate 相对 baseline 在 semantic_equivalence / catalog / tree 结构上出现字段删除或语义集合不等价 → 报语义丢失"
+  },
+  "rules": [
+    "版本漂移仅报告，不自动判 fail（需 Human 确认是否接受新基线）",
+    "语义丢失判 hard fail，并列出字段级 diff",
+    "未知字段处理回归（unknown 四元组保留）任一破坏 → fail"
+  ],
+  "owner_node": "1-7-4-4"
+}

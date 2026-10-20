@@ -1,0 +1,41 @@
+{
+  "adapter_id": "a2ui-opt-in",
+  "status": "OK",
+  "pin_version": "0.8",
+  "projection_present": true,
+  "capture_method": "spec-conformant document validated against the published A2UI v0.8 specification (a2ui.org/specification/v0.8-a2ui/). No runtime execution — A2UI is a protocol spec, not a runtime; the golden is a static v0.8-conformant adjacency-list document. Component property names follow the v0.8 standard catalog (representative subset: Column/Card/Button).",
+  "projection": {
+    "messages": [
+      {
+        "surfaceUpdate": {
+          "surfaceId": "home",
+          "components": [
+            { "id": "root", "component": { "Column": { "children": { "explicitList": ["card"] } } } },
+            { "id": "card", "component": { "Card": { "child": "btn" } } },
+            { "id": "btn", "component": { "Button": { "label": { "literalString": "打开详情" }, "userAction": { "action": "open" } } } }
+          ]
+        }
+      },
+      { "dataModelUpdate": { "surfaceId": "home", "contents": {} } },
+      {
+        "beginRendering": {
+          "surfaceId": "home",
+          "root": "root",
+          "catalogId": "https://a2ui.org/specification/v0_8/standard_catalog_definition.json"
+        }
+      }
+    ]
+  },
+  "model_notes": {
+    "structure": "adjacency-list: flat component list, tree rebuilt via id references (Column.children.explicitList / Card.child)",
+    "data_binding": "BoundValue objects (literalString/literalNumber/literalBoolean/path); additionalProperties:false per spec",
+    "version_negotiation": "via catalogId URI (standard_catalog_url) or A2A extension URI; no in-message version field in v0.8"
+  },
+  "semantic_equivalence": {
+    "surfaces": 1,
+    "components": 2,
+    "actions": 1,
+    "intents": 1,
+    "acceptances": 1
+  }
+}
