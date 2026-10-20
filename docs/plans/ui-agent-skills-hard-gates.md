@@ -269,7 +269,9 @@ python -m unittest tests.test_ui_agent_skills_hard_gates   # 14 项，含文档/
 - **向上**：实现 verification-matrix §1 七维度与 §2 的 A/W cell 门禁；消费 fixture-manifest
   的 fixture 全集（class 覆盖）；消费 env-fingerprint 的 config_hash 参与 `matrix_key`。
 - **向下（1-5-4）**：每 cell 提供 `observed` + `status` + `findings[]`，evidence /
-  unattributable 两级语义已分离，receipt 可直接引用。
+  unattributable 两级语义已分离，receipt 可直接引用。→ 已于 1-5-4 定稿：
+  `ui-agent-skills-verification-receipt.md`（R-RCP-1）与
+  `verification_receipt.py`，收据的 `checks[]` 即本节点的 cell 集合（含 `checked`）。
 - **向下（1-6/1-7）**：adapter 必须按 R-OBS-1 产出 bundle；`name` 为 computed accessible
   name，`name_source` 缺省即放弃 HG-DOM-03（不得由采集端自行补判）。
 - **向下（1-9）**：paired run 比 `env_hash`；`QUARANTINED` 项不进分母。

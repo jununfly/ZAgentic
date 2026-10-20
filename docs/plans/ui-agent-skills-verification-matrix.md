@@ -91,3 +91,4 @@ matrix_key = sha256(
 - **向下（1-5-2）**：runner 须用本矩阵 × `fixture-manifest` 生成 cell 计划，计算 `matrix_key`。
 - **向下（1-5-3）**：DOM/ARIA/focus/contrast/overflow/responsive/motion/state 硬门禁在此矩阵上实现。
 - **向下（1-5-4）**：receipt 须携带 `matrix_key` 与每个 cell 的 observed/status，保证结论可归因、可重算。
+  → 已定稿：`ui-agent-skills-verification-receipt.md` §1/§2（schema v1 + 四层聚合 + 计数分母）。

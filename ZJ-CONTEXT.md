@@ -910,6 +910,18 @@ _Avoid_: 把浏览器截图当观察包, 让门禁自己抓 DOM, 用空段代表
 对观察包做确定性判定的纯函数（`research/ui-agent-skills/hard_gates.py`，R-HAR-2），产出 `FAIL / HUMAN_REVIEW_REQUIRED / QUARANTINED / WARNING / PASS`。核心语义是 **fail-closed**：证据缺失一律 `HUMAN_REVIEW_REQUIRED`，绝不落 `PASS`；`overflow`/`focus`/恢复类失败不得降级成 warning。与"评分/建议"的区别在于它没有"差不多"档。
 _Avoid_: 把 hard gate 叫 lint, 用 warning 表示硬失败, 允许部分覆盖算通过
 
+**收据 (verification receipt)**:
+可归因、可重算、可过期的验证结论载体（R-RCP-1，`research/ui-agent-skills/verification_receipt.py`，契约 `docs/plans/ui-agent-skills-verification-receipt.md`）。14 个固定段 + 身份段，每个 cell 带 `status` / `observed` / 判据快照（threshold、oracle、command），使结论离线可复核；签发后 append-only，同 `receipt_id` 内容变化即失效。与"报告"的区别：报告给人读，收据给机器与复核人判。
+_Avoid_: 把运行日志当收据, 用通过率代替覆盖率判 PASS, 签发后原地改状态
+
+**stale / revalidation_required**:
+收据的新鲜度判定（读取时重算，不信任存量值）。`STALE` = 漂移可精确收敛到部分 cell（fixture 内容/class、阈值/oracle）；`REVALIDATION_REQUIRED` = 无法收敛或代价等同全量（env 轴、维度集合/cell 门禁、schema 升版、过期、事实源不可读）。过期（TTL 默认 14 天）不因 hash 未变而豁免。
+_Avoid_: 用 hash 未变当没过期, 把 STALE 当 FAIL, 拿"曾经通过"放行过期结论
+
+**无法归因 (unattributable)**:
+quarantine 的一个子类：证据无法映射到 fixture × dimension × viewport，或缺 evidence / release_condition。与 attributed 分开计数，两者都判 `QUARANTINED`；不得转成 `FAIL`（"不知道"不等于"已验证失败"），也不进通过率分母。解除须新 run_id + 复核人签署。
+_Avoid_: 把"不知道"写成失败, 把 quarantine 计入分母, 原地把 quarantine 改成 PASS
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:
