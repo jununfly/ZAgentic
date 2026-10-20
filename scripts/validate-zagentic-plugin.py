@@ -18,7 +18,14 @@ from pathlib import Path
 from typing import Any
 
 
-PUBLIC_BUCKETS = ("engineering", "codebase-docs", "productivity", "misc", "research")
+PUBLIC_BUCKETS = (
+    "engineering",
+    "codebase-docs",
+    "productivity",
+    "ui",
+    "misc",
+    "research",
+)
 GUIDE_PATH = Path("skills/engineering/zj-guide/SKILL.md")
 
 

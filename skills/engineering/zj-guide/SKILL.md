@@ -118,6 +118,26 @@ Keep the distinction sharp: systematic research explains an object; research
 collects evidence; research-report synthesizes evidence; design-review tests a
 proposed solution.
 
+## UI delivery
+
+A single chain from a sentence to a handed-off interface. One skill per stage, one write owner
+per artifact; when ownership or semantics is ambiguous the chain stops and asks instead of
+picking a winner.
+
+1. **`/zj-ui-brief`** — turn the conversation, or an edit of `UI-BRIEF.md`, into a brief draft: goal, users, task, constraints, success criteria, and an `unknown` entry wherever evidence is missing.
+2. **`/zj-ui-discover`** — close the gaps with a question budget of two, grading evidence instead of asserting it.
+3. **`/zj-ui-direction`** — produce two or three comparable direction cards; the Human chooses, the skill never picks for them.
+4. **`/zj-ui-design-system`** — freeze tokens and the component catalog, blocking unregistered components and failing contrast rather than substituting a "close enough" colour.
+5. **`/zj-ui-flow`** — own `ui-flow/v1` across its six distinct meanings (screen, component, state, action, intent, acceptance) with a passing semantic round-trip.
+6. **`/zj-ui-prototype`** — build the local preview from the flow using catalog components only; any effect goes through policy and approval first.
+7. **`/zj-ui-visual-review`** — inspect and screenshot against the user task and risk class, producing an attributable review record; a screenshot alone never means "design done".
+8. **`/zj-ui-break`** — break it with long, empty, error, extreme and localized data at 390, 768 and 1440.
+9. **`/zj-ui-verify`** — run the DOM/ARIA, focus, contrast, reduced-motion and network gates into a replayable verification receipt, with stale or unattributable evidence quarantined.
+10. **`/zj-ui-handoff`** — hand off with change summary, reproducible commands, risks, known limits, fallback and owner.
+
+Reach for this chain instead of `/zj-prototype` when the UI is the deliverable rather than a
+throwaway answer to one design question.
+
 ## Collaborative problem decomposition
 
 For a problem too complex for flat chat: decompose it, discuss it in parallel, then synthesize.
@@ -181,6 +201,6 @@ Off the main flow entirely.
 ## Scope of this router
 
 This router covers every public skill in `engineering/`, `codebase-docs/`,
-`productivity/`, `misc/`, and `research/`. Root-level personal skills are
+`productivity/`, `ui/`, `misc/`, and `research/`. Root-level personal skills are
 intentionally excluded: they are installable for the owner's setup but are not
 promoted as public routes.

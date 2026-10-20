@@ -5,6 +5,7 @@ Public skills live under `skills/`; private skills live in root-level `personal/
 - `engineering/` — daily code work
 - `codebase-docs/` — documentation systems for one codebase
 - `productivity/` — daily non-code workflows
+- `ui/` — the UI delivery chain, one skill per lifecycle stage (contract-first)
 - `misc/` — infrequent utilities
 - `research/` — evidence production and domain-specific research methods
 - `personal/` — installable personal setup, not promoted or plugin-registered
