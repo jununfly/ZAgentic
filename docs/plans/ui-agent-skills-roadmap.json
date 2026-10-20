@@ -138,7 +138,7 @@
       "id": "1-4",
       "uid": "01a154254cd0-1a14756343",
       "label": "Trust boundary、provenance 与 deny-first policy",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -152,6 +152,11 @@
           "q": "effect 执行需要经过哪些不可跳过的门？",
           "answer": "catalog allowlist→intent→policy→approval→sandbox lease→executor→provenance→receipt，任一缺失均 fail closed。",
           "note": "plan 是无副作用纯数据，effect 是受控副作用。"
+        },
+        {
+          "q": "本节点 scope 分类与交付物边界",
+          "answer": "Product execution（计划层）。仅冻结 trust boundary / provenance / deny-first 契约文档，不落地产品代码；真实 catalog 注册表、executor、deny fixture 实现归 1-6（目录与 SKILL.md 落地）与 1-9（真实 skill+fixture 运行）",
+          "note": ""
         }
       ],
       "notes": "唯一信任链：catalog allowlist → intent → policy → approval → sandbox lease → executor → provenance → receipt。",
@@ -160,7 +165,8 @@
         "无完整 intent、approval、sandbox lease、provenance 时任何 effect 均不可执行",
         "未注册组件/危险 action、凭据网络截图泄露、远程写回失败的 deny fixture 全部 fail closed",
         "素材 license/source/owner 缺失进入 quarantine，不进入默认产物"
-      ]
+      ],
+      "rounds": 1
     },
     "1-5": {
       "id": "1-5",
@@ -665,16 +671,28 @@
       "id": "1-4-1",
       "uid": "01a15426b6a1-df92304e0d",
       "label": "建立 component/action catalog allowlist、effect intent 与 unknown 语义",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "本节点交付物形态",
+          "answer": "冻结 catalog allowlist 契约 + effect intent 结构 + unknown 语义规范（plan 层文档）；不写 catalog 注册表/校验代码，真实实现归 1-6/1-9",
+          "note": ""
+        },
+        {
+          "q": "本节点关键设计决策",
+          "answer": "五不变量：I1 注册前提（未注册 component/action → unknown intent，不自动降级/不按名猜测）；I2 unknown 四元组 path/raw/reason/source 不压空；I3 intent 绑定 catalog_id+version+capability；I4 catalog 不可用 fail closed；I5 plan/effect 分离（intent 无副作用）。catalog registry = 能力声明唯一事实源；intent_id 确定性派生非 uuid。实测闸门 G-CAT-1..7 全归 1-9 回写。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "catalog 只允许注册组件/action，未知项只能形成 deny/unknown intent"
-      ]
+      ],
+      "rounds": 1
     },
     "1-4-2": {
       "id": "1-4-2",
@@ -1157,7 +1175,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 11:46:00",
+    "updated": "2026-10-20 12:06:35",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
