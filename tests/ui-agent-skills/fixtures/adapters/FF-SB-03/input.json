@@ -1,0 +1,39 @@
+{
+  "fixture_id": "FF-SB-03",
+  "description": "失败：login 屏缺文档 → docs FAIL；refresh 动作未接线且目标 GhostBtn 未注册 → interaction FAIL → receipt BLOCKED",
+  "request": {
+    "input_revision": "rev-sb-03",
+    "engine": "deterministic",
+    "candidate": {
+      "ui_flow": {
+        "screens": [
+          {"id": "login"},
+          {"id": "dashboard", "description": "仪表盘", "components": ["Table", "Card", "Button"]}
+        ],
+        "components": [
+          {"id": "Input", "min_width": 48},
+          {"id": "Button", "min_width": 48},
+          {"id": "Table", "min_width": 48},
+          {"id": "Card", "min_width": 48}
+        ],
+        "states": [{"id": "idle"}, {"id": "loading"}],
+        "actions": [
+          {"id": "submit_login", "component": "Button", "target": "Button"},
+          {"id": "refresh", "component": "GhostBtn", "target": "GhostBtn"}
+        ],
+        "intents": [{"label": "提交"}, {"label": "刷新"}],
+        "acceptances": [{"covers": ["submit_login"]}]
+      },
+      "design": {
+        "color": {
+          "on_surface": "#000000",
+          "surface": "#FFFFFF",
+          "on_primary": "#FFFFFF",
+          "primary": "#003366"
+        }
+      },
+      "break_cell": {"viewports": ["390x844", "768x1024", "1440x900"]},
+      "fingerprint": {"hash": "fp-sb03", "env": "baseline"}
+    }
+  }
+}
