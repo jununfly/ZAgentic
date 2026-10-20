@@ -1,0 +1,10 @@
+{
+  "chain_status": "FROZEN",
+  "stopped_at": "direction",
+  "total_writes": 2,
+  "plan_hash_count": 2,
+  "produced_artifact_kinds": [
+    "UI-BRIEF.md",
+    "UI-BRIEF.md"
+  ]
+}

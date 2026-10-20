@@ -1,0 +1,18 @@
+{
+  "chain_status": "OK",
+  "stopped_at": null,
+  "total_writes": 10,
+  "plan_hash_count": 10,
+  "produced_artifact_kinds": [
+    "UI-BRIEF.md",
+    "UI-BRIEF.md",
+    "UI-DESIGN.md",
+    "UI-DESIGN.md",
+    "UI-FLOW.md",
+    "UI-PREVIEW.md",
+    "UI-REVIEW.md",
+    "UI-BREAK-CELL.md",
+    "VERIFICATION-RECEIPT.md",
+    "UI-HANDOFF.md"
+  ]
+}
