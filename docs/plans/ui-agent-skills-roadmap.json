@@ -737,16 +737,43 @@
       "id": "1-4-3",
       "uid": "01a15426b725-ecf74af6a8",
       "label": "实现 provenance、asset-manifest.json、secret redaction 与许可证 quarantine",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "provenance 事实源归属",
+          "answer": "asset-manifest.json 是 provenance 唯一事实源；UI-DESIGN 等 artifact 内嵌 provenance 字段降级为'引用 manifest 的投影'，必须与该 manifest 逐字段一致，不得与 manifest 冲突（解决 canonical schema §2 与 1-4-1 §6 的潜在双源冲突）",
+          "note": ""
+        },
+        {
+          "q": "secret 处理继承 1-4-2 P7",
+          "answer": "secret 仅以短时 broker ref 形式存在（credential_refs / broker_ref_id，无值）；redaction 是写路径强制动作，在 executor 写副作用前、screenshot 落盘前、audit 落盘前发生，明文一律剥离；redaction 失败 fail closed 不落盘",
+          "note": ""
+        },
+        {
+          "q": "license 处理继承 canonical schema §2",
+          "answer": "资产 license 无法归因(unknown)或超出允许集合(incompatible)→quarantine，不进默认产物；被 quarantine 资产必须显式声明 replacement(替代 asset_id)或 null+reason，不得静默丢失能力（沿用 skill-capability-manifest stop_conditions）",
+          "note": ""
+        },
+        {
+          "q": "asset-manifest 粒度与命名",
+          "answer": "每产物输出根一份 asset-manifest.json（稳定文件名），记录该输出的全部资产；verification receipt 引用其 hash 以达成可归因；多输出可聚合但单一事实源仍是各输出根的 manifest",
+          "note": ""
+        },
+        {
+          "q": "asset 标识与防篡改",
+          "answer": "asset_id 确定性派生(非 uuid)；content_hash=sha256(资产内容)；manifest 条目 content_hash 与实际文件 hash 不符→拒绝采用(tamper 检测)，沿用 1-4-1 intent_id 确定性派生精神",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "provenance 与 asset-manifest 记录 hash/source/license/credit/owner/replacement/approval"
-      ]
+      ],
+      "rounds": 1
     },
     "1-4-4": {
       "id": "1-4-4",
@@ -1199,7 +1226,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 13:13:50",
+    "updated": "2026-10-20 13:25:18",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
