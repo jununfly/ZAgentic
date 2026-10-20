@@ -231,7 +231,7 @@
       "id": "1-7",
       "uid": "01a154254df7-69ab92657f",
       "label": "AdapterBoundary 与 adapter 生命周期",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -1256,15 +1256,35 @@
       "id": "1-7-5",
       "uid": "01a15426bb4f-cf6a5f5bef",
       "label": "验证 adapter 删除、断网、远程服务失败时的本地恢复、degraded/disabled/quarantine",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-7",
-      "children": [],
+      "children": [
+        "1-7-5-1",
+        "1-7-5-2",
+        "1-7-5-3",
+        "1-7-5-4"
+      ],
       "decisions": [
         {
           "q": "1-7-5 explore 预算上限设多少？",
           "answer": "max-children=5 / max-rounds=2~3（本节点先设 2，若需合法重开再升 3）；与父 1-7 的 max_rounds=2 及兄弟 1-7-4 的 max_children=5 对齐",
           "note": "zj 选推荐值 5/2~3（22:4x）"
+        },
+        {
+          "q": "1-7-5 落点选哪个？",
+          "answer": "a1：建薄边界编排层（边界 registry + 四态状态机 + 回退分发 + removal_test 执行器）+ 测试。理由：1-7-2 只产出 spec + schema 字段、无执行器，R1–R5 与四态/三类回退缺机器证据；a2（只写测试）无可执行对象可测，a3（只补文档）不产出可执行断言。",
+          "note": "zj 拍板 a1（2026-10-21 01:3x）"
+        },
+        {
+          "q": "边界编排层落地位置 + 断网/远程故障怎么测？",
+          "answer": "生产代码落 skills/ui/zj-ui-core/scripts/adapter_boundary.py（AdapterBoundary 是 zj-ui-core 的契约层能力，与 1-7-3 的 adapters/ 同层）；测试 double（Real/Simulated seam）留在 tests/，单向依赖生产契约常量，避免两处事实源。断网/远程故障走 seam 契约级注入，不真断网——Storybook 为离线确定性引擎，真实网络故障在本仓库不可观测，已写死 REAL_RUNTIME_BACKED / SEAM_CONTRACT_ONLY（见 invocation-seam.md 诚实账本）。",
+          "note": "zjj 依 1-7-5 预置基建推导，开工时落盘"
+        },
+        {
+          "q": "1-7-5 a1 完成到什么程度？有没有未覆盖的部分？",
+          "answer": "a1 已落地：生产侧 skills/ui/zj-ui-core/scripts/adapter_boundary.py（四态状态机 + 回退分发 + removal_test 执行器 + 本地恢复不变量），证据 tests/test_ui_agent_skills_adapter_boundary.py 28 用例全过（含 4 outcome × 4 lifecycle = 16 回退矩阵全遍历、disabled/quarantine 用 seam.calls==0 证明永不调用）。诚实边界三条：① 编排层目前只有测试消费者，尚无生产运行时接线（真实调用方出现时才接）；② network_loss / remote_failure 走 seam 契约级注入，本仓库无法真实观测（Storybook 为离线确定性引擎），不得声称真实断网已验证；③ R1–R5 的 probe 由调用方注入，本节点只验执行器契约，真实解析/构建/验证命令接线留给运行时补齐。",
+          "note": "zjj 收口时落盘（2026-10-21 01:4x）"
         }
       ],
       "notes": "",
@@ -1275,7 +1295,8 @@
       "budget": {
         "max_children": 5,
         "max_rounds": 2
-      }
+      },
+      "rounds": 1
     },
     "1-8-1": {
       "id": "1-8-1",
@@ -1588,11 +1609,59 @@
       "exit_criteria": [
         "golden-diff/版本漂移检测 harness：对两版 golden fixture 能报告语义丢失与版本漂移（字段级 diff + 版本锚点比对）"
       ]
+    },
+    "1-7-5-1": {
+      "id": "1-7-5-1",
+      "uid": "01a15a62c901-bfcbc7fc6b",
+      "label": "边界 registry + 四态生命周期状态机（含 quarantine/disabled 调用守卫）",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-7-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-7-5-2": {
+      "id": "1-7-5-2",
+      "uid": "01a15a62c9f0-075f2c6183",
+      "label": "回退分发器：outcome_class → fallback action（接 seam 契约）",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-7-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-7-5-3": {
+      "id": "1-7-5-3",
+      "uid": "01a15a62cb00-15c3bf442d",
+      "label": "removal_test 执行器：R1–R5 + 本地恢复不变量",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-7-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-7-5-4": {
+      "id": "1-7-5-4",
+      "uid": "01a15a62cbf1-b08c2f815e",
+      "label": "端到端集成：删除 / 断网 / 远程故障三场景 + 本地恢复断言",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-7-5",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
     }
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 22:49:27",
+    "updated": "2026-10-21 01:41:17",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
