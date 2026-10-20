@@ -110,7 +110,7 @@
       "id": "1-3",
       "uid": "01a154254c82-e31f1ee66c",
       "label": "Skill capability manifest 与 resolver 编排",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -294,7 +294,8 @@
         "1-9-1",
         "1-9-2",
         "1-9-3",
-        "1-9-4"
+        "1-9-4",
+        "1-9-5"
       ],
       "decisions": [
         {
@@ -642,16 +643,23 @@
       "id": "1-3-4",
       "uid": "01a15426b655-fef2fbedbe",
       "label": "持久化 plan、decision、revision 与 handoff 的可恢复编排记录",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-3",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-3-4 的交付物形态与范围边界是什么？",
+          "answer": "冻结单一契约文档 ui-agent-skills-persistence-replay-contract.md：定义 plan/decision/revision/handoff/receipt 五类记录的持久化结构、append-only 日志 + canonical revision 快照的存储模型、跨会话重放协议、崩溃恢复不变式与一致性闸门 G-19..G-25。不写存储引擎、不写重放代码、不跑断言。",
+          "note": "与 1-3-1/2/3 一致：计划层只冻结契约。PlanRecord 字段复用 1-3-2 §5.1 不重定义；存储引擎与重放实现归 1-6 落地，G-19..G-25 实测证据归 1-9 真实 skill + fixture 回写。exit 判据'跨会话重建当前工作'由重放协议+闸门覆盖，属实测不宣称通过。"
+        }
+      ],
+      "notes": "G-19..G-25 实测闸门的实际承载节点=1-9-5（持久化/重放实测闸门回写）。本节点仅冻结契约，闸门证据由 1-9-5 用真实 skill+fixture 回写后，方可解除本节点 open 标注。",
       "layer": "plan",
       "exit_criteria": [
         "跨会话可从 revision、decision、plan、receipt、handoff 重建当前工作"
-      ]
+      ],
+      "rounds": 1
     },
     "1-4-1": {
       "id": "1-4-1",
@@ -1117,11 +1125,39 @@
       "exit_criteria": [
         "rollout、kill-switch、adapter 移除和 revalidation 的触发条件可执行"
       ]
+    },
+    "1-9-5": {
+      "id": "1-9-5",
+      "uid": "01a15767ea79-a65a75c5c8",
+      "label": "持久化/重放实测闸门回写（G-19..G-25）",
+      "status": "pending",
+      "mode": "exploit",
+      "parent": "1-9",
+      "children": [],
+      "decisions": [
+        {
+          "q": "1-9-5 在整体路线中的定位与依赖是什么？",
+          "answer": "本节点是 1-3-4 文档声明『G-19..G-25 归 1-9 真实 skill+fixture 回写』的实际承载点。依赖 1-6（存储引擎+重放实现落地）与 1-9-2/1-9-3（真实 skill+fixture 运行数据）。产出回填 1-3-4 文档闸门表；全部通过后才能解除 1-3-4 的 open 标注，任一闸门 fail 则 1-3 整节点不得宣称通过。",
+          "note": "1-9 原 4 个叶节点只覆盖端到端 paired run 与毕业指标（返工率/决策时间/escaped defect/visual/a11y/越权/provenance/receipt），未点名持久化/重放专项闸门，故补 1-9-5 显式承载"
+        }
+      ],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "G-19 跨会话重放一致：同输入经进程重启后重放，plan_hash 与 canonical revision 快照哈希逐字节一致（样本量≥20，命中率 100%）",
+        "G-20 重放幂等：同一 (run_id, replay_seq) 重放多轮，仅产生一份 canonical 记录，无重复写/无孤儿记录",
+        "G-21 decision 不可变：已落 decision 记录禁止 in-place 修改，修改一律为新记录，审计链无断点",
+        "G-22 revision 链完整：从 canonical revision 可重建全量 revision 链，无断点、无孤儿节点",
+        "G-23 handoff 审计完整：handoff 记录含 fencing_snapshot，且可溯源到对应 lease 事件",
+        "G-24 重启后 fencing 恢复正确：进程重启后 max_token 由持久化恢复，旧 token 写入一律拒（≥10 次重启样本 100%）",
+        "G-25 恢复失败=recovery error：日志损坏/缺失场景返回 recovery error，不伪报成功",
+        "回填完成：1-3-4 文档 G-19..G-25 闸门表从 open 更新为实测值（pass/fail + 样本数 + 异常），1-3-4 节点 open 标注解除"
+      ]
     }
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 09:47:01",
+    "updated": "2026-10-20 11:46:00",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
@@ -1538,7 +1574,13 @@
       "from": "01a15426bd9d-9b90016b3c",
       "to": "01a15426bdde-ce41ce2957",
       "type": "blocks"
+    },
+    {
+      "id": "e70",
+      "from": "01a15767ea79-a65a75c5c8",
+      "to": "01a15426bd9d-9b90016b3c",
+      "type": "blocks"
     }
   ],
-  "edge_seq": 69
+  "edge_seq": 70
 }
