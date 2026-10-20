@@ -1,0 +1,20 @@
+{
+  "fixture_id": "FF-DISC-02",
+  "stage": "discover",
+  "description": "证据无可归因来源：必须标 unknown，值不得被猜进要求字段",
+  "request": {
+    "brief_revision": "rev-brief-ff-02",
+    "idempotency_key": "ff-disc-02",
+    "question_budget": 2,
+    "questions_asked": 2,
+    "brief": {
+      "goal_users": ["财务审批人"],
+      "unknown": [
+        {"path": "goal_task", "raw": null, "reason": "未声明要完成的任务", "source": "dialog#7"}
+      ]
+    },
+    "evidence": [
+      {"path": "goal_task", "value": "提交报销单", "source": "assumed"}
+    ]
+  }
+}

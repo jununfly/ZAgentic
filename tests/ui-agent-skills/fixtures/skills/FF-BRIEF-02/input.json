@@ -1,0 +1,15 @@
+{
+  "fixture_id": "FF-BRIEF-02",
+  "stage": "brief",
+  "description": "缺 success_criteria：转 unknown 四元组 + NEEDS_CONTEXT，零写入",
+  "request": {
+    "input_revision": "dialog-2026-10-20#7",
+    "idempotency_key": "ff-brief-02",
+    "questions_asked": 0,
+    "candidate": {
+      "goal_users": ["财务审批人"],
+      "goal_task": "提交报销单",
+      "constraints": ["必须复用现有 SSO"]
+    }
+  }
+}

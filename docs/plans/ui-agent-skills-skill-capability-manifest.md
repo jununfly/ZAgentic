@@ -7,6 +7,14 @@
 >
 > 权威来源：`discussions/ui-agent-skills-complete-solution/MASTER.md` L17（编排层定义）、L58-75（skill portfolio 与七字段要求）、L133（多 skill 抢占风险）、L146-147（沉淀清单）；`sub-02-skill-orchestration.md` L201-207（整合立场）、L73（owner 数=1 闸门）、L97（四类失败结果）、L181（租约写锁）。
 
+> **1-6-2 增补（不改上文冻结内容）**：`skills/ui/` 多了一个**第十一个**技能 `zj-ui-core`，它是
+> **S0 base carrier**，不属于本文定义的十个 stage：`stage=S0`、`precedence=5`、`owner_scope=read`、
+> `writes=[]`、`failure_fixtures=[]`（它没有自己的 failure fixture，fixture 属于各 stage）。
+> 存在的理由：本桶不允许共享 `_lib/`（`skills/<bucket>/` 的直接子目录必须含 `SKILL.md`），而
+> "unknown 四元组 / deny-first / 原子提交"只应有一份实现。它的 16 字段同样适用，只是 §2 的阶段
+> 目录与 §4 的 fixture→owner 矩阵仍按十个 stage 计算。引擎契约见
+> `ui-agent-skills-stage-engine.md`。
+
 ---
 
 ## 1. Manifest 字段集（每个 skill 必须全量登记）

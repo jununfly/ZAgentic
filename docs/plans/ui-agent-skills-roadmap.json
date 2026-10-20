@@ -1021,16 +1021,38 @@
       "id": "1-6-2",
       "uid": "01a15426b8f5-5f2f2fd5e3",
       "label": "实现 zj-ui-brief、zj-ui-discover、zj-ui-direction、zj-ui-design-system",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-6",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "确定性代码的正式落点在哪？（research/ 是暂存、skills/ui/ 下不能有共享 _lib）",
+          "answer": "新增 base skill skills/ui/zj-ui-core/（stage S0、precedence 5、owner_scope read、writes []），schema/unknown 四元组/deny-first/原子提交/幂等键/contrast 全部实现放在它的 scripts/ 下；S1..S10 十个技能目录保持纯文档，SKILL.md 指向引擎入口。它是技能目录（含 SKILL.md），因此递归校验器与 copy 安装天然覆盖。",
+          "note": ""
+        },
+        {
+          "q": "「对话 → 结构化 brief」由谁解析？",
+          "answer": "agent 解析，代码只校验。引擎只接受结构化 request（candidate/evidence/cards/tokens），负责 schema 校验、deny-first、unknown 保留、原子提交与幂等键。不做自然语言抽取。",
+          "note": ""
+        },
+        {
+          "q": "失败 fixture 落哪、什么形态？",
+          "answer": "tests/ui-agent-skills/fixtures/skills/<FF-ID>/{input.json,expected.json} 两文件分离，并在 docs/plans/ui-agent-skills-fixture-manifest.json 增 12 条 status=ready，用 dual_lane_runner.py init --write 重算 manifest_hash。",
+          "note": ""
+        },
+        {
+          "q": "本节点是否现在就串 brief→discover→direction→design-system 端到端链？",
+          "answer": "各验各的：每个 fixture 只断言本 skill 的状态/写入次数/unknown/rejected/产物关键字段；最多加 4 条「上游产物喂下游」的接口级用例。端到端串联仍归 1-6-5 的 resolver。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "brief/discover/direction/design-system 四个 skill 具备契约、实现和失败 fixture"
-      ]
+      ],
+      "rounds": 1
     },
     "1-6-3": {
       "id": "1-6-3",
@@ -1378,7 +1400,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 16:31:51",
+    "updated": "2026-10-20 17:03:55",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

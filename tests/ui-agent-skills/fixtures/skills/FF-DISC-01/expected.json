@@ -1,0 +1,15 @@
+{
+  "fixture_id": "FF-DISC-01",
+  "status": "OK",
+  "writes": 1,
+  "unknown": [],
+  "rejected_fields": [],
+  "artifact_present": true,
+  "revision_is_sha256": true,
+  "artifact_expect": {
+    "artifact_kind": "UI-BRIEF.md",
+    "content.goal_task": "提交报销单并跟踪审批状态",
+    "content.constraints[0]": "必须复用现有 SSO",
+    "content.unknown": []
+  }
+}

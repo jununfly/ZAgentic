@@ -1,0 +1,8 @@
+{
+  "fixture_id": "FF-BRIEF-03",
+  "status": "REJECTED",
+  "writes": 0,
+  "rejected_fields": ["successCriteria"],
+  "unknown": [],
+  "artifact_present": false
+}

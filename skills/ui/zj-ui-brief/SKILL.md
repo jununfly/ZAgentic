@@ -4,10 +4,10 @@ description: >-
   S1 INTAKE：把用户对话或 UI-BRIEF.md 的编辑解析成 brief 草案——目标、目标用户、任务、约束、
   成功标准与 unknown 四元组，缺口最多追问两次。Use when 用户说“做一个页面 / 审批流”，
   或直接编辑 UI-BRIEF.md 需要被校验并生成下一阶段 plan。
-  当前为契约骨架（1-6-1），可执行实现未落地。
+  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
 argument-hint: "<对话要点，或 UI-BRIEF.md 路径>"
 metadata:
-  status: contract-skeleton
+  status: implemented
   implemented_in: 1-6-2
 source: zagentic
 ---
@@ -16,9 +16,9 @@ source: zagentic
 
 S1 · INTAKE · `write` owner of `UI-BRIEF.md`
 
-> **状态：契约骨架（1-6-1）。** 本文件冻结 capability manifest、输入输出、禁止事项、停止条件
-> 与失败 fixture id；可执行实现归 1-6-2，fixture 运行归 1-6-5。实现落地前不要把本 skill
-> 当作可用能力。
+> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_brief`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
 
@@ -80,6 +80,16 @@ S1 · INTAKE · `write` owner of `UI-BRIEF.md`
 - `FF-BRIEF-01` 正常：对话含四类必填 → 产出 draft + 空 unknown，retries=0。
 - `FF-BRIEF-02` 冲突：缺 `success_criteria` → `NEEDS_CONTEXT`，写入次数为 0。
 - `FF-BRIEF-03` 失败：draft 含非法字段 → deny-first 拒绝，不提交 revision。
+
+## 实现与证据
+
+- 实现：`skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_brief`
+- fixture：`tests/ui-agent-skills/fixtures/skills/FF-BRIEF-{01,02,03}/`（input/expected 分离）
+- 跑批：`python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive`
+
+三条 fixture 断言的是状态与副作用，不是文案：01 = `OK` + `writes=1`；02 = `NEEDS_CONTEXT` +
+`writes=0` 且 unknown 四元组完整；03 = `REJECTED` 且被拒字段精确等于 `successCriteria`
+（camelCase 笔误不会被静默丢弃）。
 
 ## 交接
 

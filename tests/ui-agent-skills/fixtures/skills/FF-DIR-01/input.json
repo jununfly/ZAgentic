@@ -1,0 +1,42 @@
+{
+  "fixture_id": "FF-DIR-01",
+  "stage": "direction",
+  "description": "三张可比方向卡 + Human 选定：写入唯一 direction_choice 与 provenance",
+  "request": {
+    "brief_revision": "rev-brief-ff-01",
+    "idempotency_key": "ff-dir-01",
+    "human_choice": "card-b",
+    "cards": [
+      {
+        "id": "card-a",
+        "name": "高密度数据台",
+        "color": {"surface": "#FFFFFF", "accent": "#0B57D0"},
+        "typography": {"family": "Inter", "scale": ["12/16", "14/20", "20/28"]},
+        "density": "compact",
+        "motion": {"duration_ms": 120},
+        "tradeoffs": ["信息密度高", "首屏学习成本高"],
+        "reference": {"source": "internal-wiki", "reference": "finance-console-v2", "license": "proprietary-internal"}
+      },
+      {
+        "id": "card-b",
+        "name": "轻盈卡片流",
+        "color": {"surface": "#FAFAF7", "accent": "#0B57D0"},
+        "typography": {"family": "Source Han Sans", "scale": ["14/22", "16/26"]},
+        "density": "comfortable",
+        "motion": {"duration_ms": 180},
+        "tradeoffs": ["移动端友好", "同屏信息量下降"],
+        "reference": {"source": "public-gallery", "reference": "material-3", "license": "Apache-2.0"}
+      },
+      {
+        "id": "card-c",
+        "name": "表单分步引导",
+        "color": {"surface": "#FFFFFF", "accent": "#116329"},
+        "typography": {"family": "Noto Sans SC", "scale": ["16/24"]},
+        "density": "spacious",
+        "motion": {"duration_ms": 240},
+        "tradeoffs": ["错误率低", "步骤多、跳转多"],
+        "reference": {"source": "public-gallery", "reference": "gov-uk-patterns", "license": "OGL-3.0"}
+      }
+    ]
+  }
+}

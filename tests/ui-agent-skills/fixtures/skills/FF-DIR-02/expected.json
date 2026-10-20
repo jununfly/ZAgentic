@@ -1,0 +1,9 @@
+{
+  "fixture_id": "FF-DIR-02",
+  "status": "HUMAN_REVIEW_REQUIRED",
+  "writes": 0,
+  "quarantined": [],
+  "candidates": ["card-a", "card-b"],
+  "rejected_fields": [],
+  "artifact_present": false
+}

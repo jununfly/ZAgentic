@@ -1,0 +1,20 @@
+{
+  "fixture_id": "FF-DISC-03",
+  "stage": "discover",
+  "description": "追问超预算（3 > 2）：停止并交人，不写 artifact",
+  "request": {
+    "brief_revision": "rev-brief-ff-02",
+    "idempotency_key": "ff-disc-03",
+    "question_budget": 2,
+    "questions_asked": 3,
+    "brief": {
+      "goal_users": ["财务审批人"],
+      "unknown": [
+        {"path": "goal_task", "raw": null, "reason": "未声明要完成的任务", "source": "dialog#7"}
+      ]
+    },
+    "evidence": [
+      {"path": "goal_task", "value": "提交报销单", "source": "dialog#9"}
+    ]
+  }
+}

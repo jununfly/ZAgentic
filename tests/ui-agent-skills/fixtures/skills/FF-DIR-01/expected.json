@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-DIR-01",
+  "status": "OK",
+  "writes": 1,
+  "quarantined": [],
+  "candidates": ["card-a", "card-b", "card-c"],
+  "rejected_fields": [],
+  "artifact_present": true,
+  "revision_is_sha256": true,
+  "artifact_expect": {
+    "artifact_kind": "UI-DESIGN.md",
+    "content.direction_choice": "card-b",
+    "content.provenance.license": "Apache-2.0",
+    "content.tradeoffs": ["移动端友好", "同屏信息量下降"]
+  }
+}

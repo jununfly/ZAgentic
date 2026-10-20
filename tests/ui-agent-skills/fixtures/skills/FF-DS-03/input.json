@@ -1,0 +1,27 @@
+{
+  "fixture_id": "FF-DS-03",
+  "stage": "design_system",
+  "description": "contrast 不达标（#777777 on #FFFFFF = 4.478）：阻断且不得偷换成相近色",
+  "request": {
+    "design_revision": "rev-design-ff-01",
+    "idempotency_key": "ff-ds-03",
+    "design": {
+      "direction_choice": "card-b",
+      "component_principles": ["一屏一主操作"],
+      "tradeoffs": ["移动端友好"]
+    },
+    "tokens": {
+      "typography": {"family": "Source Han Sans", "license": "OFL-1.1", "scale": ["14/22"]},
+      "color": {
+        "surface": "#FFFFFF",
+        "on_surface": "#777777",
+        "primary": "#0B57D0",
+        "on_primary": "#FFFFFF"
+      },
+      "spacing": {"unit": 4},
+      "density": "comfortable",
+      "motion": {"duration_ms": 180}
+    },
+    "components": [{"name": "Button"}, {"name": "Input"}]
+  }
+}

@@ -185,6 +185,7 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 The UI delivery chain: one skill per stage, one write owner per artifact, and a
 stop-and-ask default whenever ownership or semantics is ambiguous.
 
+- [zj-ui-core](./skills/ui/zj-ui-core/SKILL.md) — S0 base carrier (not a stage): the deterministic engine every stage imports — schema validation, deny-first rejection, unknown quartets, idempotent commits, WCAG contrast, plus the fixture harness.
 - [zj-ui-brief](./skills/ui/zj-ui-brief/SKILL.md) — S1: turn conversation or UI-BRIEF.md edits into a brief draft with unknown entries instead of guesses.
 - [zj-ui-discover](./skills/ui/zj-ui-discover/SKILL.md) — S2: close brief gaps with a question budget of two, grading evidence and recording unknown.
 - [zj-ui-direction](./skills/ui/zj-ui-direction/SKILL.md) — S3: produce comparable direction cards and wait for the Human to choose.

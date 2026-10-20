@@ -1,0 +1,32 @@
+{
+  "fixture_id": "FF-DIR-02",
+  "stage": "direction",
+  "description": "两卡并列且无 precedence 可消解：展示候选、零写入，绝不按顺序取第一",
+  "request": {
+    "brief_revision": "rev-brief-ff-01",
+    "idempotency_key": "ff-dir-02",
+    "human_choice": null,
+    "cards": [
+      {
+        "id": "card-a",
+        "name": "高密度数据台",
+        "color": {"surface": "#FFFFFF", "accent": "#0B57D0"},
+        "typography": {"family": "Inter", "scale": ["12/16"]},
+        "density": "compact",
+        "motion": {"duration_ms": 120},
+        "tradeoffs": ["信息密度高", "首屏学习成本高"],
+        "reference": {"source": "public-gallery", "reference": "material-3", "license": "Apache-2.0"}
+      },
+      {
+        "id": "card-b",
+        "name": "轻盈卡片流",
+        "color": {"surface": "#FAFAF7", "accent": "#0B57D0"},
+        "typography": {"family": "Source Han Sans", "scale": ["14/22"]},
+        "density": "comfortable",
+        "motion": {"duration_ms": 180},
+        "tradeoffs": ["移动端友好", "同屏信息量下降"],
+        "reference": {"source": "public-gallery", "reference": "gov-uk-patterns", "license": "OGL-3.0"}
+      }
+    ]
+  }
+}
