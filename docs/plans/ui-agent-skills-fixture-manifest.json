@@ -390,7 +390,61 @@
       "expected": "BLOCKED + writes=0（不得冒充 PASS）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-03",
       "status": "ready"
+    },
+    {
+      "id": "FF-JR-PROJ-01",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "canonical→json-render opt-in 投影 (flat element tree + catalog)",
+      "expected": "投影语义保真 (screens/components/actions/intents/acceptances 等价) → OK",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/json-render/FF-JR-PROJ-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-JR-PROTO-01",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "opt-in 协议握手 (钉版本 + canonical schema lock)",
+      "expected": "协议接受 + 版本协商 + schema-lock 锚定 → OK",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/json-render/FF-JR-PROTO-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-JR-IN-01",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "canonical 含 json-render 未知字段",
+      "expected": "unknown 四元组保留 + warning，不丢弃/压空 → PASS",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/json-render/FF-JR-IN-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-A2UI-PROJ-01",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "canonical→A2UI v0.8 投影 (adjacency-list 文档: surfaceUpdate+dataModelUpdate+beginRendering)",
+      "expected": "投影语义保真 (surfaces/components/actions/intents/acceptances 等价) → OK",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-PROJ-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-A2UI-PROTO-01",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "opt-in 协议握手 (钉 v0.8 + catalogId / A2A extension URI 协商)",
+      "expected": "协议接受 + 版本协商 + schema-lock 锚定 → OK",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-PROTO-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-A2UI-IN-01",
+      "class": "adapter",
+      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "trigger": "A2UI 文档含标准 catalog 未知组件类型 (经 inline catalog 声明)",
+      "expected": "未知组件保留 + inline catalog 依赖记录 + warning，不丢弃 → PASS",
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-IN-01",
+      "status": "ready"
     }
   ],
-  "manifest_hash": "cdb994e0b34468f6f7bf4938360476addc8577b1b04a4abeb488e0a2e4b0c694"
+  "manifest_hash": "859a158f607f901de3bad82467d1a496197e4103dc89f0aec8932a3ab7e501ed"
 }

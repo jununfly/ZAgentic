@@ -48,6 +48,11 @@
 | F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | planned |
 | F-A2 | json-render / A2UI / M3E Canvas golden fixtures | 1-7-4 opt-in | planned |
 
+> **F-A2 落地进展（1-7-4-1 / 1-7-4-2，2026-10-20）**：
+> - **json-render** 已钉 **0.8.0**（双锚：version `0.8.0` + git `source_commit` `0a40430…`，repo `vercel-labs/json-render`；原候选 0.0.1 经核验**无 git tag** 已弃）。3 条 golden 已落 `F-A2/json-render/`：`FF-JR-PROJ-01`（投影）/ `FF-JR-PROTO-01`（协议）/ `FF-JR-IN-01`（输入兼容），附 `anchor.json`（钉版本记录）+ `drift-harness.spec.json`（1-7-4-4 共享 drift 检测规格）。**投影 golden 已 runtime-captured**：用真包 `@json-render/core@0.8.0` 的 `validateSpec()` + catalog zod 合规校验背书（复现脚本 `/tmp/jr-verify.mjs`），不再是声明式契约。
+> - **A2UI** 已钉 **v0.8**（Legacy / adjacency-list，a2ui.org 公开协议，Apache-2.0，Google + CopilotKit）。3 条 golden 已落 `F-A2/a2ui/`：`FF-A2UI-PROJ-01`（投影）/ `FF-A2UI-PROTO-01`（协议）/ `FF-A2UI-IN-01`（输入兼容），附 `anchor.json`（钉 v0.8）。A2UI 为协议 spec（非运行时），golden 为 v0.8 合规静态文档，按 `a2ui.org/specification/v0.8-a2ui/` 校验，无运行时执行。
+> - **M3E 仍卡 PoC 闸门**（账本判 D），1-7-4-3 维持 pending，本轮不开钻。
+
 ### 2.3 `contract`（契约级，源自 golden-fixtures-spec GF-01~GF-11）
 
 | ID | 内容 | 断言要点 | 失败分类 |
