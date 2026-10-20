@@ -33,6 +33,10 @@ STANDARD_OPTIONAL_FIELDS = {
     "compatibility",
     "metadata",
     "allowed-tools",
+    # Load-bearing, not decorative: zj-composer discovers this repository's
+    # skills by the `source: zagentic` marker in SKILL.md frontmatter, so a
+    # skill without it is invisible to that catalog.
+    "source",
 }
 INVOCATION_FIELDS = {"disable-model-invocation", "argument-hint"}
 ROADMAP_FIELDS = {"title", "triggers"}
@@ -91,6 +95,8 @@ def validate_skill(path: Path) -> list[str]:
         errors.append("compatibility must be a string")
     if "metadata" in data and not isinstance(data["metadata"], dict):
         errors.append("metadata must be a mapping")
+    if "source" in data and not isinstance(data["source"], str):
+        errors.append("source must be a string")
     if "allowed-tools" in data:
         tools = data["allowed-tools"]
         if not isinstance(tools, (str, list)) or (

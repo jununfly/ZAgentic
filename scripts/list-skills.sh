@@ -4,9 +4,9 @@ set -euo pipefail
 # Generate scripts/zagentic-skills-list from the public skills/ and private personal/ trees.
 #
 # Output: a plain-text reconciliation list with one bare skill directory
-# name per non-comment line, grouped by the 3 public categories under
-# skills/ (engineering / codebase-docs / productivity / misc / research), followed by root-level
-# personal/. The bare name
+# name per non-comment line, grouped by the public categories under
+# skills/ (engineering / codebase-docs / productivity / ui / misc / research),
+# followed by root-level personal/. The bare name
 # is what the install script flattens into the agent's skills dir, so
 # that is the only thing the uninstall step needs.
 #
@@ -29,7 +29,7 @@ emit() {
   printf '%s\n' "$name"
 }
 
-categories=(engineering codebase-docs productivity misc research)
+categories=(engineering codebase-docs productivity ui misc research)
 for cat in "${categories[@]}"; do
   if [[ -d "skills/$cat" ]]; then
     # emit one bare basename per SKILL.md under the category, sorted

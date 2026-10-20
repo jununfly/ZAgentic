@@ -4,7 +4,7 @@
 
 ZAgentic is a collection of composable skills for human-guided engineering,
 codebase documentation, research, and everyday agent workflows. Public skills
-live in five purpose-based buckets under `skills/`; setup-specific skills live
+live in six purpose-based buckets under `skills/`; setup-specific skills live
 in root-level `personal/` and are deliberately excluded from this catalog.
 
 Start with [`/zj-guide`](./skills/engineering/zj-guide/SKILL.md) when you do
@@ -80,7 +80,7 @@ scripts/validate-plugin.sh
 
 It runs the official plugin validator first. If that validator is unavailable
 or returns non-zero, it runs ZAgentic's recursive layout validator, which checks
-the five public buckets, root-level `personal/`, skill frontmatter, README
+the six public buckets, root-level `personal/`, skill frontmatter, README
 registration, and public coverage in `zj-guide`.
 
 Frontmatter validation needs PyYAML; install it once before validating:
@@ -119,6 +119,10 @@ expects, and it accepts either `python3` or `python` on `PATH`.
   `/zj-code-research` maps a repository, `/zj-tech-research-report` makes a
   technical recommendation, and `/zj-tech-design-review` tests a proposed
   design.
+- **UI delivery** — the ten `/zj-ui-*` skills run a single chain from
+  `/zj-ui-brief` to `/zj-ui-handoff`. One skill owns each stage, a Human gate
+  chooses direction and signs review, and nothing advances on a guess: missing
+  input becomes an `unknown` entry or `NEEDS_CONTEXT`, never an invented value.
 - **Closeout** — `/zj-debrief` records process material after work;
   `/zj-docs-ontology` later governs durable extraction and proposed deletion.
   `/zj-neat-freak` reconciles broader docs, rules, memory, and workspace drift.
@@ -176,8 +180,23 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-discuss](./skills/productivity/zj-discuss/SKILL.md) — Decompose a complex problem into a master doc + independent sub-documents, run multi-agent independent discussion per sub-problem, synthesize, and hand off to zj-docs-ontology — with a static per-role launch-pack generator and a mechanical sub-document structural gate. Built on the [zj-doc-collab](./skills/productivity/zj-doc-collab/SKILL.md) base skill.
 - [zj-discuss-view](./skills/productivity/zj-discuss-view/SKILL.md) — Companion to zj-discuss: in a separate independent Agent session, Read a sub-document original and write one role's independent viewpoint.
 
-### Misc
+### UI
 
+The UI delivery chain: one skill per stage, one write owner per artifact, and a
+stop-and-ask default whenever ownership or semantics is ambiguous.
+
+- [zj-ui-brief](./skills/ui/zj-ui-brief/SKILL.md) — S1: turn conversation or UI-BRIEF.md edits into a brief draft with unknown entries instead of guesses.
+- [zj-ui-discover](./skills/ui/zj-ui-discover/SKILL.md) — S2: close brief gaps with a question budget of two, grading evidence and recording unknown.
+- [zj-ui-direction](./skills/ui/zj-ui-direction/SKILL.md) — S3: produce comparable direction cards and wait for the Human to choose.
+- [zj-ui-design-system](./skills/ui/zj-ui-design-system/SKILL.md) — S4: freeze tokens and the component catalog, blocking unregistered components and failing contrast.
+- [zj-ui-flow](./skills/ui/zj-ui-flow/SKILL.md) — S5: own ui-flow/v1 across its six distinct meanings with a passing semantic round-trip.
+- [zj-ui-prototype](./skills/ui/zj-ui-prototype/SKILL.md) — S6: build a local preview from the flow using catalog components only, with effects behind a policy gate.
+- [zj-ui-visual-review](./skills/ui/zj-ui-visual-review/SKILL.md) — S7: inspect and screenshot against the user task and risk class, producing an attributable review record.
+- [zj-ui-break](./skills/ui/zj-ui-break/SKILL.md) — S8: break the interface with long, empty, error, extreme and localized data at 390/768/1440.
+- [zj-ui-verify](./skills/ui/zj-ui-verify/SKILL.md) — S9: run DOM/ARIA, focus, contrast and reduced-motion gates into a replayable verification receipt.
+- [zj-ui-handoff](./skills/ui/zj-ui-handoff/SKILL.md) — S10: hand off with change summary, commands, risks, known limits, fallback and owner.
+
+### Misc
 - [zj-git-guardrails-claude-code](./skills/misc/zj-git-guardrails-claude-code/SKILL.md) — Add Claude Code hooks that block dangerous Git operations.
 - [zj-migrate-to-shoehorn](./skills/misc/zj-migrate-to-shoehorn/SKILL.md) — Migrate test assertions to `@total-typescript/shoehorn`.
 - [zj-scaffold-exercises](./skills/misc/zj-scaffold-exercises/SKILL.md) — Scaffold lintable exercises, problems, solutions, and explainers.

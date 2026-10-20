@@ -979,16 +979,43 @@
       "id": "1-6-1",
       "uid": "01a15426b8b2-b3ee083380",
       "label": "创建十个公共 skill 目录、SKILL.md 模板、递归索引、README 与术语登记",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-6",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "十个 zj-ui-* skill 落在哪个公共 bucket？",
+          "answer": "新建 skills/ui/ 作为第六个公共 bucket。同步点：validate-zagentic-plugin.py 的 PUBLIC_BUCKETS、scripts/list-skills.sh 的 categories、top-level README（five→six + UI 小节）、AGENTS.md bucket 清单、ZJ-CONTEXT 的 Skill bucket 定义、zj-guide 路由与 Scope 行。",
+          "note": ""
+        },
+        {
+          "q": "SKILL.md 里的 16 个 capability manifest 字段用什么机器可读格式？",
+          "answer": "正文 `## Capability Manifest` 标题下一个 ```json 代码块，键名与 1-3-1 §1 表完全一致（16 键，不增不减）；frontmatter 只保留 name/description/argument-hint/source。",
+          "note": ""
+        },
+        {
+          "q": "既有索引是红的（53 个 skill 的 source: 被 frontmatter 校验器判为 unknown field），本节点怎么处理？",
+          "answer": "把 source 加入 validate-skill-frontmatter.py 的 STANDARD_OPTIONAL_FIELDS（并校验为 string），不修改任何既有 SKILL.md。",
+          "note": ""
+        },
+        {
+          "q": "递归校验器仍有 2 条红（zj-doc-collab 未在 skills/productivity/README.md 注册、zj-guide 未路由），本节点是否顺手修？",
+          "answer": "不在 1-6-1 修，明确隔离并追踪到 1-10-2。布局测试的注册断言因此收窄到 skills/ui 范围，并在最终报告里点名。",
+          "note": ""
+        },
+        {
+          "q": "tests/ 里 zj-discuss 3 项红（R7 独立性阶梯、dynamic agenda SSOT、F2 manual distribution）与本节点关系？",
+          "answer": "与本节点无关：未修改 skills/productivity/zj-discuss/* 与 skills/productivity/README.md，属改动前既有红。不纳入 1-6-1 完成判据，但在报告中点名，避免后续节点当成新回归。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "十个公共 skill 可被递归发现，索引和 ZJ-CONTEXT 记录已同步"
-      ]
+      ],
+      "rounds": 1
     },
     "1-6-2": {
       "id": "1-6-2",
@@ -1351,7 +1378,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 16:08:46",
+    "updated": "2026-10-20 16:31:51",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

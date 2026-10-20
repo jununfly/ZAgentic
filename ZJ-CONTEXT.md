@@ -10,9 +10,9 @@ Project domain glossary for `jununfly/ZAgentic`. Owned by `zj-grill-with-docs` /
 
 **Skill bucket**:
 A public purpose-based directory under `skills/` — `engineering/`,
-`codebase-docs/`, `productivity/`, `misc/`, or `research/`. Each bucket has its
-own `README.md` listing its skills with a one-line description. See `AGENTS.md`
-for the bucket policy.
+`codebase-docs/`, `productivity/`, `ui/`, `misc/`, or `research/`. Each bucket
+has its own `README.md` listing its skills with a one-line description. See
+`AGENTS.md` for the bucket policy.
 _Avoid_: category, folder, group
 
 **Installed-copy drift**:
@@ -533,6 +533,88 @@ _Avoid_: vague confidence, sign-off, success hope
 **Short-read acceptance**:
 A human review gate where a reviewer reads a design briefly, without validator output, and recovers the decision, blocking finding and owner, and next validation action with threshold and owner. It tests whether the document makes its critical path legible, not whether the prose is stylistically polished.
 _Avoid_: skimming, automated approval, prose review
+
+### UI delivery
+
+**UI delivery chain**:
+The ten-stage route `S1 brief → S2 discover → S3 direction → S4 design system →
+S5 flow → S6 prototype → S7 visual review → S8 break → S9 verify → S10 handoff`,
+implemented as one skill per stage in the `ui/` bucket. It is a chain, not a
+menu: each stage consumes the previous stage's artifact revision.
+_Avoid_: UI pipeline, design workflow, frontend process
+
+**Experience Version**:
+The single form/approval sample flow that the chain is validated against. It
+bounds scope: the skills are proven on one path before any cross-framework
+generalisation is claimed.
+_Avoid_: pilot project, demo app, template
+
+**Canonical UI artifact**:
+One of the six ZAgentic-owned artifacts the chain writes — `UI-BRIEF.md`,
+`UI-DESIGN.md`, `ui-flow/v1`, `review record`, `verification receipt`,
+`handoff`. Each has exactly one write owner per field; an adapter may only
+submit a projection carrying its source revision.
+_Avoid_: output file, generated doc, external schema
+
+**Capability manifest**:
+The 16-field block at `## Capability Manifest` in every `ui/` SKILL.md
+(`skill_id`, `manifest_version`, `stage`, `owner_scope`, `writes`, `reads`,
+`input`, `output`, `forbidden`, `dependencies`, `required_capabilities`,
+`stop_conditions`, `owner`, `precedence`, `failure_fixtures`, `human_gate`).
+It is machine-read JSON, not prose: a missing field means the skill is not
+loadable.
+_Avoid_: skill metadata, config, frontmatter
+
+**Write owner**:
+The single skill allowed to write a given `(stage, artifact_kind)` pair. Zero or
+two owners is `BLOCKED_OWNER_CONFLICT` — no plan is generated and nothing is
+written; ownership is never resolved by precedence or by discovery order.
+_Avoid_: primary writer, default owner, best-effort owner
+
+**Direction card**:
+A comparable visual-direction candidate (colour, type, density, motion, fit,
+trade-offs, provenance) that a Human chooses between. Selection is a Human
+gate because taste is not formalisable; the skill never defaults to the first
+card.
+_Avoid_: theme preset, style option, template
+
+**ui-flow/v1**:
+The semantic flow artifact whose six meanings — `screen`, `component`, `state`,
+`action`, `intent`, `acceptance` — must stay distinct and survive a semantic
+round-trip. Merging any two is a hard fail, and no external protocol may own it.
+_Avoid_: wireframe, prototype spec, canvas model
+
+**Unknown quartet**:
+The four fields that keep a gap honest — `path`, `raw`, `reason`, `source`. A
+missing value is recorded, never filled with a guess and never collapsed to
+empty.
+_Avoid_: empty value, TBD, default
+
+**Verification receipt**:
+The replayable record that binds claim, threshold, command, commit, fixture and
+environment hash, artifact and status. A receipt missing any link field is not a
+successful receipt, and stale evidence is marked `revalidation_required` rather
+than reused.
+_Avoid_: test report, screenshot proof, pass log
+
+**Human gate**:
+The single gate the orchestrator emits once per decision, accepting only
+`APPROVE(plan_id)`, `REJECT(reason)` or `CHOOSE(candidate_id)`. A skill may not
+open a second gate, and timeout is never approval.
+_Avoid_: confirmation prompt, sign-off, approval step
+
+**Failure fixture**:
+A named normal / conflict / failure case (`FF-<SKILL>-01..03`, plus `FF-ORCH-*`
+for cross-skill conflicts) that resolves to exactly one responsible owner. A
+fixture that cannot name its owner is not acceptance evidence.
+_Avoid_: test case, edge case, smoke test
+
+**Contract skeleton**:
+A skill directory whose manifest, inputs, outputs, forbidden actions, stop
+conditions and fixture ids are frozen while its executable implementation is
+still pending a later node. Marked `metadata.status=contract-skeleton` and by a
+status block in the body, so a skeleton is never mistaken for a working skill.
+_Avoid_: stub, draft skill, placeholder
 
 ### Roadmap
 

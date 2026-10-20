@@ -40,6 +40,16 @@ zj-to-questionnaire
 zj-wait-what
 zj-write-a-skill
 zj-writing-for-agents
+zj-ui-break
+zj-ui-brief
+zj-ui-design-system
+zj-ui-direction
+zj-ui-discover
+zj-ui-flow
+zj-ui-handoff
+zj-ui-prototype
+zj-ui-verify
+zj-ui-visual-review
 zj-aihot
 zj-git-guardrails-claude-code
 zj-migrate-to-shoehorn
