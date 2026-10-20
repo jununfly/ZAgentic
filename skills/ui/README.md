@@ -9,6 +9,7 @@ owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 `ui-agent-skills-ui-flow-v1-contract.md`（六义）。新增 skill 前先读
 `ui-agent-skills-skill-md-template.md`。
 
+- **[zj-ui-core](./zj-ui-core/SKILL.md)** — **S0 BASE**（不在阶段链上）：契约基座与确定性引擎 —— schema 校验、deny-first、unknown 四元组、原子提交与幂等键、WCAG contrast；S1..S4 的实现与 fixture 跑批都在它的 `scripts/`。
 - **[zj-ui-brief](./zj-ui-brief/SKILL.md)** — S1 INTAKE：把对话或 UI-BRIEF.md 编辑解析成目标、用户、任务、成功标准与 unknown 四元组的 brief 草案。
 - **[zj-ui-discover](./zj-ui-discover/SKILL.md)** — S2 DISCOVER：补齐 brief 缺口，输出问题清单、证据等级与 unknown，追问预算 2 次。
 - **[zj-ui-direction](./zj-ui-direction/SKILL.md)** — S3 DIRECTION：生成 2–3 张可比较方向卡，由 Human 选定后才写入 UI-DESIGN.md。
@@ -20,5 +21,7 @@ owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 - **[zj-ui-verify](./zj-ui-verify/SKILL.md)** — S9 VERIFY：DOM/ARIA、focus、contrast、reduced-motion 硬门禁与可重放 verification receipt。
 - **[zj-ui-handoff](./zj-ui-handoff/SKILL.md)** — S10 HANDOFF：变更摘要、运行命令、风险、已知限制、fallback 与责任人的 handoff。
 
-十个 skill 当前均为**契约骨架**（路线图节点 1-6-1）：manifest、输入输出、禁止事项、停止条件与
-失败 fixture id 已冻结，可执行实现归 1-6-2 / 1-6-3 / 1-6-4，fixture 闭环绕 1-6-5。
+S1..S4 已实现（路线图节点 1-6-2）：契约不变，实现集中在 `zj-ui-core/scripts/ui_stages.py`，
+12 条失败 fixture 落在 `tests/ui-agent-skills/fixtures/skills/` 并逐条通过。S5..S10 仍是
+**契约骨架**（1-6-1）：manifest、输入输出、禁止事项、停止条件与失败 fixture id 已冻结，可执行
+实现归 1-6-3 / 1-6-4，端到端串联归 1-6-5 的 resolver。

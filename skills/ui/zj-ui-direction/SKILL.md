@@ -4,10 +4,10 @@ description: >-
   S3 DIRECTION：基于 brief 生成 2–3 张可比较的方向卡（色彩、字体、密度、动效、适用场景、
   取舍与参考来源），由 Human 选定一个方向后才写入 UI-DESIGN.md。方向选择是不可形式化的
   审美判断，本 skill 不替人选。Use when brief 已齐、需要给出视觉方向候选并让人拍板。
-  当前为契约骨架（1-6-1），可执行实现未落地。
+  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
 argument-hint: "<UI-BRIEF.md 路径>"
 metadata:
-  status: contract-skeleton
+  status: implemented
   implemented_in: 1-6-2
 source: zagentic
 ---
@@ -16,9 +16,9 @@ source: zagentic
 
 S3 · DIRECTION · `write` owner of `UI-DESIGN.md`（方向候选段落）
 
-> **状态：契约骨架（1-6-1）。** 本文件冻结 capability manifest、输入输出、禁止事项、停止条件
-> 与失败 fixture id；可执行实现归 1-6-2，fixture 运行归 1-6-5。实现落地前不要把本 skill
-> 当作可用能力。
+> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_direction`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
 
@@ -80,6 +80,16 @@ S3 · DIRECTION · `write` owner of `UI-DESIGN.md`（方向候选段落）
 - `FF-DIR-01` 正常：3 张卡 + Human 选 1，写入唯一 `direction_choice`。
 - `FF-DIR-02` 冲突：两卡并列且 precedence 无法消解 → 不写入，展示候选，写入次数 0。
 - `FF-DIR-03` 失败：参考 license unknown → quarantine，不进默认产物。
+
+## 实现与证据
+
+- 实现：`skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_direction`
+- fixture：`tests/ui-agent-skills/fixtures/skills/FF-DIR-{01,02,03}/`
+- 跑批：`python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive`
+
+01 = Human 选定 `card-b` → `writes=1` 且 `content.direction_choice` 精确等于 `card-b`；
+02 = 无 Human 选择 → `HUMAN_REVIEW_REQUIRED` + `writes=0`，候选仍完整列出（**不按顺序取第一**）；
+03 = `license: unknown` 的卡片进 `quarantined`，可用候选只剩 `card-y`，零写入。
 
 ## 交接
 

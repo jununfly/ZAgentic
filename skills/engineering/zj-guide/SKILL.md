@@ -124,6 +124,7 @@ A single chain from a sentence to a handed-off interface. One skill per stage, o
 per artifact; when ownership or semantics is ambiguous the chain stops and asks instead of
 picking a winner.
 
+0. **`/zj-ui-core`** — S0 base carrier, not a stage: the deterministic engine the stages share (schema validation, deny-first, unknown quartets, idempotent commits, contrast maths) plus the fixture harness. Call it to verify the chain's behaviour, never to produce a brief or a design.
 1. **`/zj-ui-brief`** — turn the conversation, or an edit of `UI-BRIEF.md`, into a brief draft: goal, users, task, constraints, success criteria, and an `unknown` entry wherever evidence is missing.
 2. **`/zj-ui-discover`** — close the gaps with a question budget of two, grading evidence instead of asserting it.
 3. **`/zj-ui-direction`** — produce two or three comparable direction cards; the Human chooses, the skill never picks for them.

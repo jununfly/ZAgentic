@@ -4,10 +4,10 @@ description: >-
   S2 DISCOVER：在 brief 草案上补齐缺口——输出问题清单、证据等级与 unknown 条目，
   追问预算固定为 2 次，不替用户做审美或业务判断。Use when brief 已成型但目标用户、
   状态、约束或成功标准仍有空白，需要在进入方向选择前把证据与未知显式登记。
-  当前为契约骨架（1-6-1），可执行实现未落地。
+  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
 argument-hint: "<UI-BRIEF.md 路径>"
 metadata:
-  status: contract-skeleton
+  status: implemented
   implemented_in: 1-6-2
 source: zagentic
 ---
@@ -16,9 +16,9 @@ source: zagentic
 
 S2 · DISCOVER · `write` owner of `UI-BRIEF.md`（`unknown[]` 与证据字段）
 
-> **状态：契约骨架（1-6-1）。** 本文件冻结 capability manifest、输入输出、禁止事项、停止条件
-> 与失败 fixture id；可执行实现归 1-6-2，fixture 运行归 1-6-5。实现落地前不要把本 skill
-> 当作可用能力。
+> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_discover`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
 
@@ -78,6 +78,16 @@ S2 · DISCOVER · `write` owner of `UI-BRIEF.md`（`unknown[]` 与证据字段�
 - `FF-DISC-01` 正常：补齐 3 处缺口，unknown 清零，revision 只增一轮。
 - `FF-DISC-02` 冲突：证据不足 → 必须标 unknown，写入值不得为猜测。
 - `FF-DISC-03` 失败：追问超上限 → 停止且不写 artifact。
+
+## 实现与证据
+
+- 实现：`skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_discover`
+- fixture：`tests/ui-agent-skills/fixtures/skills/FF-DISC-{01,02,03}/`
+- 跑批：`python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive`
+
+01 = 三处缺口被可归因证据补齐、`unknown` 清零、`writes=1`；02 = 证据来源为 `assumed` 时值
+**不进入**产物（`artifact_absent: content.goal_task`）而只留四元组；03 = `questions_asked=3 >
+budget=2` → `NEEDS_CONTEXT` 且 `writes=0`。
 
 ## 交接
 

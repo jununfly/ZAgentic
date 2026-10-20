@@ -64,6 +64,30 @@
 | GF-10 | 离线恢复 | 服务关闭时仅凭本地 canonical 重建 flow/恢复状态/重放动作 | 无法恢复 = recovery error |
 | GF-11 | adapter 删除恢复 | 删除 adapter 后仍可从最后完整 canonical revision 恢复 | 恢复失败 = fail |
 
+### 2.4 `skill`（阶段技能级，1-6-2 落地；源自 1-3-1 §4）
+
+首批 12 条，四阶段 × 3（正常 / 冲突 / 失败）。与 1-5-1 冻结的 `form` / `adapter` / `contract` 不同，
+这一类的期望不是"跑出一个页面"，而是**状态机与副作用次数**：`status` / `writes` /
+`unknown` 四元组 / 被拒字段名 / quarantine 集合 / 产物里哪些字段必须存在、哪些**必须不存在**。
+
+| ID | 内容 | 断言要点 | 期望终态 |
+| --- | --- | --- | --- |
+| FF-BRIEF-01 | 四类必填齐备 | reversion 提交、unknown 为空 | `OK`，`writes=1` |
+| FF-BRIEF-02 | 缺 `success_criteria` | 转 unknown 四元组，零写入 | `NEEDS_CONTEXT` |
+| FF-BRIEF-03 | 草稿含 `successCriteria` 笔误 | deny-first 拒绝并列出字段 | `REJECTED`，`writes=0` |
+| FF-DISC-01 | 三处缺口由可归因证据补齐 | unknown 清零，只增一轮 revision | `OK`，`writes=1` |
+| FF-DISC-02 | 证据来源为 `assumed` | 值不进入产物，仅保留四元组 | `OK`，`artifact_absent: content.goal_task` |
+| FF-DISC-03 | `questions_asked=3 > budget=2` | 停止并交人，不写 artifact | `NEEDS_CONTEXT`，`writes=0` |
+| FF-DIR-01 | 三张可比卡 + Human 选 `card-b` | 写入唯一 `direction_choice` | `OK`，`writes=1` |
+| FF-DIR-02 | 两卡并列、Human 未签 | 展示候选，**不按顺序取第一** | `HUMAN_REVIEW_REQUIRED`，`writes=0` |
+| FF-DIR-03 | 参考 `license: unknown` | 该卡 quarantine，不进默认产物 | `QUARANTINED`，`writes=0` |
+| FF-DS-01 | tokens + 已注册 catalog | 两对 contrast 全达标 | `OK`，`writes=1` |
+| FF-DS-02 | 未注册组件 `DateRangePicker` | adapter 不得扩表 | `BLOCKED`，`writes=0` |
+| FF-DS-03 | `#777777 on #FFFFFF = 4.478` | 阻断且**不得替换相近色** | `BLOCKED`，`writes=0` |
+
+跑批：`python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive`
+（镜像断言由 `tests/test_ui_agent_skills_stage_skills.py` 守）。
+
 ---
 
 ## 3. 存储布局（`decide` 落盘）
@@ -72,8 +96,10 @@
   - `form/` — F-1~F-6 数据
   - `adapters/` — F-A1/F-A2 数据
   - `contract/` — GF-01~GF-11 数据
+  - `skills/` — FF-BRIEF / FF-DISC / FF-DIR / FF-DS 数据（1-6-2 起；每目录含 `input.json` + `expected.json`）
 - **机器清单**：本文件配套 `ui-agent-skills-fixture-manifest.json`（含 `manifest_hash`）。
-- 落地与 `manifest_hash` 回填在 **1-5-2**（R-HAR-1 runner 初始化时）。
+- 落地与 `manifest_hash` 回填在 **1-5-2**（R-HAR-1 runner 初始化时）；`skills/` 一类的 12 条于
+  **1-6-2** 落地并重算（`manifest_hash` 由 `5c72b455…` 变为 `79b2ffa3…`）。
 
 ---
 

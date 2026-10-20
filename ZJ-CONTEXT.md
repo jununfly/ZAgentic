@@ -616,6 +616,15 @@ still pending a later node. Marked `metadata.status=contract-skeleton` and by a
 status block in the body, so a skeleton is never mistaken for a working skill.
 _Avoid_: stub, draft skill, placeholder
 
+**Base skill**:
+A skill directory that carries shared executable machinery instead of owning a
+stage: `metadata.status=implemented`, `owner_scope=read`, an empty `writes` list,
+and `precedence` below the first stage. It exists because the bucket layout
+forbids a shared `_lib/` (every immediate child of `skills/<bucket>/` must hold a
+`SKILL.md`), and because two implementations of "unknown" is how the quartet
+silently becomes a nullable string. `zj-ui-core` is the only one today.
+_Avoid_: helper skill, lib skill, utility folder
+
 ### Roadmap
 
 **Roadmap**:

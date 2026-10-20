@@ -4,10 +4,10 @@ description: >-
   S4 DESIGN_SYSTEM：把已选方向固化成 tokens 与 component catalog（含状态、禁用组合），
   contrast 必须达标，组件必须有来源与注册记录；未注册组件、token 冲突、contrast 不达标一律阻断。
   Use when 方向已由 Human 选定，需要产出可被 flow / prototype 直接引用的设计系统。
-  当前为契约骨架（1-6-1），可执行实现未落地。
+  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
 argument-hint: "<UI-DESIGN.md 路径>"
 metadata:
-  status: contract-skeleton
+  status: implemented
   implemented_in: 1-6-2
 source: zagentic
 ---
@@ -16,9 +16,9 @@ source: zagentic
 
 S4 · DESIGN_SYSTEM · `write` owner of `UI-DESIGN.md`（tokens 与 catalog）
 
-> **状态：契约骨架（1-6-1）。** 本文件冻结 capability manifest、输入输出、禁止事项、停止条件
-> 与失败 fixture id；可执行实现归 1-6-2，fixture 运行归 1-6-5。实现落地前不要把本 skill
-> 当作可用能力。
+> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_design_system`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
 
@@ -83,6 +83,16 @@ catalog（组件名、来源、状态、禁止组合）。catalog 的字段值�
 - `FF-DS-01` 正常：tokens + catalog 落盘，contrast 全达标。
 - `FF-DS-02` 冲突：未注册组件 → 阻断、零写入。
 - `FF-DS-03` 失败：contrast 不达标 → 阻断，且不得静默替换。
+
+## 实现与证据
+
+- 实现：`skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_design_system`
+- fixture：`tests/ui-agent-skills/fixtures/skills/FF-DS-{01,02,03}/`
+- 跑批：`python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive`
+
+01 = tokens + 三个已注册组件落盘、两对 contrast 全达标；02 = `DateRangePicker` 未注册 →
+`BLOCKED` + `writes=0`（adapter 不得扩表）；03 = `#777777 on #FFFFFF = 4.478 < 4.5` →
+`BLOCKED`，且产物为空 —— 证明没有"换成相近色再算达标"。
 
 ## 交接
 

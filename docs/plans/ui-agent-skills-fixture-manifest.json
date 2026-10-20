@@ -174,7 +174,115 @@
       "expected": "从最后完整 canonical revision 恢复",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-11",
       "status": "planned"
+    },
+    {
+      "id": "FF-BRIEF-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "对话含四类必填",
+      "expected": "OK + writes=1 + unknown 为空",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRIEF-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-BRIEF-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "缺 success_criteria",
+      "expected": "NEEDS_CONTEXT + writes=0 + 四元组完整",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRIEF-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-BRIEF-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "草稿含未注册字段 successCriteria",
+      "expected": "REJECTED + writes=0（deny-first，不静默丢弃）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRIEF-03",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DISC-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "三处缺口由可归因证据补齐",
+      "expected": "OK + writes=1 + unknown 清零",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DISC-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DISC-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "证据来源为 assumed",
+      "expected": "OK + 值不写入 + 保留 unknown 四元组",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DISC-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DISC-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "questions_asked=3 > budget=2",
+      "expected": "NEEDS_CONTEXT + writes=0",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DISC-03",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DIR-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "三张卡 + Human 选 card-b",
+      "expected": "OK + writes=1 + direction_choice=card-b",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DIR-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DIR-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "两卡并列、Human 未签",
+      "expected": "HUMAN_REVIEW_REQUIRED + writes=0 + 候选保留",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DIR-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DIR-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "参考 license unknown",
+      "expected": "QUARANTINED + 不进默认产物 + writes=0",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DIR-03",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DS-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "tokens + 已注册 catalog",
+      "expected": "OK + writes=1 + contrast 达标",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DS-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "未注册组件 DateRangePicker",
+      "expected": "BLOCKED + writes=0（adapter 不得扩表）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-DS-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "contrast 4.478 < 4.5",
+      "expected": "BLOCKED + writes=0 + 不替换相近色",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-03",
+      "status": "ready"
     }
   ],
-  "manifest_hash": "5c72b455a1b7b91a347dea10db7fd0a0116b321188ea0475a26fa2abe5743825"
+  "manifest_hash": "79b2ffa31249e3aa4e8776293bcf805abdc0928ceb73b36fbc2761369351775d"
 }
