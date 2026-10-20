@@ -458,9 +458,300 @@ def run_design_system(request: dict, store: dict | None = None) -> dict:
     )
 
 
+# --------------------------------------------------------------------------- #
+# S5 · zj-ui-flow
+# --------------------------------------------------------------------------- #
+
+def _flow_id_problems(states, actions, intents) -> list:
+    """Hard-fail gates for ui-flow/v1 (contract 1-2-3 §7): duplicate ids and
+    dangling references mean a meaning was silently lost or two owners collided.
+    """
+    problems = []
+    state_ids = set()
+    for index, state in enumerate(states):
+        if not isinstance(state, dict):
+            problems.append(core.reject(f"states[{index}]", "state 必须是对象"))
+            continue
+        sid = state.get("id")
+        if not sid:
+            problems.append(core.reject(f"states[{index}].id", "state 缺 id"))
+            continue
+        if sid in state_ids:
+            problems.append(core.reject(f"states[{index}].id", f"重复 state id（双 owner / 歧义）: {sid}"))
+        state_ids.add(sid)
+    intent_ids = {item.get("id") for item in intents if isinstance(item, dict)}
+    seen_action_ids = set()
+    for index, action in enumerate(actions):
+        if not isinstance(action, dict):
+            problems.append(core.reject(f"actions[{index}]", "action 必须是对象"))
+            continue
+        aid = action.get("id")
+        if aid:
+            if aid in seen_action_ids:
+                problems.append(core.reject(f"actions[{index}].id", f"重复 action id: {aid}"))
+            seen_action_ids.add(aid)
+        fs, ts, it = action.get("from_state"), action.get("to_state"), action.get("intent")
+        if fs is not None and fs not in state_ids:
+            problems.append(core.reject(f"actions[{index}].from_state", f"悬空引用 state（状态丢失）: {fs}"))
+        if ts is not None and ts not in state_ids:
+            problems.append(core.reject(f"actions[{index}].to_state", f"悬空引用 state（状态丢失）: {ts}"))
+        if it is not None and it not in intent_ids:
+            problems.append(core.reject(f"actions[{index}].intent", f"悬空引用 intent（intent 丢失）: {it}"))
+    return problems
+
+
+def run_flow(request: dict, store: dict | None = None) -> dict:
+    store = {} if store is None else store
+    candidate = request.get("candidate") or {}
+    input_revision = request.get("input_revision") or ""
+
+    problems = core.validate_document(core.UI_FLOW, candidate)
+    if problems:
+        return core.result(
+            "zj-ui-flow", core.REJECTED,
+            reason="deny-first：未注册字段或类型不符，未提交 revision",
+            rejected=problems,
+        )
+    gaps = core.stage_gaps("flow", candidate)
+    if gaps:
+        unknown = core.gaps_as_unknown(gaps, candidate, input_revision)
+        questions = [f"{field}：{core.GAP_REASONS.get(field, field)}" for field in gaps[:MAX_QUESTIONS]]
+        return core.result(
+            "zj-ui-flow", core.NEEDS_CONTEXT,
+            reason="六义缺口，转 unknown 四元组后停止，零写入",
+            questions=questions, unknown=unknown,
+        )
+    ref_problems = _flow_id_problems(
+        candidate.get("states", []), candidate.get("actions", []), candidate.get("intents", [])
+    )
+    if ref_problems:
+        return core.result(
+            "zj-ui-flow", core.REJECTED,
+            reason="hard fail：状态/动作/意图丢失或双 owner（重复 id / 悬空引用）",
+            rejected=ref_problems,
+        )
+    content = _content(candidate, core.UI_FLOW)
+    content.setdefault("unknown", [])
+    artifact = _artifact(core.UI_FLOW, "flow_schema_version", "1.0.0", input_revision, content)
+    committed = core.commit(
+        store, core.UI_FLOW, artifact,
+        request.get("idempotency_key") or f"{core.UI_FLOW}:{input_revision}",
+    )
+    if committed["conflict"]:
+        return core.result(
+            "zj-ui-flow", core.REJECTED,
+            reason="幂等键重放但内容不同，拒绝覆盖",
+            rejected=[core.reject("idempotency_key", committed["reason"])],
+        )
+    return core.result(
+        "zj-ui-flow", core.OK, writes=committed["writes"],
+        reason="六义齐全、引用闭合，ui-flow/v1 原子提交", artifact=artifact,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# S6 · zj-ui-prototype
+# --------------------------------------------------------------------------- #
+
+def _human_approved(approval) -> bool:
+    return (
+        isinstance(approval, dict)
+        and core.is_attributable(approval.get("name"))
+        and core.is_attributable(approval.get("signed_at"))
+    )
+
+
+def run_prototype(request: dict, store: dict | None = None) -> dict:
+    store = {} if store is None else store
+    candidate = request.get("candidate") or {}
+    input_revision = request.get("input_revision") or ""
+
+    problems = core.validate_document(core.UI_PREVIEW, candidate)
+    if problems:
+        return core.result(
+            "zj-ui-prototype", core.REJECTED,
+            reason="deny-first：未注册字段或类型不符，未生成实现",
+            rejected=problems,
+        )
+    gaps = core.stage_gaps("prototype", candidate)
+    if gaps:
+        unknown = core.gaps_as_unknown(gaps, candidate, input_revision)
+        questions = [f"{field}：{core.GAP_REASONS.get(field, field)}" for field in gaps[:MAX_QUESTIONS]]
+        return core.result(
+            "zj-ui-prototype", core.NEEDS_CONTEXT,
+            reason="必填缺口，转 unknown 后停止，零写入",
+            questions=questions, unknown=unknown,
+        )
+    components = candidate.get("components") or []
+    unregistered = [name for name in components if name not in core.COMPONENT_REGISTRY]
+    if unregistered:
+        return core.result(
+            "zj-ui-prototype", core.REJECTED,
+            reason="未注册组件，deny，不生成实现（catalog 不得扩表）",
+            rejected=[core.reject("components", f"unregistered component: {unregistered[0]}")],
+        )
+    # human_gate=required：未签不得产生副作用；远程不可用也不得伪造成功。
+    if not _human_approved(candidate.get("human_approval")):
+        return core.result(
+            "zj-ui-prototype", core.HUMAN_REVIEW_REQUIRED,
+            reason="human_gate=required：未签署审批，零写入", questions=[],
+        )
+    if request.get("remote_available") is False and not request.get("allow_local_fallback", False):
+        return core.result(
+            "zj-ui-prototype", core.HUMAN_REVIEW_REQUIRED,
+            reason="远程 adapter 不可用且未声明本地 fallback，不得伪造成功，零写入",
+            questions=[],
+        )
+    content = _content(candidate, core.UI_PREVIEW)
+    content.setdefault("unknown", [])
+    artifact = _artifact(core.UI_PREVIEW, "preview_schema_version", "1.0.0", input_revision, content)
+    committed = core.commit(
+        store, core.UI_PREVIEW, artifact,
+        request.get("idempotency_key") or f"{core.UI_PREVIEW}:{input_revision}",
+    )
+    if committed["conflict"]:
+        return core.result(
+            "zj-ui-prototype", core.REJECTED,
+            reason="幂等键重放但内容不同，拒绝覆盖",
+            rejected=[core.reject("idempotency_key", committed["reason"])],
+        )
+    return core.result(
+        "zj-ui-prototype", core.OK, writes=committed["writes"],
+        reason="预览切片已发出（非 canonical），人已签", artifact=artifact,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# S7 · zj-ui-visual-review
+# --------------------------------------------------------------------------- #
+
+def run_visual_review(request: dict, store: dict | None = None) -> dict:
+    store = {} if store is None else store
+    candidate = request.get("candidate") or {}
+    input_revision = request.get("input_revision") or ""
+
+    problems = core.validate_document(core.UI_REVIEW, candidate)
+    if problems:
+        return core.result(
+            "zj-ui-visual-review", core.REJECTED,
+            reason="deny-first：未注册字段或类型不符，未产出 review record",
+            rejected=problems,
+        )
+    gaps = core.stage_gaps("visual_review", candidate)
+    if gaps:
+        unknown = core.gaps_as_unknown(gaps, candidate, input_revision)
+        questions = [f"{field}：{core.GAP_REASONS.get(field, field)}" for field in gaps[:MAX_QUESTIONS]]
+        return core.result(
+            "zj-ui-visual-review", core.NEEDS_CONTEXT,
+            reason="必填缺口，转 unknown 后停止，零写入",
+            questions=questions, unknown=unknown,
+        )
+    # fingerprint 缺失或无法归因 → 隔离，不产出成功结论（契约 1-3 §3 不代签/不伪 PASS）。
+    fingerprint = candidate.get("fingerprint")
+    if not (isinstance(fingerprint, dict) and core.is_attributable(fingerprint.get("hash"))):
+        return core.result(
+            "zj-ui-visual-review", core.QUARANTINED,
+            reason="fingerprint 缺失或无法归因，隔离，不产出成功结论",
+            quarantined=["fingerprint"],
+        )
+    if not _human_approved(candidate.get("human_signature")):
+        return core.result(
+            "zj-ui-visual-review", core.HUMAN_REVIEW_REQUIRED,
+            reason="human_gate=required：未签署，下游冻结", questions=[],
+        )
+    content = _content(candidate, core.UI_REVIEW)
+    content.setdefault("unknown", [])
+    artifact = _artifact(core.UI_REVIEW, "review_schema_version", "1.0.0", input_revision, content)
+    committed = core.commit(
+        store, core.UI_REVIEW, artifact,
+        request.get("idempotency_key") or f"{core.UI_REVIEW}:{input_revision}",
+    )
+    if committed["conflict"]:
+        return core.result(
+            "zj-ui-visual-review", core.REJECTED,
+            reason="幂等键重放但内容不同，拒绝覆盖",
+            rejected=[core.reject("idempotency_key", committed["reason"])],
+        )
+    return core.result(
+        "zj-ui-visual-review", core.OK, writes=committed["writes"],
+        reason="review record 已提交，人已签", artifact=artifact,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# S8 · zj-ui-break
+# --------------------------------------------------------------------------- #
+
+REQUIRED_VIEWPORTS = frozenset({"390x844", "768x1024", "1440x900"})
+
+
+def run_break(request: dict, store: dict | None = None) -> dict:
+    store = {} if store is None else store
+    candidate = request.get("candidate") or {}
+    input_revision = request.get("input_revision") or ""
+
+    problems = core.validate_document(core.UI_BREAK_CELL, candidate)
+    if problems:
+        return core.result(
+            "zj-ui-break", core.REJECTED,
+            reason="deny-first：未注册字段或类型不符，未写 receipt",
+            rejected=problems,
+        )
+    cells = candidate.get("cells") or []
+    # fixture matrix 缺失 = 没有断言 = 不得用"部分通过"冒充 PASS（契约 1-3 §3）。
+    if not cells:
+        return core.result(
+            "zj-ui-break", core.BLOCKED, writes=0,
+            reason="fixture matrix 缺失，无法断言，不得冒充 PASS",
+            rejected=[core.reject("cells", "empty fixture matrix")],
+        )
+    viewports = set(candidate.get("viewports") or [])
+    missing_vp = REQUIRED_VIEWPORTS - viewports
+    if missing_vp:
+        return core.result(
+            "zj-ui-break", core.BLOCKED, writes=0,
+            reason=f"viewport 覆盖不足（缺 {sorted(missing_vp)}），不得缩小范围通过",
+            rejected=[core.reject("viewports", f"missing viewports: {sorted(missing_vp)}")],
+        )
+    gaps = core.stage_gaps("break", candidate)  # cells 已非空，此处仅兜底
+    if gaps:
+        unknown = core.gaps_as_unknown(gaps, candidate, input_revision)
+        questions = [f"{field}：{core.GAP_REASONS.get(field, field)}" for field in gaps[:MAX_QUESTIONS]]
+        return core.result(
+            "zj-ui-break", core.NEEDS_CONTEXT,
+            reason="必填缺口，转 unknown 后停止，零写入",
+            questions=questions, unknown=unknown,
+        )
+    failing = [cell for cell in cells if isinstance(cell, dict) and cell.get("status") == "FAIL"]
+    content = _content(candidate, core.UI_BREAK_CELL)
+    content.setdefault("unknown", [])
+    artifact = _artifact(core.UI_BREAK_CELL, "break_cell_schema_version", "1.0.0", input_revision, content)
+    committed = core.commit(
+        store, core.UI_BREAK_CELL, artifact,
+        request.get("idempotency_key") or f"{core.UI_BREAK_CELL}:{input_revision}",
+    )
+    if committed["conflict"]:
+        return core.result(
+            "zj-ui-break", core.REJECTED,
+            reason="幂等键重放但内容不同，拒绝覆盖",
+            rejected=[core.reject("idempotency_key", committed["reason"])],
+        )
+    status = core.BLOCKED if failing else core.OK
+    reason = (
+        "break cell 记录实测值，含 FAIL（不降级为 warning）"
+        if failing else
+        "全矩阵 + 三档视口跑完，receipt 记录实测值"
+    )
+    return core.result("zj-ui-break", status, writes=committed["writes"], reason=reason, artifact=artifact)
+
+
 STAGES = {
     "brief": run_brief,
     "discover": run_discover,
     "direction": run_direction,
     "design_system": run_design_system,
+    "flow": run_flow,
+    "prototype": run_prototype,
+    "visual_review": run_visual_review,
+    "break": run_break,
 }
