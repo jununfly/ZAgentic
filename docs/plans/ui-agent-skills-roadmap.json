@@ -231,7 +231,7 @@
       "id": "1-7",
       "uid": "01a154254df7-69ab92657f",
       "label": "AdapterBoundary 与 adapter 生命周期",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -259,7 +259,8 @@
       "budget": {
         "max_children": 5,
         "max_rounds": 2
-      }
+      },
+      "rounds": 1
     },
     "1-8": {
       "id": "1-8",
@@ -1128,16 +1129,23 @@
       "id": "1-7-1",
       "uid": "01a15426ba25-3c421090f3",
       "label": "对 Storybook、json-render、A2UI、M3E Canvas 等候选固定版本并完成 capability-fit 证据账本",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1-7",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "capability-fit 如何对候选分群评估？",
+          "answer": "按 adapter 架构角色分两群：A 群=active 本地验证面(Storybook)，B 群=opt-in 投影/协议/输入兼容(json-render/A2UI/M3E)；不能用统一 R 集套所有候选，否则 Storybook 会被误判 D。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "候选版本固定且完成 capability-fit G1–G4 证据矩阵；未通过者不得标为可采用"
-      ]
+      ],
+      "rounds": 1
     },
     "1-7-2": {
       "id": "1-7-2",
@@ -1425,7 +1433,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 18:59:21",
+    "updated": "2026-10-20 19:18:23",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

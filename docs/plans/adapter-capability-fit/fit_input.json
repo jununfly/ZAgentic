@@ -1,0 +1,146 @@
+{
+  "goal": "为 UI Agent Skills 的 AdapterBoundary 选定外部 adapter 候选：固定版本并经 R×O 证据闸门，区分 active 本地验证 adapter 与 opt-in 兼容性 fixture。",
+  "requirements": [
+    {
+      "id": "R1",
+      "statement": "离线/本地渲染与静态预览：毕业时须能在无远程服务依赖下隔离渲染组件/页面并产出本地静态 preview",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "本地 dev server / build 产出静态产物，断网仍可渲染与回看"
+    },
+    {
+      "id": "R2",
+      "statement": "canonical artifact 投影/mapping：消费 canonical artifacts（UI-BRIEF/UI-DESIGN/UI-FLOW/v1）并投影到 adapter 格式，schema lock + 可逆 mapping",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "存在锁定 schema 与可逆映射层，canonical→adapter→canonical 可复核"
+    },
+    {
+      "id": "R3",
+      "statement": "声明式、catalog 受限生成（deny-first 兼容）：agent 产出受组件/动作 catalog 约束的声明式 spec，不做任意代码执行",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "agent 输出经 catalog 校验，未注册组件/危险 action 被拒"
+    },
+    {
+      "id": "R4",
+      "statement": "无障碍验证：DOM/ARIA、对比度、focus、overflow 等硬门禁",
+      "priority": "want",
+      "critical": false,
+      "acceptance": "提供 a11y 验证原语或明确宿主组件负责并可挂接验证"
+    },
+    {
+      "id": "R5",
+      "statement": "交互与响应式测试：user-event 模拟 + viewport/响应式校验",
+      "priority": "want",
+      "critical": false,
+      "acceptance": "可模拟交互并跨 viewport 校验布局"
+    },
+    {
+      "id": "R6",
+      "statement": "文档/产物面：stories/docs 生成供人工审阅",
+      "priority": "nice",
+      "critical": false,
+      "acceptance": "可从 artifact 生成可读文档/示例"
+    },
+    {
+      "id": "R7",
+      "statement": "安全移除与降级：adapter 可移除且 canonical artifact + 本地验证在其删除后存活；具备 install/enable/disable/quarantine/remove 生命周期",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "removal test 证明删除 adapter 后 canonical + 静态 preview + 本地验证仍可用"
+    },
+    {
+      "id": "R8",
+      "statement": "许可证与所有权可接受：清晰 OSS 许可证、可接受维护/bus factor、无 SBOM 红旗",
+      "priority": "must",
+      "critical": true,
+      "acceptance": "许可证 permissive/兼容，维护健康或可隔离，SBOM 无高危"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "O1",
+      "name": "Storybook",
+      "url": "https://github.com/storybookjs/storybook",
+      "version": "v10.6.1 (latest stable, 2026-09-30; LTS 化可改钉 v10.5.x)",
+      "license": "MIT (部分子包 Apache-2.0)"
+    },
+    {
+      "id": "O2",
+      "name": "json-render (@json-render/core)",
+      "url": "https://github.com/vercel-labs/json-render",
+      "version": "pre-1.0 (npm @json-render/core; 集成前须钉具体 semver/commit)",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "O3",
+      "name": "A2UI",
+      "url": "https://a2ui.org",
+      "version": "v0.8 (stable); v0.9 (draft); v1.0 (candidate)",
+      "license": "Apache-2.0 (Google + CopilotKit)"
+    },
+    {
+      "id": "O4",
+      "name": "M3E Canvas (lnkiai/m3e-canvas)",
+      "url": "https://github.com/lnkiai/m3e-canvas",
+      "version": "无 tagged release (Next.js 静态 web app；须钉 main@<commit>)",
+      "license": "MIT"
+    }
+  ],
+  "matrix": {
+    "O1": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "storybook.js.org：本地 dev server + `build` 产出静态 storybook；断网可回看", "notes": "隔离渲染组件/页面，天然离线" },
+      "R2": { "coverage": 0.5, "semantic_match": 0.8, "composability": 1.0, "status": "adapted", "evidence": "CSF/stories 为组件级格式；canonical→stories 需我们写映射层", "notes": "需 adapter 映射层，非原生消费 ui-flow/v1" },
+      "R3": { "coverage": 0.3, "semantic_match": 0.5, "composability": 1.0, "status": "adapted", "evidence": "Storybook controls/args 声明式，但非 catalog 守门；deny-first 由 skill resolver 负责", "notes": "catalog 约束在 Storybook 之外" },
+      "R4": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "@storybook/addon-a11y (基于 axe) 提供 DOM/ARIA/对比度/focus 校验", "notes": "" },
+      "R5": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "@storybook/test play functions + @testing-library/user-event + viewport toolbar", "notes": "" },
+      "R6": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "Autodocs / MDX 从 stories 生成文档", "notes": "" },
+      "R7": { "coverage": 0.7, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "devDependency；移除后 canonical 完好，build 仍可产静态 preview；本地验证回退到静态 preview/其他 adapter", "notes": "降级面需由 AdapterBoundary 编排保证" },
+      "R8": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "MIT；~90.6k stars；8 维护者；健康发布节奏（Snyk health=Healthy）", "notes": "" }
+    },
+    "O2": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "registry 本地渲染 React/Vue/Svelte/Solid/RN，无远程依赖", "notes": "" },
+      "R2": { "coverage": 0.7, "semantic_match": 0.8, "composability": 1.0, "status": "adapted", "evidence": "flat element tree + catalog 即声明式投影格式；canonical→json-render spec 映射可行", "notes": "适配层把 canonical 组件映射到 catalog 类型" },
+      "R3": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "@json-render/core defineCatalog + zod：agent 产出受 catalog 约束 JSON，无任意代码执行", "notes": "强项：guardrail/catalog" },
+      "R4": { "coverage": 0.3, "semantic_match": 0.6, "composability": 1.0, "status": "adapted", "evidence": "a11y 取决于宿主组件；json-render 自身无 a11y 验证 harness", "notes": "需挂接外部 a11y 验证" },
+      "R5": { "coverage": 0.5, "semantic_match": 0.7, "composability": 1.0, "status": "adapted", "evidence": "data binding + actions/setState + visibility；响应式依赖宿主 CSS", "notes": "" },
+      "R6": { "coverage": 0.2, "semantic_match": 0.4, "composability": 1.0, "status": "unknown", "evidence": "无内置 docs 生成面；可经 code export 间接产出", "notes": "G5：未知项需 PoC", "poc_plan": "评估是否能从 canonical 经 json-render 反向生成可读文档/示例" },
+      "R7": { "coverage": 0.6, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "npm 依赖，可移除；移除后回退到直接代码生成", "notes": "" },
+      "R8": { "coverage": 0.6, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "Apache-2.0 ✓；但 2026-01 新建、~449 stars、维护者极少（bus factor 风险）", "notes": "所有权/成熟度风险高" }
+    },
+    "O3": {
+      "R1": { "coverage": 0.8, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "A2UI 为协议/spec；渲染需客户端 renderer（React/Angular/Flutter/Lit）；本地可渲染", "notes": "需实现/集成 renderer" },
+      "R2": { "coverage": 0.7, "semantic_match": 0.9, "composability": 1.0, "status": "adapted", "evidence": "surface/component/dataModel 消息即声明式投影；canonical→A2UI 消息映射可行", "notes": "" },
+      "R3": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "secure-by-design：agent 仅用预批准 catalog 组件，无代码执行，catalog 校验", "notes": "强项" },
+      "R4": { "coverage": 0.4, "semantic_match": 0.7, "composability": 1.0, "status": "adapted", "evidence": "renderer 映射到原生组件；a11y 取决于 renderer + 宿主；无内置 a11y harness", "notes": "" },
+      "R5": { "coverage": 0.5, "semantic_match": 0.7, "composability": 1.0, "status": "adapted", "evidence": "v1.0 actionResponse 支持客户端→服务端 RPC；数据绑定；响应式依赖宿主", "notes": "" },
+      "R6": { "coverage": 0.4, "semantic_match": 0.6, "composability": 1.0, "status": "adapted", "evidence": "spec 机器可读且有文档，但非人工审阅型 docs 生成", "notes": "" },
+      "R7": { "coverage": 0.6, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "协议为格式层；adapter=renderer 集成；可移除", "notes": "" },
+      "R8": { "coverage": 0.8, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "Apache-2.0，Google + CopilotKit，活跃；但 spec 成熟度风险（v0.8 稳/v0.9 草/v1.0 候选）", "notes": "协议演进风险" }
+    },
+    "O4": {
+      "R1": { "coverage": 0.2, "semantic_match": 0.3, "composability": 1.0, "status": "adapted", "evidence": "M3E Canvas 是本地浏览器 sketch 工具，产出 prompt 给外部 AI 编码工具；本身不渲染/验证最终 UI", "notes": "非 render/verify adapter，是 authoring aid" },
+      "R2": { "coverage": 0.1, "semantic_match": 0.2, "composability": 1.0, "status": "unsupported", "evidence": "产出自然语言 prompt，不消费 UI-FLOW/v1，非结构化投影", "notes": "与 canonical 投影需求不符" },
+      "R3": { "coverage": 0.3, "semantic_match": 0.5, "composability": 1.0, "status": "adapted", "evidence": "使用 M3 Expressive 部件词汇（catalog of parts），但为 sketch 工具非 agent 生成守门", "notes": "" },
+      "R4": { "coverage": 0.1, "semantic_match": 0.2, "composability": 1.0, "status": "unknown", "evidence": "非验证工具", "notes": "G5：未知项需 PoC", "poc_plan": "评估其导出 prompt 是否可被 AdapterBoundary 作为 input fixture 消费" },
+      "R5": { "coverage": 0.3, "semantic_match": 0.5, "composability": 1.0, "status": "adapted", "evidence": "支持 screen flow/transition/phone-desktop 布局，但为 authoring 非运行时校验", "notes": "" },
+      "R6": { "coverage": 0.2, "semantic_match": 0.3, "composability": 1.0, "status": "unknown", "evidence": "导出 prompt 非 docs", "notes": "G5：未知项需 PoC", "poc_plan": "评估 prompt 产物是否可作为 human-review 输入" },
+      "R7": { "coverage": 0.8, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "独立本地工具；移除无影响；但非运行时 adapter，降级面不适用", "notes": "" },
+      "R8": { "coverage": 0.4, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "MIT ✓；但单维护者 lnkiai、~2 周新、病毒式增长未经验证、无运行时", "notes": "所有权/成熟度风险高" }
+    }
+  },
+  "cost": {
+    "O1": { "initial_dev": 3, "integration": 2, "maintenance": 2, "upstream_adapt": 2, "ops": 1, "security_gov": 1 },
+    "O2": { "initial_dev": 4, "integration": 3, "maintenance": 3, "upstream_adapt": 3, "ops": 1, "security_gov": 2 },
+    "O3": { "initial_dev": 5, "integration": 3, "maintenance": 2, "upstream_adapt": 3, "ops": 1, "security_gov": 2 },
+    "O4": { "initial_dev": 2, "integration": 2, "maintenance": 4, "upstream_adapt": 4, "ops": 1, "security_gov": 2 }
+  },
+  "adaptation": {
+    "O1": { "scope": ["state-transform", "source-trace"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "" },
+    "O2": { "scope": ["identity-mapping", "query-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "" },
+    "O3": { "scope": ["identity-mapping", "source-trace"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "" },
+    "O4": { "scope": ["identity-mapping"], "mode": "sidecar", "responsibility_uncontrolled": true, "poc_plan": "仅作 input/authoring 兼容 fixture；验证其 prompt 产物可被 AdapterBoundary 消费后再决定是否纳入" }
+  },
+  "poc_plan": "Storybook=active 验证已具备；json-render/A2UI=opt-in 投影/协议 golden fixtures；M3E Canvas=仅在 PoC 证明其 prompt 可消费后纳入 input fixture，否则维持 out-of-core。"
+}

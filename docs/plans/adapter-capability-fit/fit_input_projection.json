@@ -1,0 +1,49 @@
+{
+  "goal": "角色=opt-in 投影/协议/输入兼容 adapter：评估 json-render、A2UI、M3E Canvas 作为 canonical artifact 的声明式投影/协议与输入兼容面，并满足离线渲染、安全移除与许可证要求。",
+  "requirements": [
+    { "id": "R1", "statement": "离线/本地渲染与静态预览：无远程依赖下可本地渲染", "priority": "must", "critical": true, "acceptance": "本地渲染，断网可用" },
+    { "id": "R2", "statement": "canonical artifact 投影/mapping：消费 canonical artifacts 并投影到 adapter 格式，schema lock + 可逆 mapping", "priority": "must", "critical": true, "acceptance": "锁定 schema + 可逆映射层" },
+    { "id": "R3", "statement": "声明式、catalog 受限生成（deny-first 兼容）：agent 产出受 catalog 约束的声明式 spec，无任意代码执行", "priority": "must", "critical": true, "acceptance": "输出经 catalog 校验，未注册组件/危险 action 被拒" },
+    { "id": "R7", "statement": "安全移除与降级：adapter 可移除且 canonical + 本地验证在其删除后存活", "priority": "must", "critical": true, "acceptance": "removal test 证明删除后 canonical + 静态 preview 仍可用" },
+    { "id": "R8", "statement": "许可证与所有权可接受：清晰 OSS 许可证、可接受维护/bus factor、无 SBOM 红旗", "priority": "must", "critical": true, "acceptance": "许可证 permissive/兼容，维护健康或可隔离" }
+  ],
+  "candidates": [
+    { "id": "O2", "name": "json-render (@json-render/core)", "url": "https://github.com/vercel-labs/json-render", "version": "pre-1.0 (npm @json-render/core; 集成前须钉具体 semver/commit)", "license": "Apache-2.0" },
+    { "id": "O3", "name": "A2UI", "url": "https://a2ui.org", "version": "v0.8 (stable); v0.9 (draft); v1.0 (candidate)", "license": "Apache-2.0 (Google + CopilotKit)" },
+    { "id": "O4", "name": "M3E Canvas (lnkiai/m3e-canvas)", "url": "https://github.com/lnkiai/m3e-canvas", "version": "无 tagged release (Next.js 静态 web app；须钉 main@<commit>)", "license": "MIT" }
+  ],
+  "matrix": {
+    "O2": {
+      "R1": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "registry 本地渲染 React/Vue/Svelte/Solid/RN，无远程依赖", "notes": "" },
+      "R2": { "coverage": 0.7, "semantic_match": 0.8, "composability": 1.0, "status": "adapted", "evidence": "flat element tree + catalog 即声明式投影格式；canonical→spec 映射可行", "notes": "适配层把 canonical 组件映射到 catalog 类型" },
+      "R3": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "@json-render/core defineCatalog + zod：受 catalog 约束 JSON，无任意代码执行", "notes": "强项" },
+      "R7": { "coverage": 0.6, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "npm 依赖，可移除；移除后回退到直接代码生成", "notes": "" },
+      "R8": { "coverage": 0.6, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "Apache-2.0 ✓；但 2026-01 新建、~449 stars、维护者极少（bus factor 风险）", "notes": "所有权/成熟度风险" }
+    },
+    "O3": {
+      "R1": { "coverage": 0.8, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "A2UI 为协议/spec；渲染需客户端 renderer；本地可渲染", "notes": "需集成 renderer" },
+      "R2": { "coverage": 0.7, "semantic_match": 0.9, "composability": 1.0, "status": "adapted", "evidence": "surface/component/dataModel 消息即声明式投影；canonical→A2UI 映射可行", "notes": "" },
+      "R3": { "coverage": 1.0, "semantic_match": 1.0, "composability": 1.0, "status": "native", "evidence": "secure-by-design：预批准 catalog 组件，无代码执行，catalog 校验", "notes": "强项" },
+      "R7": { "coverage": 0.6, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "协议为格式层；adapter=renderer 集成；可移除", "notes": "" },
+      "R8": { "coverage": 0.8, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "Apache-2.0，Google + CopilotKit，活跃；spec 成熟度风险（v0.8/v0.9/v1.0）", "notes": "协议演进风险" }
+    },
+    "O4": {
+      "R1": { "coverage": 0.2, "semantic_match": 0.3, "composability": 1.0, "status": "adapted", "evidence": "本地浏览器 sketch 工具，产出 prompt 给外部 AI 编码工具；本身不渲染/验证最终 UI", "notes": "非 render/verify adapter" },
+      "R2": { "coverage": 0.1, "semantic_match": 0.2, "composability": 1.0, "status": "unsupported", "evidence": "产出自然语言 prompt，不消费 UI-FLOW/v1，非结构化投影", "notes": "与 canonical 投影需求不符" },
+      "R3": { "coverage": 0.3, "semantic_match": 0.5, "composability": 1.0, "status": "adapted", "evidence": "使用 M3 Expressive 部件词汇，但为 sketch 工具非 agent 生成守门", "notes": "" },
+      "R7": { "coverage": 0.8, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "独立本地工具；移除无影响；非运行时 adapter", "notes": "" },
+      "R8": { "coverage": 0.4, "semantic_match": 1.0, "composability": 1.0, "status": "adapted", "evidence": "MIT ✓；单维护者 lnkiai、~2 周新、病毒式增长未验证、无运行时", "notes": "所有权/成熟度风险高" }
+    }
+  },
+  "cost": {
+    "O2": { "initial_dev": 4, "integration": 3, "maintenance": 3, "upstream_adapt": 3, "ops": 1, "security_gov": 2 },
+    "O3": { "initial_dev": 5, "integration": 3, "maintenance": 2, "upstream_adapt": 3, "ops": 1, "security_gov": 2 },
+    "O4": { "initial_dev": 2, "integration": 2, "maintenance": 4, "upstream_adapt": 4, "ops": 1, "security_gov": 2 }
+  },
+  "adaptation": {
+    "O2": { "scope": ["identity-mapping", "query-adapt"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "" },
+    "O3": { "scope": ["identity-mapping", "source-trace"], "mode": "adapter", "responsibility_uncontrolled": false, "poc_plan": "" },
+    "O4": { "scope": ["identity-mapping"], "mode": "sidecar", "responsibility_uncontrolled": true, "poc_plan": "仅 input/authoring 兼容 fixture；验证其 prompt 产物可被 AdapterBoundary 消费后再决定是否纳入" }
+  },
+  "poc_plan": "json-render/A2UI=opt-in 投影/协议 golden fixtures；M3E Canvas=仅 PoC 证明其 prompt 可消费后纳入 input fixture，否则维持 out-of-core。"
+}
