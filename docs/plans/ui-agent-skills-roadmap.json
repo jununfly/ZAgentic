@@ -895,16 +895,43 @@
       "id": "1-5-3",
       "uid": "01a15426b82f-4e0b7efd62",
       "label": "实现 DOM/ARIA、focus、contrast、overflow、响应式、motion 与状态硬门禁",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-5",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-5-3 的门禁实现形态与浏览器依赖？",
+          "answer": "以纯 stdlib 门禁函数 + 显式 observation bundle 契约（R-OBS-1）实现 7 类硬门禁：DOM/ARIA、focus、contrast、overflow、responsive、motion、state 全部在给定观察证据上做确定性判定；真实浏览器捕获由 1-7-3 Storybook active adapter 供给。无 observation -> NOT_EXECUTED；observation 缺段/空段 -> HUMAN_REVIEW_REQUIRED，绝不以默认值伪造 pass（golden-fixtures-spec §8 fail-closed）。",
+          "note": ""
+        },
+        {
+          "q": "responsive 门禁的 viewport 集如何定？",
+          "answer": "按 1-3 capability manifest（S8 FF-BRK：viewport 390/768/1440 为必测）冻结为 390x844 / 768x1024 / 1440x900 三档；1-5-2 VERIFICATION_CONFIG 里的 1280x800/375x667 是未执行过任何 cell 的占位，替换不使既有结论失效，但 config_hash->env_hash->matrix_key 必须重算（配置升 v0.2），本节点同时给出并落盘新冻结值；revalidation 规则对未来结论生效（沿用 L-FONT 先例：轴变化发生在首跑结论产生前）。",
+          "note": ""
+        },
+        {
+          "q": "state 门禁认哪套状态机，哪些契约维度不在本节点？",
+          "answer": "state 门禁只认 EV-v0.1 冻结状态机（idle->validating->submitting->success|error + 字段级 error 覆盖 + error 可恢复回 editable），越界转移即 hard fail；round_trip/migration/offline_recovery 三个契约维度不在 1-5-3 口径内（需 flow engine + canonical 投影，属 1-6/1-9），继续由 runner 标 NOT_EXECUTED 而非跳过不入账。",
+          "note": ""
+        },
+        {
+          "q": "门禁结果聚合与证据缺失的语义？",
+          "answer": "聚合优先级 FAIL > HUMAN_REVIEW_REQUIRED > QUARANTINED > WARNING > PASS；证据缺失一律 HUMAN_REVIEW_REQUIRED，不得降级为 warning 或 PARTIAL——capability manifest S8/S9 forbidden 明确禁止把 overflow/focus/恢复失败记为 warning 或用'部分通过'冒充 PASS；fixture 覆盖不全（class 内任一无 bundle）同判 HUMAN_REVIEW_REQUIRED。",
+          "note": ""
+        },
+        {
+          "q": "写单测时抓到 checked=0 仍 PASS 的空转假绿，怎么修？",
+          "answer": "首版 gate_focus 在 dom.nodes 与 focus.sequence 都为空时返回 PASS（checked=0），属 fail-closed 漏洞。修法不止补该分支：门禁框架层 _finish 增加系统级兜底——checked==0 且欲判 PASS 一律改判 HUMAN_REVIEW_REQUIRED 并追加 HG-EVID-03，新增门禁即使漏写判空也不会静默通过；同时 gate_focus 显式要求 nodes/sequence 非空（HG-EVID-01）。两个用例（focus/empty-sequence、dom_aria/no-assertions-ran）固化该行为，tests/ 里另有文档-代码码表一致性断言防漂移。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态"
-      ]
+      ],
+      "rounds": 1
     },
     "1-5-4": {
       "id": "1-5-4",
@@ -1297,7 +1324,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 15:19:48",
+    "updated": "2026-10-20 15:51:04",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

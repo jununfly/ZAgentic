@@ -27,7 +27,7 @@ CLI：
   dual_lane_runner.py init [--plans DIR]            # 幂等建立 fixture 目录骨架 + 计算 manifest_hash
   dual_lane_runner.py fingerprint [--plans DIR]     # 捕获 env 轴 + config_hash + env_hash + matrix_key（print-only）
   dual_lane_runner.py plan [--lane baseline|degraded] [--plans DIR]
-  dual_lane_runner.py run --lane <baseline|degraded> [--plans DIR]
+  dual_lane_runner.py run --lane <baseline|degraded> [--plans DIR] [--observations DIR]
   dual_lane_runner.py selfcheck [--plans DIR]       # 复跑幂等自检
   dual_lane_runner.py demo                           # 确定性控制自检（虚拟时钟 + seed）
 
@@ -44,6 +44,9 @@ import os
 import random
 import sys
 from datetime import datetime, timezone
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hard_gates as hg  # noqa: E402  R-HAR-2（1-5-3 硬门禁）
 
 # --------------------------------------------------------------------------- #
 # 固定确定性常量（1-5-2 退出判据：固定 browser/font/network/clock/seed）
@@ -67,10 +70,13 @@ BROWSER_MAJOR = "PENDING@1-7-3"
 # Node 运行时约束（env-fingerprint §1，R-ENV-1）：目标 EV 运行时（Next.js 14）
 NODE_VERSION = ">=18.17"
 
-# 固定断言配置（env-fingerprint §1 config_hash 来源，本节点定义）
+# 固定断言配置（env-fingerprint §1 config_hash 来源）
+# v0.2（1-5-3）：viewport 集对齐 1-3 capability manifest（S8 FF-BRK 必测 390/768/1440），
+# 阈值并入 hard_gates.GATE_THRESHOLDS（单一事实源），config_hash 随之重算。
 VERIFICATION_CONFIG = {
-    "viewports": ["1280x800", "375x667"],
-    "thresholds": {"contrast_ratio": 4.5, "overflow_px": 0},
+    "version": "0.2",
+    "viewports": hg.REQUIRED_VIEWPORTS,
+    "thresholds": dict(hg.GATE_THRESHOLDS),
     "oracles": [
         "static-assert",     # dom_aria / 结构
         "interaction-sim",   # focus
@@ -102,12 +108,8 @@ CELL_GATE = {
     "offline_recovery":  {"form": "-", "adapter": "-", "contract": "A"},
 }
 
-# 哪些维度需要远端 adapter / 浏览器才能执行真实断言（无 adapter 时为 NOT_EXECUTED）
-ADAPTER_DEPENDENT_DIMS = {
-    "dom_aria", "focus", "contrast", "overflow", "responsive", "motion",
-    "round_trip", "migration",
-}
-# offline_recovery 仅需本地 canonical（仍需 1-6 flow engine），暂记为待 engine
+# 门禁是否可执行由「有没有 observation bundle」决定（1-5-3）：不再维护维度级 adapter 依赖表，
+# 因为同一维度在不同 class/fixture 下的证据来源不同；缺证据一律 HUMAN_REVIEW_REQUIRED。
 
 
 # --------------------------------------------------------------------------- #
@@ -274,10 +276,11 @@ def fingerprint(plans_dir: str, write: bool = False) -> dict:
     env_doc["matrix_key"] = mk
     env_doc["config_hash"] = cfg_h
     env_doc["note"] = (
-        "机器可读环境指纹（1-5-2 冻结版）。确定性轴（network_mode/clock_source/seed/"
-        "config_hash/font/node_version）已由 R-HAR-1 首次运行捕获并冻结；browser_major="
-        + BROWSER_MAJOR + "（本仓库 Wave 0 无内置浏览器引擎，延迟到 1-7-3 捕获真实 major，"
-        "届时按 revalidation 规则触发全量重验）。env_hash / matrix_key 由本节点计算。"
+        "机器可读环境指纹（config v" + VERIFICATION_CONFIG["version"] + "）。确定性轴"
+        "（network_mode/clock_source/seed/config_hash/font/node_version）由 R-HAR-1 捕获并冻结；"
+        "1-5-3 将 viewport 集对齐 capability manifest（390/768/1440）并重算 config_hash/env_hash/"
+        "matrix_key。browser_major=" + BROWSER_MAJOR + "（本仓库 Wave 0 无内置浏览器引擎，"
+        "延迟到 1-7-3 捕获真实 major，届时按 revalidation 规则触发全量重验）。"
     )
 
     if write:
@@ -302,35 +305,71 @@ def plan_cells(lane: str) -> list:
     return cells
 
 
-def run_lane(lane: str, plans_dir: str) -> dict:
-    """执行一条 lane。无 adapter/浏览器时如实标记，绝不伪造通过（fail-closed）。"""
+def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
+    """执行一条 lane。
+
+    baseline：对存在 observation bundle 的 fixture 逐 viewport 跑 7 类硬门禁；
+    缺 bundle 的 fixture 记 HG-EVID-02（HUMAN_REVIEW_REQUIRED），绝不伪造通过。
+    degraded：adapter-off 路径，全部 DEGRADED_SKIP（离线恢复归 1-6/1-9）。
+    """
     fp = fingerprint(plans_dir, write=False)
-    mh = compute_manifest_hash(load_json(
-        os.path.join(plans_dir, "ui-agent-skills-fixture-manifest.json")))
+    manifest = load_json(os.path.join(plans_dir, "ui-agent-skills-fixture-manifest.json"))
+    fixtures = manifest.get("fixtures", [])
+    mh = compute_manifest_hash(manifest)
     clock = VirtualClock()
     rng = make_rng()
+    obs = hg.load_bundles(observations_dir) if observations_dir else {}
+    thresholds = VERIFICATION_CONFIG["thresholds"]
 
     cells = plan_cells(lane)
     results = []
     for c in cells:
-        dim = c["dimension"]
-        if lane == "baseline":
-            # baseline 需要浏览器/adapter 执行真实断言
-            if dim in ADAPTER_DEPENDENT_DIMS:
-                status = "NOT_EXECUTED"   # 等待 1-6/1-7 adapter
-            else:  # offline_recovery：需 1-6 flow engine
-                status = "NOT_EXECUTED"
-        else:  # degraded：adapter-off
+        dim, cls = c["dimension"], c["class"]
+        detail = {"gate": dim, "fixtures_seen": 0, "bundles": 0,
+                  "missing_fixtures": [], "findings": []}
+        reason = ""
+        if lane == "degraded":
             status = "DEGRADED_SKIP"      # 离线恢复路径需 1-6 engine；adapter 相关一律跳过
-        results.append({**c, "status": status})
+            reason = "degraded lane 不执行视觉/adapter 门禁，离线恢复归 1-6/1-9"
+        elif dim not in hg.GATES:
+            status = "NOT_EXECUTED"
+            reason = "门禁不在 1-5-3 口径（round_trip/migration/offline_recovery 属 1-6/1-9）"
+        else:
+            class_fixtures = [f for f in fixtures if f.get("class") == cls]
+            gate_results = []
+            missing = []
+            for fx in class_fixtures:
+                bundles = obs.get(fx.get("id"), {})
+                if not bundles:
+                    missing.append(fx.get("id"))
+                    continue
+                detail["fixtures_seen"] += 1
+                detail["bundles"] += len(bundles)
+                if dim in hg.CROSS_VIEWPORT_GATES:
+                    gate_results.append(hg.run_gate(dim, bundles, thresholds, fx))
+                else:
+                    for vp in sorted(bundles):
+                        gate_results.append(hg.run_gate(dim, bundles[vp], thresholds, fx))
+            if not gate_results:
+                status = "NOT_EXECUTED"
+                reason = "无 observation bundle（%s 类 %d 个 fixture 全缺）" % (cls, len(missing))
+            else:
+                if missing:
+                    gate_results.append(hg.missing_fixtures_result(dim, missing, cls))
+                detail["missing_fixtures"] = missing
+                detail["findings"] = [f for r in gate_results for f in r["findings"]]
+                status = hg.aggregate(gate_results)
+                if missing:
+                    reason = "部分 fixture 缺 observation（%d/%d），证据不全不判 PASS" % (
+                        len(missing), len(class_fixtures))
+        results.append({**c, "status": status, "reason": reason, "observed": detail})
 
-    executed = [r for r in results if r["status"] in ("PASS", "FAIL", "WARNING")]
-    skipped = [r for r in results if r["status"] in ("NOT_EXECUTED", "DEGRADED_SKIP")]
-
-    overall = "BLOCKED" if not executed else "PARTIAL"
+    statuses = [r["status"] for r in results]
+    executed_n = len([s for s in statuses if s not in ("NOT_EXECUTED", "DEGRADED_SKIP")])
+    skipped_n = len(statuses) - executed_n
 
     receipt = {
-        "runner": "R-HAR-1",
+        "runner": "R-HAR-1+R-HAR-2",
         "lane": lane,
         "run_id": sha256_text(f"{lane}|{fp['env_hash']}|{clock.now_iso()}|{rng.random()}")[:16],
         "clock_source": clock.now_iso(),
@@ -339,14 +378,36 @@ def run_lane(lane: str, plans_dir: str) -> dict:
         "manifest_hash": mh,
         "env_hash": fp["env_hash"],
         "matrix_key": fp["matrix_key"],
-        "overall": overall,
-        "executed": len(executed),
-        "skipped": len(skipped),
+        "config_version": VERIFICATION_CONFIG["version"],
+        "config_hash": fp["config_hash"],
+        "observations_dir": observations_dir,
+        "overall": _overall_status(statuses),
+        "executed": executed_n,
+        "skipped": skipped_n,
         "cells": results,
-        "note": ("fail-closed：无内置 adapter/浏览器/flow-engine，需 1-6/1-7 落地后才执行"
-                 "真实 cell 断言；本 receipt 为结构占位，非验收通过证据（1-5-4 定稿格式）。"),
+        "note": ("fail-closed：仅对存在 observation bundle 的 cell 执行硬门禁；缺证据记 "
+                 "HUMAN_REVIEW_REQUIRED，绝不以 NOT_EXECUTED 或部分覆盖冒充 PASS。"
+                 "本 receipt 仍为结构占位，完整字段由 1-5-4 定稿。"),
     }
     return receipt
+
+
+def _overall_status(statuses):
+    """lane 聚合：FAIL > HUMAN_REVIEW_REQUIRED > QUARANTINED > PARTIAL/WARNING > PASS。"""
+    if "FAIL" in statuses:
+        return "FAIL"
+    if "HUMAN_REVIEW_REQUIRED" in statuses:
+        return "HUMAN_REVIEW_REQUIRED"
+    if "QUARANTINED" in statuses:
+        return "QUARANTINED"
+    executed = [s for s in statuses if s not in ("NOT_EXECUTED", "DEGRADED_SKIP")]
+    if not executed:
+        return "BLOCKED"
+    if len(executed) < len(statuses):
+        return "PARTIAL"
+    if "WARNING" in statuses:
+        return "WARNING"
+    return "PASS"
 
 
 # --------------------------------------------------------------------------- #
@@ -391,6 +452,9 @@ def main(argv=None) -> int:
     ap.add_argument("--lane", choices=["baseline", "degraded"], default="baseline")
     ap.add_argument("--write", action="store_true",
                     help="将计算结果写回 docs/plans/*.json（本会话默认 print-only）")
+    ap.add_argument("--observations", default=None,
+                    help="observation bundle 根目录（<fixture_id>/<viewport>.json）；"
+                         "缺省时 baseline 全部 NOT_EXECUTED（fail-closed）")
     args = ap.parse_args(argv)
 
     if args.cmd == "demo":
@@ -412,7 +476,7 @@ def main(argv=None) -> int:
         return 0
 
     if args.cmd == "run":
-        print(canonical_json(run_lane(args.lane, args.plans)))
+        print(canonical_json(run_lane(args.lane, args.plans, args.observations)))
         return 0
 
     if args.cmd == "selfcheck":

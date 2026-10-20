@@ -1,7 +1,7 @@
 {
   "version": "0.1",
   "wave": "EV-v0.1",
-  "note": "机器可读环境指纹（1-5-2 冻结版）。确定性轴（network_mode/clock_source/seed/config_hash/font/node_version）已由 R-HAR-1 首次运行捕获并冻结；browser_major=PENDING@1-7-3（本仓库 Wave 0 无内置浏览器引擎，延迟到 1-7-3 捕获真实 major，届时按 revalidation 规则触发全量重验）。env_hash / matrix_key 由本节点计算。",
+  "note": "机器可读环境指纹（config v0.2）。确定性轴（network_mode/clock_source/seed/config_hash/font/node_version）由 R-HAR-1 捕获并冻结；1-5-3 将 viewport 集对齐 capability manifest（390/768/1440）并重算 config_hash/env_hash/matrix_key。browser_major=PENDING@1-7-3（本仓库 Wave 0 无内置浏览器引擎，延迟到 1-7-3 捕获真实 major，届时按 revalidation 规则触发全量重验）。",
   "axes": {
     "browser_major": {
       "value": "PENDING@1-7-3",
@@ -34,12 +34,12 @@
       "source": "1-5-2 退出判据"
     },
     "config_hash": {
-      "value": "e5d3f6c0dda4fd74fa6fbb50f808b0a1b826900aca9ec7c2b13396346486de7e",
+      "value": "70ecd3879750d8e70f365e8d78f5ae284c37189f2ae137f69f63f89c348b1830",
       "policy": "viewport 集 + 断言阈值集 + oracle 集 的 sha256",
       "source": "本节点定义"
     }
   },
-  "env_hash": "6a1f1a72989c85d0795b87ae0cfc1bd01192eb6c86c1882db44368bedc206858",
-  "matrix_key": "010a2f83d794f1660f14b5dbb36dc6a3aaf46b4baaebc4d1a3d4f0a00505a69c",
-  "config_hash": "e5d3f6c0dda4fd74fa6fbb50f808b0a1b826900aca9ec7c2b13396346486de7e"
+  "env_hash": "57efae87180b2e27b1a43d02593c97f98b4c7ecc3b047fa72ab8c4f42149e02e",
+  "matrix_key": "10ac66d18f56143e74a834907a6c2c318915164afd42e05cb9c32287ecfc0633",
+  "config_hash": "70ecd3879750d8e70f365e8d78f5ae284c37189f2ae137f69f63f89c348b1830"
 }
