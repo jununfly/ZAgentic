@@ -698,16 +698,40 @@
       "id": "1-4-2",
       "uid": "01a15426b6e4-c7d9705156",
       "label": "实现 policy→approval→sandbox lease→executor 单入口的 deny-first 信任链",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "test-q",
+          "answer": "test-a",
+          "note": ""
+        },
+        {
+          "q": "本节点交付物形态",
+          "answer": "冻结 policy→approval→sandbox lease→executor 单入口 deny-first 信任链契约文档（plan 层）；不写 policy engine/approval/sandbox/executor 代码，真实实现归 1-6 与 1-9。与 1-4-1（catalog/intent）和 1-4-3（provenance）/1-4-4（deny fixtures）同构。",
+          "note": ""
+        },
+        {
+          "q": "本节点关键设计不变量",
+          "answer": "八不变量 P1-P8：P1 executor 单入口 deny-first（无旁路）、P2 policy engine=allow/deny 唯一事实源、P3 approval 强绑定不可复用（跨版本/目标/intent 拒）、P4 lease 短时+fencing token（旧 token 拒）、P5 executor=lease 校验唯一入口、P6 fail closed、P7 无 secret 泄漏（仅 broker ref）、P8 幂等可重放。executor 严格四检=poly decision_record + approval 有效 + sandbox lease 一致 + request digest 匹配，即本节点 exit criteria 承载点。",
+          "note": ""
+        },
+        {
+          "q": "test-q",
+          "answer": "",
+          "note": "retracted:",
+          "retracted": true,
+          "retracts": "d3ed5bf0bc4bb9973211c894c25251dd9b6526400af31e26de290fc5bb2014c2"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "effect 单入口严格检查 policy、approval、sandbox lease 和 request digest"
-      ]
+      ],
+      "rounds": 1
     },
     "1-4-3": {
       "id": "1-4-3",
@@ -1175,7 +1199,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 12:06:35",
+    "updated": "2026-10-20 13:13:50",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
