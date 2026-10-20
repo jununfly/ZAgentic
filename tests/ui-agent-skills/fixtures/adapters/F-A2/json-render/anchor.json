@@ -1,0 +1,20 @@
+{
+  "adapter": "@json-render/core",
+  "role": "B群·opt-in 投影/协议/输入兼容 adapter",
+  "pin": {
+    "version": "0.8.0",
+    "source_commit": "0a404302efc6acd204ffb9794a845d0f50da46d5",
+    "git_tag": "@json-render/core@0.8.0",
+    "git_tag_object": "5e398d0da3ce490f6db397be2537c34064a84a72",
+    "tarball_shasum": "fa124f398f17b131407f0dfc9e598f31e1964623",
+    "tarball_url": "https://registry.npmmirror.com/@json-render/core/-/core-0.8.0.tgz",
+    "repository": "git+https://github.com/vercel-labs/json-render.git",
+    "resolved_at": "2026-10-20"
+  },
+  "rationale": "原选 0.0.1 经 git ls-remote 核验无 git tag → 无 source_commit 回退（仅 tarball shasum），npm 撤包无法源码重建；改钉 0.8.0（repo 首个有 tag 版本），兼得 semver 主锚 + 真实 git 回退。仍为 pre-1.0。",
+  "drift_detection": {
+    "version_drift_signal": "pin.version 或 pin.source_commit 变化触发重测 + 版本漂移报告",
+    "semantic_loss_signal": "expected.json 投影结构（catalog/tree/semantic_equivalence）相对 baseline 出现字段删除或语义集合不等价",
+    "rebuild_on_yank": "source_commit 检出 + monorepo(@json-render/core) build"
+  }
+}

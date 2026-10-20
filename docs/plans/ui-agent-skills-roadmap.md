@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-20 19:47:12
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-20 21:04:29
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest
@@ -39,7 +39,7 @@
 │   ├── [x][X+] 1-7-1. 对 Storybook、json-render、A2UI、M3E Canvas 等候选固定版本并完成 capability-fit 证据账本
 │   ├── [x][X+] 1-7-2. 定义 AdapterBoundary v1、manifest、schema lock、mapping、owner、fallback 与 removal test
 │   ├── [x][X+] 1-7-3. 实现 Storybook active 本地验证 adapter：stories、a11y、viewport、interaction、docs
-│   ├── [ ][X+] 1-7-4. 为 json-render/A2UI/M3E 建立 opt-in projection/协议/输入兼容性 golden fixtures
+│   ├── [~][X+] 1-7-4. 为 json-render/A2UI/M3E 建立 opt-in projection/协议/输入兼容性 golden fixtures
 │   └── [!][X+] 1-7-5. 验证 adapter 删除、断网、远程服务失败时的本地恢复、degraded/disabled/quarantine
 ├── [!][Y+] 1-8. Experience Version 表单/审批 sample flow
 │   ├── [!][Y+] 1-8-1. 为表单/审批 Experience Version 固化 PRD、角色状态、canonical artifact 与 fixture
@@ -72,6 +72,7 @@
 
 ### 下一步可开工（ready 前 3）
 
-- 1-7-4. 为 json-render/A2UI/M3E 建立 opt-in projection/协议/输入兼容性 golden fixtures [ ]
+- 1-7-4-3. M3E：opt-in projection/协议/输入兼容性 golden fixtures [ ]
+- 1-7-4-4. 共享 golden-diff / 版本漂移检测 harness [ ]
 - 1-9-5. 持久化/重放实测闸门回写（G-19..G-25） [ ]
 <!-- ROADMAP_SECTION_END -->

@@ -1,0 +1,13 @@
+{
+  "adapter_id": "a2ui-opt-in",
+  "status": "OK",
+  "input_compat": "PASS",
+  "known_fields_accepted": true,
+  "unknown_preserved": true,
+  "unknown_not_dropped": true,
+  "custom_catalog_ref_recorded": true,
+  "deviation_flagged": true,
+  "warning_emitted": true,
+  "contract": "A2UI v0.8 extensions are expressed via custom/inline catalogs negotiated at beginRendering.catalogId + client a2uiClientCapabilities.inlineCatalogs. An unknown component type MUST be preserved verbatim together with its catalog reference; the adapter records the inline catalog dependency and emits a warning, never discarding the extension. The drift harness (1-7-4-4) treats field deletion / dropped extension as semantic loss (hard fail) and version/catalog drift as report-only.",
+  "capture_method": "spec-conformant; modeled on the v0.8 inline-catalog negotiation example (a2ui.org/specification/v0.8-a2ui/). No runtime execution."
+}

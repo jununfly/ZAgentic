@@ -1225,16 +1225,32 @@
       "id": "1-7-4",
       "uid": "01a15426bae9-cde85d5cb5",
       "label": "为 json-render/A2UI/M3E 建立 opt-in projection/协议/输入兼容性 golden fixtures",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1-7",
-      "children": [],
-      "decisions": [],
+      "children": [
+        "1-7-4-1",
+        "1-7-4-2",
+        "1-7-4-3",
+        "1-7-4-4"
+      ],
+      "decisions": [
+        {
+          "q": "首批 fixture 怎么拆？",
+          "answer": "粗拆 4 直接子节点：3 候选(json-render/A2UI/M3E)各覆盖 opt-in projection+协议+输入兼容性三维度，+1 共享 golden-diff/版本漂移检测 harness；维度作为候选子节点的退出判据而非独立节点，避免超 max-children=5",
+          "note": "用户选 b1（20:1x）"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "json-render/A2UI/M3E 的 opt-in golden fixture 能检测语义丢失和版本漂移"
-      ]
+      ],
+      "rounds": 1,
+      "budget": {
+        "max_children": 5,
+        "max_rounds": 3
+      }
     },
     "1-7-5": {
       "id": "1-7-5",
@@ -1473,11 +1489,84 @@
         "G-25 恢复失败=recovery error：日志损坏/缺失场景返回 recovery error，不伪报成功",
         "回填完成：1-3-4 文档 G-19..G-25 闸门表从 open 更新为实测值（pass/fail + 样本数 + 异常），1-3-4 节点 open 标注解除"
       ]
+    },
+    "1-7-4-1": {
+      "id": "1-7-4-1",
+      "uid": "01a1593dd421-081ea486ef",
+      "label": "json-render：opt-in projection/协议/输入兼容性 golden fixtures",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-7-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "json-render 钉哪个版本？",
+          "answer": "改钉 0.8.0（双锚：version + source_commit 0a40430…，repo vercel-labs/json-render）；弃 0.0.1 因其无 git tag、无 source_commit 回退",
+          "note": "zj 选 0.8.0（20:3x），d1 原选 0.0.1 经 ls-remote 核验无 tag 后弃"
+        }
+      ],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "json-render 的 opt-in projection/协议/输入兼容性 golden fixtures 能检测语义丢失与版本漂移"
+      ],
+      "rounds": 1
+    },
+    "1-7-4-2": {
+      "id": "1-7-4-2",
+      "uid": "01a1593dd4ea-9f59c87a32",
+      "label": "A2UI：opt-in projection/协议/输入兼容性 golden fixtures",
+      "status": "completed",
+      "mode": "explore",
+      "parent": "1-7-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "A2UI 钉哪个版本？",
+          "answer": "钉 v0.8（Legacy / Structured Output first / adjacency-list model）。v0.9+ 引入 Prompt-First、modular schemas、自定义 catalog，本轮暂不需要；v0.8 扁平邻接表模型与本项目 canonical→adapter 投影一致。版本不靠消息体内 version 字段，而靠 catalogId URI(standard_catalog_definition.json) + A2A extension URI(a2ui.org/a2a-extension/a2ui/v0.8) 协商。",
+          "note": "zj 选 ② 开钻 A2UI（20:5x）"
+        }
+      ],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "A2UI 的 opt-in projection/协议/输入兼容性 golden fixtures 能检测语义丢失与版本漂移"
+      ]
+    },
+    "1-7-4-3": {
+      "id": "1-7-4-3",
+      "uid": "01a1593dd5bd-fc4b0c2b29",
+      "label": "M3E：opt-in projection/协议/输入兼容性 golden fixtures",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "M3E 的 opt-in projection/协议/输入兼容性 golden fixtures 能检测语义丢失与版本漂移"
+      ]
+    },
+    "1-7-4-4": {
+      "id": "1-7-4-4",
+      "uid": "01a1593dd6b7-bcacd69506",
+      "label": "共享 golden-diff / 版本漂移检测 harness",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-7-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan",
+      "exit_criteria": [
+        "golden-diff/版本漂移检测 harness：对两版 golden fixture 能报告语义丢失与版本漂移（字段级 diff + 版本锚点比对）"
+      ]
     }
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 19:47:12",
+    "updated": "2026-10-20 21:04:29",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

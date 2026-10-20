@@ -1,0 +1,27 @@
+{
+  "fixture_id": "FF-A2UI-PROJ-01",
+  "description": "正常：canonical 组件树经 A2UI v0.8 协议投影为 adjacency-list 文档（surfaceUpdate + dataModelUpdate + beginRendering），语义保真 → OK",
+  "request": {
+    "input_revision": "rev-a2ui-proj-01",
+    "engine": "A2UI",
+    "opt_in": true,
+    "pin_ref": "anchor.json#0.8",
+    "candidate": {
+      "ui_flow": {
+        "screens": [
+          { "id": "home", "components": ["Card", "Button"] }
+        ],
+        "components": [
+          { "id": "Card", "min_width": 48 },
+          { "id": "Button", "min_width": 48 }
+        ],
+        "states": [ { "id": "idle" } ],
+        "actions": [
+          { "id": "open", "component": "Button", "target": "Button" }
+        ],
+        "intents": [ { "label": "打开详情" } ],
+        "acceptances": [ { "covers": ["open"] } ]
+      }
+    }
+  }
+}

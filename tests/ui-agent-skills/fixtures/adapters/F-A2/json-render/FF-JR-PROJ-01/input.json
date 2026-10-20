@@ -1,0 +1,27 @@
+{
+  "fixture_id": "FF-JR-PROJ-01",
+  "description": "正常：canonical 组件树经 json-render opt-in 投影为 flat element tree + catalog，语义保真 → OK",
+  "request": {
+    "input_revision": "rev-jr-proj-01",
+    "engine": "json-render",
+    "opt_in": true,
+    "pin_ref": "anchor.json#0.8.0",
+    "candidate": {
+      "ui_flow": {
+        "screens": [
+          {"id": "home", "description": "首页", "components": ["Card", "Button"]}
+        ],
+        "components": [
+          {"id": "Card", "min_width": 48},
+          {"id": "Button", "min_width": 48}
+        ],
+        "states": [{"id": "idle"}],
+        "actions": [
+          {"id": "open", "component": "Button", "target": "Button"}
+        ],
+        "intents": [{"label": "打开详情"}],
+        "acceptances": [{"covers": ["open"]}]
+      }
+    }
+  }
+}

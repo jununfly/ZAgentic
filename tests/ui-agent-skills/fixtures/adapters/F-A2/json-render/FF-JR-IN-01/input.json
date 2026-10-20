@@ -1,0 +1,31 @@
+{
+  "fixture_id": "FF-JR-IN-01",
+  "description": "输入兼容性：canonical 含 registered 字段 + 一个 json-render 未知字段，未知字段须保留 unknown 四元组 + warning，不得静默丢弃或压空",
+  "request": {
+    "input_revision": "rev-jr-in-01",
+    "engine": "json-render",
+    "opt_in": true,
+    "pin_ref": "anchor.json#0.8.0",
+    "candidate": {
+      "ui_flow": {
+        "screens": [
+          {"id": "home", "components": ["Button"]}
+        ],
+        "components": [
+          {"id": "Button", "min_width": 48}
+        ],
+        "states": [{"id": "idle"}],
+        "actions": [
+          {"id": "open", "component": "Button", "target": "Button"}
+        ],
+        "intents": [{"label": "打开"}],
+        "acceptances": [{"covers": ["open"]}]
+      },
+      "unknown_field": {
+        "source": "json-render-extension",
+        "value": {"custom_render": "gradient"},
+        "attribution": "unknown"
+      }
+    }
+  }
+}
