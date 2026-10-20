@@ -40,9 +40,9 @@
 | L-SB | Storybook | MIT | 可商用、可再分发 | 无 |
 | L-CHROME | Chromium | BSD-3-Clause（Chromium 项目） | 本地使用合规；再分发需遵守 NOTICE/商标条款 | 仅本地验证，不打包再分发 → 接受 |
 | L-PYYAML | PyYAML | MIT | 可商用 | 托管 Python 缺包，改用系统 Python（见 R-RISK-2） |
-| L-FONT | 确定性渲染字体 | **NEEDS_CONTEXT** | 跨机可复现需固定一款自由许可字体并登记许可 | 选字体 + 许可登记归 zj 决策；未定前不锁定指纹 |
+| L-FONT | 确定性渲染字体：Noto Sans SC（主）+ Inter（拉丁 UI）+ JetBrains Mono（条件项） | **SIL OFL 1.1**（三者均同许可族） | 可商用、可再分发（随验证环境分发须附 LICENSE 文本）；经 `@fontsource` npm 自托管锁版本 | 2026-10-20 zj 选定回填（原 `NEEDS_CONTEXT`），登记完成 |
 
-> 说明：技术栈主体为 MIT/BSD/Apache 宽松许可，商用无阻碍。唯一真实缺口是 **L-FONT**——确定性渲染要求字体在 CI/本地一致，需选定一款自由许可字体（如 SIL OFL 系列）并登记，否则渲染基线不可比。该决策依赖 zj 确认，故标 `NEEDS_CONTEXT`，不编造。
+> 说明：技术栈主体为 MIT/BSD/Apache 宽松许可，商用无阻碍。原唯一真实缺口 **L-FONT** 已于 2026-10-20 解决——zj 选定 Noto Sans SC + Inter + JetBrains Mono（许可均 SIL OFL 1.1），经 `@fontsource` npm 包自托管锁版本保证 CI/本地一致，许可登记本账本。env 指纹 `font` 轴已同步回填并重冻结（1-5-1）。
 
 ---
 
@@ -97,7 +97,7 @@
 | --- | --- | --- | --- | --- | --- |
 | R-RISK-1 | Chromium 版本漂移 | 确定性验证结果不可比，paired run 失效 | 固定 major + 环境指纹登记（1-5-1） | zjj | open /  mitigated-by-design |
 | R-RISK-2 | 托管 Python 缺 PyYAML | 验证/CLI 脚本跑不通（今日 #180 已撞） | 改用系统 Python（`anaconda3/bin/python3`） | zjj | mitigated（已发生并规避） |
-| R-RISK-3 | 字体许可/可用性未定 | 跨机渲染不可复现，基线噪声 | 选自由许可固定字体并登记（L-FONT，`NEEDS_CONTEXT`） | zj | open / 阻塞于 NEEDS_CONTEXT |
+| R-RISK-3 | 字体许可/可用性未定 | 跨机渲染不可复现，基线噪声 | 已选定 Noto Sans SC + Inter + JetBrains Mono（SIL OFL 1.1），`@fontsource` 锁版本并登记 L-FONT | zj | mitigated（2026-10-20，原 open / 阻塞于 NEEDS_CONTEXT） |
 | R-RISK-4 | mock 数据边界模糊 | 与"无真实后端写回"约束冲突 | 明确 mock 仅本地 fixture；远程写回仅演练（form-lock §1） | zjj | mitigated-by-design |
 | R-RISK-5 | adapter 网络依赖 | 断网/远程失败致验证中断 | degraded/disabled/quarantine 回退 + 本地 static preview（1-7-5 / 1-8-5） | zjj | open /  缓解路径已规划 |
 | R-RISK-6 | 实现责任单点（zjj=AI） | 关键实现无人类冗余 | zj 验收 gate 兜底（已知约束，已接受） | zj | accepted |
@@ -116,3 +116,5 @@
 - [x] 无遗留 `unknown` 漏洞；仅有的外部依赖决策（字体）以 `NEEDS_CONTEXT` 退出。
 
 > 注：账本随 1-5 / 1-7 / 1-8 落地会有 planned→available 的状态推进，但 1-1-4 的退出判据只要求"无 unknown 漏洞 + 缺口有 NEEDS_CONTEXT 处置"，本文件已满足。
+>
+> **2026-10-20 更新**：上述 §6 各条为 1-1-4 退出时点快照，保持原样作历史记录。其中唯一外部决策缺口 L-FONT 已解决（Noto Sans SC + Inter + JetBrains Mono，SIL OFL 1.1，`@fontsource` 锁版本），见 §2 L-FONT 条目与 §5 R-RISK-3 当前状态。
