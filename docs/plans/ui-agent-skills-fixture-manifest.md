@@ -46,13 +46,13 @@
 | ID | 内容 | 归属 | 状态 |
 | --- | --- | --- | --- |
 | F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | planned |
-| F-A2 | json-render / A2UI / M3E Canvas golden fixtures | 1-7-4 opt-in | landed (json-render+A2UI; M3E pending PoC); drift harness implemented (1-7-4-4) |
+| F-A2 | json-render / A2UI golden fixtures（M3E 经 PoC 判定 out-of-core，不建 fixture） | 1-7-4 opt-in | landed (json-render+A2UI); drift harness implemented (1-7-4-4) |
 
 > **F-A2 落地进展（1-7-4-1 / 1-7-4-2，2026-10-20）**：
 > - **json-render** 已钉 **0.8.0**（双锚：version `0.8.0` + git `source_commit` `0a40430…`，repo `vercel-labs/json-render`；原候选 0.0.1 经核验**无 git tag** 已弃）。3 条 golden 已落 `F-A2/json-render/`：`FF-JR-PROJ-01`（投影）/ `FF-JR-PROTO-01`（协议）/ `FF-JR-IN-01`（输入兼容），附 `anchor.json`（钉版本记录）+ `drift-harness.spec.json`（1-7-4-4 共享 drift 检测规格）。**投影 golden 已 runtime-captured**：用真包 `@json-render/core@0.8.0` 的 `validateSpec()` + catalog zod 合规校验背书（复现脚本 `/tmp/jr-verify.mjs`），不再是声明式契约。
 > - **A2UI** 已钉 **v0.8**（Legacy / adjacency-list，a2ui.org 公开协议，Apache-2.0，Google + CopilotKit）。3 条 golden 已落 `F-A2/a2ui/`：`FF-A2UI-PROJ-01`（投影）/ `FF-A2UI-PROTO-01`（协议）/ `FF-A2UI-IN-01`（输入兼容），附 `anchor.json`（钉 v0.8）。A2UI 为协议 spec（非运行时），golden 为 v0.8 合规静态文档，按 `a2ui.org/specification/v0.8-a2ui/` 校验，无运行时执行。
 > - **共享 drift harness（1-7-4-4）已落地**：`tests/ui_agent_skills_drift_harness.py`（纯 Python，无依赖）+ 测试 `tests/test_ui_agent_skills_drift_harness.py`（9 用例全过）。实现 `F-A2-JR-DRIFT` 三信号：① 版本漂移（anchor `pin.version`/`source_commit` 或 expected `pin_version` 变化 → **仅报告不判 fail**）；② 语义丢失（投影 / semantic_equivalence / validation.catalog_conformance 字段删除或变更 → **hard fail**）；③ 未知字段回归（`unknown_*` 标志 true→false → **hard fail**）。含 CLI 入口（`python ...harness.py <base> <cand> [--baseline-anchor] [--candidate-anchor]`，ok/drift_only 退出码 0，fail 退出码 1），可在 CI 串联两版 golden 比对。
-> - **M3E 仍卡 PoC 闸门**（账本判 D），1-7-4-3 维持 pending，本轮不开钻。
+> - **M3E 经 PoC 闸门判定 out-of-core（1-7-4-3 closed，不建 fixture）**：账本判 D（非 adapter 角色）。PoC 用真实证据坐实（WebFetch 仓库 + CSDN/zyvop/moclaw 评测交叉确认）：M3E Canvas 核心导出物=自然语言 brief/prompt（prose，可手编），非 JSON/组件树/结构化 UI 规范；另有 PNG 位图、分享链接(URL)，均无带 schema 的结构化 UI 描述；不消费 canonical，仅 authoring/export-only；纯静态 Next.js16、无后端运行时、无 tag（仅 `main@<commit>`）、单维护者(lnkiai)、MIT。AdapterBoundary(1-7-2) 摄入结构化 canonical 经 schema lock 投影，M3E 导出物无此结构、无 NL→canonical 翻译层 → **不能直接消费**。结论：PoC 不通过，M3E 维持 D/out-of-core，不阻塞毕业；projection/协议/输入兼容性 golden 对 D 角色 N/A，故 1-7-4-3 以 PoC 判定交付而 closed。
 
 ### 2.3 `contract`（契约级，源自 golden-fixtures-spec GF-01~GF-11）
 

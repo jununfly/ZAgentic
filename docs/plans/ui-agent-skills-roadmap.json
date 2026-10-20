@@ -1225,7 +1225,7 @@
       "id": "1-7-4",
       "uid": "01a15426bae9-cde85d5cb5",
       "label": "为 json-render/A2UI/M3E 建立 opt-in projection/协议/输入兼容性 golden fixtures",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-7",
       "children": [
@@ -1537,16 +1537,32 @@
       "id": "1-7-4-3",
       "uid": "01a1593dd5bd-fc4b0c2b29",
       "label": "M3E：opt-in projection/协议/输入兼容性 golden fixtures",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-7-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-7-4-3 怎么落地（M3E 账本判 D）？",
+          "answer": "M3E 账本判 D（非 adapter 角色：无 tag/main@commit、无运行时、不消费 canonical、不渲染验证 UI）。不能直接建 runtime golden fixture（同 json-render/A2UI）。先执行 PoC 闸门：验证 M3E Canvas 导出 prompt 能否被 AdapterBoundary 作为 input fixture 消费。PoC 不通过→M3E 维持 out-of-core，本节点不建 fixture 而 closed（fixtures N/A，退出判据对 D 角色不适用）；PoC 通过→重评 sidecar 角色。",
+          "note": "zj 选 开始 1-7-4-3（21:4x），据此 re-scope 为 PoC 闸门节点"
+        },
+        {
+          "q": "M3E PoC 闸门：导出 prompt 能否被 AdapterBoundary 作为 input fixture 消费？",
+          "answer": "PoC 不通过（维持 out-of-core，与账本 D 判定一致）。证据：(1) M3E Canvas 核心导出物=自然语言 brief/prompt(prose，可手编)，非 JSON/组件树/结构化 UI 规范——WebFetch 仓库+CSDN/zyvop/moclaw 评测交叉确认；(2) 另有 PNG 位图、分享链接(URL)，均无带 schema 的结构化 UI 描述；(3) 不消费 canonical，仅 authoring/export-only；(4) 纯静态 Next.js16、无后端运行时、无 tag(仅 main@commit)、单维护者(lnkiai)、MIT。AdapterBoundary(1-7-2) 摄入结构化 canonical 经 schema lock 投影，M3E 导出物无此结构、无 NL→canonical 翻译层→不能直接消费。结论：M3E 维持 D/out-of-core，不阻塞毕业；1-7-4-3 不建 golden fixture（projection/协议/输入兼容性对 D 角色 N/A），以 PoC 判定交付而 closed。",
+          "note": "zj 选 开始 1-7-4-3（21:4x）；PoC 已用真实证据坐实"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "M3E 的 opt-in projection/协议/输入兼容性 golden fixtures 能检测语义丢失与版本漂移"
-      ]
+      ],
+      "rounds": 1,
+      "budget": {
+        "max_children": 3,
+        "max_rounds": 2
+      }
     },
     "1-7-4-4": {
       "id": "1-7-4-4",
@@ -1566,7 +1582,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 21:04:29",
+    "updated": "2026-10-20 21:48:46",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
