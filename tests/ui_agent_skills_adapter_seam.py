@@ -40,64 +40,43 @@ from __future__ import annotations
 import copy
 import json
 import pathlib
+import sys
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
+CORE_SCRIPTS = REPO / "skills/ui/zj-ui-core/scripts"
 SURFACE_INDEX_PATH = (
     REPO / "tests/ui-agent-skills/fixtures/adapters/registry/invocation-surface.json"
 )
 
-# --------------------------------------------------------------------------
-# Outcome classes — 严格对应 adapter-boundary-v1.md §6.2 的三类故障 + 成功
-# --------------------------------------------------------------------------
-OUTCOME_OK = "ok"
-OUTCOME_FAILURE = "failure"
-OUTCOME_NETWORK_LOSS = "network_loss"
-OUTCOME_REMOTE_FAILURE = "remote_failure"
+# 单向依赖：outcome 分类 / 回退契约 / 本地恢复不变量的**唯一事实源**在生产侧
+# `adapter_boundary`。本模块只提供测试 double（Real / Simulated seam）并 re-export
+# 契约常量，杜绝两处定义漂移（1-7-5 决策）。
+if str(CORE_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(CORE_SCRIPTS))
 
-OUTCOME_CLASSES: Tuple[str, ...] = (
-    OUTCOME_OK,
-    OUTCOME_FAILURE,
-    OUTCOME_NETWORK_LOSS,
-    OUTCOME_REMOTE_FAILURE,
-)
+import adapter_boundary as boundary  # noqa: E402
 
-#: outcome class -> 管辖它的 manifest fallback 键（§6.2）。ok 无回退键。
-FALLBACK_KEY: Dict[str, str] = {
-    OUTCOME_FAILURE: "on_failure",
-    OUTCOME_NETWORK_LOSS: "on_network_loss",
-    OUTCOME_REMOTE_FAILURE: "on_remote_failure",
-}
-
-#: §6.2 允许的回退动作取值。
-FALLBACK_ACTIONS: Tuple[str, ...] = (
-    "static-preview",
-    "local-verify",
-    "degrade",
-    "disable",
-    "quarantine",
-)
-
-#: 四态生命周期（§6.1）。注意：这是 adapter 级，与 receipt 级 QUARANTINED 无关，
-#: 辨析见 docs/plans/adapter-boundary-v1/quarantine-disambiguation.md。
-VALID_LIFECYCLE: Tuple[str, ...] = ("active", "degraded", "disabled", "quarantine")
-
-#: 诚实账本：哪些 outcome class 在本仓库有真实运行时观测支撑。
-REAL_RUNTIME_BACKED = frozenset({OUTCOME_OK, OUTCOME_FAILURE})
-#: 其余为 seam 契约定义，无真实运行时证据——不得声称已真实验证。
-SEAM_CONTRACT_ONLY: Tuple[str, ...] = tuple(
-    c for c in OUTCOME_CLASSES if c not in REAL_RUNTIME_BACKED
-)
+# --- 契约常量（re-export；事实源在 adapter_boundary）----------------------
+OUTCOME_OK = boundary.OUTCOME_OK
+OUTCOME_FAILURE = boundary.OUTCOME_FAILURE
+OUTCOME_NETWORK_LOSS = boundary.OUTCOME_NETWORK_LOSS
+OUTCOME_REMOTE_FAILURE = boundary.OUTCOME_REMOTE_FAILURE
+OUTCOME_CLASSES = boundary.OUTCOME_CLASSES
+FALLBACK_KEY = boundary.FALLBACK_KEY
+FALLBACK_ACTIONS = boundary.FALLBACK_ACTIONS
+VALID_LIFECYCLE = boundary.VALID_LIFECYCLE
+REAL_RUNTIME_BACKED = boundary.REAL_RUNTIME_BACKED
+SEAM_CONTRACT_ONLY = boundary.SEAM_CONTRACT_ONLY
+LOCAL_RECOVERY_SURFACES = boundary.LOCAL_RECOVERY_SURFACES
+CapabilitySnapshot = boundary.CapabilitySnapshot
+assert_local_recovery = boundary.assert_local_recovery
+BoundaryError = boundary.BoundaryError
 
 #: 异常归类为网络类的启发式标记（仅用于 RealAdapterSeam 的异常分类）。
 NETWORK_ERROR_MARKERS: Tuple[str, ...] = (
     "socket", "ssl", "urllib", "http", "requests", "httpx",
     "connection", "timeout", "dns", "network",
-)
-
-#: 本地恢复不变量（§6.2）要求这三项在任何回退后仍可用。
-LOCAL_RECOVERY_SURFACES: Tuple[str, ...] = (
-    "canonical", "static_preview", "local_verify",
 )
 
 
@@ -369,64 +348,13 @@ def iter_fallback_matrix(
 
 
 def expected_fallback_action(manifest: Dict[str, Any], outcome_class: str) -> str:
-    """按 §6.2 取某 outcome 应执行的回退动作。成功调用无回退动作。"""
-    key = FALLBACK_KEY.get(outcome_class)
-    if key is None:
-        raise ValueError(f"outcome {outcome_class!r} has no fallback action (success path)")
-    fallback = manifest.get("fallback") or {}
-    if key not in fallback:
-        raise KeyError(f"manifest {manifest.get('id')} missing fallback key {key!r}")
-    action = fallback[key]
-    if action not in FALLBACK_ACTIONS:
-        raise ValueError(
-            f"manifest {manifest.get('id')}: fallback {key}={action!r} not in {FALLBACK_ACTIONS}"
-        )
-    return action
+    """按 §6.2 取某 outcome 应执行的回退动作。成功调用无回退动作。
 
-
-class CapabilitySnapshot:
-    """回退执行后 boundary 暴露的能力面，用于断言本地恢复不变量（§6.2）。"""
-
-    __slots__ = ("canonical", "static_preview", "local_verify", "resolver_status")
-
-    def __init__(
-        self,
-        *,
-        canonical: bool,
-        static_preview: bool,
-        local_verify: bool,
-        resolver_status: str,
-    ) -> None:
-        self.canonical = canonical
-        self.static_preview = static_preview
-        self.local_verify = local_verify
-        self.resolver_status = resolver_status
-
-    def as_dict(self) -> Dict[str, Any]:
-        return {
-            "canonical": self.canonical,
-            "static_preview": self.static_preview,
-            "local_verify": self.local_verify,
-            "resolver_status": self.resolver_status,
-        }
-
-
-def assert_local_recovery(snapshot: CapabilitySnapshot) -> None:
-    """断言本地恢复不变量：三项能力面均可用 + resolver 不崩溃（success 或 degraded）。
-
-    对应 §7 的 R1/R2/R3/R5。任何回退执行完都必须过这一条。
+    委托生产侧 `adapter_boundary.dispatch_fallback`（单一事实源）；契约违背统一
+    抛 `BoundaryError`。
     """
-    missing = [
-        surface
-        for surface in ("canonical", "static_preview", "local_verify")
-        if not getattr(snapshot, surface)
-    ]
-    if missing:
-        raise AssertionError(
-            f"local recovery invariant violated: unavailable surfaces {missing}"
-        )
-    if snapshot.resolver_status not in ("success", "degraded"):
-        raise AssertionError(
-            "R5 violated: resolver must resolve or report degraded, got "
-            f"{snapshot.resolver_status!r}"
-        )
+    return boundary.dispatch_fallback(manifest, outcome_class)
+
+
+# `CapabilitySnapshot` 与 `assert_local_recovery` 已上移到生产侧 `adapter_boundary`
+# 并在本模块顶部 re-export，避免契约两处定义漂移。

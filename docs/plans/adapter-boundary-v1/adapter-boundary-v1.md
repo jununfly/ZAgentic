@@ -12,6 +12,8 @@ AdapterBoundary 是 **canonical artifact（ui-flow/v1、UI-BRIEF 等）** 与 **
 - Boundary 负责 **schema lock（锁定 canonical 与 manifest 契约）**、**mapping 校验（禁止 silent drop）**、**owner/reviewer 登记**、**fallback 编排（降级/禁用/隔离）** 与 **removal test（删除后不变量）**。
 - Boundary 本身不实现渲染逻辑；它只做契约仲裁与生命周期编排，具体能力由下游 adapter 实现。
 
+> **实现（1-7-5, a1）**：`skills/ui/zj-ui-core/scripts/adapter_boundary.py` —— 四态状态机与调用守卫（§6.1）、三类故障回退分发（§6.2）、本地恢复不变量断言、removal_test 执行器（§7）。它是 **outcome 分类与回退契约的唯一事实源**；测试 double（`tests/ui_agent_skills_adapter_seam.py`）单向 import 其常量，两处不得各自定义。证据：`tests/test_ui_agent_skills_adapter_boundary.py`（28 用例）。测试主体分层见 [`invocation-seam.md`](./invocation-seam.md)。
+
 ## 2. adapter manifest 字段集（六个必需类别）
 
 manifest 必须包含以下字段（完整 schema 见 `adapter-manifest.schema.json`，`additionalProperties:false`）。按节点退出标准，六类字段必须齐全：

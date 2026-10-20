@@ -225,14 +225,14 @@ class FallbackMatrix(unittest.TestCase):
 
     def test_success_path_has_no_fallback_action(self):
         registry = load_registry()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(seam.BoundaryError):
             seam.expected_fallback_action(registry["storybook-local-verify"], seam.OUTCOME_OK)
 
     def test_missing_fallback_key_is_loud(self):
         registry = load_registry()
         broken = dict(registry["storybook-local-verify"])
         broken["fallback"] = {"on_failure": "local-verify"}
-        with self.assertRaises(KeyError):
+        with self.assertRaises(seam.BoundaryError):
             seam.expected_fallback_action(broken, seam.OUTCOME_NETWORK_LOSS)
 
 
@@ -249,7 +249,7 @@ class LocalRecovery(unittest.TestCase):
             canonical=True, static_preview=False, local_verify=True,
             resolver_status="success",
         )
-        with self.assertRaises(AssertionError) as ctx:
+        with self.assertRaises(seam.BoundaryError) as ctx:
             seam.assert_local_recovery(snap)
         self.assertIn("static_preview", str(ctx.exception))
 
@@ -258,7 +258,7 @@ class LocalRecovery(unittest.TestCase):
             canonical=True, static_preview=True, local_verify=True,
             resolver_status="crashed",
         )
-        with self.assertRaises(AssertionError) as ctx:
+        with self.assertRaises(seam.BoundaryError) as ctx:
             seam.assert_local_recovery(snap)
         self.assertIn("R5", str(ctx.exception))
 
