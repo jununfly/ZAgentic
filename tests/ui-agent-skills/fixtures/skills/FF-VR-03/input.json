@@ -1,0 +1,14 @@
+{
+  "fixture_id": "FF-VR-03",
+  "stage": "visual_review",
+  "description": "Human 未签 → HUMAN_REVIEW_REQUIRED + 下游冻结",
+  "request": {
+    "input_revision": "rev-vr-03",
+    "candidate": {
+      "target": {"preview": "rev-proto-03"},
+      "tasks": {"task": "提交报销", "risk": "medium"},
+      "fingerprint": {"hash": "fp-x", "env": "baseline"},
+      "findings": [{"code": "VR-1"}]
+    }
+  }
+}

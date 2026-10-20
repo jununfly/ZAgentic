@@ -1,0 +1,6 @@
+{
+  "status": "QUARANTINED",
+  "writes": 0,
+  "artifact_present": false,
+  "quarantined": ["fingerprint"]
+}

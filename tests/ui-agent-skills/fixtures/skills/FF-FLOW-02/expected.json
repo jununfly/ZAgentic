@@ -1,0 +1,6 @@
+{
+  "status": "REJECTED",
+  "writes": 0,
+  "artifact_present": false,
+  "rejected_fields": ["states[1].id"]
+}

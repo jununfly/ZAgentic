@@ -282,7 +282,115 @@
       "expected": "BLOCKED + writes=0 + 不替换相近色",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-03",
       "status": "ready"
+    },
+    {
+      "id": "FF-FLOW-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "六义齐全 + 引用闭合",
+      "expected": "OK + writes=1 + revision 原子提交",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-FLOW-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-FLOW-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "重复 state id（双 owner / 歧义）",
+      "expected": "REJECTED + writes=0（hard fail）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-FLOW-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-FLOW-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "action 引用不存在的 intent（intent 丢失）",
+      "expected": "REJECTED + writes=0（hard fail）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-FLOW-03",
+      "status": "ready"
+    },
+    {
+      "id": "FF-PROTO-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "本地 preview + catalog 内组件 + 人已签",
+      "expected": "OK + writes=1 + 发出预览（非 canonical）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-PROTO-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-PROTO-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "未注册组件 DateRangePicker",
+      "expected": "REJECTED + writes=0（deny）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-PROTO-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-PROTO-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "远程 adapter 不可用且未声明本地 fallback",
+      "expected": "HUMAN_REVIEW_REQUIRED + writes=0（不伪造成功）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-PROTO-03",
+      "status": "ready"
+    },
+    {
+      "id": "FF-VR-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "Human 签署 + fingerprint 可归因 + 发现齐全",
+      "expected": "OK + writes=1 + review record",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-VR-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-VR-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "fingerprint 缺失",
+      "expected": "QUARANTINED + writes=0（不产出成功结论）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-VR-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-VR-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "Human 未签",
+      "expected": "HUMAN_REVIEW_REQUIRED + writes=0（下游冻结）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-VR-03",
+      "status": "ready"
+    },
+    {
+      "id": "FF-BRK-01",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "全矩阵 + 三档视口跑完",
+      "expected": "OK + writes=1 + receipt 记录实测值",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-01",
+      "status": "ready"
+    },
+    {
+      "id": "FF-BRK-02",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "1440 下 overflow → FAIL",
+      "expected": "BLOCKED + writes=1（receipt 记录 FAIL，不降级）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-02",
+      "status": "ready"
+    },
+    {
+      "id": "FF-BRK-03",
+      "class": "skill",
+      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "trigger": "fixture matrix 缺失（cells 为空）",
+      "expected": "BLOCKED + writes=0（不得冒充 PASS）",
+      "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-03",
+      "status": "ready"
     }
   ],
-  "manifest_hash": "79b2ffa31249e3aa4e8776293bcf805abdc0928ceb73b36fbc2761369351775d"
+  "manifest_hash": "cdb994e0b34468f6f7bf4938360476addc8577b1b04a4abeb488e0a2e4b0c694"
 }

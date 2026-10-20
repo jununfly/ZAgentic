@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-PROTO-01",
+  "stage": "prototype",
+  "description": "本地 preview 可交互 + 只用 catalog 内组件 + 人已签 → OK + 发出预览",
+  "request": {
+    "input_revision": "rev-proto-01",
+    "remote_available": true,
+    "candidate": {
+      "reference": {"revision": "rev-flow-01"},
+      "frames": [{"id": "f-1"}],
+      "components": ["Button", "Input", "Card"],
+      "human_approval": {"name": "zj", "signed_at": "2026-10-20T00:00:00+00:00"},
+      "unknown": []
+    }
+  }
+}

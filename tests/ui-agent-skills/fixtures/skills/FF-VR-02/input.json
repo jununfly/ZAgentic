@@ -1,0 +1,14 @@
+{
+  "fixture_id": "FF-VR-02",
+  "stage": "visual_review",
+  "description": "fingerprint 缺失 → QUARANTINED + 不产出成功结论",
+  "request": {
+    "input_revision": "rev-vr-02",
+    "candidate": {
+      "target": {"preview": "rev-proto-02"},
+      "tasks": {"task": "提交报销", "risk": "medium"},
+      "findings": [{"code": "VR-1"}],
+      "human_signature": {"name": "zj", "signed_at": "2026-10-20T00:00:00+00:00"}
+    }
+  }
+}

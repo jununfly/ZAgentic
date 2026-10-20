@@ -1,0 +1,16 @@
+{
+  "fixture_id": "FF-FLOW-03",
+  "stage": "flow",
+  "description": "action 引用不存在的 intent（intent 丢失） → REJECTED + 零写入",
+  "request": {
+    "input_revision": "rev-flow-03",
+    "candidate": {
+      "screens": [{"id": "scr-1"}],
+      "components": [{"id": "c-1"}],
+      "states": [{"id": "s-1"}, {"id": "s-2"}],
+      "actions": [{"id": "a-1", "from_state": "s-1", "to_state": "s-2", "intent": "i-missing"}],
+      "intents": [{"id": "i-1"}],
+      "acceptances": [{"id": "acc-1"}]
+    }
+  }
+}

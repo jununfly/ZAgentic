@@ -1,0 +1,14 @@
+{
+  "fixture_id": "FF-PROTO-02",
+  "stage": "prototype",
+  "description": "未注册组件 DateRangePicker → REJECTED + 不生成实现",
+  "request": {
+    "input_revision": "rev-proto-02",
+    "candidate": {
+      "reference": {"revision": "rev-flow-01"},
+      "frames": [{"id": "f-1"}],
+      "components": ["Button", "DateRangePicker"],
+      "human_approval": {"name": "zj", "signed_at": "2026-10-20T00:00:00+00:00"}
+    }
+  }
+}
