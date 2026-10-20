@@ -1552,7 +1552,7 @@
       "id": "1-7-4-4",
       "uid": "01a1593dd6b7-bcacd69506",
       "label": "共享 golden-diff / 版本漂移检测 harness",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1-7-4",
       "children": [],
