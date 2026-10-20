@@ -863,16 +863,33 @@
       "id": "1-5-2",
       "uid": "01a15426b7ed-e00ade97d7",
       "label": "实现 baseline 与 degraded 双 lane、固定字体/网络回放/时钟/seed",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-5",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-5-2 的范围与交付形态？",
+          "answer": "产品实现（exploit）节点：交付 R-HAR-1 双 lane 确定性 runner + 冻结首跑指纹；不修改目标项目源码，真实 cell 断言与 fixture 数据由 1-6/1-7 提供。",
+          "note": ""
+        },
+        {
+          "q": "browser_major 为何不在 1-5-2 捕获？",
+          "answer": "本仓库 Wave 0 无内置浏览器引擎，browser_major 延迟到 1-7-3（Storybook active adapter）捕获真实 major；当前占位 PENDING@1-7-3，其变化按现有 revalidation 规则触发全量重验。属已知延迟，非静默接受偏差。",
+          "note": ""
+        },
+        {
+          "q": "真实 fixture 断言为何未在本节点执行？",
+          "answer": "F-1..GF-11 数据文件与浏览器/adapter/flow-engine 均未落地（属 1-6/1-7），baseline/degraded 双 lane 当前如实标记 NOT_EXECUTED/DEGRADED_SKIP；runner 结构与确定性已可复跑，但 receipt 非验收通过证据。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "baseline/degraded 双 lane 固定 browser/font/network/clock/seed 并可复跑"
-      ]
+      ],
+      "rounds": 1
     },
     "1-5-3": {
       "id": "1-5-3",
@@ -1280,7 +1297,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-20 14:52:16",
+    "updated": "2026-10-20 15:19:48",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
