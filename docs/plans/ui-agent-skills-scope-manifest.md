@@ -8,14 +8,14 @@
 
 | 维度 | 锁定值 |
 | --- | --- |
-| 版本号 | **EV-v0.1（Wave 0，表单基准）** |
+| 版本号 | **EV-v0.1（Wave 0，表单 + 审批双样例）** |
 | 技术栈 | React 18 + Next.js（App Router），TypeScript |
-| 样例 | **用户资料编辑表单（User Profile Edit Form）** |
-| 角色 | 用户（编辑 + 提交）/ 系统（校验 + 持久化） |
-| 状态机 | `idle → validating → submitting → success \| error`；字段级 `error` 覆盖 |
+| 样例 | **用户资料编辑表单（User Profile Edit Form）+ 费用报销审批流（Expense Reimbursement Approval）**（两条并行 sample）** |
+| 角色 | 表单：用户（编辑 + 提交）/ 系统（校验 + 持久化）；审批：申请人（提交 + 重提交）/ 审批人（通过·驳回）/ 系统（状态 + 持久化） |
+| 状态机 | 表单 `idle → validating → submitting → success \| error`；审批 `draft → submitted → under_review → approved \| rejected`；字段级 `error` 覆盖 |
 | 环境 | 本地 Next.js dev server + Storybook（active adapter） |
 | 数据边界 | 内存 / 本地 mock，无真实后端写回；远程写回仅作 1-5 / 1-8 的演练项 |
-| 不锁项 | 审批流（费用报销等）作为 **Wave 1 候选**，不在 Wave 0 scope 内 |
+| 不锁项 | 其余前端框架（Vue/Angular/Svelte）adapter、真实生产后端、第三个 Experience Version、审批链多级/会签仍归 Wave 1 / out-of-scope（2026-10-21 已将审批从 Wave 1 候选提升为 Wave 0 第二条样例） |
 
 ## 2. In-scope（Wave 0）
 
@@ -25,7 +25,7 @@
 - Trust boundary / provenance / deny-first policy（节点 1-4）
 - 确定性验证、fixture、receipt（节点 1-5）
 - Storybook **active** adapter；json-render / A2UI / M3E Canvas 仅作 opt-in golden fixtures（节点 1-7）
-- 表单 Experience Version 的端到端人机协作演练（节点 1-8）
+- 表单 + 审批 Experience Version 的端到端人机协作演练（节点 1-8）
 - 3 次 paired run + graduation gate（节点 1-9）
 - Wave 0 资源、许可证、fixture、owner、风险账本（节点 1-1-4）
 
@@ -33,7 +33,7 @@
 
 - 其他前端框架（Vue / Angular / Svelte）的 adapter 实现
 - 真实生产后端、真实凭据、真实网络写回
-- 多 Experience Version 并行（仅锁表单一个）
+- 多 Experience Version 并行（锁定表单 + 审批两个，不扩第三个）
 - adapter 删除 / 断网 / 远程服务失败的完整治理（仅 1-7-5、1-8-5 局部演练，正式治理归 1-10）
 - 长期文档、维护治理与 rollout 决策（节点 1-10，毕业后执行）
 
@@ -53,6 +53,7 @@
 - 当前冻结：**EV-v0.1**。
 - 版本变更须经 1-10 重评流程；Wave 0 内不允许 silently 改基线样例。
 - 任何 manifest 字段调整需回到本文件并同步 roadmap 决策（`decide` 落盘）。
+- **2026-10-21 范围扩张（pre-run）**：经 zj 决策，审批流由 Wave 1 候选提升为 Wave 0 第二条独立 sample（与节点 1-8「表单/审批」标签对齐）。因 1-9 尚未执行，无 paired run 作废；本变更须待 1-10 重评轨道正式归档（e18 = 1-9→1-10 阻塞，1-9 毕业后解锁）。
 
 ## 6. 账本引用（不重复，指向节点）
 

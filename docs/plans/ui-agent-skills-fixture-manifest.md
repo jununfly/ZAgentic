@@ -10,7 +10,7 @@
 
 ## 0. 范围与边界
 
-本清单冻结 Wave 0（**EV-v0.1 表单基准**）确定性验证所需的 canonical fixture 全集：每条 fixture 的来源文档、触发路径、预期结果与落地点。它是 `verification-matrix.md` 与 `env-fingerprint.md` 的输入，也是 **1-5-2** 双 lane runner 的被测对象目录。
+本清单冻结 Wave 0（**EV-v0.1 表单 + 审批双样例**）确定性验证所需的 canonical fixture 全集：每条 fixture 的来源文档、触发路径、预期结果与落地点。它是 `verification-matrix.md` 与 `env-fingerprint.md` 的输入，也是 **1-5-2** 双 lane runner 的被测对象目录。表单类 F-1~F-6 已冻结；审批类 A-1~A-6 由 **1-5-1** 登记（2026-10-21 范围扩张纳入 Wave 0）。
 
 - **在口径内**：清单内的 fixture。
 - **在口径外**：任何未列入本清单的 fixture 不得进入确定性验证口径；新增 fixture 须经本清单 + roadmap `decide` 落盘，并触发 `manifest_hash` 重算。

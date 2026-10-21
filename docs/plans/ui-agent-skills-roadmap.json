@@ -286,6 +286,16 @@
           "q": "路线分类与起点确认？",
           "answer": "Product execution；用户确认 1-7 维持 completed，本次『开始』实际指向 1-8（下一开放节点），1-8-1 为首个可执行子节点。",
           "note": "scope gate 分类 + 起点纠偏"
+        },
+        {
+          "q": "sample flow 范围按哪份约束？",
+          "answer": "按冻结 scope-manifest：EV-v0.1 = User Profile Edit Form 单一表单；审批流为 Wave 1 候选、不在 Wave 0 scope。节点 1-8 标签『表单/审批』与 scope 不一致，本次按冻结 scope 执行，不扩审批。",
+          "note": "范围纠偏 + 标签不一致"
+        },
+        {
+          "q": "scope 是否扩张含审批？",
+          "answer": "是。2026-10-21 zj 决策：审批流由 Wave 1 候选提升为 Wave 0 第二条独立 sample（费用报销审批流），与节点 1-8 表单/审批 标签对齐；覆盖此前 form-only 决策。pre-run，1-9 未执行，无 paired run 作废；待 1-10 重评轨道归档（e18=1-9 到 1-10 阻塞）。",
+          "note": "范围扩张决策 + 覆盖 form-only"
         }
       ],
       "notes": "Experience Version 是一条受控的表单/审批路径，用来证明对话、文档编辑、选择式设计和安全执行可以串起来。",
@@ -1308,17 +1318,28 @@
       "id": "1-8-1",
       "uid": "01a15426bb94-b76513f5db",
       "label": "为表单/审批 Experience Version 固化 PRD、角色状态、canonical artifact 与 fixture",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-8",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-8-1 交付形态？",
+          "answer": "单一 consolidated spec ui-agent-skills-ev-sample-flow.md（PRD+角色状态+canonical artifact 映射+fixture 选择），复用全局 fixture-manifest 的 F-1~F-6/GF-*，不另起 fixture 全集。",
+          "note": "交付形态"
+        },
+        {
+          "q": "1-8-1 是否需重开？",
+          "answer": "scope 扩张后原 form-only 交付不再与 scope 一致；已扩写为表单+审批双样例（ui-agent-skills-ev-sample-flow.md §0/§1.B/§2/§4），重开并重新收口。",
+          "note": "重开收口"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "sample PRD、artifact、角色状态和 fixture manifest 固定且与 scope 一致"
       ],
-      "rounds": 1
+      "rounds": 2
     },
     "1-8-2": {
       "id": "1-8-2",
@@ -1668,7 +1689,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 10:16:43",
+    "updated": "2026-10-21 11:38:39",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

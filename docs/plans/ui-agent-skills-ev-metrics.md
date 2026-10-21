@@ -12,6 +12,7 @@
 - **预注册原则（证据先于实现）**：baseline、三项指标口径、阈值、paired run 规则、invalid-run 规则在此一次性固定；运行中发现问题只触发 `quarantine` / `re-evaluate` / `downgrade`，不得事后改写口径。
 - **graduation ≠ release**：本节点与 1-9-4 的毕业只产出 `graduated-experience` 状态，**不授予** release / rollout / version-skew 权限。本轮方案明确不承诺发布（MASTER L7）。
 - 责任人（沿用 `ui-agent-skills-ev-form-lock.md` §5）：产品/验收负责人 **zj**（Human gate），实现负责人 **zjj**（AI，负责样例/协议落地与记录）。
+- **2026-10-21 范围扩张（pre-run）**：经 zj 决策，审批流由 Wave 1 候选提升为 Wave 0 第二条独立 sample（见 §1 baseline 表格 A-1~A-6）。因 1-9 尚未执行，无 paired run 作废；本变更待 1-10 重评轨道正式归档（e18 = 1-9→1-10 阻塞）。
 
 ## 1. Direct-prompt baseline（可控 control manifest，不是一句 "direct-prompt"）
 
@@ -21,7 +22,7 @@ baseline manifest 固定字段：
 
 | 字段 | 冻结值 / 口径 |
 | --- | --- |
-| 任务 / fixture ID | 锁定于 `ui-agent-skills-ev-form-lock.md` 的用户资料编辑表单，含成功路径 + 失败/边界 fixture（空提交、非法格式、重复提交、服务端 422、超时） |
+| 任务 / fixture ID | 锁定于 `ui-agent-skills-ev-form-lock.md` 的两条并行 sample：① 用户资料编辑表单（F-1~F-6：成功 / 空提交 / 非法格式 / 重复提交 / 服务端 422 / 超时）；② 费用报销审批流（A-1~A-6：成功审批 / 驳回 / 非法金额 / 重复提交 / 超时 / 越权审批） |
 | 仓库提交 | 记录 direct-prompt 对照组所用代码与 prompt 快照的 commit / hash；Experience 组记录对应切片提交 |
 | 环境快照 | Next.js 14 (App Router) + React 18 + TS 5.x + 固定 major 的 Chromium；本地 mock / 内存态，无真实后端写回 |
 | 模型 / 工具预算 | direct-prompt 组**仅用裸 prompt + 通用能力**，不接入 10 个 UI skill / adapter；预算与时长上限与 Experience 组等价 |
