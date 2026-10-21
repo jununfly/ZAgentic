@@ -8,7 +8,7 @@
     "email": "zj@example.com",
     "bio": "x"
   },
-  "initial_state": "idle",
+  "initial_state": "validating",
   "actions": [
     {
       "seq": 1,
