@@ -10,7 +10,7 @@
 
 ## 0. 范围与边界
 
-本清单冻结 Wave 0（**EV-v0.1 表单 + 审批双样例**）确定性验证所需的 canonical fixture 全集：每条 fixture 的来源文档、触发路径、预期结果与落地点。它是 `verification-matrix.md` 与 `env-fingerprint.md` 的输入，也是 **1-5-2** 双 lane runner 的被测对象目录。表单类 F-1~F-6 已冻结；审批类 A-1~A-6 与审批专属契约 GF-A1~GF-A3 已于 **2026-10-21 追溯登记**（1-5-1 节点已 closed，本次范围扩张的补登记，见 §2.3 / §2.5）。**数据文件落地（2026-10-21，独立 chore）**：表单/审批/契约三类 `input.json`+`expected.json` 全部落地，状态均 `ready`，`manifest_hash` 当前 `96aff64c`。
+本清单冻结 Wave 0（**EV-v0.1 表单 + 审批双样例**）确定性验证所需的 canonical fixture 全集：每条 fixture 的来源文档、触发路径、预期结果与落地点。它是 `verification-matrix.md` 与 `env-fingerprint.md` 的输入，也是 **1-5-2** 双 lane runner 的被测对象目录。表单类 F-1~F-6 已冻结；审批类 A-1~A-6 与审批专属契约 GF-A1~GF-A3 已于 **2026-10-21 追溯登记**（1-5-1 节点已 closed，本次范围扩张的补登记，见 §2.3 / §2.5）。**数据文件落地（2026-10-21，独立 chore）**：表单/审批/契约三类 `input.json`+`expected.json` 全部落地，状态均 `ready`；**适配器 F-A1（Storybook，FF-SB-01/02/03）/ F-A2（json-render+A2UI golden，M3E out-of-core 不建）于 2026-10-21 在 manifest 落 `ready`，landed_at 对齐实际落地路径**；四类 fixture 全集均 `ready`，无 `planned` 残留，`manifest_hash` 当前 `60720775`。
 
 - **在口径内**：清单内的 fixture。
 - **在口径外**：任何未列入本清单的 fixture 不得进入确定性验证口径；新增 fixture 须经本清单 + roadmap `decide` 落盘，并触发 `manifest_hash` 重算。
@@ -23,7 +23,7 @@
 | 分类 | 数量 | 来源 | 说明 |
 | --- | --- | --- | --- |
 | `form` 表单六类 | 6 | `ui-agent-skills-wave0-ledger.md` §3（F-1~F-6） | 对应 `ev-metrics.md` §1 invalid-run 边界用例 |
-| `adapter` 适配器 | 2 | `ui-agent-skills-wave0-ledger.md` §3（F-A1/F-A2） | Storybook active / json-render·A2UI·M3E opt-in |
+| `adapter` 适配器 | 2 | `ui-agent-skills-wave0-ledger.md` §3（F-A1/F-A2） | Storybook active / json-render·A2UI·M3E opt-in（均已 `ready`，2026-10-21 收尾） |
 | `contract` 契约级 | 11 | `ui-agent-skills-golden-fixtures-spec.md` §2（GF-01~GF-11） | round-trip / 迁移·schema-lock / 离线恢复 / adapter 删除恢复 |
 | `approval` 审批六类 | 6 | `ui-agent-skills-ev-sample-flow.md` §4.2（A-1~A-6） | 费用报销审批流成功/边界/越权（2026-10-21 追溯登记） |
 
@@ -48,14 +48,18 @@
 
 | ID | 内容 | 归属 | 状态 |
 | --- | --- | --- | --- |
-| F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | planned |
-| F-A2 | json-render / A2UI golden fixtures（M3E 经 PoC 判定 out-of-core，不建 fixture） | 1-7-4 opt-in | landed (json-render+A2UI); drift harness implemented (1-7-4-4) |
+| F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | ready（FF-SB-01/02/03 已落地，landed_at 指向 FF-SB-01 代表） |
+| F-A2 | json-render / A2UI golden fixtures（M3E 经 PoC 判定 out-of-core，不建 fixture） | 1-7-4 opt-in | ready（json-render+A2UI landed; drift harness 1-7-4-4） |
 
 > **F-A2 落地进展（1-7-4-1 / 1-7-4-2，2026-10-20）**：
 > - **json-render** 已钉 **0.8.0**（双锚：version `0.8.0` + git `source_commit` `0a40430…`，repo `vercel-labs/json-render`；原候选 0.0.1 经核验**无 git tag** 已弃）。3 条 golden 已落 `F-A2/json-render/`：`FF-JR-PROJ-01`（投影）/ `FF-JR-PROTO-01`（协议）/ `FF-JR-IN-01`（输入兼容），附 `anchor.json`（钉版本记录）+ `drift-harness.spec.json`（1-7-4-4 共享 drift 检测规格）。**投影 golden 已 runtime-captured**：用真包 `@json-render/core@0.8.0` 的 `validateSpec()` + catalog zod 合规校验背书（复现脚本 `/tmp/jr-verify.mjs`），不再是声明式契约。
 > - **A2UI** 已钉 **v0.8**（Legacy / adjacency-list，a2ui.org 公开协议，Apache-2.0，Google + CopilotKit）。3 条 golden 已落 `F-A2/a2ui/`：`FF-A2UI-PROJ-01`（投影）/ `FF-A2UI-PROTO-01`（协议）/ `FF-A2UI-IN-01`（输入兼容），附 `anchor.json`（钉 v0.8）。A2UI 为协议 spec（非运行时），golden 为 v0.8 合规静态文档，按 `a2ui.org/specification/v0.8-a2ui/` 校验，无运行时执行。
 > - **共享 drift harness（1-7-4-4）已落地**：`tests/ui_agent_skills_drift_harness.py`（纯 Python，无依赖）+ 测试 `tests/test_ui_agent_skills_drift_harness.py`（9 用例全过）。实现 `F-A2-JR-DRIFT` 三信号：① 版本漂移（anchor `pin.version`/`source_commit` 或 expected `pin_version` 变化 → **仅报告不判 fail**）；② 语义丢失（投影 / semantic_equivalence / validation.catalog_conformance 字段删除或变更 → **hard fail**）；③ 未知字段回归（`unknown_*` 标志 true→false → **hard fail**）。含 CLI 入口（`python ...harness.py <base> <cand> [--baseline-anchor] [--candidate-anchor]`，ok/drift_only 退出码 0，fail 退出码 1），可在 CI 串联两版 golden 比对。
 > - **M3E 经 PoC 闸门判定 out-of-core（1-7-4-3 closed，不建 fixture）**：账本判 D（非 adapter 角色）。PoC 用真实证据坐实（WebFetch 仓库 + CSDN/zyvop/moclaw 评测交叉确认）：M3E Canvas 核心导出物=自然语言 brief/prompt（prose，可手编），非 JSON/组件树/结构化 UI 规范；另有 PNG 位图、分享链接(URL)，均无带 schema 的结构化 UI 描述；不消费 canonical，仅 authoring/export-only；纯静态 Next.js16、无后端运行时、无 tag（仅 `main@<commit>`）、单维护者(lnkiai)、MIT。AdapterBoundary(1-7-2) 摄入结构化 canonical 经 schema lock 投影，M3E 导出物无此结构、无 NL→canonical 翻译层 → **不能直接消费**。结论：PoC 不通过，M3E 维持 D/out-of-core，不阻塞毕业；projection/协议/输入兼容性 golden 对 D 角色 N/A，故 1-7-4-3 以 PoC 判定交付而 closed。
+
+> **F-A1 落地进展（1-7-3，2026-10-21 manifest 收尾）**：
+> - **Storybook active** adapter（`skills/ui/zj-ui-core/scripts/adapters/storybook_adapter.py`）于 1-7-3 实现并交付；3 条 fixture 已落 `tests/ui-agent-skills/fixtures/adapters/FF-SB-01/02/03`（各 `input.json`+`expected.json`），由 `tests/test_ui_agent_skills_storybook_adapter.py` 驱动（8 用例全过），覆盖 stories/a11y/viewport/interaction/docs 五维 + 归因门/无假绿/链路字段完备/幂等不变式。
+> - 机器 json 此前 `landed_at` 指向空占位 `adapters/F-A1`，本收尾将其**对齐实际落地点** `adapters/FF-SB-01`（FF-SB-02/03 同族），状态 `planned→ready`；空占位目录已清理。F-A1 容器概念（Storybook adapter 一族）与其 3 条 FF-SB-* 子 fixture 由此在 SoT 中一致。
 
 ### 2.3 `contract`（契约级，源自 golden-fixtures-spec GF-01~GF-11）
 
@@ -114,7 +118,7 @@
 | A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | `tests/ui-agent-skills/fixtures/approval/A-6` | ready |
 
 > 审批六类数据文件（`input.json` + `expected.json`）已于 2026-10-21 一并落地，故状态 `ready`。
-> **状态对称已全部对齐（2026-10-21）**：表单 F-1~F-6、审批 A-1~A-6、契约 GF-01~GF-11 / GF-A1~GF-A3 三类数据文件均经独立 chore 落地并置 `ready`；全 wave 确定性 fixture 现均为 `ready`，无 `planned` 残留。
+> **状态对称已全部对齐（2026-10-21）**：表单 F-1~F-6、审批 A-1~A-6、契约 GF-01~GF-11 / GF-A1~GF-A3、适配器 F-A1（FF-SB-01/02/03）/ F-A2（json-render+A2UI）四类数据文件均经独立 chore 落地并置 `ready`；全 wave 确定性 fixture 现均为 `ready`，无 `planned` 残留。
 > GF-A1~GF-A3 为审批专属契约，随 §2.3 契约级一并落地，状态 `ready`。
 
 ---

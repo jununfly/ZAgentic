@@ -1243,6 +1243,11 @@
           "q": "adapter 产出契约？",
           "answer": "run(request) 返回 {adapter_id,status,stories[],checks[],receipt,report}；receipt 复用 VERIFICATION_RECEIPT 契约（8 链路字段+fingerprint+checked）。",
           "note": ""
+        },
+        {
+          "q": "适配器 fixture 在 manifest 的落地收尾？",
+          "answer": "1-7-3 实现时 FF-SB-01/02/03 已落 adapters/ 并由专属测试驱动，但 fixture-manifest 的 F-A1 条目 landed_at 曾指向空占位、状态 planned。2026-10-21 收尾：F-A1.landed_at 对齐实际 FF-SB-01（同族 FF-SB-02/03），状态 planned→ready，空占位目录清理；manifest_hash 由 96aff64c 重算为 60720775。",
+          "note": "不重开 1-7-3（已 completed），仅 SoT 对齐"
         }
       ],
       "notes": "",
@@ -1270,6 +1275,11 @@
           "q": "首批 fixture 怎么拆？",
           "answer": "粗拆 4 直接子节点：3 候选(json-render/A2UI/M3E)各覆盖 opt-in projection+协议+输入兼容性三维度，+1 共享 golden-diff/版本漂移检测 harness；维度作为候选子节点的退出判据而非独立节点，避免超 max-children=5",
           "note": "用户选 b1（20:1x）"
+        },
+        {
+          "q": "适配器 fixture 在 manifest 的落地收尾？",
+          "answer": "1-7-4 实现时 json-render+A2UI golden（FF-JR-* / FF-A2UI-*）+ drift harness 已落 adapters/F-A2/ 并由专属测试驱动，但 fixture-manifest 的 F-A2 条目状态曾为 planned。2026-10-21 收尾：F-A2.landed_at 指向实际 adapters/F-A2（含 json-render/、a2ui/ 子目录），状态 planned→ready，manifest_hash 由 96aff64c 重算为 60720775。M3E 维持 out-of-core（1-7-4-3）不建 fixture。",
+          "note": "不重开 1-7-4（已 completed），仅 SoT 对齐"
         }
       ],
       "notes": "",
@@ -1704,7 +1714,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 13:26:30",
+    "updated": "2026-10-21 13:57:40",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

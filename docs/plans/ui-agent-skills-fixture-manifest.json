@@ -64,8 +64,8 @@
       "source": "ui-agent-skills-wave0-ledger.md#F-A1",
       "trigger": "Storybook stories/a11y/viewport/interaction/docs",
       "expected": "active adapter 本地验证通过",
-      "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A1",
-      "status": "planned"
+      "landed_at": "tests/ui-agent-skills/fixtures/adapters/FF-SB-01",
+      "status": "ready"
     },
     {
       "id": "F-A2",
@@ -74,7 +74,7 @@
       "trigger": "json-render/A2UI/M3E Canvas 投影",
       "expected": "opt-in golden fixtures 通过",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-01",
@@ -527,5 +527,5 @@
       "status": "ready"
     }
   ],
-  "manifest_hash": "96aff64c427f1e949a5328f7af3b76e7fcd98307c5ccd34166f2e5d9cd494f22"
+  "manifest_hash": "607207759ad92fbc31f9fc970e1c57bef67722a600171508ddc6a22019acdbfe"
 }

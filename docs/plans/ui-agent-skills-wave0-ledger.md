@@ -63,8 +63,8 @@
 
 | ID | Fixture | 归属 | 状态 | Owner |
 | --- | --- | --- | --- | --- |
-| F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | planned | zjj |
-| F-A2 | json-render / A2UI / M3E Canvas golden fixtures | 1-7-4 opt-in | planned | zjj |
+| F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | ready（FF-SB-01/02/03 已落地，见 fixture-manifest §2.2） | zjj |
+| F-A2 | json-render / A2UI / M3E Canvas golden fixtures | 1-7-4 opt-in | ready（json-render+A2UI golden landed，M3E out-of-core 不建） | zjj |
 
 审批 fixture（2026-10-21 范围扩张纳入 Wave 0，已于同日在 `fixture-manifest.md` §2.5 追溯登记）：
 
@@ -134,5 +134,5 @@
 > - **R-FIX-1**：fixture 存储目录已确定并落地为 `tests/ui-agent-skills/fixtures/{form,approval,contract,adapters,skills}`，状态 `planned → ready`。
 > - **F-1~F-6**：表单六类数据文件（input.json + expected.json）已落地，状态 `planned → ready`；落地点由"R-FIX-1（待定路径）"更新为各自实际路径 `tests/ui-agent-skills/fixtures/form/F-N`。
 > - **A-1~A-6**：保持 `ready`（2026-10-21 追溯登记，一致）。
-> - **F-A1 / F-A2**（适配器 opt-in 类）：在 fixture-manifest 中仍为 `planned`（落地归属 1-7-3 / 1-7-4），账本与之保持一致，**不做改动**。
+> - **F-A1 / F-A2**（适配器 opt-in 类）：2026-10-21 manifest 收尾 —— F-A1（Storybook，FF-SB-01/02/03 已落地）与 F-A2（json-render+A2UI golden landed，M3E out-of-core 不建）均在 fixture-manifest 落 `ready`，landed_at 对齐实际路径，本账本 §3 同步为 `ready`，账本与 SoT 再次一致。
 > - 契约类 GF-01~GF-11 / GF-A1~GF-A3、skill 类 FF-* 已 `ready`，账本 §3 未单列其行，以 fixture-manifest 为准。
