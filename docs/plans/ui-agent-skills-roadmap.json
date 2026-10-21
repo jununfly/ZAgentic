@@ -266,7 +266,7 @@
       "id": "1-8",
       "uid": "01a154254e3c-ade69f7788",
       "label": "Experience Version 表单/审批 sample flow",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -298,7 +298,7 @@
           "note": "范围扩张决策 + 覆盖 form-only"
         }
       ],
-      "notes": "Experience Version 是一条受控的表单/审批路径，用来证明对话、文档编辑、选择式设计和安全执行可以串起来。",
+      "notes": "sample flow 五个子节点（1-8-1~1-8-5）全完成：表单/审批 Experience Version 从 PRD→对话+UI-BRIEF diff→人机协作→prototype/preview+effect 安全边界→四类降级演练 全链路打通。1-8-5 完成后按 e17 解除 1-9 阻塞。",
       "layer": "plan",
       "exit_criteria": [
         "同一个 case 可由对话或 UI-BRIEF.md diff 进入同一 canonical revision 和 plan",
@@ -1441,16 +1441,43 @@
       "id": "1-8-5",
       "uid": "01a15426bc9a-1ce41ed485",
       "label": "演练远程 adapter 关闭、素材 quarantine、未知字段与本地静态 preview fallback",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-8",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-8-5 的范围分类？",
+          "answer": "Product execution（继承自 1-8 scope gate）。本节点在真实表单/审批 sample 上跑降级路径，属产品执行的韧性验收，非独立技能验收；目标项目代码/依赖可按需改动。",
+          "note": "scope gate 继承 1-8"
+        },
+        {
+          "q": "节点 label 与 exit_criteria 不一致如何对齐？",
+          "answer": "以 label 为准覆盖四类演练：①远程 adapter 关闭 ②素材/许可证 quarantine ③未知字段 ④本地静态 preview fallback；原 exit_criteria 的 license 缺失并入 ②、保留恢复路径由 ④ fallback 体现。已重写 exit_criteria 为四场景。",
+          "note": "label/exit 对齐"
+        },
+        {
+          "q": "form/approval sample fixture 当前是否被任何 drill 消费？",
+          "answer": "否。全仓库无 runner 消费 F-1~F-6 / A-1~A-6（test_ui_agent_skills_stage_skills.py 只跑 fixtures/skills/FF-*）；ev-sample-flow §4.5 称可执行断言待 1-5-2 runner 与 1-6 实现后跑——两者已完成，但 sample 仍 unwired。要诚实满足 1-8-5 退出判据（sample 在降级下正确降级并保留恢复路径），必须补 sample 执行 harness 把 12 个 fixture 跑起来并注入四类降级。",
+          "note": "gap 发现"
+        },
+        {
+          "q": "1-8-5 四类降级的 drill 证据如何落点？",
+          "answer": "新建 sample_flow_drill.py（确定性状态机执行 F-1~F-6/A-1~A-6）+ test_ui_agent_skills_sample_flow_drill.py（13 用例）。基线 12 fixture 全匹配（sample 真正跑通）；四场景：①远程 adapter 关闭→static_preview 回退且不伪造成功；②素材/许可证 quarantine→隔离+降级且保留恢复；③未知字段→四元组保留不 coercion；④本地静态 preview 回退→复用 adapter_boundary 本地恢复不变量（canonical/static_preview/local_verify 可用）。框架级降级测试 92 项仍全绿，形成双层证据。",
+          "note": "drill 证据落点"
+        },
+        {
+          "q": "演练中发现 form fixture 数据问题？",
+          "answer": "是。F-4/F-5/F-6 的 initial_state 误写为 idle，但首个 action.from=validating（漏 edit 步骤，实为已校验表单直接提交），状态机 from 校验失败。已将三处 initial_state 改为 validating 与首个 action 对齐；F-1/2/3 本就 idle→edit 一致无需改。属 sample 数据修正，未改 fixture 选择口径与契约。",
+          "note": "sample 数据修正"
+        }
+      ],
+      "notes": "演练完成：新建 skills/ui/zj-ui-core/scripts/sample_flow_drill.py + tests/test_ui_agent_skills_sample_flow_drill.py。基线跑通 12 个 sample fixture（F-1~F-6/A-1~A-6）全部匹配冻结期望；四降级场景（远程 adapter 关闭 / 素材+许可证 quarantine / 未知字段 / 本地静态 preview 回退）在 sample 上断言安全降级并保留恢复路径。框架级降级测试 92 项 + sample drill 13 项 = 105 全绿。修复 F-4/F-5/F-6 initial_state 不一致。",
       "layer": "plan",
       "exit_criteria": [
-        "远程关闭、未知字段、license 缺失时状态正确降级并保留恢复路径"
-      ]
+        "①远程 adapter 关闭时 sample 走本地静态 preview fallback 不崩；②素材/许可证 quarantine 时资产隔离+状态标记+保留恢复路径；③未知字段按 unknown/source 语义安全降级不污染 canonical；④各场景状态正确降级且保留可回退恢复路径。"
+      ],
+      "rounds": 1
     },
     "1-9-1": {
       "id": "1-9-1",
@@ -1740,7 +1767,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 15:19:26",
+    "updated": "2026-10-21 16:13:29",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
