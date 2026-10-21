@@ -1,0 +1,38 @@
+{
+  "fixture_id": "A-1",
+  "title": "审批成功路径",
+  "class": "approval",
+  "applicant": "user-001",
+  "approver": "approver-001",
+  "request": {
+    "amount": 1200.0,
+    "currency": "CNY",
+    "reason": "客户拜访差旅费",
+    "attachment_ref": "mock://receipt-001"
+  },
+  "initial_state": "draft",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "applicant",
+      "action": "submit",
+      "from": "draft",
+      "to": "submitted"
+    },
+    {
+      "seq": 2,
+      "role": "system",
+      "action": "route",
+      "from": "submitted",
+      "to": "under_review"
+    },
+    {
+      "seq": 3,
+      "role": "approver",
+      "action": "approve",
+      "from": "under_review",
+      "to": "approved",
+      "reason": "合规，准予报销"
+    }
+  ]
+}

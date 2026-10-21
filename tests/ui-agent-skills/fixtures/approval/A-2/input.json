@@ -1,0 +1,38 @@
+{
+  "fixture_id": "A-2",
+  "title": "审批驳回",
+  "class": "approval",
+  "applicant": "user-002",
+  "approver": "approver-001",
+  "request": {
+    "amount": 800.0,
+    "currency": "CNY",
+    "reason": "团建餐费",
+    "attachment_ref": "mock://receipt-002"
+  },
+  "initial_state": "draft",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "applicant",
+      "action": "submit",
+      "from": "draft",
+      "to": "submitted"
+    },
+    {
+      "seq": 2,
+      "role": "system",
+      "action": "route",
+      "from": "submitted",
+      "to": "under_review"
+    },
+    {
+      "seq": 3,
+      "role": "approver",
+      "action": "reject",
+      "from": "under_review",
+      "to": "rejected",
+      "reason": "票据不完整，请补正"
+    }
+  ]
+}

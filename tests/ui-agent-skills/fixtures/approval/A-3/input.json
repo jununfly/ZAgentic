@@ -1,0 +1,24 @@
+{
+  "fixture_id": "A-3",
+  "title": "非法金额/空事由",
+  "class": "approval",
+  "applicant": "user-003",
+  "approver": null,
+  "request": {
+    "amount": -50.0,
+    "currency": "CNY",
+    "reason": "",
+    "attachment_ref": null
+  },
+  "initial_state": "draft",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "applicant",
+      "action": "submit",
+      "from": "draft",
+      "to": "submitted",
+      "blocked_by": "client_validation"
+    }
+  ]
+}

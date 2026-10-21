@@ -133,7 +133,7 @@
 | F-5 | 服务端 422 | 模拟 mock 422 | `error` 态 + 可恢复回 editable | `tests/ui-agent-skills/fixtures/form/F-5` |
 | F-6 | 超时 | 模拟服务端超时 | fallback 到稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/form/F-6` |
 
-### 4.2 approval 六类（新增，待 `1-5-1` 登记）
+### 4.2 approval 六类（已登记，2026-10-21 追溯登记，见 `fixture-manifest.md` §2.5）
 | ID | 内容 | 触发路径 | 预期结果 | 落地点 |
 | --- | --- | --- | --- | --- |
 | A-1 | 成功审批（合法申请 → approver 通过） | `draft→submitted→under_review→approved` | mock 持久化 + approved | `tests/ui-agent-skills/fixtures/approval/A-1` |
@@ -156,7 +156,7 @@
 - GF-10 离线恢复（服务关闭仅凭本地 canonical 重建 flow/恢复状态/重放动作）
 - GF-11 adapter 删除恢复（删 adapter 后仍可从最后完整 canonical revision 恢复）
 
-### 4.4 approval 专属 contract（新增，待登记）
+### 4.4 approval 专属 contract（已登记，2026-10-21 追溯登记，见 `fixture-manifest.md` §2.3）
 - **GF-A1** 审批 action 必须 `role=approver`，否则 deny-first 阻断（role separation）。
 - **GF-A2** approver 决定的 `APPROVED`/`REJECTED` 必须由 Human 实签，不可系统自动生成。
 - **GF-A3** `rejected` 后申请人重提交生成**新 revision**，旧 `approved` 状态不污染新链路。
@@ -164,7 +164,7 @@
 ### 4.5 fixture 选择约束
 - sample 的 paired run（`1-9`）fixture 必须取自本清单 F-1~F-6 + A-1~A-6 + 相关 GF / GF-A*；任何未列 fixture → 该 run 按 invalid 处理（`fixture-manifest.md` §5）。
 - 数据文件落地在 `1-5-2` / `1-6`；本节点只冻结**选择口径**，不落地数据。
-- A-* 与 GF-A* 在 `1-5-1` 登记前，paired run 不得使用（登记动作见 §0 治理落点）。
+- A-* 与 GF-A* 已于 2026-10-21 登记（见 `fixture-manifest.md` §2.5 / §2.3）；paired run 取用须按本清单，未登记 fixture 不得使用。
 
 ---
 

@@ -1,0 +1,11 @@
+{
+  "fixture_id": "A-5",
+  "final_state": "under_review",
+  "persisted": false,
+  "human_gates": [],
+  "assertions": [
+    "超时触发 fallback 稳定路径 / 显式标记",
+    "不伪造成功/失败",
+    "升级路径可被人工接管"
+  ]
+}

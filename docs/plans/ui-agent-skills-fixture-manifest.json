@@ -444,7 +444,88 @@
       "expected": "未知组件保留 + inline catalog 依赖记录 + warning，不丢弃 → PASS",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-IN-01",
       "status": "ready"
+    },
+    {
+      "id": "A-1",
+      "class": "approval",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "trigger": "draft->submitted->under_review->approved",
+      "expected": "mock 持久化 + approved",
+      "landed_at": "tests/ui-agent-skills/fixtures/approval/A-1",
+      "status": "ready"
+    },
+    {
+      "id": "A-2",
+      "class": "approval",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "trigger": "under_review->rejected",
+      "expected": "申请人可修改重提交（回 draft）",
+      "landed_at": "tests/ui-agent-skills/fixtures/approval/A-2",
+      "status": "ready"
+    },
+    {
+      "id": "A-3",
+      "class": "approval",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "trigger": "draft 客户端校验（非法金额/空事由）",
+      "expected": "字段级 error，禁止提交",
+      "landed_at": "tests/ui-agent-skills/fixtures/approval/A-3",
+      "status": "ready"
+    },
+    {
+      "id": "A-4",
+      "class": "approval",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "trigger": "submitted 锁（重复提交）",
+      "expected": "第二次被拒/忽略",
+      "landed_at": "tests/ui-agent-skills/fixtures/approval/A-4",
+      "status": "ready"
+    },
+    {
+      "id": "A-5",
+      "class": "approval",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "trigger": "under_review 超时",
+      "expected": "fallback 稳定路径 / 显式标记",
+      "landed_at": "tests/ui-agent-skills/fixtures/approval/A-5",
+      "status": "ready"
+    },
+    {
+      "id": "A-6",
+      "class": "approval",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "trigger": "任意（非 approver 调用审批）",
+      "expected": "deny-first 阻断 + 报路径",
+      "landed_at": "tests/ui-agent-skills/fixtures/approval/A-6",
+      "status": "ready"
+    },
+    {
+      "id": "GF-A1",
+      "class": "contract",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.4",
+      "trigger": "审批 action 非 role=approver",
+      "expected": "deny-first 阻断（role separation，hard fail）",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A1",
+      "status": "planned"
+    },
+    {
+      "id": "GF-A2",
+      "class": "contract",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.4",
+      "trigger": "APPROVED/REJECTED 系统自动生成",
+      "expected": "必须由 Human 实签（不得系统自动）",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A2",
+      "status": "planned"
+    },
+    {
+      "id": "GF-A3",
+      "class": "contract",
+      "source": "ui-agent-skills-ev-sample-flow.md#4.4",
+      "trigger": "rejected 后重提交",
+      "expected": "生成新 revision，旧 approved 不污染新链路",
+      "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A3",
+      "status": "planned"
     }
   ],
-  "manifest_hash": "859a158f607f901de3bad82467d1a496197e4103dc89f0aec8932a3ab7e501ed"
+  "manifest_hash": "52ea5df082ae4ef403dc9d8cb4c6792a25d25b93c7b4dd989d5684c6e5fb956b"
 }

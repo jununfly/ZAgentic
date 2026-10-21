@@ -1,0 +1,11 @@
+{
+  "fixture_id": "A-6",
+  "final_state": "under_review",
+  "persisted": false,
+  "human_gates": [],
+  "assertions": [
+    "非 role=approver 调用审批被 deny-first 阻断",
+    "报字段/角色路径",
+    "状态不前进"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "fixture_id": "A-1",
+  "final_state": "approved",
+  "persisted": true,
+  "human_gates": [
+    {
+      "role": "applicant",
+      "signed": true,
+      "at_step": 1
+    },
+    {
+      "role": "approver",
+      "signed": true,
+      "at_step": 3
+    }
+  ],
+  "assertions": [
+    "双 Human gate 均实签",
+    "approved 态 mock 持久化成功",
+    "approver 决定附理由"
+  ]
+}

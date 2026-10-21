@@ -868,6 +868,11 @@
           "q": "L-FONT 渲染字体选定？（回填 NEEDS_CONTEXT 占位）",
           "answer": "zj 于 2026-10-20 选定：Noto Sans SC（主，中文+拉丁）+ Inter（拉丁 UI）+ JetBrains Mono（代码 fixture 条件启用），许可均 SIL OFL 1.1 可商用可再分发，经 @fontsource npm 包自托管锁版本；env 指纹 font 轴回填定值并重冻结；轴变化发生于 1-5-2 首跑前，无既有验证结论需作废，revalidation 规则对未来结论生效；wave0-ledger L-FONT 条目与 R-RISK-3 同步关闭。",
           "note": ""
+        },
+        {
+          "q": "审批 fixture A-1~A-6 与 GF-A1~GF-A3 的登记如何落？",
+          "answer": "1-5-1 节点已 closed，但 2026-10-21 范围扩张（审批纳入 Wave 0）时未在计划层补登记，遗留一致性债。本次以独立 chore 追溯登记：向 fixture-manifest.json 追加 9 条（A-1~A-6 approval/ready + GF-A1~GF-A3 contract/planned），重算 manifest_hash（859a158f→52ea5df0，复用 runner.compute_manifest_hash 保证字节一致），并落 A-1~A-6 实际数据文件（input.json+expected.json）。不重开 1-5-1/1-5-2，避免污染 completed 语义。",
+          "note": "closed 后范围扩张的补登记；A-* 数据先行落地致与 F-*（planned 无数据）状态不对称，另开 chore 对齐 F-* 不在本批。"
         }
       ],
       "notes": "",
@@ -1689,7 +1694,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 11:38:39",
+    "updated": "2026-10-21 12:15:25",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

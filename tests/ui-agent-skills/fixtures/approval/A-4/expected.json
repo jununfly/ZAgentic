@@ -1,0 +1,17 @@
+{
+  "fixture_id": "A-4",
+  "final_state": "submitted",
+  "persisted": false,
+  "human_gates": [
+    {
+      "role": "applicant",
+      "signed": false,
+      "at_step": 1
+    }
+  ],
+  "assertions": [
+    "submitted 期间第二次提交被拒/忽略",
+    "不重复创建申请",
+    "输入锁定生效"
+  ]
+}

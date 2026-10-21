@@ -1,0 +1,25 @@
+{
+  "fixture_id": "A-4",
+  "title": "重复提交",
+  "class": "approval",
+  "applicant": "user-004",
+  "approver": null,
+  "request": {
+    "amount": 300.0,
+    "currency": "CNY",
+    "reason": "办公用品",
+    "attachment_ref": "mock://receipt-004"
+  },
+  "initial_state": "submitted",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "applicant",
+      "action": "submit",
+      "from": "submitted",
+      "to": "submitted",
+      "duplicate": true,
+      "outcome": "rejected_or_ignored"
+    }
+  ]
+}

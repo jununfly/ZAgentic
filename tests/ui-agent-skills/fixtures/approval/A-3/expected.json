@@ -1,0 +1,17 @@
+{
+  "fixture_id": "A-3",
+  "final_state": "draft",
+  "persisted": false,
+  "human_gates": [
+    {
+      "role": "applicant",
+      "signed": false,
+      "at_step": 1
+    }
+  ],
+  "assertions": [
+    "金额非法（负数）字段级 error",
+    "事由为空字段级 error",
+    "禁止提交，停于 draft"
+  ]
+}

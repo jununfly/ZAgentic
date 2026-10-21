@@ -8,7 +8,7 @@
 
 ## 0. 总览与硬约束
 
-- 本账本只登记 **Wave 0（EV-v0.1 表单 + 审批双样例）** 所需的资源、许可证、fixture、owner 与风险；Wave 1（审批链多级/会签、其余前端框架 adapter）与长期治理不在范围。审批流（A-* fixture）随 2026-10-21 范围扩张纳入本账本，具体条目在 **1-5-1** 登记。
+- 本账本只登记 **Wave 0（EV-v0.1 表单 + 审批双样例）** 所需的资源、许可证、fixture、owner 与风险；Wave 1（审批链多级/会签、其余前端框架 adapter）与长期治理不在范围。审批流（A-* fixture）随 2026-10-21 范围扩张纳入本账本，已于同日在 `fixture-manifest.md` 追溯登记（1-5-1 节点已 closed）。
 - fixture 与部分资源（验证 harness、adapter）将在后续节点（1-5 / 1-7 / 1-8）落地；本账本只登记**意图 + owner + 状态**，不在 1-1-4 提前实现。
 - 任何单元格不得为 `unknown` 而无处置；确有外部决策缺口的项标 `NEEDS_CONTEXT`。
 
@@ -66,6 +66,17 @@
 | F-A1 | Storybook stories / a11y / viewport / interaction / docs | 1-7-3 active | planned | zjj |
 | F-A2 | json-render / A2UI / M3E Canvas golden fixtures | 1-7-4 opt-in | planned | zjj |
 
+审批 fixture（2026-10-21 范围扩张纳入 Wave 0，已于同日在 `fixture-manifest.md` §2.5 追溯登记）：
+
+| ID | Fixture | 触发路径 | 预期结果 | 落地点 | 状态 | Owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| A-1 | 成功审批（合法申请 → approver 通过） | draft→submitted→under_review→approved | mock 持久化 + approved | R-FIX-1 | ready | zjj |
+| A-2 | 审批驳回（附理由） | under_review→rejected | 回 draft 可修改重提交 | R-FIX-1 | ready | zjj |
+| A-3 | 非法金额 / 空事由 | draft 客户端校验 | 字段级 error，禁止提交 | R-FIX-1 | ready | zjj |
+| A-4 | 重复提交 | submitted 锁输入 | 第二次被拒/忽略 | R-FIX-1 | ready | zjj |
+| A-5 | 审批超时 / 升级 | under_review 超时 | fallback 稳定路径 / 显式标记 | R-FIX-1 | ready | zjj |
+| A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | R-FIX-1 | ready | zjj |
+
 > 所有 fixture 在 1-5/1-8 落地时须保留原始日志与屏幕/DOM 证据（见 `ev-metrics.md` §4–5），否则该 run 按 invalid 处理。
 
 ---
@@ -110,7 +121,7 @@
 
 - [x] 资源账本：9 项全登记，无 `unknown`（R-ENV-3 缺 PyYAML 已记缓解）。
 - [x] 许可证账本：7 项登记；唯一真实缺口 L-FONT 标 `NEEDS_CONTEXT`，不编造。
-- [x] fixture 账本：表单六类 + 适配器两类全登记，状态=planned，owner 明确。
+- [x] fixture 账本：表单六类 + 适配器两类 + 审批六类（A-1~A-6，2026-10-21 追溯登记，状态 ready）全登记，owner 明确。
 - [x] owner 账本：zj / zjj 分工全维度登记，沿用已确认分配。
 - [x] 风险账本：8 项登记，含已发生（#180）与已接受约束，缺口 R-RISK-3 与 L-FONT 同源、已 `NEEDS_CONTEXT`。
 - [x] 无遗留 `unknown` 漏洞；仅有的外部依赖决策（字体）以 `NEEDS_CONTEXT` 退出。

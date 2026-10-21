@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-21 11:38:39
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-21 12:15:25
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest

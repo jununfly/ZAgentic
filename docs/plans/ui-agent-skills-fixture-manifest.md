@@ -10,7 +10,7 @@
 
 ## 0. 范围与边界
 
-本清单冻结 Wave 0（**EV-v0.1 表单 + 审批双样例**）确定性验证所需的 canonical fixture 全集：每条 fixture 的来源文档、触发路径、预期结果与落地点。它是 `verification-matrix.md` 与 `env-fingerprint.md` 的输入，也是 **1-5-2** 双 lane runner 的被测对象目录。表单类 F-1~F-6 已冻结；审批类 A-1~A-6 由 **1-5-1** 登记（2026-10-21 范围扩张纳入 Wave 0）。
+本清单冻结 Wave 0（**EV-v0.1 表单 + 审批双样例**）确定性验证所需的 canonical fixture 全集：每条 fixture 的来源文档、触发路径、预期结果与落地点。它是 `verification-matrix.md` 与 `env-fingerprint.md` 的输入，也是 **1-5-2** 双 lane runner 的被测对象目录。表单类 F-1~F-6 已冻结；审批类 A-1~A-6 与审批专属契约 GF-A1~GF-A3 已于 **2026-10-21 追溯登记**（1-5-1 节点已 closed，本次范围扩张的补登记，见 §2.3 / §2.5）。
 
 - **在口径内**：清单内的 fixture。
 - **在口径外**：任何未列入本清单的 fixture 不得进入确定性验证口径；新增 fixture 须经本清单 + roadmap `decide` 落盘，并触发 `manifest_hash` 重算。
@@ -25,6 +25,7 @@
 | `form` 表单六类 | 6 | `ui-agent-skills-wave0-ledger.md` §3（F-1~F-6） | 对应 `ev-metrics.md` §1 invalid-run 边界用例 |
 | `adapter` 适配器 | 2 | `ui-agent-skills-wave0-ledger.md` §3（F-A1/F-A2） | Storybook active / json-render·A2UI·M3E opt-in |
 | `contract` 契约级 | 11 | `ui-agent-skills-golden-fixtures-spec.md` §2（GF-01~GF-11） | round-trip / 迁移·schema-lock / 离线恢复 / adapter 删除恢复 |
+| `approval` 审批六类 | 6 | `ui-agent-skills-ev-sample-flow.md` §4.2（A-1~A-6） | 费用报销审批流成功/边界/越权（2026-10-21 追溯登记） |
 
 ---
 
@@ -69,6 +70,9 @@
 | GF-09 | schema lock 重跑 | schema/adapter 修改后重跑全套；失败保留旧 artifact | 越权推进 = fail |
 | GF-10 | 离线恢复 | 服务关闭时仅凭本地 canonical 重建 flow/恢复状态/重放动作 | 无法恢复 = recovery error |
 | GF-11 | adapter 删除恢复 | 删除 adapter 后仍可从最后完整 canonical revision 恢复 | 恢复失败 = fail |
+| GF-A1 | 审批 action 非 `role=approver` | deny-first 阻断（role separation） | 越权提交 = fail |
+| GF-A2 | `APPROVED`/`REJECTED` 系统自动生成 | 必须由 Human 实签，不得系统自动 | 自动生成 = fail |
+| GF-A3 | `rejected` 后重提交 | 生成新 revision，旧 `approved` 不污染新链路 | 污染 = fail |
 
 ### 2.4 `skill`（阶段技能级，1-6-2 落地；源自 1-3-1 §4）
 
@@ -93,6 +97,21 @@
 
 跑批：`python skills/ui/zj-ui-core/scripts/run_fixture.py tests/ui-agent-skills/fixtures/skills --recursive`
 （镜像断言由 `tests/test_ui_agent_skills_stage_skills.py` 守）。
+
+### 2.5 `approval`（审批六类，2026-10-21 追溯登记）
+
+| ID | 内容 | 触发路径 | 预期结果 | 落地点 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| A-1 | 成功审批（合法申请 → approver 通过） | `draft→submitted→under_review→approved` | mock 持久化 + approved | `tests/ui-agent-skills/fixtures/approval/A-1` | ready |
+| A-2 | 审批驳回（附理由） | `under_review→rejected` | 申请人可修改重提交（回 draft） | `tests/ui-agent-skills/fixtures/approval/A-2` | ready |
+| A-3 | 非法金额 / 空事由（客户端校验） | `draft` 校验 | 字段级 error，禁止提交 | `tests/ui-agent-skills/fixtures/approval/A-3` | ready |
+| A-4 | 重复提交（submitted 期间再触发） | `submitted` 锁 | 第二次被拒/忽略 | `tests/ui-agent-skills/fixtures/approval/A-4` | ready |
+| A-5 | 审批超时 / 升级 | `under_review` 超时 | fallback 稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/approval/A-5` | ready |
+| A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | `tests/ui-agent-skills/fixtures/approval/A-6` | ready |
+
+> 审批六类数据文件（`input.json` + `expected.json`）已于 2026-10-21 一并落地，故状态 `ready`。
+> **状态不对称说明**：表单 F-1~F-6 仍为 `planned`（数据落地属 1-6/1-7 引擎波次，尚未建数据文件）；审批 A-1~A-6 因本次补登记 chore 先行落地了 declarative 场景数据。若要求全 wave 一致，建议后续对 F-1~F-6 同样补数据文件（另开 chore，不在本批范围）。
+> GF-A1~GF-A3 为审批专属契约，状态 `planned`（mirror GF-*），数据随契约 runner 落地。
 
 ---
 

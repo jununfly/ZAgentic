@@ -1,0 +1,24 @@
+{
+  "fixture_id": "A-6",
+  "title": "越权审批",
+  "class": "approval",
+  "applicant": "user-006",
+  "approver": "user-006",
+  "request": {
+    "amount": 200.0,
+    "currency": "CNY",
+    "reason": "误填自审批",
+    "attachment_ref": null
+  },
+  "initial_state": "under_review",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "user-006",
+      "action": "approve",
+      "from": "under_review",
+      "to": "approved",
+      "outcome": "denied"
+    }
+  ]
+}

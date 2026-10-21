@@ -1,0 +1,22 @@
+{
+  "fixture_id": "A-2",
+  "final_state": "rejected",
+  "persisted": true,
+  "human_gates": [
+    {
+      "role": "applicant",
+      "signed": true,
+      "at_step": 1
+    },
+    {
+      "role": "approver",
+      "signed": true,
+      "at_step": 3
+    }
+  ],
+  "assertions": [
+    "驳回附理由",
+    "状态回 draft 可修改重提交",
+    "旧 rejected 记录保留不丢失"
+  ]
+}
