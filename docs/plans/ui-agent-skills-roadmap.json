@@ -326,6 +326,11 @@
           "q": "什么条件才算 graduation？",
           "answer": "三次同 case/environment/config 的有效 paired run；返工率改善≥20%、决策时间改善≥15%、escaped defect 三次汇总改善≥20%，且关键 blocker/越权/receipt/provenance 问题为零。",
           "note": "无效运行不计数，必须补跑；不满足则停在 PILOT/QUARANTINED。"
+        },
+        {
+          "q": "1-9 的 scope 与依赖如何处理？",
+          "answer": "Scope=Acceptance/evaluation（技能验收/graduation gate）；依赖严格遵循现有图谱，e17(1-8→1-9) 与 e68(1-8-5→1-9-1) 不放松。1-9 维持 blocked，待完整 sample flow 1-8-2→1-8-3→1-8-4→1-8-5 执行完成后才开工。paired run 发现的缺陷作为后续 product-execution 节点，不与 1-9 试验结论混报。",
+          "note": "zj 2026-10-21 拍板：按图谱先做完1-8（选项B）。与早前'先走1-9解锁1-8-2~1-8-5'的印象相反，以图谱边为准"
         }
       ],
       "notes": "毕业是证据判定，不是实现完成的同义词；无法证明的 run 不计数并必须补跑。",
@@ -1370,31 +1375,45 @@
       "id": "1-8-2",
       "uid": "01a15426bbd8-e02f1e4f37",
       "label": "打通对话输入与 UI-BRIEF.md 编辑 diff → Human 接受 patch → 下一步 plan",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-8",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-8-2 的 scope 与执行形态？",
+          "answer": "Scope=Product execution（sample flow 执行起点，按 roadmap 规则可写项目 artifact）。执行形态：以冻结 PRD（ev-sample-flow.md §1）作为『对话输入』源，经 zj-ui-brief(S1) 产出 UI-BRIEF.md draft；同时走『直接编辑 UI-BRIEF.md』入口，两者收敛到同一 canonical 内容与同一 revision（sha256）——即 1-8-2 退出判据『对话与文档 diff 生成同一 patch/revision』。双样例（form + approval）各出一版 brief + patch。仅写 draft/本地 canonical，Human 接受前不进入 effect。",
+          "note": "Human accept gate = zj 审阅 patch 并确认；接受后才推进 1-8-3（direction）。approval 样例引入第二个 Human gate（approver，GF-A2），不在 1-8-2 内实签"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "对话与文档 diff 生成同一 patch/revision，Human 接受前不进入 effect"
-      ]
+      ],
+      "rounds": 1
     },
     "1-8-3": {
       "id": "1-8-3",
       "uid": "01a15426bc1a-bdb070febf",
       "label": "完成 direction cards、token/catalog、flow/action/intent 与组件选择的人机协作",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-8",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-8-3 的 scope 与执行形态？",
+          "answer": "Scope=Product execution（sample flow 人机协作节点，可写项目 artifact）。执行形态：在 1-8-2 两份已锁定 revision 的 UI-BRIEF 上，对 form + approval 双样例分别产出 S3 方向卡(2-3 张可比+provenance)、S4 token/catalog、S5 ui-flow/v1 六义(含 action/intent)，全部为 draft/本地 canonical。方向选择按 zj-ui-direction 契约 = Human gate required（WAIT_HUMAN），不替人选、不默认取第一；本节点只冻结候选与 provenance，方向 choice 落 UI-DESIGN.md 待 Human 接受阶段选定。token/catalog 与 ui-flow 均带 provenance（内部 zagentic/ui-kit v0，license=proprietary，无外部未授权引用，不触发 quarantine）。全程不写生产代码 / 不进 effect。",
+          "note": "退出判据『方向选择、token/catalog、flow/action/intent 与理由/provenance 可追踪』通过：候选卡+choice 占位+gate、token 表、flow 六义各带 source/license 满足。方向实际选定在 zj 接受时落定，与 1-8-2 accept gate 同机制"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "方向选择、token/catalog、flow/action/intent 与理由/provenance 可追踪"
-      ]
+      ],
+      "rounds": 1
     },
     "1-8-4": {
       "id": "1-8-4",
@@ -1714,7 +1733,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 13:57:40",
+    "updated": "2026-10-21 14:54:34",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
