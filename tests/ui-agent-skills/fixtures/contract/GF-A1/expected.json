@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-A1",
+  "outcome_class": "hard_fail",
+  "deny_first": true,
+  "blocked_action": "approve",
+  "assertions": [
+    "审批 action 非 role=approver 必须 deny-first 阻断",
+    "role separation 违反 = 越权提交 fail",
+    "报告字段路径"
+  ]
+}

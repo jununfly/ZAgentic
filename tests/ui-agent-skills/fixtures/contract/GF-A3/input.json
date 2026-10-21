@@ -1,0 +1,19 @@
+{
+  "fixture_id": "GF-A3",
+  "title": "rejected 后重提交",
+  "class": "contract",
+  "contract_point": "resubmit-revision",
+  "operation": "resubmit-after-reject",
+  "actor": "user",
+  "canonical_in": {
+    "review_record_v1": {
+      "human_gate": "REJECTED",
+      "revision": "rev-1"
+    },
+    "review_record_v2": {
+      "human_gate": "pending",
+      "revision": "rev-2",
+      "supersedes": "rev-1"
+    }
+  }
+}

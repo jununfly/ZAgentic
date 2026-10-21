@@ -909,6 +909,11 @@
           "q": "表单 F-1~F-6 数据文件（input.json+expected.json）如何落地？",
           "answer": "1-5-2 节点已 closed，原约定表单/契约类数据落地属 1-6/1-7 引擎波次；2026-10-21 范围扩张后 A-* 先行落地（ready）造成与 F-*（planned 无数据）的状态不对称。本次以独立 chore 补建 F-1~F-6 数据文件并置 ready（复用 runner.compute_manifest_hash，hash 52ea5df0→0d354e58），对齐 A-*。不重开 1-5-2，避免污染 completed 语义；1-5-2 仍标记 closed，本 chore 仅前置补做其原职责的数据。",
           "note": "closed 后对称性补登记；F-* 数据先行落地后与 A-* 均为 ready，仅契约类 GF-*/GF-A* 仍 planned。"
+        },
+        {
+          "q": "契约类 fixture GF-01~GF-11 / GF-A1~GF-A3 数据文件如何落地？",
+          "answer": "1-5-2 节点已 closed，原约定契约类数据落地属 1-6/1-7 引擎波次；为消除与 F-*/A-*（已 ready）的状态不对称，本次以独立 chore 补建契约类 14 条数据文件（input.json+expected.json：canonical 片段 + 契约操作 + 期望 outcome 分类 + 不变式断言，mirror F-*/A-* 形态）并置 ready，复用 runner.compute_manifest_hash 重算 hash 0d354e58→96aff64c，字节级自洽。不重开 1-5-2，避免污染 completed 语义；1-5-2 仍标记 closed，本 chore 仅前置补做其原职责的数据。至此全 wave 表单/审批/契约三类 fixture 均 ready，无 planned 残留。",
+          "note": "closed 后对称性补登记；契约类 GF-* 数据先行落地后与 F-*/A-* 均为 ready。"
         }
       ],
       "notes": "",
@@ -1699,7 +1704,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 13:14:12",
+    "updated": "2026-10-21 13:26:30",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

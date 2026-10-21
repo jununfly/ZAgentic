@@ -26,7 +26,7 @@
 | R-MOCK-1 | 本地 mock 数据层 | 内存 / fixture，无真实后端 | 表单持久化模拟 | 待 1-5/1-8 落地 | zjj |
 | R-HAR-1 | 确定性验证 harness | 1-5-2 双 lane / 指纹 / 时钟 / seed | paired run 验证 | 待 1-5 落地 | zjj |
 | R-REPO-1 | 十个 UI skill 仓库目录 | `skills/`（公共，递归发现） | skill 载体 | 已存在 | zjj |
-| R-FIX-1 | fixture 存储目录 | 待 1-5 落地时确定 | 表单六类 fixture | planned | zjj |
+| R-FIX-1 | fixture 存储目录 | `tests/ui-agent-skills/fixtures/{form,approval,contract,adapters,skills}` | Wave 0 全部 fixture 存储根，已建立并填充（F-*/A-*/GF-*/FF-* 数据就位） | ready | zjj |
 
 ---
 
@@ -52,12 +52,12 @@
 
 | ID | Fixture | 触发路径 | 预期结果 | 落地点 | 状态 | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
-| F-1 | 成功路径（合法 profile） | idle→validating→submitting→success | mock 200 + 本地持久化 | R-FIX-1（待定路径） | planned | zjj |
-| F-2 | 空提交 | 必填校验 | 字段级 error，禁止提交 | R-FIX-1 | planned | zjj |
-| F-3 | 非法格式（如邮箱/长度） | 实时校验 | 字段级 error message | R-FIX-1 | planned | zjj |
-| F-4 | 重复提交（提交中再触发） | submitting 锁输入 | 第二次提交被拒/忽略 | R-FIX-1 | planned | zjj |
-| F-5 | 服务端 422 | 模拟 mock 422 | error 态 + 可恢复回 editable | R-FIX-1 | planned | zjj |
-| F-6 | 超时 | 模拟服务端超时 | fallback 到稳定路径 / 显式标记 | R-FIX-1 | planned | zjj |
+| F-1 | 成功路径（合法 profile） | idle→validating→submitting→success | mock 200 + 本地持久化 | `tests/ui-agent-skills/fixtures/form/F-1` | ready | zjj |
+| F-2 | 空提交 | 必填校验 | 字段级 error，禁止提交 | `tests/ui-agent-skills/fixtures/form/F-2` | ready | zjj |
+| F-3 | 非法格式（如邮箱/长度） | 实时校验 | 字段级 error message | `tests/ui-agent-skills/fixtures/form/F-3` | ready | zjj |
+| F-4 | 重复提交（提交中再触发） | submitting 锁输入 | 第二次提交被拒/忽略 | `tests/ui-agent-skills/fixtures/form/F-4` | ready | zjj |
+| F-5 | 服务端 422 | 模拟 mock 422 | error 态 + 可恢复回 editable | `tests/ui-agent-skills/fixtures/form/F-5` | ready | zjj |
+| F-6 | 超时 | 模拟服务端超时 | fallback 到稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/form/F-6` | ready | zjj |
 
 适配器 fixture（opt-in，登记意图，详细归 1-7）：
 
@@ -70,12 +70,12 @@
 
 | ID | Fixture | 触发路径 | 预期结果 | 落地点 | 状态 | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
-| A-1 | 成功审批（合法申请 → approver 通过） | draft→submitted→under_review→approved | mock 持久化 + approved | R-FIX-1 | ready | zjj |
-| A-2 | 审批驳回（附理由） | under_review→rejected | 回 draft 可修改重提交 | R-FIX-1 | ready | zjj |
-| A-3 | 非法金额 / 空事由 | draft 客户端校验 | 字段级 error，禁止提交 | R-FIX-1 | ready | zjj |
-| A-4 | 重复提交 | submitted 锁输入 | 第二次被拒/忽略 | R-FIX-1 | ready | zjj |
-| A-5 | 审批超时 / 升级 | under_review 超时 | fallback 稳定路径 / 显式标记 | R-FIX-1 | ready | zjj |
-| A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | R-FIX-1 | ready | zjj |
+| A-1 | 成功审批（合法申请 → approver 通过） | draft→submitted→under_review→approved | mock 持久化 + approved | `tests/ui-agent-skills/fixtures/approval/A-1` | ready | zjj |
+| A-2 | 审批驳回（附理由） | under_review→rejected | 回 draft 可修改重提交 | `tests/ui-agent-skills/fixtures/approval/A-2` | ready | zjj |
+| A-3 | 非法金额 / 空事由 | draft 客户端校验 | 字段级 error，禁止提交 | `tests/ui-agent-skills/fixtures/approval/A-3` | ready | zjj |
+| A-4 | 重复提交 | submitted 锁输入 | 第二次被拒/忽略 | `tests/ui-agent-skills/fixtures/approval/A-4` | ready | zjj |
+| A-5 | 审批超时 / 升级 | under_review 超时 | fallback 稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/approval/A-5` | ready | zjj |
+| A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | `tests/ui-agent-skills/fixtures/approval/A-6` | ready | zjj |
 
 > 所有 fixture 在 1-5/1-8 落地时须保留原始日志与屏幕/DOM 证据（见 `ev-metrics.md` §4–5），否则该 run 按 invalid 处理。
 
@@ -129,3 +129,10 @@
 > 注：账本随 1-5 / 1-7 / 1-8 落地会有 planned→available 的状态推进，但 1-1-4 的退出判据只要求"无 unknown 漏洞 + 缺口有 NEEDS_CONTEXT 处置"，本文件已满足。
 >
 > **2026-10-20 更新**：上述 §6 各条为 1-1-4 退出时点快照，保持原样作历史记录。其中唯一外部决策缺口 L-FONT 已解决（Noto Sans SC + Inter + JetBrains Mono，SIL OFL 1.1，`@fontsource` 锁版本），见 §2 L-FONT 条目与 §5 R-RISK-3 当前状态。
+>
+> **2026-10-21 更新（账本同步）**：随 fixture 落地 chore 推进，账本 §1 / §3 状态已同步至 `fixture-manifest.json`（真相源）：
+> - **R-FIX-1**：fixture 存储目录已确定并落地为 `tests/ui-agent-skills/fixtures/{form,approval,contract,adapters,skills}`，状态 `planned → ready`。
+> - **F-1~F-6**：表单六类数据文件（input.json + expected.json）已落地，状态 `planned → ready`；落地点由"R-FIX-1（待定路径）"更新为各自实际路径 `tests/ui-agent-skills/fixtures/form/F-N`。
+> - **A-1~A-6**：保持 `ready`（2026-10-21 追溯登记，一致）。
+> - **F-A1 / F-A2**（适配器 opt-in 类）：在 fixture-manifest 中仍为 `planned`（落地归属 1-7-3 / 1-7-4），账本与之保持一致，**不做改动**。
+> - 契约类 GF-01~GF-11 / GF-A1~GF-A3、skill 类 FF-* 已 `ready`，账本 §3 未单列其行，以 fixture-manifest 为准。

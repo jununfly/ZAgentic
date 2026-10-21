@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-A3",
+  "outcome_class": "pass",
+  "new_revision": true,
+  "old_approved_not_polluted": true,
+  "assertions": [
+    "rejected 后重提交生成新 revision",
+    "旧 approved 不污染新链路",
+    "污染 = fail"
+  ]
+}

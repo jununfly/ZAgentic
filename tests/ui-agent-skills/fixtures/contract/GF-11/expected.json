@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-11",
+  "outcome_class": "recovery_ok",
+  "recovered": true,
+  "no_remote_id_dependency": true,
+  "assertions": [
+    "删除 adapter 后仍可从最后完整 canonical revision 恢复（MASTER L56 / sub-01 L135）",
+    "任何 remote ID 不能成为唯一索引",
+    "恢复失败 = fail"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "fixture_id": "GF-01",
+  "outcome_class": "pass",
+  "semantic_equivalent": true,
+  "preserved_fields": [
+    "screen",
+    "component",
+    "state",
+    "action",
+    "intent",
+    "acceptance",
+    "source"
+  ],
+  "unknown_preserved": true,
+  "assertions": [
+    "canonical->projection->canonical 后 state/action/intent/acceptance 语义集合等价",
+    "禁止 byte 相等比较；用语义哈希",
+    "unknown 数量与 warning 数量一一对应"
+  ]
+}

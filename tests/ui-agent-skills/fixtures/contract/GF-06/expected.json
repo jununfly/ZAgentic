@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-06",
+  "outcome_class": "reject",
+  "conflict_detected": true,
+  "kept_transitions": 1,
+  "assertions": [
+    "同一 action+pre-state 仅允许一个 canonical transition",
+    "冲突提交被拒绝（sub-01 L73/L115）",
+    "不产生半套结果"
+  ]
+}

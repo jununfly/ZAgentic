@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-08",
+  "outcome_class": "pass",
+  "major_bump_required": false,
+  "migrator_required": false,
+  "assertions": [
+    "v1 向后兼容加字段（可选）通过（sub-01 L31/L150）",
+    "破坏性变更须升主版本 + 提供迁移器（本 fixture 为正向兼容路径）",
+    "无迁移器的破坏性变更 = fail（由负例 fixture 守，不在本正向 fixture 内）"
+  ]
+}

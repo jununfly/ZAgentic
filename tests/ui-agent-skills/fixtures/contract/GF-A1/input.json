@@ -1,0 +1,17 @@
+{
+  "fixture_id": "GF-A1",
+  "title": "审批 action 非 role=approver",
+  "class": "contract",
+  "contract_point": "role-separation",
+  "operation": "approval-action",
+  "actor": "user",
+  "role": "user",
+  "canonical_in": {
+    "review_record": {
+      "human_gate": {
+        "value": "APPROVED",
+        "signer_role": "user"
+      }
+    }
+  }
+}

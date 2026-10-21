@@ -1,0 +1,10 @@
+{
+  "fixture_id": "GF-05",
+  "outcome_class": "fail",
+  "unknown_compressed": true,
+  "assertions": [
+    "unknown 不得编码为空字符串/null",
+    "压空 = fail（sub-01 L79）",
+    "unknown 四元组保留率必须 100%"
+  ]
+}

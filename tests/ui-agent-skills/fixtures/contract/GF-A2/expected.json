@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-A2",
+  "outcome_class": "hard_fail",
+  "human_sign_required": true,
+  "auto_generated": false,
+  "assertions": [
+    "APPROVED/REJECTED 必须由 Human 实签，不得系统自动生成",
+    "自动生成 = fail",
+    "未签 = HUMAN_REVIEW_REQUIRED"
+  ]
+}

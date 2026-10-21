@@ -1,0 +1,12 @@
+{
+  "fixture_id": "GF-07",
+  "outcome_class": "pass",
+  "idempotent": true,
+  "duplicate_artifacts": 0,
+  "half_results": false,
+  "assertions": [
+    "幂等键相同输入的并发提交不产生重复 artifact",
+    "原子提交：避免半套结果（sub-01 L121）",
+    "重复转换得到相同语义哈希 + warning 集合"
+  ]
+}

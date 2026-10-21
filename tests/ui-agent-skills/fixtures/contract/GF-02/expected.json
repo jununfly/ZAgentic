@@ -1,0 +1,13 @@
+{
+  "fixture_id": "GF-02",
+  "outcome_class": "hard_fail",
+  "required_missing": [
+    "acceptance"
+  ],
+  "fail_closed": true,
+  "assertions": [
+    "必需字段(acceptance)缺失必须阻断",
+    "非 warning（sub-01 L79）",
+    "fail-closed：不降级通过"
+  ]
+}

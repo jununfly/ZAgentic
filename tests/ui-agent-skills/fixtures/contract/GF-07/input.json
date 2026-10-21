@@ -1,0 +1,56 @@
+{
+  "fixture_id": "GF-07",
+  "title": "并发转换",
+  "class": "contract",
+  "contract_point": "concurrency",
+  "operation": "concurrent-transform",
+  "actor": "system",
+  "canonical_in": {
+    "screen": {
+      "id": "profile-edit",
+      "title": "资料编辑"
+    },
+    "component": [
+      {
+        "id": "nickname-input",
+        "type": "text-input"
+      }
+    ],
+    "state": [
+      {
+        "id": "idle",
+        "kind": "initial"
+      },
+      {
+        "id": "success",
+        "kind": "terminal"
+      }
+    ],
+    "action": [
+      {
+        "id": "submit",
+        "pre_state": "validating",
+        "post_state": "submitting"
+      }
+    ],
+    "intent": [
+      {
+        "id": "save-profile",
+        "owner": "brief/Human"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "persisted",
+        "criteria": "本地持久化成功"
+      }
+    ],
+    "source": {
+      "ref": "UI-BRIEF.md#rev-abc",
+      "attributable": true
+    },
+    "unknown": []
+  },
+  "idempotency_key": "GF-07.rev1.adapter0.8.0.map1",
+  "concurrent_submits": 2
+}

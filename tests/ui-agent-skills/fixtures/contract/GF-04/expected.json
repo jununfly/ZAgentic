@@ -1,0 +1,18 @@
+{
+  "fixture_id": "GF-04",
+  "outcome_class": "hard_fail",
+  "owner_violation": true,
+  "blocked_fields": [
+    "intent",
+    "acceptance"
+  ],
+  "reported_field_paths": [
+    "ui-flow/v1.intent",
+    "ui-flow/v1.acceptance"
+  ],
+  "assertions": [
+    "adapter 修改 intent/acceptance 必须失败",
+    "报告字段路径（sub-01 L88）",
+    "adapter 仅可提交带 projection_id/source_revision 的投影"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "fixture_id": "GF-04",
+  "title": "adapter 越权修改 owned 字段",
+  "class": "contract",
+  "contract_point": "field-ownership",
+  "operation": "adapter-projection-write",
+  "actor": "adapter",
+  "canonical_in": {
+    "screen": {
+      "id": "profile-edit",
+      "title": "资料编辑"
+    },
+    "component": [
+      {
+        "id": "nickname-input",
+        "type": "text-input"
+      }
+    ],
+    "state": [
+      {
+        "id": "idle",
+        "kind": "initial"
+      },
+      {
+        "id": "success",
+        "kind": "terminal"
+      }
+    ],
+    "action": [
+      {
+        "id": "submit",
+        "pre_state": "validating",
+        "post_state": "submitting"
+      }
+    ],
+    "intent": [
+      {
+        "id": "save-profile",
+        "owner": "brief/Human"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "persisted",
+        "criteria": "本地持久化成功"
+      }
+    ],
+    "source": {
+      "ref": "UI-BRIEF.md#rev-abc",
+      "attributable": true
+    },
+    "unknown": []
+  },
+  "attempted_writes": [
+    "intent",
+    "acceptance"
+  ]
+}

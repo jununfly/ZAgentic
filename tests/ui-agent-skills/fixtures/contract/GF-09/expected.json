@@ -1,0 +1,12 @@
+{
+  "fixture_id": "GF-09",
+  "outcome_class": "fail",
+  "old_artifact_preserved": true,
+  "downstream_publish_blocked": true,
+  "fail_closed": true,
+  "assertions": [
+    "schema/adapter 修改后重跑全套（sub-01 L100）",
+    "失败时保留旧 artifact、禁止下游发布",
+    "越权推进 = fail"
+  ]
+}

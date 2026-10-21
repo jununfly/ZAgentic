@@ -83,7 +83,7 @@
       "trigger": "canonical->projection->canonical",
       "expected": "state/action/intent/acceptance 语义集合等价",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-01",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-02",
@@ -92,7 +92,7 @@
       "trigger": "必需字段缺失",
       "expected": "阻断（hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-02",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-03",
@@ -101,7 +101,7 @@
       "trigger": "未知字段",
       "expected": "保留 unknown 四元组 + 声明性 warning",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-03",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-04",
@@ -110,7 +110,7 @@
       "trigger": "adapter 越权改 intent/acceptance",
       "expected": "失败并报字段路径（hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-04",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-05",
@@ -119,7 +119,7 @@
       "trigger": "unknown 被压成空值",
       "expected": "fail",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-05",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-06",
@@ -128,7 +128,7 @@
       "trigger": "重复/冲突 action",
       "expected": "拒绝提交",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-06",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-07",
@@ -137,7 +137,7 @@
       "trigger": "幂等键相同输入并发提交",
       "expected": "无重复/半套结果",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-07",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-08",
@@ -146,7 +146,7 @@
       "trigger": "schema 迁移",
       "expected": "v1 加字段通过；破坏性变更需迁移器",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-08",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-09",
@@ -155,7 +155,7 @@
       "trigger": "schema/adapter 修改后重跑",
       "expected": "失败保留旧 artifact",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-09",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-10",
@@ -164,7 +164,7 @@
       "trigger": "服务关闭",
       "expected": "仅凭本地 canonical 重建/恢复/重放",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-10",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-11",
@@ -173,7 +173,7 @@
       "trigger": "adapter 删除",
       "expected": "从最后完整 canonical revision 恢复",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-11",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "FF-BRIEF-01",
@@ -506,7 +506,7 @@
       "trigger": "审批 action 非 role=approver",
       "expected": "deny-first 阻断（role separation，hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A1",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-A2",
@@ -515,7 +515,7 @@
       "trigger": "APPROVED/REJECTED 系统自动生成",
       "expected": "必须由 Human 实签（不得系统自动）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A2",
-      "status": "planned"
+      "status": "ready"
     },
     {
       "id": "GF-A3",
@@ -524,8 +524,8 @@
       "trigger": "rejected 后重提交",
       "expected": "生成新 revision，旧 approved 不污染新链路",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A3",
-      "status": "planned"
+      "status": "ready"
     }
   ],
-  "manifest_hash": "0d354e580b05413930addbfdde88f730547230b30a30ae496b6da49a113f75bc"
+  "manifest_hash": "96aff64c427f1e949a5328f7af3b76e7fcd98307c5ccd34166f2e5d9cd494f22"
 }

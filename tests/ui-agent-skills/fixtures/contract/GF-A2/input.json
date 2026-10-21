@@ -1,0 +1,17 @@
+{
+  "fixture_id": "GF-A2",
+  "title": "APPROVED/REJECTED 系统自动生成",
+  "class": "contract",
+  "contract_point": "human-sign",
+  "operation": "auto-generate-decision",
+  "actor": "system",
+  "canonical_in": {
+    "review_record": {
+      "human_gate": {
+        "value": "APPROVED",
+        "signer_role": "system",
+        "signed": false
+      }
+    }
+  }
+}

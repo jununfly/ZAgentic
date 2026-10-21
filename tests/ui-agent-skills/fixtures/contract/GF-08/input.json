@@ -1,0 +1,58 @@
+{
+  "fixture_id": "GF-08",
+  "title": "迁移（v1 向后兼容加字段）",
+  "class": "contract",
+  "contract_point": "migration",
+  "operation": "migrate-v1-to-v2",
+  "actor": "migration",
+  "canonical_in": {
+    "screen": {
+      "id": "profile-edit",
+      "title": "资料编辑"
+    },
+    "component": [
+      {
+        "id": "nickname-input",
+        "type": "text-input"
+      }
+    ],
+    "state": [
+      {
+        "id": "idle",
+        "kind": "initial"
+      },
+      {
+        "id": "success",
+        "kind": "terminal"
+      }
+    ],
+    "action": [
+      {
+        "id": "submit",
+        "pre_state": "validating",
+        "post_state": "submitting"
+      }
+    ],
+    "intent": [
+      {
+        "id": "save-profile",
+        "owner": "brief/Human"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "persisted",
+        "criteria": "本地持久化成功"
+      }
+    ],
+    "source": {
+      "ref": "UI-BRIEF.md#rev-abc",
+      "attributable": true
+    },
+    "unknown": []
+  },
+  "v1_schema_version": "1.0.0",
+  "v2_added_optional": [
+    "notes"
+  ]
+}

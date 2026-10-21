@@ -1,0 +1,18 @@
+{
+  "fixture_id": "GF-03",
+  "outcome_class": "pass_with_warning",
+  "unknown_preserved": true,
+  "warning_required": true,
+  "warning_five_elements": [
+    "字段路径",
+    "owner",
+    "source",
+    "原因",
+    "处理建议"
+  ],
+  "assertions": [
+    "保留 unknown 四元组 {path,raw,reason,source}",
+    "生成声明性 warning（五要素齐全）",
+    "静默丢弃 = fail（MASTER L53）"
+  ]
+}

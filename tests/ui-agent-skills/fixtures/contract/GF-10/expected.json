@@ -1,0 +1,11 @@
+{
+  "fixture_id": "GF-10",
+  "outcome_class": "recovery_ok",
+  "recovery_rate": 1.0,
+  "flow_rebuilt": true,
+  "assertions": [
+    "服务关闭时仅凭本地 canonical 重建 flow/恢复状态/重放动作（sub-01 L79）",
+    "离线恢复成功率 100%",
+    "不得伪造成功（MASTER L99）；无法恢复 = recovery error"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "fixture_id": "GF-05",
+  "title": "unknown 被压成空值",
+  "class": "contract",
+  "contract_point": "unknown-encoding",
+  "operation": "ingest",
+  "actor": "adapter",
+  "canonical_in": {
+    "screen": {
+      "id": "profile-edit",
+      "title": "资料编辑"
+    },
+    "component": [
+      {
+        "id": "nickname-input",
+        "type": "text-input"
+      }
+    ],
+    "state": [
+      {
+        "id": "idle",
+        "kind": "initial"
+      },
+      {
+        "id": "success",
+        "kind": "terminal"
+      }
+    ],
+    "action": [
+      {
+        "id": "submit",
+        "pre_state": "validating",
+        "post_state": "submitting"
+      }
+    ],
+    "intent": [
+      {
+        "id": "save-profile",
+        "owner": "brief/Human"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "persisted",
+        "criteria": "本地持久化成功"
+      }
+    ],
+    "source": {
+      "ref": "UI-BRIEF.md#rev-abc",
+      "attributable": true
+    },
+    "unknown": [
+      {
+        "path": "screen.theme",
+        "raw": "",
+        "reason": "schema 未定义 theme 字段",
+        "source": "adapter-projection-xyz"
+      }
+    ]
+  }
+}

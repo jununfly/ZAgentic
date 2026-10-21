@@ -1,0 +1,59 @@
+{
+  "fixture_id": "GF-06",
+  "title": "重复/冲突 action",
+  "class": "contract",
+  "contract_point": "action-conflict",
+  "operation": "submit-transition",
+  "actor": "system",
+  "canonical_in": {
+    "screen": {
+      "id": "profile-edit",
+      "title": "资料编辑"
+    },
+    "component": [
+      {
+        "id": "nickname-input",
+        "type": "text-input"
+      }
+    ],
+    "state": [
+      {
+        "id": "idle",
+        "kind": "initial"
+      },
+      {
+        "id": "success",
+        "kind": "terminal"
+      }
+    ],
+    "action": [
+      {
+        "id": "submit",
+        "pre_state": "validating",
+        "post_state": "submitting"
+      },
+      {
+        "id": "submit",
+        "pre_state": "validating",
+        "post_state": "success"
+      }
+    ],
+    "intent": [
+      {
+        "id": "save-profile",
+        "owner": "brief/Human"
+      }
+    ],
+    "acceptance": [
+      {
+        "id": "persisted",
+        "criteria": "本地持久化成功"
+      }
+    ],
+    "source": {
+      "ref": "UI-BRIEF.md#rev-abc",
+      "attributable": true
+    },
+    "unknown": []
+  }
+}
