@@ -266,7 +266,7 @@
       "id": "1-8",
       "uid": "01a154254e3c-ade69f7788",
       "label": "Experience Version 表单/审批 sample flow",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -281,6 +281,11 @@
           "q": "非专家如何参与界面编辑而不直接触发危险写回？",
           "answer": "对话和 UI-BRIEF.md 都只生成可审阅 patch/revision；Human 接受后生成 plan，effect 另行走 approval/sandbox。",
           "note": "用户负责目标、选择和不可形式化判断；skill 负责结构化转换与验证。"
+        },
+        {
+          "q": "路线分类与起点确认？",
+          "answer": "Product execution；用户确认 1-7 维持 completed，本次『开始』实际指向 1-8（下一开放节点），1-8-1 为首个可执行子节点。",
+          "note": "scope gate 分类 + 起点纠偏"
         }
       ],
       "notes": "Experience Version 是一条受控的表单/审批路径，用来证明对话、文档编辑、选择式设计和安全执行可以串起来。",
@@ -289,7 +294,8 @@
         "同一个 case 可由对话或 UI-BRIEF.md diff 进入同一 canonical revision 和 plan",
         "方向卡、tokens/catalog、flow/action/intent、prototype/preview、approval 和 receipt 可追溯",
         "远程服务、未知字段、素材 quarantine 等失败场景均有本地 fallback 且不伪造成功"
-      ]
+      ],
+      "rounds": 1
     },
     "1-9": {
       "id": "1-9",
@@ -1302,7 +1308,7 @@
       "id": "1-8-1",
       "uid": "01a15426bb94-b76513f5db",
       "label": "为表单/审批 Experience Version 固化 PRD、角色状态、canonical artifact 与 fixture",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "exploit",
       "parent": "1-8",
       "children": [],
@@ -1311,7 +1317,8 @@
       "layer": "plan",
       "exit_criteria": [
         "sample PRD、artifact、角色状态和 fixture manifest 固定且与 scope 一致"
-      ]
+      ],
+      "rounds": 1
     },
     "1-8-2": {
       "id": "1-8-2",
@@ -1661,7 +1668,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 01:41:17",
+    "updated": "2026-10-21 10:16:43",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
