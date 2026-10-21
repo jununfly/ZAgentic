@@ -1,0 +1,33 @@
+{
+  "fixture_id": "F-3",
+  "title": "非法格式（邮箱/长度）",
+  "class": "form",
+  "user": "user-001",
+  "profile": {
+    "nickname": "zj",
+    "email": "not-an-email",
+    "bio": "x"
+  },
+  "initial_state": "idle",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "user",
+      "action": "edit",
+      "field": "email",
+      "from": "idle",
+      "to": "validating"
+    },
+    {
+      "seq": 2,
+      "role": "system",
+      "action": "validate",
+      "from": "validating",
+      "to": "validating",
+      "result": "invalid",
+      "error_fields": [
+        "email"
+      ]
+    }
+  ]
+}

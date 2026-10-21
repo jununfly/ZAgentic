@@ -1,0 +1,19 @@
+{
+  "fixture_id": "F-6",
+  "final_state": "error",
+  "persisted": false,
+  "fallback": "stable_path",
+  "explicit_marker": true,
+  "human_gates": [
+    {
+      "role": "user",
+      "signed": true,
+      "at_step": 1
+    }
+  ],
+  "assertions": [
+    "模拟服务端超时",
+    "fallback 到稳定路径 / 显式标记",
+    "不伪造成功"
+  ]
+}

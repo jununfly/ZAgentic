@@ -1,0 +1,19 @@
+{
+  "fixture_id": "F-4",
+  "final_state": "success",
+  "persisted": true,
+  "duplicate_suppressed": true,
+  "writes": 1,
+  "human_gates": [
+    {
+      "role": "user",
+      "signed": true,
+      "at_step": 1
+    }
+  ],
+  "assertions": [
+    "submitting 锁输入",
+    "第二次提交被拒/忽略",
+    "仅一次持久化写入"
+  ]
+}

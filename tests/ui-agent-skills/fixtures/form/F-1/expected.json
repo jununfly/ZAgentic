@@ -1,0 +1,19 @@
+{
+  "fixture_id": "F-1",
+  "final_state": "success",
+  "persisted": true,
+  "error_fields": [],
+  "submit_blocked": false,
+  "human_gates": [
+    {
+      "role": "user",
+      "signed": true,
+      "at_step": 3
+    }
+  ],
+  "assertions": [
+    "合法提交 → mock 200 + 本地持久化",
+    "success 态达成",
+    "用户提交 Human gate 实签"
+  ]
+}

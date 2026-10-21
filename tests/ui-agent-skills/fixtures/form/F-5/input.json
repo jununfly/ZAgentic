@@ -1,0 +1,30 @@
+{
+  "fixture_id": "F-5",
+  "title": "服务端 422",
+  "class": "form",
+  "user": "user-001",
+  "profile": {
+    "nickname": "zj",
+    "email": "zj@example.com",
+    "bio": "x"
+  },
+  "initial_state": "idle",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "user",
+      "action": "submit",
+      "from": "validating",
+      "to": "submitting"
+    },
+    {
+      "seq": 2,
+      "role": "system",
+      "action": "persist",
+      "from": "submitting",
+      "to": "error",
+      "response_code": 422,
+      "error": "server_side_constraint"
+    }
+  ]
+}

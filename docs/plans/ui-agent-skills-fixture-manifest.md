@@ -35,12 +35,14 @@
 
 | ID | 内容 | 触发路径 | 预期结果 | 落地点 | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| F-1 | 成功路径（合法 profile） | idle→validating→submitting→success | mock 200 + 本地持久化 | `tests/ui-agent-skills/fixtures/form/F-1` | planned |
-| F-2 | 空提交 | 必填校验 | 字段级 error，禁止提交 | `tests/ui-agent-skills/fixtures/form/F-2` | planned |
-| F-3 | 非法格式（邮箱/长度） | 实时校验 | 字段级 error message | `tests/ui-agent-skills/fixtures/form/F-3` | planned |
-| F-4 | 重复提交（提交中再触发） | submitting 锁输入 | 第二次提交被拒/忽略 | `tests/ui-agent-skills/fixtures/form/F-4` | planned |
-| F-5 | 服务端 422 | 模拟 mock 422 | error 态 + 可恢复回 editable | `tests/ui-agent-skills/fixtures/form/F-5` | planned |
-| F-6 | 超时 | 模拟服务端超时 | fallback 到稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/form/F-6` | planned |
+| F-1 | 成功路径（合法 profile） | idle→validating→submitting→success | mock 200 + 本地持久化 | `tests/ui-agent-skills/fixtures/form/F-1` | ready |
+| F-2 | 空提交 | 必填校验 | 字段级 error，禁止提交 | `tests/ui-agent-skills/fixtures/form/F-2` | ready |
+| F-3 | 非法格式（邮箱/长度） | 实时校验 | 字段级 error message | `tests/ui-agent-skills/fixtures/form/F-3` | ready |
+| F-4 | 重复提交（提交中再触发） | submitting 锁输入 | 第二次提交被拒/忽略 | `tests/ui-agent-skills/fixtures/form/F-4` | ready |
+| F-5 | 服务端 422 | 模拟 mock 422 | error 态 + 可恢复回 editable | `tests/ui-agent-skills/fixtures/form/F-5` | ready |
+| F-6 | 超时 | 模拟服务端超时 | fallback 到稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/form/F-6` | ready |
+
+> 表单六类数据文件（`input.json` + `expected.json`）已于 **2026-10-21** 落地（独立 chore，对齐 A-* 状态对称），故状态 `ready`。
 
 ### 2.2 `adapter`（适配器，源自 wave0-ledger F-A1/F-A2）
 
@@ -110,7 +112,7 @@
 | A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | `tests/ui-agent-skills/fixtures/approval/A-6` | ready |
 
 > 审批六类数据文件（`input.json` + `expected.json`）已于 2026-10-21 一并落地，故状态 `ready`。
-> **状态不对称说明**：表单 F-1~F-6 仍为 `planned`（数据落地属 1-6/1-7 引擎波次，尚未建数据文件）；审批 A-1~A-6 因本次补登记 chore 先行落地了 declarative 场景数据。若要求全 wave 一致，建议后续对 F-1~F-6 同样补数据文件（另开 chore，不在本批范围）。
+> **状态对称已对齐（2026-10-21）**：表单 F-1~F-6 此前为 `planned`（数据落地属 1-6/1-7 引擎波次），经独立 chore 同样补建 `input.json`+`expected.json` 后已置 `ready`，与 A-* 一致；全 wave 表单 + 审批 fixture 现均为 `ready`。`planned` 仅剩契约类 GF-* / GF-A*（mirror 全局契约 runner 落地节奏）。
 > GF-A1~GF-A3 为审批专属契约，状态 `planned`（mirror GF-*），数据随契约 runner 落地。
 
 ---

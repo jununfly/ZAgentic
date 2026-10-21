@@ -1,0 +1,45 @@
+{
+  "fixture_id": "F-1",
+  "title": "表单成功路径",
+  "class": "form",
+  "user": "user-001",
+  "profile": {
+    "nickname": "zj",
+    "email": "zj@example.com",
+    "bio": "AI-Native 实践者"
+  },
+  "initial_state": "idle",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "user",
+      "action": "edit",
+      "field": "nickname",
+      "from": "idle",
+      "to": "validating"
+    },
+    {
+      "seq": 2,
+      "role": "system",
+      "action": "validate",
+      "from": "validating",
+      "to": "validating",
+      "result": "valid"
+    },
+    {
+      "seq": 3,
+      "role": "user",
+      "action": "submit",
+      "from": "validating",
+      "to": "submitting"
+    },
+    {
+      "seq": 4,
+      "role": "system",
+      "action": "persist",
+      "from": "submitting",
+      "to": "success",
+      "response_code": 200
+    }
+  ]
+}

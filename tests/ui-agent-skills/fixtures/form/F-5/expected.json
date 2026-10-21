@@ -1,0 +1,18 @@
+{
+  "fixture_id": "F-5",
+  "final_state": "error",
+  "persisted": false,
+  "recoverable": true,
+  "human_gates": [
+    {
+      "role": "user",
+      "signed": true,
+      "at_step": 1
+    }
+  ],
+  "assertions": [
+    "mock 返回 422",
+    "error 态 + 可恢复回 editable",
+    "不伪造成功"
+  ]
+}

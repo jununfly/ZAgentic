@@ -1,0 +1,15 @@
+{
+  "fixture_id": "F-3",
+  "final_state": "validating",
+  "persisted": false,
+  "error_fields": [
+    "email"
+  ],
+  "submit_blocked": true,
+  "human_gates": [],
+  "assertions": [
+    "邮箱格式非法被实时校验拦截",
+    "error message 指向 email 字段",
+    "禁止提交"
+  ]
+}

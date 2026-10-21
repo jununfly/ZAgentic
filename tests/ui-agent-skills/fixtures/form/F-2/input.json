@@ -1,0 +1,41 @@
+{
+  "fixture_id": "F-2",
+  "title": "空提交（必填校验）",
+  "class": "form",
+  "user": "user-001",
+  "profile": {
+    "nickname": "",
+    "email": "zj@example.com",
+    "bio": "x"
+  },
+  "initial_state": "idle",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "user",
+      "action": "edit",
+      "field": "nickname",
+      "from": "idle",
+      "to": "validating"
+    },
+    {
+      "seq": 2,
+      "role": "system",
+      "action": "validate",
+      "from": "validating",
+      "to": "validating",
+      "result": "invalid",
+      "error_fields": [
+        "nickname"
+      ]
+    },
+    {
+      "seq": 3,
+      "role": "user",
+      "action": "submit",
+      "from": "validating",
+      "to": "validating",
+      "blocked_by": "client_validation"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "fixture_id": "F-4",
+  "title": "重复提交（提交中再触发）",
+  "class": "form",
+  "user": "user-001",
+  "profile": {
+    "nickname": "zj",
+    "email": "zj@example.com",
+    "bio": "x"
+  },
+  "initial_state": "idle",
+  "actions": [
+    {
+      "seq": 1,
+      "role": "user",
+      "action": "submit",
+      "from": "validating",
+      "to": "submitting"
+    },
+    {
+      "seq": 2,
+      "role": "user",
+      "action": "submit",
+      "from": "submitting",
+      "to": "submitting",
+      "result": "ignored",
+      "reason": "input_locked"
+    },
+    {
+      "seq": 3,
+      "role": "system",
+      "action": "persist",
+      "from": "submitting",
+      "to": "success",
+      "response_code": 200
+    }
+  ]
+}

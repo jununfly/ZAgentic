@@ -1,0 +1,15 @@
+{
+  "fixture_id": "F-2",
+  "final_state": "validating",
+  "persisted": false,
+  "error_fields": [
+    "nickname"
+  ],
+  "submit_blocked": true,
+  "human_gates": [],
+  "assertions": [
+    "必填校验拦截",
+    "nickname 字段级 error，禁止提交",
+    "未产生提交 Human gate"
+  ]
+}

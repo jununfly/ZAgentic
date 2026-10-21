@@ -163,7 +163,7 @@
 
 ### 4.5 fixture 选择约束
 - sample 的 paired run（`1-9`）fixture 必须取自本清单 F-1~F-6 + A-1~A-6 + 相关 GF / GF-A*；任何未列 fixture → 该 run 按 invalid 处理（`fixture-manifest.md` §5）。
-- 数据文件落地在 `1-5-2` / `1-6`；本节点只冻结**选择口径**，不落地数据。
+- 数据文件落地：F-1~F-6 与 A-1~A-6 的 `input.json`+`expected.json` 已于 **2026-10-21** 经独立 chore 落盘（见 `fixture-manifest.md` §2.1 / §2.5），状态均 `ready`；本节点仍只冻结**选择口径**与契约，不编写可执行断言（可执行断言待 1-5-2 runner 与 1-6 技能实现后跑）。
 - A-* 与 GF-A* 已于 2026-10-21 登记（见 `fixture-manifest.md` §2.5 / §2.3）；paired run 取用须按本清单，未登记 fixture 不得使用。
 
 ---
