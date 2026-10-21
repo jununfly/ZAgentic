@@ -1419,16 +1419,23 @@
       "id": "1-8-4",
       "uid": "01a15426bc5a-32fce04d78",
       "label": "从 ui-flow/v1 生成本地 prototype/preview，并演练 effect approval 与安全边界",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-8",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-8-4 范围分类与交付物形态？",
+          "answer": "Product execution（演练性质，非 1-9 实证）。交付物 = ① form 样例从 ui-flow/v1 生成的本地 HTML preview（仅 catalog 组件）；② effect approval/sandbox 安全边界三路径演练（复用 FF-PROTO-01/02/03 语义：catalog-only OK、未注册组件 deny、远程不可用时 stop 不伪造成功）；③ preview→verify→receipt 链路闭环证据。G-POL-1..9 实测闸门仍 open，本节点只演练不回写实测值。",
+          "note": ""
+        }
+      ],
+      "notes": "演练闭环落盘（exploit）：form 样例 ui-flow/v1 → 本地 preview（仅 catalog 组件 Form/Input/Button/Toast）→ effect approval/sandbox 三路径（FF-PROTO-01/02/03 语义）全部符合预期（0 副作用）→ preview→verify→receipt 链路 OK。交付物：skills-outputs/ui-agent-skills/ev-sample-v0.1/form/prototype-rehearsal-184/{preview.html,rehearsal-evidence.json,REHEARSAL.md}。G-POL-1..9 实测仍 open，归 1-9。",
       "layer": "plan",
       "exit_criteria": [
         "prototype/preview 仅使用 catalog，effect approval、sandbox 和 receipt 链路完整"
-      ]
+      ],
+      "rounds": 1
     },
     "1-8-5": {
       "id": "1-8-5",
@@ -1733,7 +1740,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 14:54:34",
+    "updated": "2026-10-21 15:19:26",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
