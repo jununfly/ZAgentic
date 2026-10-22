@@ -20,7 +20,8 @@
         "1-7",
         "1-8",
         "1-9",
-        "1-10"
+        "1-10",
+        "1-9-5"
       ],
       "decisions": [
         {
@@ -311,15 +312,14 @@
       "id": "1-9",
       "uid": "01a154254e83-0c5f77ec7a",
       "label": "三次 paired run 与 graduation gate",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [
         "1-9-1",
         "1-9-2",
         "1-9-3",
-        "1-9-4",
-        "1-9-5"
+        "1-9-4"
       ],
       "decisions": [
         {
@@ -331,6 +331,11 @@
           "q": "1-9 的 scope 与依赖如何处理？",
           "answer": "Scope=Acceptance/evaluation（技能验收/graduation gate）；依赖严格遵循现有图谱，e17(1-8→1-9) 与 e68(1-8-5→1-9-1) 不放松。1-9 维持 blocked，待完整 sample flow 1-8-2→1-8-3→1-8-4→1-8-5 执行完成后才开工。paired run 发现的缺陷作为后续 product-execution 节点，不与 1-9 试验结论混报。",
           "note": "zj 2026-10-21 拍板：按图谱先做完1-8（选项B）。与早前'先走1-9解锁1-8-2~1-8-5'的印象相反，以图谱边为准"
+        },
+        {
+          "q": "1-9-5 如何处理（2026-10-22 收口）？",
+          "answer": "1-9-5（G-19..G-25 持久化/重放实测闸门回写）从 1-9 解挂为根级单独立项，不随 1-9 收口。其依赖 1-6 已 completed，但本质是 roadmap 存储引擎专项验证，与本轮 ui-agent-skills run_verify 门禁（G-V1..G-V4）是两套东西，故单独立项另开。1-9 本轮结论以 1-9-4 毕业 gate（CONDITIONAL_ADOPTION）为准。",
+          "note": "zj 2026-10-22 决策：收口本轮，1-9-5 单独立项"
         }
       ],
       "notes": "毕业是证据判定，不是实现完成的同义词；无法证明的 run 不计数并必须补跑。",
@@ -1659,7 +1664,7 @@
       "label": "持久化/重放实测闸门回写（G-19..G-25）",
       "status": "pending",
       "mode": "exploit",
-      "parent": "1-9",
+      "parent": "1",
       "children": [],
       "decisions": [
         {
@@ -1668,7 +1673,7 @@
           "note": "1-9 原 4 个叶节点只覆盖端到端 paired run 与毕业指标（返工率/决策时间/escaped defect/visual/a11y/越权/provenance/receipt），未点名持久化/重放专项闸门，故补 1-9-5 显式承载"
         }
       ],
-      "notes": "",
+      "notes": "2026-10-22 zj 拍板：从 1-9 解挂为单独立项（standalone），不随 1-9 收口；依赖 1-6 已 completed，待另开专项回写 G-19..G-25 到 1-3-4 文档闸门表。",
       "layer": "plan",
       "exit_criteria": [
         "G-19 跨会话重放一致：同输入经进程重启后重放，plan_hash 与 canonical revision 快照哈希逐字节一致（样本量≥20，命中率 100%）",
