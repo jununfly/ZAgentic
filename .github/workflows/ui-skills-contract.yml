@@ -1,0 +1,44 @@
+name: UI skills contract
+
+# Closes the `skills/ui/**` coverage gap: before this file existed, a change
+# under skills/ui triggered ZERO checks (the other workflows only watch
+# research/** and skills/productivity/zj-discuss/**), so a PR could show
+# `mergeStateStatus: CLEAN` while nothing had ever run.
+#
+# The gate lives in scripts/run_ui_skills_gate.sh so it can be reproduced
+# locally with one command instead of being debugged through CI rounds:
+#   bash scripts/run_ui_skills_gate.sh
+on:
+  push:
+    paths:
+      - ".github/workflows/ui-skills-contract.yml"
+      - "scripts/run_ui_skills_gate.sh"
+      - "skills/ui/**"
+      - "tests/test_ui_agent_skills_*.py"
+      - "tests/ui_agent_skills_*.py"
+      - "docs/designs/ui-agent-skills/**"
+      - "requirements.txt"
+  pull_request:
+    paths:
+      - ".github/workflows/ui-skills-contract.yml"
+      - "scripts/run_ui_skills_gate.sh"
+      - "skills/ui/**"
+      - "tests/test_ui_agent_skills_*.py"
+      - "tests/ui_agent_skills_*.py"
+      - "docs/designs/ui-agent-skills/**"
+      - "requirements.txt"
+
+jobs:
+  ui-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install gate dependencies
+        # PyYAML absence would make the frontmatter validator skipTest() itself
+        # into a false green; the gate hard-fails instead, and this keeps it fed.
+        run: python -m pip install -r requirements.txt
+      - name: Run ui skills gate
+        run: bash scripts/run_ui_skills_gate.sh
