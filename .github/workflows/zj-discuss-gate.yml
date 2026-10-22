@@ -1,0 +1,25 @@
+name: zj-discuss dual gate
+
+# Resolves #202: keeps the repo-root landing guard and the skill-local
+# regression suite in the SAME gate so a change cannot go green on one face
+# while silently breaking the other (the #153 / #167 / #201 recurrence class).
+on:
+  push:
+    paths:
+      - 'skills/productivity/zj-discuss/**'
+      - 'tests/test_zj_discuss_*.py'
+  pull_request:
+    paths:
+      - 'skills/productivity/zj-discuss/**'
+      - 'tests/test_zj_discuss_*.py'
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run dual gate (landing guard + skill-local suite)
+        run: bash scripts/run_zj_discuss_gate.sh
