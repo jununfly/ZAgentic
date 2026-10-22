@@ -1,3 +1,0 @@
-{"seq":1,"ts":"2026-10-21T17:24:09Z","exit":1,"all_match":false,"mismatch_count":2,"mismatch_keys":["A-1","A-2"],"note":"first full run driver_error stale key reference in approval machine"}
-{"seq":2,"ts":"2026-10-21T17:24:09Z","exit":0,"all_match":true,"mismatch_count":0,"mismatch_keys":[],"note":"second run all twelve match after approval record key fix"}
-{"seq":3,"ts":"2026-10-21T17:24:09Z","exit":0,"all_match":true,"mismatch_count":0,"mismatch_keys":[],"note":"third run after adding missing ui controls all twelve match"}

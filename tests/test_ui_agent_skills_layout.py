@@ -24,8 +24,8 @@ import unittest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 UI_ROOT = REPO / "skills/ui"
-DOC = REPO / "docs/plans/ui-agent-skills-skill-capability-manifest.md"
-TEMPLATE = REPO / "docs/plans/ui-agent-skills-skill-md-template.md"
+DOC = REPO / "docs/designs/ui-agent-skills/ui-agent-skills-skill-capability-manifest.md"
+TEMPLATE = REPO / "docs/designs/ui-agent-skills/ui-agent-skills-skill-md-template.md"
 
 #: S0 — the shared deterministic engine. It is a skill directory (so the recursive
 #: validator and the copy installer cover it) but it owns no artifact and sits

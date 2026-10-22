@@ -112,7 +112,7 @@ receipt 的每一格都要能回答"谁跑的、跑的是什么、环境是哪�
 - **G-V3 illegal-transition return checked**：非法/未定义迁移的返回值不得被静默丢弃，必须显式校验并拒绝。（cohort §6 盲点#3）
 - **G-V4 required-input aria-describedby linkage**：每个必填输入在验证失败时必须通过 `aria-describedby` 关联错误提示区域；缺失关联 = 验证失败（无障碍）。（渲染层 A3/A4：direct 0/3、skills 2/3 缺失）
 
-> 派生来源：`skills-outputs/ui-agent-skills/paired-runs/v1/GRADUATION-DECISION.md`。一旦落地，direct 的 0/3 与 skills 的 1/3 漏检都被硬拦截，质量差异在验证层被抹平，采纳决策回归成本权衡。
+> 派生来源：`docs/designs/ui-agent-skills/DECISIONS-RISKS.md`（附录 A 毕业裁定底表；原 `skills-outputs/ui-agent-skills/paired-runs/v1/GRADUATION-DECISION.md` 已随临时容器删除并于 2026-10-22 内联至此）。一旦落地，direct 的 0/3 与 skills 的 1/3 漏检都被硬拦截，质量差异在验证层被抹平，采纳决策回归成本权衡。
 
 ## 交接
 
