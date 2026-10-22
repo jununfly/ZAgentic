@@ -49,7 +49,7 @@
 
 ## 5. 治理触发条件（rollout / pilot / kill-switch / adapter 移除 / revalidation）
 
-> 来源：roadmap 1-10-4（5 条决策已落盘）。触发条件可执行；门槛数值为首次建议，待 zj review。
+> 来源：roadmap 1-10-4（5 条决策已落盘）。触发条件可执行；门槛数值（≥3 run / ≥2 run / ≥30 天 / 90 天）zj 2026-10-22 已采纳。
 
 ### 5.1 Pilot（试点）
 - skills-path 维持 **observational**（非默认 / 非生产）；沿用 R2+R3+R4 cohort 与 G-V1..G-V4（`enforce_gates=true` 可选）。
@@ -79,7 +79,7 @@
 - **config hash 变更**（预算护栏 / 门禁）；
 - **kill-switch 恢复后重 promote 前**；
 - **G-V1..G-V4 spec 变更**；
-- **周期性每 90 天**（建议值，待 review）。
+- **周期性每 90 天**（zj 2026-10-22 已采纳）。
 - revalidation = 重跑 verification-matrix（1-5）+ paired-run 子集 + 门禁检查，产出 `revalidation_required` 清除或 `stale` 标记。
 
 ## 6. 回链
