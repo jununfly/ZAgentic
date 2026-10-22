@@ -225,6 +225,66 @@ class Invariants(unittest.TestCase):
         self.assertNotIn("goal_task", result["artifact"]["content"])
         self.assertEqual(result["unknown"][0]["raw"], "猜的", "raw keeps the claim verbatim")
 
+    # --- 1-9-4 毕业 gate 派生门禁（G-V1..G-V4）在 run_verify 的接线 -----------------
+
+    def _gate_request(self, checks, enforce=True):
+        return {
+            "input_revision": "rev-gate",
+            "enforce_gates": enforce,
+            "candidate": {
+                "checks": checks,
+                "fingerprint": {"hash": "fp-1", "env": "baseline"},
+                "checked": len(checks),
+            },
+        }
+
+    def _chain(self, **over):
+        base = dict(
+            dimension="d", claim="x", threshold="y", command="c", commit="abc",
+            fixture_hash="fh", env_hash="fp-1", artifact="a", status="PASS",
+            evidence_new=True,
+        )
+        base.update(over)
+        return base
+
+    def test_enforce_gates_off_ignores_missing_gate_coverage(self):
+        # 默认（adapter 通用路径）不强制门禁：无 gate 标记仍按原有聚合判定。
+        result = ui_stages.run_verify(self._gate_request([self._chain()], enforce=False))
+        self.assertEqual(result["status"], core.OK)
+        self.assertEqual(result["writes"], 1)
+
+    def test_enforce_gates_blocks_when_coverage_missing(self):
+        # enforce_gates=true 但 checks 未覆盖任一门禁 → 验证矩阵不完整 → BLOCKED、零写入。
+        result = ui_stages.run_verify(self._gate_request([self._chain()], enforce=True))
+        self.assertEqual(result["status"], core.BLOCKED)
+        self.assertEqual(result["writes"], 0)
+        self.assertIsNone(result["artifact"])
+        self.assertTrue(any("missing gate coverage" in r["reason"] for r in result["rejected"]))
+
+    def test_enforce_gates_all_pass_produces_receipt(self):
+        checks = [
+            self._chain(dimension="g1", gate="G-V1"),
+            self._chain(dimension="g2", gate="G-V2"),
+            self._chain(dimension="g3", gate="G-V3"),
+            self._chain(dimension="g4", gate="G-V4"),
+        ]
+        result = ui_stages.run_verify(self._gate_request(checks, enforce=True))
+        self.assertEqual(result["status"], core.OK)
+        self.assertEqual(result["writes"], 1)
+
+    def test_enforce_gates_fails_when_one_gate_not_pass(self):
+        # cohort §6 真缺陷：4 门禁全覆盖、仅 G-V4（aria-describedby 关联）缺失 → 门禁未通过 → BLOCKED。
+        checks = [
+            self._chain(dimension="g1", gate="G-V1"),
+            self._chain(dimension="g2", gate="G-V2"),
+            self._chain(dimension="g3", gate="G-V3"),
+            self._chain(dimension="g4", gate="G-V4", status="FAIL"),
+        ]
+        result = ui_stages.run_verify(self._gate_request(checks, enforce=True))
+        self.assertEqual(result["status"], core.BLOCKED)
+        self.assertEqual(result["writes"], 1)
+        self.assertIn("checks", [r["field"] for r in result["rejected"]])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,15 +1,20 @@
 {
   "fixture_id": "FF-VER-02",
   "stage": "verify",
-  "description": "a11y blocker：某 check status=FAIL → 不生成成功 receipt，下游冻结",
+  "description": "强制门禁 G-V4 未通过（必填输入缺 aria-describedby 关联）→ 不生成成功 receipt（BLOCKED）。正是 cohort §6 的 real a11y 缺陷。",
   "request": {
     "input_revision": "rev-ver-02",
+    "enforce_gates": true,
     "candidate": {
       "checks": [
-        {"dimension": "dom_aria", "claim": "所有交互元素有可访问名", "threshold": "无违规", "command": "axe --tags wcag21a", "commit": "abc123", "fixture_hash": "fh-1", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "FAIL", "evidence_new": true}
+        {"dimension": "dom_aria", "claim": "所有交互元素有可访问名", "threshold": "无违规", "command": "axe --tags wcag21a", "commit": "abc123", "fixture_hash": "fh-1", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "PASS", "evidence_new": true},
+        {"dimension": "state-reachability", "claim": "状态迁移均有 UI 入口", "threshold": "全部可达", "command": "ui-reachability", "commit": "abc123", "fixture_hash": "fh-3", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "PASS", "evidence_new": true, "gate": "G-V1"},
+        {"dimension": "no-fake-success", "claim": "error 态不渲染为成功", "threshold": "无伪成功", "command": "ui-fail-state", "commit": "abc123", "fixture_hash": "fh-4", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "PASS", "evidence_new": true, "gate": "G-V2"},
+        {"dimension": "illegal-transition", "claim": "非法迁移返回值被校验", "threshold": "全部拒绝", "command": "ui-illegal", "commit": "abc123", "fixture_hash": "fh-5", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "PASS", "evidence_new": true, "gate": "G-V3"},
+        {"dimension": "aria-describedby", "claim": "必填输入 aria-describedby 关联", "threshold": "全部关联", "command": "ui-aria", "commit": "abc123", "fixture_hash": "fh-6", "env_hash": "fp-a1b2c3", "artifact": "preview-02", "status": "FAIL", "evidence_new": true, "gate": "G-V4"}
       ],
       "fingerprint": {"hash": "fp-a1b2c3", "env": "baseline"},
-      "checked": 1
+      "checked": 5
     }
   }
 }

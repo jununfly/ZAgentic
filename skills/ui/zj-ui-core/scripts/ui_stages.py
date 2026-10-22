@@ -751,6 +751,13 @@ def run_break(request: dict, store: dict | None = None) -> dict:
 
 VERIFY_CHAIN_FIELDS = ("claim", "threshold", "command", "commit", "fixture_hash", "env_hash", "artifact", "status")
 
+#: 毕业 gate 派生强制门禁（1-9-4 CONDITIONAL_ADOPTION 采纳前提，见 GRADUATION-DECISION.md）。
+#: run_verify 在 request["enforce_gates"]=true 时要求 receipt 的 checks 覆盖全部 4 门禁且每门禁
+#: 至少一个 PASS——缺失即验证矩阵不完整（不生成成功 receipt），未通过即下游冻结。
+#: 默认关闭：通用 Storybook adapter 产出五维通用 checks（不含 gate 标记），门禁是叠加在
+#: 状态机/表单 UI 之上的验收层，由显式 enforce_gates=true 触发，避免误伤既有 adapter 路径。
+REQUIRED_VERIFY_GATES = ("G-V1", "G-V2", "G-V3", "G-V4")
+
 
 def _verify_content(candidate, fingerprint, checks, aggregate, stale) -> dict:
     """The receipt keeps the full chain so it can be audited offline: who ran it,
@@ -770,6 +777,10 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
     store = {} if store is None else store
     candidate = request.get("candidate") or {}
     input_revision = request.get("input_revision") or ""
+    # 毕业 gate 派生强制门禁（1-9-4 CONDITIONAL_ADOPTION 采纳前提）。默认关闭：通用
+    # Storybook adapter 产出的五维通用 checks 不含 gate 标记；门禁是叠加在状态机/表单
+    # UI 之上的验收层，由显式 enforce_gates=true 触发，避免误伤既有 adapter 路径。
+    enforce_gates = bool(request.get("enforce_gates"))
 
     # deny-first at the receipt surface: an unregistered top-level field means the
     # contract drifted and the sentence "unknown stays unknown" must not be quietly
@@ -809,6 +820,7 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
 
     baseline_only = False
     stale = False
+    gate_status = {}  # gate id -> [statuses]，仅收集 G-V1..G-V4
     for index, check in enumerate(checks):
         if not isinstance(check, dict):
             return core.result(
@@ -824,12 +836,36 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
                 reason=f"check[{index}] 缺链路字段 {missing}，不生成成功 receipt",
                 rejected=[core.reject(f"checks[{index}].{f}", "receipt 链路字段缺失") for f in missing],
             )
+        # 强制门禁覆盖：把属于 G-V1..G-V4 的 check 收集起来（缺失=矩阵不完整）。
+        gate = check.get("gate")
+        if gate in REQUIRED_VERIFY_GATES:
+            gate_status.setdefault(gate, []).append(str(check.get("status", "")))
         # baseline 冒充新通过：baseline-only 却声称 PASS。
         if check.get("status") == "PASS" and not check.get("evidence_new", True):
             baseline_only = True
         # stale 基线：check 的环境指纹与当前 fingerprint 不一致。
         if core.is_filled(check.get("env_hash")) and check["env_hash"] != fingerprint.get("hash"):
             stale = True
+
+    # 强制门禁 G-V1..G-V4（仅当显式 enforce_gates=true）。缺覆盖=验证矩阵不完整→不生成成功 receipt。
+    gate_problems = []
+    if enforce_gates:
+        missing_gates = [g for g in REQUIRED_VERIFY_GATES if g not in gate_status]
+        if missing_gates:
+            return core.result(
+                "zj-ui-verify", core.BLOCKED, writes=0,
+                reason=f"验证未覆盖强制门禁 {missing_gates}（enforce_gates=true），不生成成功 receipt",
+                rejected=[core.reject("checks", f"missing gate coverage: {g}", "verification owner") for g in missing_gates],
+            )
+        bad_gates = [g for g, statuses in gate_status.items() if any(s != "PASS" for s in statuses)]
+        gate_problems = [
+            core.reject(
+                "checks",
+                f"强制门禁 {g} 未通过（status={gate_status[g]}），不生成成功 receipt",
+                "verification owner",
+            )
+            for g in bad_gates
+        ]
 
     if baseline_only:
         return core.result(
@@ -865,6 +901,9 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
         aggregate = core.OK
     else:
         aggregate = core.HUMAN_REVIEW_REQUIRED
+    # 强制门禁未通过 → 叠加 BLOCKED，不生成成功 receipt（门禁优先于普通聚合）。
+    if gate_problems:
+        aggregate = core.BLOCKED
     content = _verify_content(candidate, fingerprint, checks, aggregate, stale=False)
     artifact = _artifact(core.VERIFICATION_RECEIPT, "receipt_schema_version", "1.0.0", input_revision, content)
     committed = core.commit(
@@ -877,10 +916,15 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
             reason="幂等键重放但内容不同，拒绝覆盖",
             rejected=[core.reject("idempotency_key", committed["reason"])],
         )
+    ok_note = "receipt 链路完整、非 baseline 冒充、非 stale"
+    if enforce_gates and not gate_problems:
+        ok_note += "、强制门禁 G-V1..G-V4 全通过"
+    ok_note += " → 成功 receipt"
     return core.result(
         "zj-ui-verify", aggregate, writes=committed["writes"],
-        reason=("receipt 链路完整、非 baseline 冒充、非 stale → 成功 receipt" if aggregate == core.OK
-                else "receipt 聚合出非 PASS 状态，不生成成功 receipt"),
+        reason=(ok_note if aggregate == core.OK
+                else "receipt 聚合出非 PASS 状态或强制门禁未通过，不生成成功 receipt"),
+        rejected=(gate_problems if gate_problems else None),
         artifact=artifact,
     )
 

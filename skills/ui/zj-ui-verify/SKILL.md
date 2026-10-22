@@ -105,7 +105,7 @@ receipt 的每一格都要能回答"谁跑的、跑的是什么、环境是哪�
 
 ## 强制门禁（毕业 gate 派生，1-9-4 CONDITIONAL adoption 条件）
 
-1-9-4 毕业 gate 裁定（zj 签署，2026-10-22，CONDITIONAL_ADOPTION）的采纳前提：以下 4 条硬门禁在本 skill 成为强制验证项。当前 `run_verify` 的接线为 tracked follow-up（接线完成前不得宣称 these capabilities shipped）。任一门禁 fail → 不生成成功 receipt，下游冻结。
+1-9-4 毕业 gate 裁定（zj 签署，2026-10-22，CONDITIONAL_ADOPTION）的采纳前提：以下 4 条硬门禁在本 skill 成为强制验证项。`run_verify` 已实现门禁强制（见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `REQUIRED_VERIFY_GATES` + `enforce_gates` 分支）：当 verification request 带 `enforce_gates=true` 且 checks 含 `gate` 标记时，缺覆盖或任一门禁非 PASS → BLOCKED、不生成成功 receipt。通用 Storybook adapter 产出五维通用 checks（不含 gate 标记），故默认不触发门禁；状态机/表单 UI 的验收须以 `enforce_gates=true` + 4 条 gate-tagged checks 叠加验收。任一门禁 fail → 不生成成功 receipt，下游冻结。
 
 - **G-V1 state-transition UI reachability**：契约层状态机的每个合法迁移都必须有对应 UI 可达入口/控件；状态可达但 UI 无入口 = 验证失败。（cohort §6 盲点#1）
 - **G-V2 no-fake-success / no-silent-data-loss**：任何 `error`/`failed` 终态不得渲染或汇报为 `success`；持久化/提交失败必须显式报错，禁止静默吞掉空成功。（cohort §6 盲点#2）
