@@ -49,33 +49,37 @@ architecture or rules.
 | [0004](zj-adr/0004-research-report-improvement-scope.md) | What scope was ratified for the research-skills rearchitecture? | accepted |
 | [0005](zj-adr/0005-composer-authority-and-plan-contract.md) | What authority and Plan contract govern the Composer product form? | accepted |
 
+### UI Agent Skills subsystem
+
+Lifecycle contract, decision, risk, and acceptance hub for the ten `zj-ui-*` skills
+and their adapter boundary. Promoted from the former `docs/plans/` process material
+to long-lived on 2026-10-22 (recoverable via git history).
+
+| Question | Location | Boundary |
+| --- | --- | --- |
+| What is the ui-agent-skills contract / decision / risk hub? | [README.md](designs/ui-agent-skills/README.md) | Subsystem hub; stable contracts live beside it as siblings. |
+| What are the graduation gate, open risks, acceptance, and governance triggers? | [DECISIONS-RISKS.md](designs/ui-agent-skills/DECISIONS-RISKS.md) | Decision rationale; does not replace current architecture or rules. |
 ## Process material
 
 | Question | Location | Lifecycle |
 | --- | --- | --- |
 | What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. The 2026-09-09 / 2026-09-12 retros had their durable concepts extracted into `ZJ-CONTEXT.md` and were deleted on 2026-09-17 after user-confirmed cleanup (recoverable via git history `929b4ab`). |
-| What is specified and ready for an Agent to build? | `docs/plans/` (created lazily) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. The roadmap concurrency / execution-graph specs were extracted into [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) and [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md), then deleted after confirmation (recoverable via `929b4ab`). The completed Composer buildable spec and roadmap were extracted into [designs/zj-composer-plan-product-form.md](designs/zj-composer-plan-product-form.md), [ADR 0005](zj-adr/0005-composer-authority-and-plan-contract.md), the owning skill contracts, and regression evidence, then deleted after confirmation (last retained at `e008ef8`). |
+| What is specified and ready for an Agent to build? | `docs/plans/` (created lazily) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. The roadmap concurrency / execution-graph specs were extracted into [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) and [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md), then deleted after confirmation (recoverable via `929b4ab`). The completed Composer buildable spec and roadmap were extracted into [designs/zj-composer-plan-product-form.md](designs/zj-composer-plan-product-form.md), [ADR 0005](zj-adr/0005-composer-authority-and-plan-contract.md), the owning skill contracts, and regression evidence, then deleted after confirmation (last retained at `e008ef8`). On 2026-10-22 the ui-agent-skills specs and adapter contracts were extracted into `docs/designs/ui-agent-skills/` and `docs/plans/` was removed (recoverable via git history). |
 | Which active cross-repository tickets are ready for an Agent? | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | Target-defined process material: the ZAgentic skill-layer tickets (T02–T04) for the cross-repository Slice 1 roadmap. Keep them as the local execution source until that roadmap closes; the product-level source lives in the sibling ZKnowledgeCompounding repository. |
 
 ## Evidence boundaries
 
-[research/](../research/) is **not a repository facility** — it is a *temporary
-holding container* in the personal workspace. Research skills write reusable
-knowledge-compounding output there because no dedicated knowledge-compounding
-tool exists yet. It is **not long-term documentation**, and this map does
-**not** register its contents as durable pages. Long term, its contents should
-migrate to a dedicated knowledge-compounding facility; until then they are
-parked here and excluded from the durable-doc lifecycle.
-
-[skills-outputs/](../skills-outputs/) is **not a repository facility** — it is a
-*temporary holding container* in the personal workspace. Research, composer, and
-similar skills write reusable knowledge-compounding output there because no
-dedicated knowledge-compounding tool exists yet. It is **not long-term
-documentation**, and this map does **not** register its contents as durable
-pages. Long term, its contents should migrate to a dedicated knowledge-compounding
-facility; until then they are parked here and excluded from the durable-doc
-lifecycle. (Its internal plans and outputs are therefore intentionally
-un-accounted in the durable-doc inventory above.)
+`research/` and `skills-outputs/` were *temporary holding containers* in the
+personal workspace, excluded from the durable-doc lifecycle. On 2026-10-22 a
+governance pass removed both: the one referenced durable artifact
+(`skills-outputs/ui-agent-skills/paired-runs/v1/GRADUATION-DECISION.md`) was
+inlined into `docs/designs/ui-agent-skills/DECISIONS-RISKS.md` (附录 A); all
+remaining generated output and exploratory research was deleted (recoverable via
+git history). Until a dedicated knowledge-compounding facility exists, no
+temporary container of this kind is registered here. The `ui-agent-skills`
+subsystem evidence packet (SYNTHESIS / CROSS-RUN-TABLE / RENDER-LAYER-COHORT /
+R1–R4) was intentionally not long-term-preserved; its conclusion is captured in
+DECISIONS-RISKS.
 
 ### Primary architecture authorities
 

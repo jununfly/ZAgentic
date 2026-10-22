@@ -24,9 +24,9 @@ import unittest
 from datetime import datetime, timezone
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-SKILL_DIR = REPO / "research/ui-agent-skills"
-DOC = REPO / "docs/plans/ui-agent-skills-verification-receipt.md"
-PLANS = REPO / "docs/plans"
+SKILL_DIR = REPO / "skills/ui/zj-ui-core/scripts"
+DOC = REPO / "docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md"
+PLANS = REPO / "docs/designs/ui-agent-skills"
 
 sys.path.insert(0, str(SKILL_DIR))
 import hard_gates as hg  # noqa: E402

@@ -1,2 +1,0 @@
-{"seq":1,"ts":"2026-10-22T11:37:00Z","fixture":"GLOBAL","event":"driver-run","exit":1,"all_match":false,"mismatch_count":1}
-{"seq":2,"ts":"2026-10-22T11:38:00Z","fixture":"GLOBAL","event":"driver-run","exit":0,"all_match":true,"mismatch_count":0}

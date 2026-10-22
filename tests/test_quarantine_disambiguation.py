@@ -4,7 +4,7 @@ These assert the two near-homonyms are distinct, live in different namespaces, a
 stay independent — so the 1-7-5 boundary orchestration layer can never silently
 treat an adapter's *administrative* isolation as a *receipt* verdict, or vice versa.
 
-See docs/plans/adapter-boundary-v1/quarantine-disambiguation.md for the prose.
+See docs/designs/ui-agent-skills/quarantine-disambiguation.md for the prose.
 """
 import json
 import pathlib
@@ -24,7 +24,7 @@ import ui_skill_core as core  # noqa: E402
 import storybook_adapter as adapter  # noqa: E402
 from ui_agent_skills_registry_fixture import ResettableRegistryFixture  # noqa: E402
 
-SCHEMA = REPO / "docs/plans/adapter-boundary-v1/adapter-manifest.schema.json"
+SCHEMA = REPO / "docs/designs/ui-agent-skills/adapter-manifest.schema.json"
 REGISTRY = FIXTURES / "registry/main-registry.snapshot.json"
 
 

@@ -4,7 +4,7 @@
 review → break → verify → handoff。一个 skill 一个阶段，每个 `(stage, artifact)` 恰好一个写
 owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 
-上游契约在 `docs/plans/`：`ui-agent-skills-skill-capability-manifest.md`（16 字段与阶段责任卡）、
+上游契约在 `docs/designs/ui-agent-skills/`：`ui-agent-skills-skill-capability-manifest.md`（16 字段与阶段责任卡）、
 `ui-agent-skills-canonical-schema.md`（六类 canonical artifact）、
 `ui-agent-skills-ui-flow-v1-contract.md`（六义）。新增 skill 前先读
 `ui-agent-skills-skill-md-template.md`。
