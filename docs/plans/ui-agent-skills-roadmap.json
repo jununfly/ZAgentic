@@ -1664,16 +1664,67 @@
       "id": "1-10-3",
       "uid": "01a15426be60-1e7f7bdc7f",
       "label": "建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-10",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "Owner 模型",
+          "answer": "UI skill 家族单一责任 owner = zj（项目主理人）；十个 zj-ui-* skill 各设一名 maintainer，当前为 zj 本人（solo）。Resolver/编排层 owner = zj。Adapter：Storybook active adapter owner = zj；json-render/A2UI/M3E 为 opt-in projection，owner = zj，按需激活。",
+          "note": ""
+        },
+        {
+          "q": "维护预算",
+          "answer": "维护预算以 wave 为周期：每个已毕业 skill 在每 wave 分配固定维护额度（提议每 skill 每月 ≤2h 例行维护 + 按需 hotfix，待 zj 确认额度）；adapter 维护预算单列，Storybook 随上游版本节奏，opt-in projection 仅在重评时投入。",
+          "note": ""
+        },
+        {
+          "q": "RTO/RPO",
+          "answer": "Adapter 故障治理沿用 1-7-5 四态：本地 fallback dispatcher 即时降级（RTO≈0，进入 degraded），无需人工；完整 adapter 恢复 RTO 提议 = 1 个工作日；RPO = 0（编排记录持久化，故障不丢工作产物）。待 zj 确认 RTO 目标值。",
+          "note": ""
+        },
+        {
+          "q": "版本重评",
+          "answer": "Adapter 按 1-7-1 固定版本 pinned；重评触发：上游 major 发布 + 每季度例行；skill capability manifest 随每个 wave 毕业时重评一次；重评结论写入决策与 docs（衔接 1-10-1）。",
+          "note": ""
+        },
+        {
+          "q": "容量/WIP 治理",
+          "answer": "WIP 限制：同一时刻最多 2 个 zj-ui-* skill 处于 active 开发（其余排队）；新增 skill/adapter 须经 resolver 唯一 owner 准入（1-3-2）；容量上限 = 10 个 skill + 1 resolver + 4 adapter seam，超出须先毕业或退役。",
+          "note": ""
+        },
+        {
+          "q": "维护预算",
+          "answer": "",
+          "note": "retracted:",
+          "retracted": true,
+          "retracts": "67196dd4f4ecb47704cc6dc315c68c6f470bd9da99bda2ece5811d1ae05f8af9"
+        },
+        {
+          "q": "维护预算归属（使用者侧 tradeoff，非开发侧上限）",
+          "answer": "纠偏：维护预算**不是**开发者侧对 skill 家族施加的预算/维护额度上限——那是把运行时使用者的 tradeoff 错位成了开发治理约束。正确归属：预算与 stop-continue 是**使用者**在具体调用这些 skill 时自行做的取舍（继续投入更多预算把事做更深/更全，还是到此为止）。因此本节点不在开发侧预置任何预算额度；治理只需确保 skill 设计支持使用者干净地“到此为止”（可中断、可只取部分产物、无强制续投），并把“预算决策权归属使用者”写清。退出判据“预算规则落盘”指落这一条归属规则，而非任何具体数字。",
+          "note": ""
+        },
+        {
+          "q": "RTO/RPO",
+          "answer": "",
+          "note": "retracted:",
+          "retracted": true,
+          "retracts": "b38c566bd68561e5ac5428ffc4e010bbf9afdf8a1ab735b34c4fbee4ec82c27c"
+        },
+        {
+          "q": "RTO/RPO（仅记两条硬保证）",
+          "answer": "适配 RTO/RPO 治理只记两条有架构依据的事实，不写任何臆造数字：① 降级回退即时——adapter 删除/断网/远程故障后由回退分发器即时进入 degraded，本地 preview/verify 不中断（RTO≈0，1-7-5 已交付的硬保证）；② RPO=0——编排记录持久化（1-3-4），故障不丢工作产物，by construction。撤掉原“完整 adapter 恢复 RTO=1 工作日”占位数字：对本地（Storybook）/opt-in（json-render/A2UI/M3E）adapter，“恢复到 active”是重启或重 pin 的手动动作，非系统 SLA，定数字属多余治理开销；若日后确需给某 remote 场景定 RTO SLA，届时显式定义。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "owner、预算、RTO/RPO、重评和容量/WIP 规则落盘"
-      ]
+      ],
+      "rounds": 1
     },
     "1-10-4": {
       "id": "1-10-4",
@@ -1858,7 +1909,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-22 17:38:15",
+    "updated": "2026-10-22 17:59:10",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
