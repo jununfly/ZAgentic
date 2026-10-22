@@ -1,32 +1,22 @@
 name: UI skills contract
 
-# Closes the `skills/ui/**` coverage gap: before this file existed, a change
-# under skills/ui triggered ZERO checks (the other workflows only watch
-# research/** and skills/productivity/zj-discuss/**), so a PR could show
-# `mergeStateStatus: CLEAN` while nothing had ever run.
+# Two things this workflow is protecting, so do NOT "optimise" them away:
 #
-# The gate lives in scripts/run_ui_skills_gate.sh so it can be reproduced
-# locally with one command instead of being debugged through CI rounds:
-#   bash scripts/run_ui_skills_gate.sh
+# 1. It closes the `skills/ui/**` coverage gap: before it existed, a change
+#    under skills/ui triggered ZERO checks (the other workflows only watch
+#    research/** and skills/productivity/zj-discuss/**), so a PR could show
+#    `mergeStateStatus: CLEAN` while nothing had ever run.
+#
+# 2. It reports `ui-contract` on EVERY push / pull_request, because the branch
+#    has that check as REQUIRED. A required check that never reports is treated
+#    as unsatisfied, so a path-filtered version would leave every unrelated PR
+#    (e.g. docs-only) stuck on `mergeStateStatus: BLOCKED` with `checks: 0`.
+#    Verified empirically: probe PR #211 touched only docs/ and was BLOCKED
+#    solely because ui-contract did not report.
+#    => Keep this trigger unfiltered. Speed is fine (~40s including setup).
 on:
   push:
-    paths:
-      - ".github/workflows/ui-skills-contract.yml"
-      - "scripts/run_ui_skills_gate.sh"
-      - "skills/ui/**"
-      - "tests/test_ui_agent_skills_*.py"
-      - "tests/ui_agent_skills_*.py"
-      - "docs/designs/ui-agent-skills/**"
-      - "requirements.txt"
   pull_request:
-    paths:
-      - ".github/workflows/ui-skills-contract.yml"
-      - "scripts/run_ui_skills_gate.sh"
-      - "skills/ui/**"
-      - "tests/test_ui_agent_skills_*.py"
-      - "tests/ui_agent_skills_*.py"
-      - "docs/designs/ui-agent-skills/**"
-      - "requirements.txt"
 
 jobs:
   ui-contract:
@@ -42,3 +32,7 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Run ui skills gate
         run: bash scripts/run_ui_skills_gate.sh
+
+# The gate itself lives in scripts/run_ui_skills_gate.sh so it can be reproduced
+# locally with one command instead of being debugged through CI rounds:
+#   bash scripts/run_ui_skills_gate.sh
