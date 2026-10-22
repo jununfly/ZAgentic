@@ -352,7 +352,7 @@
       "id": "1-10",
       "uid": "01a154254edb-cf2d0fde0c",
       "label": "长期文档、维护治理与 rollout 决策",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -378,7 +378,8 @@
       "budget": {
         "max_children": 4,
         "max_rounds": 2
-      }
+      },
+      "rounds": 1
     },
     "1-1-1": {
       "id": "1-1-1",
@@ -1590,7 +1591,11 @@
       "parent": "1-9",
       "children": [],
       "decisions": [
-        {"q": "1-9-4 毕业 gate 最终裁定是什么？", "answer": "CONDITIONAL_ADOPTION（pilot + 强制门禁）。zj 于 2026-10-22 签署，覆盖控制器原 NOT_GRADUATED_as_quality_win 建议。证据：契约层 skills 在 weighted/high/critical 上 2/3 run 更优、成本 3/3 全更贵（+303%/+357%/+48%）；渲染层(真实 Chromium 155, 6 lane) A1/A2/A5/A6/A7 18/18 平价，唯一差异 A3/A4(direct 0/3、skills 2/3、skills≥direct 3/3)。结论：skills 有持续但单维、非鲁棒的 a11y 优势，且成本持续溢价；最优杠杆是抬升验证地板（4 门禁）使两 lane 同标准，质量差在验证层被抹平。", "note": "run owner 未自裁(ev-metrics sub-06 P4)；决策记录 GRADUATION-DECISION.md"}
+        {
+          "q": "1-9-4 毕业 gate 最终裁定是什么？",
+          "answer": "CONDITIONAL_ADOPTION（pilot + 强制门禁）。zj 于 2026-10-22 签署，覆盖控制器原 NOT_GRADUATED_as_quality_win 建议。证据：契约层 skills 在 weighted/high/critical 上 2/3 run 更优、成本 3/3 全更贵（+303%/+357%/+48%）；渲染层(真实 Chromium 155, 6 lane) A1/A2/A5/A6/A7 18/18 平价，唯一差异 A3/A4(direct 0/3、skills 2/3、skills≥direct 3/3)。结论：skills 有持续但单维、非鲁棒的 a11y 优势，且成本持续溢价；最优杠杆是抬升验证地板（4 门禁）使两 lane 同标准，质量差在验证层被抹平。",
+          "note": "run owner 未自裁(ev-metrics sub-06 P4)；决策记录 GRADUATION-DECISION.md"
+        }
       ],
       "notes": "R4 完成(2026-10-22): skills-path h9 / direct h10 均 12/12 PASS, 加权缺陷 7=7。毕业 cohort=R2+R3+R4 (R1 因 DEV-4 排除)。**BLK-3 已闭环(2026-10-22, b1 补 R2 后覆盖全 cohort)**: 真实 Chromium 155 跑 R2(h5/h6)+R3(h7/h8)+R4(h9/h10) 共 6 lane × 7 断言 A1-A7; A1/A2/A5/A6/A7 在 6 lane 18/18 全过(完全平价), 唯一差异轴为 A3/A4(aria-describedby 关联)——direct 0/3 全失败, skills 2/3 通过(R3-h8 漏), 方向 skills≥direct(2 胜 1 平, 从不劣于), 与契约层一致。**gate 裁定(2026-10-22, zj 签署): CONDITIONAL_ADOPTION** — skills-path 进入 pilot/观察态，前提是把 4 条机械门禁(G-V1 状态迁移 UI 可达 / G-V2 失败不为成功·无静默丢数据 / G-V3 非法迁移返回值必检查 / G-V4 必填输入 aria-describedby 关联)落到 zj-ui-verify。产物: GRADUATION-DECISION.md + RENDER-LAYER-COHORT.md + _tools/render-layer-report.json + _tools/render_layer_check.mjs。1-9-4 已 completed；1-9 仍 open（1-9-5 持久化/重放闸门回写 G-19..G-25 待 1-6 落地）。",
       "layer": "plan",
@@ -1602,16 +1607,32 @@
       "id": "1-10-1",
       "uid": "01a15426bdde-ce41ce2957",
       "label": "将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-10",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-10-1 的 scope 边界与产出是什么？",
+          "answer": "Product-execution 路线下的文档治理子任务：skill 源码保持只读，只产出 docs 权威页。把稳定契约/决策/风险/验收标准从 discussions/、paired-run packet、GRADUATION-DECISION 沉淀到 docs/ui-agent-skills/ 权威页；讨论过程原样保留不删，待 Human 审核。完成标准=权威页建成+来源/决策回链+不删讨论过程。",
+          "note": "scope gate 分类已落盘；具体页清单与来源映射开工下一步再 decide"
+        },
+        {
+          "q": "1-10-1 落地采用哪种文档结构？",
+          "answer": "采用 INDEX + DECISIONS-RISKS 两页结构，新建 docs/ui-agent-skills/ 目录。INDEX.md=权威枢纽（逐契约索引链到 docs/plans/* + 十个 skill 入口 + paired-run 证据包入口 + 决策/风险/验收摘要回链）；DECISIONS-RISKS.md=收敛毕业裁定（CONDITIONAL_ADOPTION+G-V1..G-V4）+ open风险（BLK-2/盲性/provider drift/生成式审美/法律判断）+ 验收标准，回链 GRADUATION-DECISION.md 与 roadmap 1-9-4。引用 docs/plans 既有契约，不搬；discussions/ 原样保留不删。",
+          "note": "zj 2026-10-22 选推荐结构；预算 max_children 8 足够容纳 INDEX/DECISIONS-RISKS 及后续子页"
+        }
+      ],
+      "notes": "2026-10-22 完成：新建 docs/ui-agent-skills/INDEX.md（契约索引枢纽）+ DECISIONS-RISKS.md（毕业裁定+G-V1..G-V4+open风险+验收），引用 docs/plans 既有契约、回链 GRADUATION-DECISION.md 与 roadmap 1-9-4；discussions/ 原样保留未删。exit 两条（来源/决策回链、讨论不删）满足，zj 2026-10-22 review 通过 → completed。",
       "layer": "plan",
       "exit_criteria": [
         "Human review 前不删除讨论过程；稳定材料迁移后有来源和决策回链"
-      ]
+      ],
+      "rounds": 1,
+      "budget": {
+        "max_children": 8,
+        "max_rounds": 3
+      }
     },
     "1-10-2": {
       "id": "1-10-2",
@@ -1826,7 +1847,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-22 01:59:52",
+    "updated": "2026-10-22 17:22:55",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
