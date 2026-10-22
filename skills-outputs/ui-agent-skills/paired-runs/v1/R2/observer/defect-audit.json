@@ -1,0 +1,31 @@
+{
+  "purpose": "主控对 R2 两份 Observer 报告的抽查审计（不改 Observer，只判真伪/夸大）",
+  "run_id": "R2-contract-layer",
+  "method": "对每条抽查项独立读源码，不看 Observer 措辞；判定 verified / overstated / refuted",
+  "audits": [
+    {
+      "hid": "h5",
+      "defect_id": "D1",
+      "severity_claimed": "critical",
+      "claim": "页面加载后（idle）勾选确认直接提交 -> 输入与提交按钮永久禁用、提示 code=undefined、恢复按钮也救不回来",
+      "verdict": "verified",
+      "evidence": "src/form/machine.mjs TRANSITIONS: idle -> ['validating']，idle->submitting 非法；submit() 调 go('submitting') 丢弃返回值后照常 locked=true 并 return ok:true；随后 persist() 首行 `if (state !== 'submitting') return {ok:false, reason:'not_submitting'}` 提前返回，而 locked=false 在其后 -> 永不解锁",
+      "note": "属于'非法迁移返回值被吞'这一类的真实死锁；先编辑一个字符再提交则正常，所以 fixture 全绿时测不到"
+    },
+    {
+      "hid": "h6",
+      "defect_id": "S9-fail",
+      "severity_claimed": "high",
+      "claim": "驳回理由从不展示给申请人（只渲染 v1 · rejected）",
+      "verdict": "verified",
+      "evidence": "src/approval/app.mjs:174 确实有独立的 #decision-reason 输入（S9 前半 pass），但 render() 的 history 只输出 `v${entry.version} · ${entry.status}`（app.mjs:130-133），banner 只写'原因已记录'而不显示内容",
+      "note": "需求要'驳回后申请人能改完重新提交'——不知道理由就无法改，构成真实可用性缺陷"
+    }
+  ],
+  "counts": {"audited": 2, "verified": 2, "overstated": 0, "refuted": 0},
+  "consequence": [
+    "R2 的 1 条 critical 与 1 条 high 抽查均成立，Observer 结论可用",
+    "R2 的 R-BAL 达标（h5 executed=12 / h6 executed=6，两条都 >=1），缺陷计数可用于跨 lane 比较",
+    "盲性探针在 R2 失效：两 lane 都被猜 structured（h5 实际是 direct-prompt，猜错）；累计 3/4 命中，仍不可作为盲性证据"
+  ]
+}

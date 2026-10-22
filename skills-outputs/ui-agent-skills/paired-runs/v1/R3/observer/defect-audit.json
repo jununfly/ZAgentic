@@ -1,0 +1,29 @@
+{
+  "purpose": "主控对 R3 两份 Observer 报告的抽查审计",
+  "run_id": "R3-contract-layer",
+  "method": "独立读源码，不看 Observer 措辞；判定 verified / overstated / refuted",
+  "audits": [
+    {
+      "hid": "h7",
+      "defect_id": "D1(high)",
+      "claim": "422 后静默回滚，丢弃用户未保存的输入",
+      "verdict": "verified",
+      "evidence": "src/form/machine.mjs:126 在失败分支执行 `this.profile = { ...this.stableDraft }`，把已编辑内容重置回上次保存值；下面的 recover() 注释写着「保留用户输入」，与该行矛盾",
+      "note": "需求要「失败后用户能改完再提交」——先把输入清掉，用户就没有可改的东西"
+    },
+    {
+      "hid": "h8",
+      "defect_id": "D1(high)",
+      "claim": "第二次及以后的保存被静默丢弃却报成功",
+      "verdict": "verified",
+      "evidence": "src/core.mjs:64 commit() 在 key 已存在且内容不同时返回 {written:false, reason:'revision_conflict'}；但 machine.mjs 的 ok 分支不检查 result.written，直接 setState(SUCCESS) 并 emit('saved')",
+      "note": "典型的'失败被渲染成成功'，与需求「超时不能让用户以为保存成功」同族"
+    }
+  ],
+  "counts": {"audited": 2, "verified": 2, "overstated": 0, "refuted": 0},
+  "consequence": [
+    "两条 lane 都出现了'静默数据丢失 / 伪成功'类 high —— 这是 R3 唯一一类 critical 级风险（两条都未升到 critical，判级可议）",
+    "R-BAL 达标（h7 executed 10 / h8 executed 8），缺陷计数可跨 lane 比较",
+    "盲性探针第三次失效（两 lane 都猜 structured，h7 实为 direct-prompt 猜错）；累计 6 次探针 4 次命中，仍不可写'双盲'"
+  ]
+}

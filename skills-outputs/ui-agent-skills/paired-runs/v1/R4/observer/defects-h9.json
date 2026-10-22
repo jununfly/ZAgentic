@@ -1,0 +1,114 @@
+{
+  "hid": "h9",
+  "reviewed_files": [
+    "index.html",
+    "src/form/machine.mjs",
+    "src/form/persistence.mjs",
+    "src/approval/machine.mjs",
+    "src/approval/persistence.mjs",
+    "src/core.mjs",
+    "run-fixtures.mjs"
+  ],
+  "artifact_ran": true,
+  "driver_exit": 0,
+  "driver_all_match": true,
+  "checklist": {
+    "S1": {
+      "status": "pass",
+      "note": "All required transitions exposed: form idle->validating (pf-load), validating->submitting (pf-submit), error->validating (pf-recover, when recoverable). Approval draft->submitted (ap-submit), submitted->under_review (ap-route), under_review->approved/rejected (ap-approve/ap-reject gated on approver role), under_review timeout/escalate (ap-timeout), rejected->draft new version (ap-revise). Note: timeout-error (code 0) has no dedicated recover button; exit is the blunt '加载当前资料' reload which discards edits."
+    },
+    "S2": {
+      "status": "pass",
+      "note": "Field errors are field-specific and actionable: '昵称为必填项', '邮箱格式不正确', '简介长度超出上限（140 字）', '金额必须大于 0', '事由为必填项'. Server banners name the cause and next step (422 -> modify/resubmit; timeout -> retry/check network). Minor: bio message says 140 but HTML allows 200 (see D3)."
+    },
+    "S3": {
+      "status": "pass",
+      "note": "Inputs carry aria-describedby pointing at per-field error nodes; error nodes use aria-live='polite'; inputs get aria-invalid toggled dynamically; page banners use role='alert' aria-live='assertive'. Association is wired correctly."
+    },
+    "S4": {
+      "status": "fail",
+      "note": "No focus management anywhere. On submit/approve/reject the control is disabled (index.html:241, 356-357) and there is no code to retain focus or move it to a status region; disabling a focused element drops focus to body, disorienting keyboard/screenreader users. No .focus() call exists in the script."
+    },
+    "S5": {
+      "status": "pass",
+      "note": "Disabled matrix matches product semantics: pf-submit blocked when invalid/submitting/success; approval controls enabled only in their intended states; approve/reject additionally require role=approver (deny-first). Consistent."
+    },
+    "S6": {
+      "status": "pass",
+      "note": "Every error state has a UI exit. 422-error -> pf-recover (preserves edits). Timeout-error -> reload via pf-load (blunt reset, discards edits) and tab-switch abandon. Rejected approval -> ap-revise. Reachable, though timeout recovery is blunt."
+    },
+    "S7": {
+      "status": "pass",
+      "note": "Form submit guards with `if state==='submitting' -> duplicate_suppressed` (F-4 proves writes:1). Approval submit moves state to 'submitted' synchronously so a 2nd click hits the else branch (no-op). Double-submit protected."
+    },
+    "S8": {
+      "status": "fail",
+      "note": "Required semantics NOT in HTML: pf-nickname/pf-email have no `required`/`aria-required` (only CSS `.req` asterisk + JS). Length: bio textarea maxlength=200 but validateProfile flags >140 (index.html:90 vs core.mjs:34) and the message says 140 — HTML permits 200 chars the JS then rejects. ap-amount min='0' permits 0 which JS rejects as must-be->0. See D2/D3/D4."
+    },
+    "S9": {
+      "status": "pass",
+      "note": "Independent ap-reject-reason input (index.html:153); reject handler requires non-empty reason and stores it in machine.reject_reason, shown to applicant via banner '已驳回：<reason>'. Shown, mandatory, independent."
+    },
+    "S10": {
+      "status": "pass",
+      "note": "Version counter rendered (index.html:169,349) and incremented on revise (machine.version += 1). Status shows '版本：N' and updates after revise forms a new version. Visible, though no explicit 'new version created' toast."
+    },
+    "S11": {
+      "status": "pass",
+      "note": "recover() preserves the user's in-progress edits (clears error state only, does not reset profile to a hardcoded initial). No 'discard-to-initial' control exists that would reset to a hardcoded value; pf-load returns to the saved baseline (pfInitial). Rollback semantics correct."
+    },
+    "S12": {
+      "status": "pass",
+      "note": "No client_validation/role_denied/actor_* codes leaked. User-facing text uses domain wording. Caveat: the status pill renders raw state tokens (idle/under_review/approved etc.) literally, but these are not the named internal-error-enum pattern and are acceptable in this mock tool."
+    }
+  },
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "medium",
+      "desc": "No focus retention on submit/approve/reject. Disabling the focused control (index.html:241 for pf-submit; 356-357 for ap-approve/ap-reject) drops focus to <body> with no compensating .focus() to a status region, disorienting keyboard and screen-reader users.",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static",
+      "file": "index.html:241"
+    },
+    {
+      "id": "D2",
+      "severity": "medium",
+      "desc": "Required-field semantics are not declared in HTML. pf-nickname and pf-email inputs lack `required`/`aria-required` (only a CSS asterisk + JS validation). Screen readers won't announce required, and native validation is bypassed (form uses novalidate).",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static",
+      "file": "index.html:82"
+    },
+    {
+      "id": "D3",
+      "severity": "medium",
+      "desc": "bio length constraint is inconsistent: textarea maxlength=200 (index.html:90) but validateProfile rejects >140 (core.mjs:34) and the error message states 140. Users can enter 141-200 chars (allowed by HTML) then get a confusing 'exceeds 140' error. maxlength should be 140 to match.",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static",
+      "file": "index.html:90"
+    },
+    {
+      "id": "D4",
+      "severity": "low",
+      "desc": "ap-amount declares min='0' (index.html:133) which permits a value of 0, but validateRequest requires amount>0 and the message says '金额必须大于 0'. The HTML min contradicts the validation rule; min should exclude 0 (or be omitted in favor of the JS check) to avoid implying 0 is acceptable.",
+      "user_noticed": false,
+      "affects_decision": false,
+      "evidence": "static",
+      "file": "index.html:133"
+    }
+  ],
+  "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 3,
+    "low": 1
+  },
+  "blindness_probe": {
+    "lane_guess": "unknown",
+    "confidence": "low",
+    "basis": "Code is cleanly modular with thorough Chinese design comments (deny-first role model, mandatory transport/park contract, 'do not fabricate success'). A11y basics are partially present (aria-describedby, role=alert, aria-live) yet partly missing (required attrs, focus mgmt). This mix gives no decisive tell distinguishing skills-path from direct-prompt."
+  }
+}

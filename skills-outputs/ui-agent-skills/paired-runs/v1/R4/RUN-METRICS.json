@@ -1,0 +1,222 @@
+{
+  "run_id": "R4-contract-layer",
+  "lanes": {
+    "h9": {
+      "lane": "skills-path",
+      "contract": {
+        "fixtures_total": 12,
+        "fixtures_passed": 12,
+        "all_match": true,
+        "mismatched": []
+      },
+      "rework": {
+        "count_selfreported": 0,
+        "per_fixture": 0.0,
+        "source": "operator-logged event=rework",
+        "audited": false,
+        "audit_note": "rework 由 operator 自记，主控无法从产物独立复核 -> 只能当自报值",
+        "driver_runs_total": 2,
+        "driver_runs_failed": 1,
+        "independent": {
+          "source": "driver-runs.jsonl (host-verifiable)",
+          "failed_runs": 1,
+          "vs_selfreported": {
+            "selfreported_rework": 0,
+            "agrees": false,
+            "note": "两者测的不是同一件事：自记 rework 记修改轮次，failed_runs 记驱动失败次数；不要求相等"
+          }
+        }
+      },
+      "latency": {
+        "wallclock_min_events": 0.95,
+        "run_meta_wallclock_min": 12,
+        "metric_name": "operator completion latency (DEV-2)"
+      },
+      "inputs": {
+        "audited_steps": 6,
+        "unaudited_steps": 0,
+        "tool_calls_selfreported": 30,
+        "artifact_bytes": 41814,
+        "tokens": null,
+        "tokens_reason": "BLK-2: host 无法从 operator 侧读 token 计数"
+      },
+      "escaped_defects": {
+        "critical": 0,
+        "high": 0,
+        "medium": 3,
+        "low": 1,
+        "total": 4,
+        "weighted": 3,
+        "evidence_mix": {
+          "static": 4
+        },
+        "render_layer": "not_measured (BLK-3: 无浏览器引擎，静态推导)"
+      },
+      "log_quality": {
+        "lines": 20,
+        "malformed_lines": [],
+        "field_swapped_lines": [],
+        "append_only_verified": true,
+        "ts_source": "date -u at write time"
+      },
+      "blindness_probe": {
+        "lane_guess": "unknown",
+        "confidence": "low",
+        "basis": "Code is cleanly modular with thorough Chinese design comments (deny-first role model, mandatory transport/park contract, 'do not fabricate success'). A11y basics are partially present (aria-describedby, role=alert, aria-live) yet partly missing (required attrs, focus mgmt). This mix gives no decisive tell distinguishing skills-path from direct-prompt."
+      },
+      "observer_checklist": {
+        "reported_items": 12,
+        "counts": {
+          "pass": 10,
+          "fail": 2
+        },
+        "failed": [
+          "S4",
+          "S8"
+        ]
+      }
+    },
+    "h10": {
+      "lane": "direct-prompt",
+      "contract": {
+        "fixtures_total": 12,
+        "fixtures_passed": 12,
+        "all_match": true,
+        "mismatched": []
+      },
+      "rework": {
+        "count_selfreported": 1,
+        "per_fixture": 0.0833,
+        "source": "operator-logged event=rework",
+        "audited": false,
+        "audit_note": "rework 由 operator 自记，主控无法从产物独立复核 -> 只能当自报值",
+        "driver_runs_total": 1,
+        "driver_runs_failed": 0,
+        "independent": {
+          "source": "driver-runs.jsonl (host-verifiable)",
+          "failed_runs": 0,
+          "vs_selfreported": {
+            "selfreported_rework": 1,
+            "agrees": false,
+            "note": "两者测的不是同一件事：自记 rework 记修改轮次，failed_runs 记驱动失败次数；不要求相等"
+          }
+        }
+      },
+      "latency": {
+        "wallclock_min_events": 1.183,
+        "run_meta_wallclock_min": 8,
+        "metric_name": "operator completion latency (DEV-2)"
+      },
+      "inputs": {
+        "audited_steps": 4,
+        "unaudited_steps": 0,
+        "tool_calls_selfreported": 14,
+        "artifact_bytes": 38918,
+        "tokens": null,
+        "tokens_reason": "BLK-2: host 无法从 operator 侧读 token 计数"
+      },
+      "escaped_defects": {
+        "critical": 0,
+        "high": 0,
+        "medium": 3,
+        "low": 1,
+        "total": 4,
+        "weighted": 3,
+        "evidence_mix": {
+          "static": 4
+        },
+        "render_layer": "not_measured (BLK-3: 无浏览器引擎，静态推导)"
+      },
+      "log_quality": {
+        "lines": 14,
+        "malformed_lines": [],
+        "field_swapped_lines": [],
+        "append_only_verified": true,
+        "ts_source": "date -u at write time"
+      },
+      "blindness_probe": {
+        "lane_guess": "skills-path",
+        "confidence": "low",
+        "basis": "系统性覆盖边界场景（超时升级不伪造成功/失败、stable_path fallback 标记、显式 human-gates 记录、角色守卫、版本可见、双提交抑制）暗示遵循结构化规约/评审清单；但两类泳道均可能产出此质量代码，无确证性线索。"
+      },
+      "observer_checklist": {
+        "reported_items": 12,
+        "counts": {
+          "pass": 7,
+          "fail": 4,
+          "na": 1
+        },
+        "failed": [
+          "S12",
+          "S3",
+          "S4",
+          "S8"
+        ]
+      }
+    }
+  },
+  "pairing": {
+    "a_hid": "h9",
+    "a_lane": "skills-path",
+    "b_hid": "h10",
+    "b_lane": "direct-prompt",
+    "critical_defects": {
+      "a": 0,
+      "b": 0,
+      "delta": null,
+      "note": "baseline 0 -> 相对变化无定义"
+    },
+    "total_defects": {
+      "a": 4,
+      "b": 4,
+      "delta": 0.0
+    },
+    "weighted_defects": {
+      "a": 3,
+      "b": 3,
+      "delta": 0.0
+    },
+    "rework_rate": {
+      "a": 0.0,
+      "b": 0.0833,
+      "delta": -1.0
+    },
+    "latency": {
+      "a": 12,
+      "b": 8,
+      "delta": 0.5
+    },
+    "tool_calls": {
+      "a": 30,
+      "b": 14,
+      "delta": 1.1429
+    },
+    "artifact_bytes": {
+      "a": 41814,
+      "b": 38918,
+      "delta": 0.0744
+    },
+    "sample_size": 1,
+    "verdict_rule": "n=1 只允许描述方向，不允许当毕业证据（ev-metrics §1 要求三次 run）"
+  },
+  "notes": [
+    "DEV-3: R2 起观察员已统一 12 项清单 + 必须 executed（R-BAL 配平），两 lane 证据深度对称；R4 沿用同一规程，缺陷计数差只反映产物质量，不含取证深度成分。"
+  ],
+  "unmeasurable": [
+    {
+      "id": "tokens",
+      "why": "BLK-2 host 无 token 计量",
+      "effect": "≤80k 预算当前不可验证"
+    },
+    {
+      "id": "render_layer_defects",
+      "why": "BLK-3 无浏览器引擎",
+      "effect": "escaped defect 仅静态推导，视觉/键盘实测缺失"
+    },
+    {
+      "id": "rework_truth",
+      "why": "operator 自记",
+      "effect": "返工率只能当自报值，未独立复核"
+    }
+  ]
+}

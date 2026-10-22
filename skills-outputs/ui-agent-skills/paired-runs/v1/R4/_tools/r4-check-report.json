@@ -1,0 +1,530 @@
+{
+  "run": "R3-contract-layer",
+  "checked_at": "2026-10-22T03:52:13Z",
+  "fixtures": [
+    "F-1",
+    "F-2",
+    "F-3",
+    "F-4",
+    "F-5",
+    "F-6",
+    "A-1",
+    "A-2",
+    "A-3",
+    "A-4",
+    "A-5",
+    "A-6"
+  ],
+  "budget_rules": {
+    "wallclock_min": 45,
+    "audited_calls": 80,
+    "unaudited_ratio": 0.2
+  },
+  "case_invariance": {
+    "r1_sha256": "e82a4f1ddcbc5342f7500c790d9725a6913257922e909df610b515cf154f8f5c",
+    "r2_sha256": "e82a4f1ddcbc5342f7500c790d9725a6913257922e909df610b515cf154f8f5c",
+    "identical": true
+  },
+  "per_hid": {
+    "h10": {
+      "events": {
+        "exists": true,
+        "lines": 14,
+        "seq_ok": true,
+        "ts_ok": true,
+        "bad_lines": [],
+        "audited_steps": 4,
+        "unaudited_steps": 0,
+        "cmd_verified_steps": 0,
+        "unverifiable_steps": 0,
+        "driver_cmd_events": 0,
+        "unlogged_artifact_files": [],
+        "artifact_write_fully_logged": true,
+        "unaudited_ratio": 0.0,
+        "unverifiable_ratio": 0.0,
+        "unaudited_examples": [],
+        "rework": 1,
+        "fixtures_covered": [
+          "A-1",
+          "A-2",
+          "A-3",
+          "A-4",
+          "A-5",
+          "A-6",
+          "F-1",
+          "F-2",
+          "F-3",
+          "F-4",
+          "F-5",
+          "F-6",
+          "GLOBAL"
+        ],
+        "wallclock_min": 1.18,
+        "log_schema_violations": 0
+      },
+      "driver": {
+        "artifact_exists": true,
+        "exit": 0,
+        "stdout_tail": "back\":\"stable_path\",\"explicit_marker\":true,\"human_gates\":[{\"role\":\"user\",\"signed\":true,\"at_step\":1}]},\"expected\":{\"final_state\":\"error\",\"persisted\":false,\"fallback\":\"stable_path\",\"explicit_marker\":true,\"human_gates\":[{\"role\":\"user\",\"signed\":true,\"at_step\":1}]},\"mismatch_keys\":[]}],\"all_match\":true}\n",
+        "stderr_tail": "",
+        "reported_count": 12,
+        "mismatched": [],
+        "passed": [
+          "F-1",
+          "F-2",
+          "F-3",
+          "F-4",
+          "F-5",
+          "F-6",
+          "A-1",
+          "A-2",
+          "A-3",
+          "A-4",
+          "A-5",
+          "A-6"
+        ],
+        "all_match_reported": true
+      },
+      "per_fixture_match": {
+        "F-1": true,
+        "F-2": true,
+        "F-3": true,
+        "F-4": true,
+        "F-5": true,
+        "F-6": true,
+        "A-1": true,
+        "A-2": true,
+        "A-3": true,
+        "A-4": true,
+        "A-5": true,
+        "A-6": true
+      },
+      "hardcode": {
+        "sentinels": [
+          "stable_path"
+        ],
+        "hits": [
+          {
+            "file": "index.html",
+            "literal": "stable_path"
+          },
+          {
+            "file": "src/form/machine.mjs",
+            "literal": "stable_path"
+          }
+        ],
+        "clean": false
+      },
+      "reachability": {
+        "checks": {
+          "S1_approval_actions_reachable": {
+            "required_actions": [
+              "approve",
+              "reject",
+              "route",
+              "submit",
+              "timeout"
+            ],
+            "per_action": {
+              "approve": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "reject": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "route": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "submit": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "timeout": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              }
+            },
+            "failed_actions": [],
+            "status": "pass",
+            "meaning": "动作在 UI 上没有控件 => 用户在界面上走不到该状态（fixture 用 initial_state 直接注入，永远测不到）"
+          },
+          "S6_form_recover": {
+            "view_has_recover_control": true,
+            "status": "present",
+            "gating_expression": [],
+            "meaning": "控件存在不等于可用：需人判 gating_expression 的极性，确认它在错误态可见（R1: h3 曾被观察员读反极性误报 high）"
+          }
+        },
+        "failed": []
+      },
+      "driver_runs": {
+        "path": "h10/driver-runs.jsonl",
+        "status": "ok",
+        "total_runs": 1,
+        "failed_runs": 0,
+        "seq_ok": true,
+        "malformed": [],
+        "runs": [
+          {
+            "seq": 1,
+            "exit": 0,
+            "all_match": true,
+            "mismatch_count": 0
+          }
+        ],
+        "meaning": "failed_runs = host 侧可查的'驱动失败次数'，独立于 operator 自记 rework"
+      },
+      "mutation_probe": {
+        "status": "ran",
+        "mutants": {
+          "F-5": {
+            "final_state": "success",
+            "persisted": true,
+            "followed_input": true
+          },
+          "F-6": {
+            "final_state": "success",
+            "persisted": true,
+            "fallback": "",
+            "followed_input": true
+          },
+          "A-6": {
+            "final_state": "approved",
+            "persisted": true,
+            "followed_input": true
+          }
+        },
+        "mutants_followed": [
+          "F-5",
+          "F-6",
+          "A-6"
+        ]
+      },
+      "leak": {
+        "status": "clean",
+        "scanned": 8,
+        "hits": [],
+        "suppressed_css": 0
+      },
+      "budget": {
+        "wallclock_min": 1.18,
+        "audited_steps": 4,
+        "unaudited_steps": 0,
+        "unaudited_ratio": 0.0,
+        "cmd_verified_steps": 0,
+        "unverifiable_steps": 0,
+        "unverifiable_ratio": 0.0,
+        "output_bytes": 38918,
+        "dir_mtime_span_s": 1248.3,
+        "within": {
+          "wallclock": true,
+          "audited_calls": true,
+          "artifact_writes_logged": true,
+          "unverifiable_ratio": true
+        },
+        "tokens": null,
+        "tokens_note": "DEV-3: tokens not measurable; output_bytes is the reported substitute (no threshold)"
+      },
+      "run_meta": {
+        "role": "operator",
+        "lane_hidden_id": "h10",
+        "config_hash": "404b5c8b822ef25a20ed4eed355ecb5e70f46d79999a7f786322b6cc997e38ce",
+        "model": "Deepseek-V4.1-Flash",
+        "operator_id": "operator-r4-h10",
+        "fixture_set": [
+          "F-1",
+          "F-2",
+          "F-3",
+          "F-4",
+          "F-5",
+          "F-6",
+          "A-1",
+          "A-2",
+          "A-3",
+          "A-4",
+          "A-5",
+          "A-6"
+        ],
+        "artifacts": [
+          "artifact/index.html"
+        ],
+        "budget_used": {
+          "tool_calls": 14,
+          "tokens": null,
+          "tokens_note": "not measurable from operator side",
+          "wallclock_minutes": 8
+        }
+      }
+    },
+    "h9": {
+      "events": {
+        "exists": true,
+        "lines": 20,
+        "seq_ok": true,
+        "ts_ok": true,
+        "bad_lines": [],
+        "audited_steps": 6,
+        "unaudited_steps": 0,
+        "cmd_verified_steps": 0,
+        "unverifiable_steps": 0,
+        "driver_cmd_events": 0,
+        "unlogged_artifact_files": [],
+        "artifact_write_fully_logged": true,
+        "unaudited_ratio": 0.0,
+        "unverifiable_ratio": 0.0,
+        "unaudited_examples": [],
+        "rework": 0,
+        "fixtures_covered": [
+          "A-1",
+          "A-2",
+          "A-3",
+          "A-4",
+          "A-5",
+          "A-6",
+          "F-1",
+          "F-2",
+          "F-3",
+          "F-4",
+          "F-5",
+          "F-6",
+          "GLOBAL"
+        ],
+        "wallclock_min": 0.95,
+        "log_schema_violations": 0
+      },
+      "driver": {
+        "artifact_exists": true,
+        "exit": 0,
+        "stdout_tail": "back\":\"stable_path\",\"explicit_marker\":true,\"human_gates\":[{\"role\":\"user\",\"signed\":true,\"at_step\":1}]},\"expected\":{\"final_state\":\"error\",\"persisted\":false,\"fallback\":\"stable_path\",\"explicit_marker\":true,\"human_gates\":[{\"role\":\"user\",\"signed\":true,\"at_step\":1}]},\"mismatch_keys\":[]}],\"all_match\":true}\n",
+        "stderr_tail": "",
+        "reported_count": 12,
+        "mismatched": [],
+        "passed": [
+          "F-1",
+          "F-2",
+          "F-3",
+          "F-4",
+          "F-5",
+          "F-6",
+          "A-1",
+          "A-2",
+          "A-3",
+          "A-4",
+          "A-5",
+          "A-6"
+        ],
+        "all_match_reported": true
+      },
+      "per_fixture_match": {
+        "F-1": true,
+        "F-2": true,
+        "F-3": true,
+        "F-4": true,
+        "F-5": true,
+        "F-6": true,
+        "A-1": true,
+        "A-2": true,
+        "A-3": true,
+        "A-4": true,
+        "A-5": true,
+        "A-6": true
+      },
+      "hardcode": {
+        "sentinels": [
+          "stable_path"
+        ],
+        "hits": [
+          {
+            "file": "index.html",
+            "literal": "stable_path"
+          },
+          {
+            "file": "src/form/machine.mjs",
+            "literal": "stable_path"
+          }
+        ],
+        "clean": false
+      },
+      "reachability": {
+        "checks": {
+          "S1_approval_actions_reachable": {
+            "required_actions": [
+              "approve",
+              "reject",
+              "route",
+              "submit",
+              "timeout"
+            ],
+            "per_action": {
+              "approve": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "reject": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "route": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "submit": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "timeout": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              }
+            },
+            "failed_actions": [],
+            "status": "pass",
+            "meaning": "动作在 UI 上没有控件 => 用户在界面上走不到该状态（fixture 用 initial_state 直接注入，永远测不到）"
+          },
+          "S6_form_recover": {
+            "view_has_recover_control": true,
+            "status": "present",
+            "gating_expression": [
+              "$('pf-recover').hidden = !(s.final_state === 'error' && s.recoverable);"
+            ],
+            "meaning": "控件存在不等于可用：需人判 gating_expression 的极性，确认它在错误态可见（R1: h3 曾被观察员读反极性误报 high）"
+          }
+        },
+        "failed": []
+      },
+      "driver_runs": {
+        "path": "h9/driver-runs.jsonl",
+        "status": "ok",
+        "total_runs": 2,
+        "failed_runs": 1,
+        "seq_ok": true,
+        "malformed": [],
+        "runs": [
+          {
+            "seq": 1,
+            "exit": 1,
+            "all_match": false,
+            "mismatch_count": 1
+          },
+          {
+            "seq": 2,
+            "exit": 0,
+            "all_match": true,
+            "mismatch_count": 0
+          }
+        ],
+        "meaning": "failed_runs = host 侧可查的'驱动失败次数'，独立于 operator 自记 rework"
+      },
+      "mutation_probe": {
+        "status": "ran",
+        "mutants": {
+          "F-5": {
+            "final_state": "success",
+            "persisted": true,
+            "followed_input": true
+          },
+          "F-6": {
+            "final_state": "success",
+            "persisted": true,
+            "fallback": "",
+            "followed_input": true
+          },
+          "A-6": {
+            "final_state": "approved",
+            "persisted": true,
+            "followed_input": true
+          }
+        },
+        "mutants_followed": [
+          "F-5",
+          "F-6",
+          "A-6"
+        ]
+      },
+      "leak": {
+        "status": "clean",
+        "scanned": 8,
+        "hits": [],
+        "suppressed_css": 0
+      },
+      "budget": {
+        "wallclock_min": 0.95,
+        "audited_steps": 6,
+        "unaudited_steps": 0,
+        "unaudited_ratio": 0.0,
+        "cmd_verified_steps": 0,
+        "unverifiable_steps": 0,
+        "unverifiable_ratio": 0.0,
+        "output_bytes": 41814,
+        "dir_mtime_span_s": 1250.2,
+        "within": {
+          "wallclock": true,
+          "audited_calls": true,
+          "artifact_writes_logged": true,
+          "unverifiable_ratio": true
+        },
+        "tokens": null,
+        "tokens_note": "DEV-3: tokens not measurable; output_bytes is the reported substitute (no threshold)"
+      },
+      "run_meta": {
+        "role": "operator",
+        "lane_hidden_id": "h9",
+        "config_hash": "404b5c8b822ef25a20ed4eed355ecb5e70f46d79999a7f786322b6cc997e38ce",
+        "model": "Deepseek-V4.1-Flash",
+        "operator_id": "operator-r4-h9",
+        "fixture_set": [
+          "F-1",
+          "F-2",
+          "F-3",
+          "F-4",
+          "F-5",
+          "F-6",
+          "A-1",
+          "A-2",
+          "A-3",
+          "A-4",
+          "A-5",
+          "A-6"
+        ],
+        "artifacts": [
+          "artifact/index.html"
+        ],
+        "budget_used": {
+          "tool_calls": 30,
+          "tokens": null,
+          "tokens_note": "not measurable from operator side",
+          "wallclock_minutes": 12
+        }
+      }
+    }
+  },
+  "verdict": "PASS",
+  "hard_failures": [],
+  "soft_notes": [
+    "h10: hardcode suspects (expected-only literals in artifact): ['stable_path']",
+    "h9: hardcode suspects (expected-only literals in artifact): ['stable_path']"
+  ]
+}

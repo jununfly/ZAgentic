@@ -1,0 +1,169 @@
+{
+  "hid": "h4",
+  "reviewed_files": [
+    "artifact/form.html",
+    "artifact/approval.html",
+    "artifact/index.html",
+    "artifact/run-fixtures.mjs",
+    "artifact/src/form/session.mjs",
+    "artifact/src/form/validation.mjs",
+    "artifact/src/form/persist.mjs",
+    "artifact/src/approval/session.mjs",
+    "artifact/src/approval/roles.mjs",
+    "artifact/src/approval/persist.mjs",
+    "tests/ui-agent-skills/fixtures/form/F-1..F-6/input.json",
+    "tests/ui-agent-skills/fixtures/form/F-1..F-6/expected.json",
+    "tests/ui-agent-skills/fixtures/approval/A-1..A-6/input.json",
+    "tests/ui-agent-skills/fixtures/approval/A-1..A-6/expected.json"
+  ],
+  "artifact_ran": true,
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "critical",
+      "desc": "保存成功一次后表单进入不可恢复的死锁。state===success 时 saveBtn 被永久 disabled（form.html:149），但三个输入框仍可输入；onEdit 只会对 reason==='input_locked' 回滚（form.html:168-171），而 success 下 state machine 返回 not_editable（src/form/session.mjs:42-44），于是用户敲进去的字留在 DOM 里、draft 不变（render 只在非 focus 元素上回写 value，form.html:155），bio 计数器还跟着 DOM 走（form.html:151）。用户看到自己在编辑、字也在屏幕上，却不知道所有改动都被丢弃，保存按钮永远是灰的且没有任何文字说明原因。唯一出口“放弃修改”会走 D2。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D2",
+      "severity": "critical",
+      "desc": "“放弃修改”回滚到硬编码的初始 mock 资料，而不是最近一次保存成功的记录，造成静默数据丢失。form.html:222-230 直接用常量 CURRENT_PROFILE（form.html:101）覆盖输入框并重新 apply edit，session.reset() 只改状态不清草稿（src/form/session.mjs:112-118）。实测：改名“张三”→保存成功→点“放弃修改”，表单变回 “zj”，此时再点保存会以 writes=2 把服务端记录从“张三”覆盖成“zj”。按钮的语义是“放弃这次未保存的修改”，实际却撤销了已生效的保存。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D3",
+      "severity": "critical",
+      "desc": "报销页提交后永久卡在 submitted，审批中/通过/驳回都到达不了。approval.html 全文没有任何地方触发 state machine 的 route 动作（grep route 仅命中 CSS 的 margin:0 auto），提交后 state=submitted，而 render 的 locked 集合把 submitted 算作锁定（approval.html:154-159），通过/驳回/超时都要求 under_review（approval.html:160-162），修改后重提要求 rejected（approval.html:163）。结果：输入锁死、五个按钮全灰、进度条停在 submitted，审批人这一步在 UI 上不存在。夹具靠 system 的 route 动作绕过（fixtures/approval/A-1、A-2 的 seq=2），所以状态机测试全绿。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D4",
+      "severity": "critical",
+      "desc": "驳回理由是偷用申请人的“事由”输入框，审批人根本没有写理由的地方。approval.html:257 把 els.reason.value 当驳回理由传给 reject，而 els.reason 是申请人填的“事由”（approval.html:66-67），且在 under_review 时被 disabled（approval.html:157），审批人连改都改不了。因为提交时已要求事由非空（src/approval/session.mjs:24-27），“驳回必须写理由”的校验（src/approval/session.mjs:107-113）永远通过，decision_reason 被写成“客户拜访差旅费”这类申请人自述（实测 store.latest.decision_reason 即为该值）。确认弹窗还写着“驳回必须填写理由”（approval.html:256），但弹窗里没有任何输入框——审批人以为自己写了理由，实际写进去的是别人的话。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D5",
+      "severity": "high",
+      "desc": "驳回理由从不展示，申请人无从知道要改什么。render()（approval.html:151-205）只渲染状态名、金额/事由/附件和确认签名记录，从不读取 store 里的 decision_reason；驳回后申请人只看到红色“已驳回，等待申请人修改”（approval.html:260）和状态名 rejected，进度区列出的仍是自己的原始事由。需求里“驳回后申请人能改完重新提交”实际只能盲改。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D6",
+      "severity": "high",
+      "desc": "“形成新的一版”在界面上完全不可见。snapshot().version 从未被 render 使用（approval.html:151-205 无 version 引用），store.versions 的历史也没渲染；进度区是把 draft/submitted/under_review/approved/rejected 五个字符串固定循环输出（approval.html:187-198），不反映真实历史。驳回→重提后 version 已变成 2（src/approval/session.mjs:79），但审批人看到的仍是同一屏内容，无法判断这是第几版、改了哪些，容易按旧版印象审批。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D7",
+      "severity": "high",
+      "desc": "提交/审批决定时焦点被丢掉。form.html:194-201 先 dialog.close()（浏览器把焦点还给“保存资料”），紧接着 render() 把 saveBtn 与整个 fieldset 置 disabled（form.html:148-150），焦点落到 body；审批页同理，gateConfirm 关闭弹窗后焦点回到“通过”按钮，render() 立刻把它 disabled（approval.html:156-163）。键盘用户提交一次后要从页面顶部重新 Tab，屏幕阅读器用户失去当前位置上下文，而界面没有任何“结果区已更新”的焦点转移（banner 只有 aria-live，未聚焦）。",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D8",
+      "severity": "high",
+      "desc": "状态机内部错误码被原样拼进用户可见文案。form.html:197 输出“提交被拦截：client_validation”，approval.html:250 输出“操作被拒绝：role_denied（状态未变更）”，approval.html:242 输出“提交被拦截：${outcome.reason}”。role_denied / self_approval_denied / state_denied 对普通用户是不可理解的开发术语，而这条 banner 恰恰是“越权被拒”这一核心需求唯一的反馈——用户只看到被拒绝，不知道是身份不对、需要切换成审批人，还是单据状态不对。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D9",
+      "severity": "high",
+      "desc": "422 失败提示不可执行，用户无法独立恢复。form.html:218 只显示“服务端拒绝了这次保存（422），请修改后重试”，既不说哪个字段、也不说违反了什么约束（persist 只回 server_side_constraint，没有 field，src/form/persist.mjs:53-61），且没有任何字段被标红（此时 session.errors 为空）。用户只能原样再点一次保存、再失败一次；文案里的“422”还是 HTTP 状态码。需求要求“失败后用户能改完再提交”，界面没有给出“改哪里”的任何线索。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D10",
+      "severity": "high",
+      "desc": "字段错误与输入框没有程序化关联，必填也没有语义。form.html:55-66 的三个 .err 容器既没有 id 被 aria-describedby 引用，也没有 role=alert/aria-live；nickname/email/bio 上只有 aria-invalid（form.html:138），没有 required 或 aria-required。屏幕阅读器用户在输入框上听不到“昵称不能为空”，边输入边校验这个核心能力对非视觉用户等于不存在。approval.html:62-72 的金额/事由同样缺少 required 与 describedby，只是错误文案不同。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D11",
+      "severity": "medium",
+      "desc": "两个确认弹窗都没有可访问名称。form.html:88-95 与 approval.html:102-109 的 <dialog> 内虽各有 <h2>，但均未通过 aria-labelledby/aria-label 关联，屏幕阅读器只会念“对话框”，不念“确认保存资料？”/“确认通过该报销？”，而这两个弹窗是需求中“显式确认”落地的地方，用户无法从名称判断自己正在确认哪个不可逆操作。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D12",
+      "severity": "medium",
+      "desc": "“进度”把五个状态渲染成一条同权重竖列表，只有当前项加粗（approval.html:187-198），approved 与 rejected 这对互斥分支被排成先后两步。用户会把它读成一条线性进度条（draft→submitted→under_review→approved→rejected），误以为通过之后还会走到驳回、或者当前只是走到第 2 步。静态无截图，仅从 DOM 语义与样式推断。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D13",
+      "severity": "medium",
+      "desc": "确认弹窗对已明显非法的草稿照开不误，校验反馈被推迟到用户确认之后。approval.html:237-243 先 updateDraft 再无条件 openGate“确认提交报销申请？”，用户点“确认”后才收到“提交被拦截：client_validation（状态停留在 draft）”。本该在点击提交时就地标红的金额/事由一个都没标（render 的标红条件依赖 human_gates 里出现 signed:false，approval.html:174-180），等于让用户为一个注定失败的提交做了一次显式确认。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D14",
+      "severity": "medium",
+      "desc": "“审批超时”标记后既不阻塞后续决定，也不会持续可见。timeout 只写 escalation、状态仍停在 under_review（src/approval/session.mjs:135-148），approval.html:160-161 的通过/驳回依旧可点，用户可以在系统刚宣布“已升级人工接管”之后照常点“通过”；而升级提示靠 showBannerOnce 的 bannerSet 一次性开关（approval.html:206-211），被之后任何一条 banner（如“已通过”）永久顶掉，页面再无升级痕迹。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D15",
+      "severity": "medium",
+      "desc": "金额用 Number() 直接解析，格式错误被报成范围错误。approval.html:145 对输入做 Number(els.amount.value)，输入“1,200”“1 200”“abc”都得到 NaN，而校验只产出“金额必须大于 0”（src/approval/session.mjs:21-23，approval.html:176）。用户看到自己的 1200 被说成“必须大于 0”，只会反复重输同一个值。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed"
+    },
+    {
+      "id": "D16",
+      "severity": "low",
+      "desc": "报销页一次性摆放五个操作按钮（提交/通过/驳回/模拟审批超时/修改后重提，approval.html:81-87），任一时刻只有一到两个可用，其余只是灰着，既没有分组也没有说明“为什么现在不能点”。审批人分不清哪些是自己当前该做的动作，“模拟审批超时”这种调试用按钮和正式审批动作视觉同级。",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D17",
+      "severity": "low",
+      "desc": "键盘无法用 Enter 提交。form.html:70-71 与 approval.html:82-86 的按钮全部 type=button，表单里没有任何 submit 控件，多字段表单因此不会发生隐式提交，输入完在输入框按 Enter 毫无反应；超时提示文案末尾还留了一个多余空格（form.html:216）。",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    }
+  ],
+  "severity_counts": {
+    "critical": 4,
+    "high": 6,
+    "medium": 5,
+    "low": 2
+  },
+  "blindness_probe": {
+    "lane_guess": "direct",
+    "confidence": "medium",
+    "basis": "三个页面都是手写内联 CSS 的单文件页面，没有任何设计令牌/组件规范/状态说明等中间产物随附，而 JS 里的命名（stable_path 兜底、human_gates、duplicate_suppressed）明显贴着夹具断言的词而不是贴着界面设计，业务链路上的断点（提交后无 route 入口）也说明没有先做过流程走查。"
+  }
+}

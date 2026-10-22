@@ -1,0 +1,29 @@
+{
+  "purpose": "主控对 R4 两份 Observer 报告的抽查审计",
+  "run_id": "R4-contract-layer",
+  "method": "独立读源码，不看 Observer 措辞；判定 verified / overstated / refuted",
+  "audits": [
+    {
+      "hid": "h9",
+      "defect_id": "D1(medium)",
+      "claim": "提交/审批禁用按钮时无焦点保持 → 焦点落回 body",
+      "verdict": "verified",
+      "evidence": "artifact/index.html:241 在 submitting/success 态同步 `$('pf-submit').disabled = true`，但全文件无任何 focus()/focus management；标准浏览器行为下被禁用元素焦点回退 body，且无 aria-live 接管。S4 fail 成立",
+      "note": "skills-path lane 也未处理焦点归属，与 R2/R3 同类缺陷一致"
+    },
+    {
+      "hid": "h10",
+      "defect_id": "D1(medium)",
+      "claim": "字段错误与控件无程序化关联（缺 aria-describedby）",
+      "verdict": "verified",
+      "evidence": "artifact/index.html:74 `<input id=\"nickname\" ...>` 无 aria-describedby；:75 的 err-msg 仅有 aria-live=polite，未与 input 用 aria-describedby 绑定。S3 fail 成立",
+      "note": "direct-prompt lane 同样只靠 role=alert / aria-live 播报，未做关联，与 h9 同类"
+    }
+  ],
+  "counts": {"audited": 2, "verified": 2, "overstated": 0, "refuted": 0},
+  "consequence": [
+    "两 lane 缺陷计数可跨 lane 比较（observer 均用统一 12 项清单 + executed/static 证据；本 run 两 lane evidence 均为 static，配平 R-BAL 达标）",
+    "R4 两 lane 缺陷数完全相同（c0/h0/m3/l1，加权 7），未重现 R2/R3 中 skills-path 显著更优的方向",
+    "盲性探针仍弱（h9 guess=unknown/low，h10 guess=skills-path/low），不能声称双盲"
+  ]
+}

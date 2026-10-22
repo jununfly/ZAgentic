@@ -1,0 +1,24 @@
+{
+  "pilot_id": "R1-pilot",
+  "belongs_to_node": "1-9-2",
+  "purpose": "机制验证（日志纯度 / 盲性 / operator 契约），不产出毕业证据",
+  "config_hash_ref": "3235655e0978279fa004a8e3727677ec3bc6c56d18a963bf921797af13f61791",
+  "model": "Deepseek-V4.1-Flash",
+  "budget_per_lane": {
+    "max_tool_calls": 60,
+    "max_output_tokens": 80000,
+    "max_wallclock_minutes": 45
+  },
+  "fixture_set": ["F-1"],
+  "fixture_path": "tests/ui-agent-skills/fixtures/form/F-1",
+  "raw_requirement": "R1-pilot/raw-requirement.md",
+  "lanes": ["skills-path", "direct-prompt"],
+  "hidden_ids": ["h1", "h2"],
+  "pilot_reductions": [
+    "single fixture (F-1 only) instead of 12",
+    "zero-dependency ESM + static HTML instead of Next.js 14 / React 18 / TS 5.x (offline, no npm install)",
+    "logic/contract validation via node instead of Chromium 155 real render",
+    "no threshold judgement; metrics recorded only",
+    "token budget not measurable from operator side -> recorded as null"
+  ]
+}

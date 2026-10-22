@@ -1,0 +1,14 @@
+{"seq":1,"ts":"2026-10-22T03:40:01Z","fixture":"GLOBAL","event":"start","detail":"operator h10 lane=direct-prompt begins build of ui-agent-skills paired-run artifact"}
+{"seq":2,"ts":"2026-10-22T03:40:12Z","fixture":"F-1","event":"action","detail":"implemented form machine + persistence; file=artifact/src/form/machine.mjs file=artifact/src/form/persistence.mjs"}
+{"seq":3,"ts":"2026-10-22T03:40:18Z","fixture":"F-2","event":"validate","detail":"required-field validation blocks submit; error_fields captured"}
+{"seq":4,"ts":"2026-10-22T03:40:24Z","fixture":"F-3","event":"validate","detail":"email-format validation blocks submit"}
+{"seq":5,"ts":"2026-10-22T03:40:30Z","fixture":"F-4","event":"submit","detail":"duplicate submit suppressed while in-flight; file=artifact/src/form/machine.mjs"}
+{"seq":6,"ts":"2026-10-22T03:40:36Z","fixture":"F-5","event":"rework","detail":"422 error state recoverable; recover() path implemented"}
+{"seq":7,"ts":"2026-10-22T03:40:42Z","fixture":"F-6","event":"wait","detail":"timeout code=0 -> error state fallback=stable_path explicit_marker=true"}
+{"seq":8,"ts":"2026-10-22T03:40:48Z","fixture":"A-1","event":"action","detail":"implemented approval machine + persistence; file=artifact/src/approval/machine.mjs file=artifact/src/approval/persistence.mjs"}
+{"seq":9,"ts":"2026-10-22T03:40:54Z","fixture":"A-2","event":"action","detail":"reject persists with reason; record retained for revision"}
+{"seq":10,"ts":"2026-10-22T03:41:00Z","fixture":"A-3","event":"validate","detail":"amount<=0 and empty reason block submit at draft"}
+{"seq":11,"ts":"2026-10-22T03:41:04Z","fixture":"A-4","event":"submit","detail":"duplicate submit in submitted state ignored"}
+{"seq":12,"ts":"2026-10-22T03:41:08Z","fixture":"A-5","event":"wait","detail":"timeout escalate keeps under_review, no fake outcome"}
+{"seq":13,"ts":"2026-10-22T03:41:10Z","fixture":"A-6","event":"action","detail":"non-approver decision denied, state does not advance"}
+{"seq":14,"ts":"2026-10-22T03:41:12Z","fixture":"GLOBAL","event":"complete","detail":"all 12 fixtures match; file=artifact/index.html file=artifact/src/core.mjs"}

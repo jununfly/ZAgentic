@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>费用报销审批</title>
+<style>
+  :root { color-scheme: light; --ink:#14181f; --muted:#5b6472; --line:#e2e6ee; --accent:#2f6bff; --bg:#f6f8fc; --bad:#c0392b; --good:#1a7f4b; --warn:#8a5a00; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink); background:var(--bg); }
+  .wrap { max-width:940px; margin:0 auto; padding:32px 20px 64px; }
+  .top { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  h1 { font-size:22px; margin:0; }
+  a.back { color:var(--muted); text-decoration:none; font-size:14px; }
+  .cols { display:grid; gap:18px; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); }
+  @media (max-width:760px) { .cols { grid-template-columns:1fr; } }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .card h2 { font-size:16px; margin:0 0 14px; }
+  label { display:block; font-weight:600; font-size:14px; margin:14px 0 6px; }
+  label:first-of-type { margin-top:0; }
+  input, textarea, select { width:100%; font:inherit; padding:9px 11px; border:1px solid var(--line); border-radius:9px; background:#fff; }
+  input:focus, textarea:focus, select:focus { outline:2px solid rgba(47,107,255,.25); border-color:var(--accent); }
+  input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color:var(--bad); }
+  textarea { min-height:72px; resize:vertical; }
+  .err { color:var(--bad); font-size:13px; min-height:18px; margin-top:4px; }
+  .row2 { display:flex; gap:12px; }
+  .row2 > div { flex:1; }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  button { font:inherit; border-radius:9px; padding:9px 16px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.danger { border-color:#f0c0b8; color:var(--bad); }
+  button:disabled { cursor:not-allowed; opacity:.5; }
+  .chip { display:inline-block; font-size:12px; padding:3px 10px; border-radius:999px; background:#eef3ff; color:var(--accent); }
+  .banner { margin-top:16px; border-radius:10px; padding:11px 13px; font-size:14px; display:none; }
+  .banner.show { display:block; }
+  .banner.ok { background:#eaf7f0; color:var(--good); border:1px solid #bfe6d2; }
+  .banner.bad { background:#fdeeec; color:var(--bad); border:1px solid #f5c9c3; }
+  .banner.warn { background:#fff7e6; color:var(--warn); border:1px solid #f2dca8; }
+  ol.trail { list-style:none; margin:0; padding:0; font-size:14px; }
+  ol.trail li { padding:7px 0; border-bottom:1px dashed var(--line); color:var(--muted); display:flex; justify-content:space-between; gap:8px; }
+  ol.trail li:last-child { border-bottom:0; }
+  ol.trail b { color:var(--ink); font-weight:600; }
+  .kv { font-size:13px; color:var(--muted); margin-top:10px; }
+  dialog { border:0; border-radius:14px; padding:22px; max-width:420px; box-shadow:0 24px 60px rgba(0,0,0,.18); }
+  dialog h2 { margin:0 0 8px; font-size:17px; }
+  dialog p { color:var(--muted); margin:0 0 18px; font-size:14px; }
+  .dlgrow { display:flex; gap:10px; justify-content:flex-end; }
+  .whoami { font-size:13px; color:var(--muted); margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="./index.html">← 返回工作台</a>
+    <span class="chip" id="stateChip">draft</span>
+  </div>
+  <h1>费用报销审批</h1>
+
+  <div class="cols">
+    <form class="card" id="requestForm" novalidate>
+      <h2>报销单</h2>
+      <label for="amount">金额（CNY）</label>
+      <input id="amount" inputmode="decimal" />
+      <div class="err" id="err-amount"></div>
+
+      <label for="reason">事由</label>
+      <textarea id="reason"></textarea>
+      <div class="err" id="err-reason"></div>
+
+      <label for="attachment">附件引用</label>
+      <input id="attachment" placeholder="mock://receipt-001" />
+      <div class="err" id="err-attachment"></div>
+
+      <label for="actor">当前操作人</label>
+      <select id="actor">
+        <option value="applicant">申请人 user-001</option>
+        <option value="approver">审批人 approver-001</option>
+        <option value="user-006">其他用户 user-006（无审批权）</option>
+      </select>
+
+      <div class="actions">
+        <button class="primary" type="button" id="submitBtn">提交申请</button>
+        <button type="button" id="approveBtn">通过</button>
+        <button class="danger" type="button" id="rejectBtn">驳回</button>
+        <button type="button" id="timeoutBtn">模拟审批超时</button>
+        <button type="button" id="reviseBtn">修改后重提</button>
+      </div>
+
+      <div class="banner" id="banner" role="status" aria-live="polite"></div>
+      <div class="kv" id="lockedHint"></div>
+    </form>
+
+    <section class="card">
+      <h2>进度</h2>
+      <ol class="trail" id="trail"></ol>
+      <div class="kv" id="summary"></div>
+      <div class="kv" id="gates"></div>
+    </section>
+  </div>
+</div>
+
+<dialog id="gateDialog">
+  <h2 id="gateTitle">确认提交？</h2>
+  <p id="gateText"></p>
+  <div class="dlgrow">
+    <button type="button" id="gateCancel">取消</button>
+    <button class="primary" type="button" id="gateConfirm">确认</button>
+  </div>
+</dialog>
+
+<script type="module">
+import { createApprovalSession, APPROVAL_STATES } from "./src/approval/session.mjs";
+
+const APPLICANT = "user-001";
+const APPROVER = "approver-001";
+
+const session = createApprovalSession({
+  applicant: APPLICANT,
+  approver: APPROVER,
+  request: { amount: 1200, currency: "CNY", reason: "客户拜访差旅费", attachment_ref: "mock://receipt-001" },
+  initialState: APPROVAL_STATES.DRAFT,
+});
+
+let seq = 0;
+let pending = null;
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  amount: $("amount"), reason: $("reason"), attachment: $("attachment"), actor: $("actor"),
+  submit: $("submitBtn"), approve: $("approveBtn"), reject: $("rejectBtn"),
+  timeout: $("timeoutBtn"), revise: $("reviseBtn"),
+  banner: $("banner"), chip: $("stateChip"), trail: $("trail"), summary: $("summary"),
+  gates: $("gates"), locked: $("lockedHint"), dialog: $("gateDialog"),
+  gateTitle: $("gateTitle"), gateText: $("gateText"), gateCancel: $("gateCancel"), gateConfirm: $("gateConfirm"),
+};
+
+function showBanner(kind, text) {
+  els.banner.className = `banner show ${kind}`;
+  els.banner.textContent = text;
+}
+function hideBanner() { els.banner.className = "banner"; els.banner.textContent = ""; }
+
+function readDraft() {
+  return {
+    amount: Number(els.amount.value),
+    reason: els.reason.value,
+    attachment_ref: els.attachment.value || null,
+  };
+}
+
+function render() {
+  const snap = session.snapshot();
+  els.chip.textContent = snap.final_state;
+  const locked = snap.final_state === "submitted" || snap.final_state === "under_review" || snap.final_state === "approved";
+
+  els.amount.disabled = locked;
+  els.reason.disabled = locked;
+  els.attachment.disabled = locked;
+  els.submit.disabled = locked;
+  els.approve.disabled = snap.final_state !== "under_review";
+  els.reject.disabled = snap.final_state !== "under_review";
+  els.timeout.disabled = snap.final_state !== "under_review";
+  els.revise.disabled = snap.final_state !== "rejected";
+
+  const errs = session.snapshot().errors;
+  for (const field of ["amount", "reason"]) {
+    $("err-" + field).textContent = "";
+    els[field].setAttribute("aria-invalid", "false");
+  }
+  if (snap.last_denial === "reason_required") {
+    $("err-reason").textContent = "驳回必须填写理由";
+    els.reason.setAttribute("aria-invalid", "true");
+  }
+  if (snap.final_state === "draft" && snap.human_gates.some((g) => g.signed === false)) {
+    for (const field of errs) {
+      const message = field === "amount" ? "金额必须大于 0" : "事由不能为空";
+      $("err-" + field).textContent = message;
+      els[field].setAttribute("aria-invalid", "true");
+    }
+  }
+
+  els.locked.textContent = locked ? "当前处于申领流程中，输入已锁定。" : "";
+  els.gates.textContent = snap.human_gates.length
+    ? "确认记录：" + snap.human_gates.map((g) => `${g.role}#${g.at_step}${g.signed ? "已签" : "未签"}`).join(" · ")
+    : "确认记录：暂无";
+
+  const states = ["draft", "submitted", "under_review", "approved", "rejected"];
+  els.trail.innerHTML = "";
+  for (const state of states) {
+    const li = document.createElement("li");
+    const hit = snap.final_state === state;
+    const label = document.createElement("span");
+    label.innerHTML = hit ? `<b>${state}</b>` : state;
+    const mark = document.createElement("span");
+    mark.textContent = hit ? "当前" : "";
+    li.append(label, mark);
+    els.trail.append(li);
+  }
+
+  const req = session.request;
+  els.summary.textContent = `金额 ${req.amount ?? "-"} ${req.currency ?? ""} · 事由 ${req.reason || "-"} · 附件 ${req.attachment_ref || "无"}`;
+  if (snap.escalation) {
+    showBannerOnce("warn", "审批已超时，已标记升级到人工处理队列，未做任何自动决定。");
+  }
+}
+let bannerSet = false;
+function showBannerOnce(kind, text) {
+  if (bannerSet) return;
+  bannerSet = true;
+  showBanner(kind, text);
+}
+
+// 申请人编辑表单 = 草稿编辑
+for (const el of [els.amount, els.reason, els.attachment]) {
+  el.addEventListener("input", () => {
+    session.updateDraft(readDraft());
+    hideBanner();
+    render();
+  });
+}
+
+function openGate(title, text, onConfirm) {
+  els.gateTitle.textContent = title;
+  els.gateText.textContent = text;
+  pending = onConfirm;
+  els.dialog.showModal();
+}
+
+els.gateCancel.addEventListener("click", () => { pending = null; els.dialog.close(); });
+els.gateConfirm.addEventListener("click", () => {
+  const fn = pending;
+  pending = null;
+  els.dialog.close();
+  if (fn) fn();
+});
+
+els.submit.addEventListener("click", () => {
+  session.updateDraft(readDraft());
+  openGate("确认提交报销申请？", "提交后将进入审批流程，期间不可修改。", () => {
+    const outcome = session.apply({ seq: ++seq, role: "applicant", action: "submit", confirmed: true });
+    render();
+    if (!outcome.accepted) showBanner("bad", `提交被拦截：${outcome.reason}（状态停留在 draft）`);
+  });
+});
+
+els.approve.addEventListener("click", () => {
+  openGate("确认通过该报销？", "通过后将进入已审批状态，操作不可撤回。", () => {
+    const outcome = session.apply({ seq: ++seq, role: els.actor.value, action: "approve", confirmed: true, reason: "合规，准予报销" });
+    render();
+    if (!outcome.accepted) showBanner("bad", `操作被拒绝：${outcome.reason}（状态未变更）`);
+    else showBanner("ok", "已通过。");
+  });
+});
+
+els.reject.addEventListener("click", () => {
+  openGate("确认驳回？", "驳回必须填写理由，申请人可修改后重新提交。", () => {
+    const outcome = session.apply({ seq: ++seq, role: els.actor.value, action: "reject", confirmed: true, reason: els.reason.value });
+    render();
+    if (!outcome.accepted) showBanner("bad", `操作被拒绝：${outcome.reason}`);
+    else showBanner("warn", "已驳回，等待申请人修改。");
+  });
+});
+
+els.timeout.addEventListener("click", () => {
+  const outcome = session.apply({ seq: ++seq, role: "system", action: "timeout", escalate: true });
+  render();
+  if (outcome.accepted) showBanner("warn", "审批超时：已显式标记并升级人工接管，未伪造审批结果。");
+});
+
+els.revise.addEventListener("click", () => {
+  session.apply({ seq: ++seq, role: "applicant", action: "revise" });
+  const req = session.request;
+  els.amount.value = String(req.amount ?? "");
+  els.reason.value = req.reason ?? "";
+  els.attachment.value = req.attachment_ref ?? "";
+  hideBanner();
+  render();
+});
+
+const req = session.request;
+els.amount.value = String(req.amount ?? "");
+els.reason.value = req.reason ?? "";
+els.attachment.value = req.attachment_ref ?? "";
+render();
+</script>
+</body>
+</html>

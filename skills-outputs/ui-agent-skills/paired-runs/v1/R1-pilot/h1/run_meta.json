@@ -1,0 +1,14 @@
+{
+  "role": "operator",
+  "lane_hidden_id": "h1",
+  "config_hash": "3235655e0978279fa004a8e3727677ec3bc6c56d18a963bf921797af13f61791",
+  "model": "Deepseek-V4.1-Flash",
+  "operator_id": "operator-h1",
+  "fixture_set": ["F-1"],
+  "budget_used": {
+    "tool_calls": 31,
+    "tokens": null,
+    "tokens_note": "not measurable from operator side",
+    "wallclock_minutes": 2
+  }
+}

@@ -311,7 +311,7 @@
       "id": "1-9",
       "uid": "01a154254e83-0c5f77ec7a",
       "label": "三次 paired run 与 graduation gate",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "exploit",
       "parent": "1",
       "children": [
@@ -340,7 +340,8 @@
         "返工率改善至少 20%、用户决策时间改善至少 15%、escaped UI defects 三次汇总改善至少 20% 且单次不恶化",
         "visual/a11y blocker、越权 action、provenance 缺失、receipt 不完整均能阻断毕业",
         "输出 graduation packet，或明确 PILOT/QUARANTINED、fallback、补跑与责任人"
-      ]
+      ],
+      "rounds": 1
     },
     "1-10": {
       "id": "1-10",
@@ -1483,57 +1484,110 @@
       "id": "1-9-1",
       "uid": "01a15426bcde-047ad0e889",
       "label": "按同一 case/environment/config 预注册 paired run、无效运行规则与原始日志留存",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-9",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "1-9-1 预注册如何落地（case / 配对轴 / env / 留存 / 无效裁决）？",
+          "answer": "实例化 ev-metrics.md 冻结协议：配对轴=direct-prompt lane vs skills-path lane（区别于 dual_lane_runner 的 baseline/degraded）；case=form F-1~F-6 + approval A-1~A-6 双样例；env 指纹复用 dual_lane_runner 确定性轴(SEED=20261020/replay/固定字体/Chromium major)；config_hash 冻结 model+skills_commit+counterbalance；留存 skills-outputs/ui-agent-skills/paired-runs/v1/ 且 write-once；无效 run 由 zjj 提议、zj 批准重跑。交付 md + json 侧车，满足『可查』退出判据。",
+          "note": ""
+        },
+        {
+          "q": "① model 与 tool/token 预算如何冻结？",
+          "answer": "model=Deepseek-V4.1-Flash（2026-10-21 zj 指定：用本次对话 model）；两 lane 同 model、三次 run 不变；厂商 snapshot 静默更新按 env_change 判 invalid。tool/token 预算建议两 lane 同额 60 calls/80k tokens/45min，绝对值待 zj 确认，不变量=两 lane 相等。",
+          "note": ""
+        },
+        {
+          "q": "① tool/token 预算如何冻结？",
+          "answer": "按建议值冻结（2026-10-21 zj 确认）：两 lane 同额，每 lane 每任务段 ≤60 次工具调用 / ≤80k output tokens / ≤45min 墙钟；超限记 invalid（不静默延长）。① 至此完全冻结：model=Deepseek-V4.1-Flash + 该预算。",
+          "note": ""
+        },
+        {
+          "q": "②③④⑤ 与 config_hash 如何冻结？",
+          "answer": "②skills_commit=ce75cb3(main HEAD, PR#204后)；③每次 run 覆盖 form F-1~F-6 + approval A-1~A-6；④留存 skills-outputs/ui-agent-skills/paired-runs/v1/；⑤browser_major=155(实测 Chrome 155.0.8059.85；harness 仍 PENDING@1-7-3 记 DEV-1 偏差，不改代码)；config_hash=3235655e0978279fa004a8e3727677ec3bc6c56d18a963bf921797af13f61791(自洽校验 MATCH)。1-9-1 预注册全冻结，待 zj 对 R1 go/no-go。",
+          "note": ""
+        },
+        {
+          "q": "操作者/独立观察员改用 subagent 后，指标口径如何处理？",
+          "answer": "Operator=Builder+Operator subagent(每 lane 每次)，Observer=独立盲评 subagent；盲性：observer 不知 lane、operator 不知被比较；日志 append-only events.jsonl(seq/ts/fixture/event/detail，wait 单列)，预算 60/80k/45min 超限 abandon。口径变更 DEV-2：AI operator 下决策时间=operator completion latency≠human decision time；graduation scope 收窄为 AI-operator 下 artifact 质量与操作效率，不得声称改善人类 UX；human-UX 另设人工轨道。因未跑无旧 run 作废，记 1-10 重评。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "paired run 预注册、同 case/environment/config 约束和无效 run 规则可查"
-      ]
+      ],
+      "rounds": 1
     },
     "1-9-2": {
       "id": "1-9-2",
       "uid": "01a15426bd1e-7b8a4a756e",
       "label": "执行第 1 次 paired run：direct-prompt 与 skills path 并行并生成 receipt",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-9",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "R1 pilot 结论与全量 R1 前提？",
+          "answer": "pilot 机制判决：Q1 日志纯度 PASS(seq连续/ts date真采/>>追加/mtime>=末ts)；Q2 盲性 PARTIAL(机械扫描0泄漏，但探针两lane都猜structured/medium→无区分力，不得称双盲)；Q3 operator契约 PASS(两lane独立node复跑exit0/字段匹配/gate实签)。数据：h1=skills-path(latency87s,calls31,defects 1/2/5/3)，h2=direct-prompt(107s,22,1/4/6/3)，rework均0。n=1禁作毕业证据。pilot 自曝8缺口V-1..V-8，其中阻断级3项：(1)payload含savedAt墙钟→比对白名单未定；(2)token预算operator侧不可测→须改host计量；(3)无浏览器(Chrome被沙箱拒)→escaped defect仅静态推导。全量12fixtures(F-1..F-6+A-1..A-6均已存在)前须闭环5项。",
+          "note": ""
+        },
+        {
+          "q": "R1 结论与 R2 前提？",
+          "answer": "R1(契约层,12/12 双样例)完成：h3=skills-path 12/12/rework0/3.5min/defects 0-5-8-5；h4=direct-prompt 12/12/rework4/4.0min/defects 4-6-5-2。两 lane 契约层打平，差异全在 fixture 卡不住处。主控抽查 3 条 critical 全成立(h4 D3 无 route 触发致卡死 submitted；h4 D4 驳回理由偷用申请人事由；h3 D1 成功态锁死)。反硬编码：三变异体(F-5/F-6/A-6)两 lane 全跟随，12/12 非抄 expected。日志纯度 PASS，盲性仅机械隔离不称双盲。收据=paired-run-receipt/v1 canonical=false，非 R-RCP-1(v1 无 adapter 轴硬套即假 provenance)。n=1 不作毕业证据。进 R2 前闭环：DEV-3 观察员取证规程统一、rework 独立复核(主控可做)；BLK-2 token 计量、BLK-3 渲染层(需改 harness，出 Acceptance scope 待立项)。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "第 1 次 paired run 产出两条可比日志、receipt、review 和指标"
-      ]
+      ],
+      "rounds": 1
     },
     "1-9-3": {
       "id": "1-9-3",
       "uid": "01a15426bd5d-e524233306",
       "label": "执行第 2、3 次 paired run 并完成视觉/a11y/interaction/人工审阅闭环",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-9",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "R2 结论与 R3 前提？",
+          "answer": "R2(counterbalance 反序 h5=direct/h6=skills)完成：两 lane 12/12；defects h5 1-6-4-2=13(加权20) vs h6 0-2-6-3=11(加权10)；日志 rework 1 vs 14；驱动失败 1 vs 2；host 实测墙钟 1.67 vs 27.15min(自报 13/18，两 lane 反向偏离 -> 自报不可信，指标一律用 host 实测)。R-BAL=not confounded(h5 executed12/h6 executed6) -> 缺陷计数可跨 lane 比较，DEV-3 闭合；driver-runs.jsonl 使 BLK-4 闭合。S1 gate 修正(动作名从 fixture 派生，不再认 route 字面量)后重测 R1：h3 pass/h4 fail 结论不变。抽查 2 条均 verified(h5 idle 死锁：TRANSITIONS idle->validating 但 submit 吞掉 go 返回值仍 locked=true，persist 提前 return 不解锁；h6 驳回理由不展示)。DEV-4(必须挑明)：R2 operator 指令新增『状态迁移必须 UI 可达』+driver-runs，属中途变更 -> run 内比较有效、run 间不可合并；按 ev-metrics §5 严格读法 R1 降级为探索、毕业序列从 R2 起算(需 R3/R4)。R3 必须逐字复用 R2 指令否则三次全废。盲性仍未证实(R2 两 lane 都猜 structured，h5 猜错；累计 3/4)。",
+          "note": ""
+        },
+        {
+          "q": "R3 完成后的跨轮结论与 R4 必要性？",
+          "answer": "R3(逐字复用 R2 指令, h7=direct/h8=skills)完成：两 lane 12/12；defects 0-5-7-1=13(加权17) vs 0-3-5-4=12(加权11)；rework 1 vs 2；驱动失败 0 vs 1；host 墙钟 8.68 vs 24.62min(自报 8/24，本轮自报准确)。R-BAL not confounded。抽查 2 条均 verified：h7 form/machine.mjs:126 失败分支把 profile 重置回 stableDraft(丢弃未保存输入，与下方 recover 注释矛盾)；h8 core.mjs:64 commit 返回 revision_conflict 但 machine 不检查 result.written 就 setState(SUCCESS) —— 两条 lane 都出现静默数据丢失/伪成功，属需独立门禁卡住的类别，技能链本身未消除。方法修正：S1 gate 第 4 次改判据(v4=控件证据 OR 视图层调用证据)，用同一把尺子重测三轮 -> 唯一真断链仍是 R1 h4(direct)；R2/R3 因指令要求可达性两 lane 均 pass。跨轮(cohort-B=R2+R3)方向一致：加权缺陷 skills -42.6%、high -53.3%、返工 +700%、墙钟 +855%(七项中六项同向)。限定词：AI-operator/契约层/n=2/无渲染层。毕业仍需 R4(指令须与 R2/R3 逐字一致)；BLK-2 token、BLK-3 渲染层仍未闭环(需改 harness，出 Acceptance scope)。新协议冲突：逐 fixture 强制三行与 60 次预算互斥(R3 h8 自报 66)，R4 前须定死。另：盲性 6 次探针 4 次命中，仍不可称双盲。",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "第 2/3 次 paired run 完成人工审阅且不存在未结 blocker"
-      ]
+      ],
+      "rounds": 1
     },
     "1-9-4": {
       "id": "1-9-4",
       "uid": "01a15426bd9d-9b90016b3c",
       "label": "聚合指标、剩余风险与 fallback 演练，形成 graduation packet 或 pilot/quarantine 结论",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1-9",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {"q": "1-9-4 毕业 gate 最终裁定是什么？", "answer": "CONDITIONAL_ADOPTION（pilot + 强制门禁）。zj 于 2026-10-22 签署，覆盖控制器原 NOT_GRADUATED_as_quality_win 建议。证据：契约层 skills 在 weighted/high/critical 上 2/3 run 更优、成本 3/3 全更贵（+303%/+357%/+48%）；渲染层(真实 Chromium 155, 6 lane) A1/A2/A5/A6/A7 18/18 平价，唯一差异 A3/A4(direct 0/3、skills 2/3、skills≥direct 3/3)。结论：skills 有持续但单维、非鲁棒的 a11y 优势，且成本持续溢价；最优杠杆是抬升验证地板（4 门禁）使两 lane 同标准，质量差在验证层被抹平。", "note": "run owner 未自裁(ev-metrics sub-06 P4)；决策记录 GRADUATION-DECISION.md"}
+      ],
+      "notes": "R4 完成(2026-10-22): skills-path h9 / direct h10 均 12/12 PASS, 加权缺陷 7=7。毕业 cohort=R2+R3+R4 (R1 因 DEV-4 排除)。**BLK-3 已闭环(2026-10-22, b1 补 R2 后覆盖全 cohort)**: 真实 Chromium 155 跑 R2(h5/h6)+R3(h7/h8)+R4(h9/h10) 共 6 lane × 7 断言 A1-A7; A1/A2/A5/A6/A7 在 6 lane 18/18 全过(完全平价), 唯一差异轴为 A3/A4(aria-describedby 关联)——direct 0/3 全失败, skills 2/3 通过(R3-h8 漏), 方向 skills≥direct(2 胜 1 平, 从不劣于), 与契约层一致。**gate 裁定(2026-10-22, zj 签署): CONDITIONAL_ADOPTION** — skills-path 进入 pilot/观察态，前提是把 4 条机械门禁(G-V1 状态迁移 UI 可达 / G-V2 失败不为成功·无静默丢数据 / G-V3 非法迁移返回值必检查 / G-V4 必填输入 aria-describedby 关联)落到 zj-ui-verify。产物: GRADUATION-DECISION.md + RENDER-LAYER-COHORT.md + _tools/render-layer-report.json + _tools/render_layer_check.mjs。1-9-4 已 completed；1-9 仍 open（1-9-5 持久化/重放闸门回写 G-19..G-25 待 1-6 落地）。",
       "layer": "plan",
       "exit_criteria": [
         "graduation packet 或 pilot/quarantine packet 含指标、风险、fallback 和签名责任人"
@@ -1767,7 +1821,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-21 16:13:29",
+    "updated": "2026-10-22 01:59:52",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

@@ -4,9 +4,11 @@
   "note": "机器可读环境指纹（config v0.2）。确定性轴（network_mode/clock_source/seed/config_hash/font/node_version）由 R-HAR-1 捕获并冻结；1-5-3 将 viewport 集对齐 capability manifest（390/768/1440）并重算 config_hash/env_hash/matrix_key。browser_major=PENDING@1-7-3（本仓库 Wave 0 无内置浏览器引擎，延迟到 1-7-3 捕获真实 major，届时按 revalidation 规则触发全量重验）。",
   "axes": {
     "browser_major": {
-      "value": "PENDING@1-7-3",
+      "value": "155",
       "policy": "Chromium 固定 major；首跑捕获后冻结，变更须 revalidation",
-      "source": "R-BRW-1/R-RISK-1"
+      "source": "R-BRW-1/R-RISK-1",
+      "captured_at": "2026-10-22",
+      "capture_note": "实测 Google Chrome 155.0.8059.85 (Chromium-based)；回填 DEV-1 的 PENDING@1-7-3 占位。对齐 ui-agent-skills-paired-run-registration 的 env 轴。"
     },
     "node_version": {
       "value": ">=18.17",

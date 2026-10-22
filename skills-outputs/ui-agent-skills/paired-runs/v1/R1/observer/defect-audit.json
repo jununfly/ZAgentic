@@ -1,0 +1,47 @@
+{
+  "purpose": "主控对两份 Observer 报告的抽查审计（不替代 Observer，只做真伪/夸大校验）",
+  "run_id": "R1-contract-layer",
+  "method": "对每条抽查项独立读源码/机械 gate，不看 Observer 措辞；判定 verified / refuted / overstated / unverified",
+  "audits": [
+    {
+      "hid": "h4",
+      "defect_id": "D3",
+      "severity_claimed": "critical",
+      "claim": "报销提交后永久卡在 submitted，审批/驳回不可达",
+      "verdict": "verified",
+      "evidence": "approval.html 全文 0 处 route 调用；session.mjs:167 定义了 route handler 但视图从未调用；机械 gate R1-C7 S1_approval_route = fail",
+      "note": "fixture 用 initial_state 直接注入 under_review，绕过了该断链 → 契约层完全隐形"
+    },
+    {
+      "hid": "h4",
+      "defect_id": "D4",
+      "severity_claimed": "critical",
+      "claim": "驳回理由偷用申请人的「事由」字段，审批人无独立理由输入",
+      "verdict": "verified",
+      "evidence": "approval.html 全部 id= 仅有 #reason（申请人 事由）；reject handler 传 reason: els.reason.value",
+      "note": "需求明写「驳回必须写理由」，属关键路径缺失"
+    },
+    {
+      "hid": "h3",
+      "defect_id": "D1",
+      "severity_claimed": "high",
+      "claim": "保存成功即死锁；recover 按钮条件为 state!=='error' 故「恒隐藏」",
+      "verdict": "overstated",
+      "evidence": "form.html:172 `el.recover.hidden = form.state !== 'error'` → 该表达式在 error 态为 false，即错误态**可见**。Observer 把极性读反。",
+      "residual": "「success 态无出路」部分成立：locked=submitting||success 禁用全部输入+确认+提交，recover 仅在 error 可见 → 保存成功后只能刷新页面。但这是终态设计取舍，不是「用户无法从错误中恢复」，应下调为 medium。",
+      "impact": "h3 的 high 计数应从 5 下调为 4"
+    }
+  ],
+  "counts": {
+    "audited": 3,
+    "verified": 2,
+    "overstated": 1,
+    "refuted": 0,
+    "unverified": 0
+  },
+  "consequence": [
+    "两条 critical 抽查全部成立 → Observer 不是幻觉，R1 的核心发现可用",
+    "h3 有 1 条 high 因极性误读需下调 → h3 缺陷计数自身也不精确，进一步支持 R-BAL confounded 判定",
+    "S6 机械检查因只匹配 id 字符串曾给出假 pass，已改为 present + gating_expression 交人判"
+  ]
+}

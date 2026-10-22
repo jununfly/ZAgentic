@@ -1,0 +1,116 @@
+{
+  "generated_at": "2026-10-22T07:59:43.274Z",
+  "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "cohort_scope": "R2+R3+R4 full graduation set (6 lanes), real Chromium 155 DOM-assertion",
+  "note": "Full verbose report regenerable via _tools/render_layer_check.mjs (RL_OUT=/path). This is the compact cohort matrix.",
+  "lanes": [
+    {
+      "id": "R2-h5",
+      "run": "R2",
+      "lane": "direct-prompt",
+      "multiPage": false,
+      "passed": 5,
+      "total": 7,
+      "perAssertion": [
+        "pass",
+        "pass",
+        "fail",
+        "fail",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "errors": 0
+    },
+    {
+      "id": "R2-h6",
+      "run": "R2",
+      "lane": "skills-path",
+      "multiPage": true,
+      "passed": 7,
+      "total": 7,
+      "perAssertion": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "errors": 0
+    },
+    {
+      "id": "R4-h9",
+      "run": "R4",
+      "lane": "skills-path",
+      "multiPage": false,
+      "passed": 7,
+      "total": 7,
+      "perAssertion": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "errors": 0
+    },
+    {
+      "id": "R4-h10",
+      "run": "R4",
+      "lane": "direct-prompt",
+      "multiPage": false,
+      "passed": 5,
+      "total": 7,
+      "perAssertion": [
+        "pass",
+        "pass",
+        "fail",
+        "fail",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "errors": 0
+    },
+    {
+      "id": "R3-h8",
+      "run": "R3",
+      "lane": "skills-path",
+      "multiPage": false,
+      "passed": 5,
+      "total": 7,
+      "perAssertion": [
+        "pass",
+        "pass",
+        "fail",
+        "fail",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "errors": 0
+    },
+    {
+      "id": "R3-h7",
+      "run": "R3",
+      "lane": "direct-prompt",
+      "multiPage": false,
+      "passed": 5,
+      "total": 7,
+      "perAssertion": [
+        "pass",
+        "pass",
+        "fail",
+        "fail",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "errors": 0
+    }
+  ]
+}

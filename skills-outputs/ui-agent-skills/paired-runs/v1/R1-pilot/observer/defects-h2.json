@@ -1,0 +1,127 @@
+{
+  "hid": "h2",
+  "reviewed_files": [
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/index.html",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/styles.css",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/src/app.mjs",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/src/machine.mjs",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/src/validation.mjs",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/src/persistence.mjs",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/run-f1.mjs",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/skills-outputs/ui-agent-skills/paired-runs/v1/R1-pilot/h2/artifact/.data/profile.json",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/tests/ui-agent-skills/fixtures/form/F-1/input.json",
+    "/Users/bilibili/Documents/workspace/github/jununfly/ZAgentic/tests/ui-agent-skills/fixtures/form/F-1/expected.json"
+  ],
+  "artifact_ran": true,
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "critical",
+      "desc": "失败后重试必然再失败：模拟响应被入队两次。app.mjs:125 先 repo.setNextResponse(simulated)，随后 machine.mjs:190-192 的 persist() 又因 responseCode!=null 再 setNextResponse 一次，而 save() 只消费一条，队尾残留一条旧状态码。实测（用 node 按 confirmSubmit 顺序回放）：第 1 次选 422 失败后，第 2 次即使把下拉改成 200，实际返回仍是 422『服务端校验未通过』；要到第 3 次才成功，且队列无限增长。用户改完资料点保存却再次失败，完全无法独立走出失败态。状态机/单测抓不到，因为 run-f1.mjs 只直接调一次 form.persist(code)。",
+      "user_noticed": true,
+      "affects_decision": true
+    },
+    {
+      "id": "D2",
+      "severity": "high",
+      "desc": "确认弹窗默认焦点落在『取消』上。index.html:87-88 中 #confirm-cancel 在 #confirm-ok 之前，<dialog> 无 autofocus/默认按钮，showModal() 按树序聚焦第一个可聚焦元素，即取消。用户用键盘回车打开确认框后再按回车（最自然的『确认』手势）会直接关掉弹窗、什么都没保存，且没有任何提示。提交动作的默认键是放弃，属于危险的语义反转。",
+      "user_noticed": true,
+      "affects_decision": true
+    },
+    {
+      "id": "D3",
+      "severity": "high",
+      "desc": "提交中整体禁用输入导致焦点丢失。app.mjs:58 input.disabled=snap.locked，render() 同时禁用提交按钮（:64-66）。确认后 dialog.close() 先把焦点还给提交按钮，紧接着 render 把它 disabled，焦点掉到 body；600ms 后成功态也不做任何 focus 恢复。键盘/读屏用户提交后失去位置，需要从头 Tab。",
+      "user_noticed": true,
+      "affects_decision": false
+    },
+    {
+      "id": "D4",
+      "severity": "high",
+      "desc": "『重新加载』无确认即丢弃全部未保存编辑。app.mjs:136-139 直接 window.location.reload()，按钮 index.html:73 与主按钮『保存资料』同处 .actions 一行紧邻（styles.css:202-205）。用户改了半天想点保存却点到左边，页面重载回到上次已存数据，改动不可恢复，也没有二次确认或撤销。",
+      "user_noticed": true,
+      "affects_decision": true
+    },
+    {
+      "id": "D5",
+      "severity": "high",
+      "desc": "保存失败的错误反馈不指向任何字段，用户无法就地修复。422 分支（machine.mjs:203-210 + persistence.mjs:9）只显示『保存失败：服务端校验未通过（HTTP 422）』，此时三个输入仍是合法值、无 invalid 标记、无字段级提示；用户不知道该改昵称还是邮箱，只能盲目重试（叠加 D1 后重试还继续失败）。『失败后可改完再提』在界面上没有可执行的落点。",
+      "user_noticed": true,
+      "affects_decision": true
+    },
+    {
+      "id": "D6",
+      "severity": "medium",
+      "desc": "确认弹窗的核对清单显示英文字段名而非中文标签。app.mjs:106 key.textContent = field，用户在最关键的『确认保存以下资料？』里看到的是 nickname / email / bio（index.html:83-84），与页面上的『昵称/邮箱/简介』不一致；bio 长文本也没有截断或多行排版（styles.css:279 仅 overflow-wrap），核对体验打折。",
+      "user_noticed": true,
+      "affects_decision": true
+    },
+    {
+      "id": "D7",
+      "severity": "medium",
+      "desc": "测试脚手架暴露在用户界面里。index.html:65-71 的『模拟保存结果』下拉（200 成功 / 422 校验失败）作为普通表单项排在被编辑字段下方，没有『演示用』说明，用户会以为必须选一个或自己选错把保存搞挂；index.html:17 的状态徽章直接显示 idle/validating/submitting/success/error 英文内部状态；index.html:79『审计：#3 user 已确认』输出角色名与步号。三处都是内部术语。",
+      "user_noticed": true,
+      "affects_decision": true
+    },
+    {
+      "id": "D8",
+      "severity": "medium",
+      "desc": "可访问名称被错误地掺入动态文本。<small id=\"*-error\"> 与 bio 的计数 <span id=\"bio-count\"> 都写在 <label> 内部（index.html:32/44/50/58），输入的 accessible name 会变成『昵称 必填 昵称不能为空』『简介 12/140』，且 bio 的名称每敲一个字就变一次；同时同一段错误文案又通过 aria-describedby 再读一遍，读屏用户听到重复且不断变化的内容。",
+      "user_noticed": false,
+      "affects_decision": false
+    },
+    {
+      "id": "D9",
+      "severity": "medium",
+      "desc": "确认弹窗没有可访问名称。index.html:82-90 的 <dialog> 未设置 aria-labelledby，标题 <h2>确认保存以下资料？</h2> 不会被自动采用，读屏只播报『对话框』，用户不知道自己在确认什么（弹窗内的 summary 也只是 div，无 role/label）。",
+      "user_noticed": false,
+      "affects_decision": true
+    },
+    {
+      "id": "D10",
+      "severity": "medium",
+      "desc": "昵称长度口径不一致导致静默截断。index.html:29 maxlength=\"32\" 按 UTF-16 单元计数，validation.mjs:15-17 charLength 按码点计数并允许 32 个字符；输入 emoji 时到 16 个就被浏览器挡住且无任何提示，同时『昵称不能超过 32 个字符』这条错误在 UI 上永远触发不到（用户复制粘贴被无声截断，误以为存的就是全部）。",
+      "user_noticed": true,
+      "affects_decision": false
+    },
+    {
+      "id": "D11",
+      "severity": "medium",
+      "desc": "失败后把焦点无条件抢到昵称。app.mjs:130-132 只要 simulated!==200 就 inputs.nickname.focus()，不区分是哪个字段/哪类错误；用户本来在改邮箱或在读错误信息，焦点被夺走，光标也跳到昵称末尾。这是错位的错误恢复引导。",
+      "user_noticed": true,
+      "affects_decision": false
+    },
+    {
+      "id": "D12",
+      "severity": "low",
+      "desc": "改『模拟保存结果』下拉时会抛未捕获异常。select 在 <form> 内（index.html:67），change 会触发 input 事件冒泡到 el.form 的 input 监听（app.mjs:142）→ onInput 取 name=\"simulate\" → machine.mjs:97 的 FIELDS 白名单不包含它，抛 unknown field simulate，且 step 已被无谓 +1。功能表面正常，但控制台报错并把审计步号污染。",
+      "user_noticed": false,
+      "affects_decision": false
+    },
+    {
+      "id": "D13",
+      "severity": "low",
+      "desc": "重复的实时播报。三个字段错误都用 role=\"alert\"（index.html:32/44/58），同时 status 又是 aria-live=\"polite\"（index.html:62 + app.mjs:71-78），一次非法输入会同时播报字段级错误和『请先修正表单中的错误』，读屏体验嘈杂。",
+      "user_noticed": false,
+      "affects_decision": false
+    },
+    {
+      "id": "D14",
+      "severity": "low",
+      "desc": "『必填』标签被 space-between 推到行尾，与标签文字脱开。styles.css:102-107 的 .label-text 用 justify-content:space-between，『昵称』在最左、『必填』在最右，中间隔着近 500px 空白，视觉上像是表单级的提示而不是该字段的标记。",
+      "user_noticed": true,
+      "affects_decision": false
+    }
+  ],
+  "severity_counts": {
+    "critical": 1,
+    "high": 4,
+    "medium": 6,
+    "low": 3
+  },
+  "blindness_probe": {
+    "lane_guess": "structured",
+    "confidence": "medium",
+    "basis": "Persistence, validation and a documented state machine are split into separate modules with an explicit TRANSITIONS table, named invariants and a human-gate record whose fields (role/signed/at_step) line up with the fixture's expected schema — the fingerprint of an intermediate design contract rather than a single-pass build — though the UI layer still exposes raw dev instrumentation."
+  }
+}

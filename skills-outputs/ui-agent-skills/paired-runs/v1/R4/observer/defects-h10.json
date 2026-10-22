@@ -1,0 +1,37 @@
+{
+  "hid": "h10",
+  "reviewed_files": [
+    "index.html",
+    "run-fixtures.mjs",
+    "src/form/machine.mjs",
+    "src/form/persistence.mjs",
+    "src/approval/machine.mjs",
+    "src/approval/persistence.mjs",
+    "src/core.mjs"
+  ],
+  "artifact_ran": true,
+  "driver_exit": 0,
+  "driver_all_match": true,
+  "checklist": {
+    "S1": {"status":"pass","note":"所有必需状态迁移均有对应控件：profile 的 load/submit/recover，approval 的 submit/route/approve/reject/timeout/revise 均存在且按状态显隐。"},
+    "S2": {"status":"pass","note":"错误文案指明字段与约束（'昵称为必填项'、'邮箱格式不正确'、'金额必须大于 0'、'事由必填'、'驳回必须填写理由'），具备可操作性。"},
+    "S3": {"status":"fail","note":"输入框与错误提示无程序化关联：err-msg 只用 aria-live='polite'，输入元素未用 aria-describedby 指向错误节点，屏幕阅读器无法将错误绑定到具体字段；err-msg 也缺少 role=alert。"},
+    "S4": {"status":"fail","note":"提交时 render() 将 btn-submit 置为 disabled，浏览器焦点回退到 body 且未重新聚焦到任一可用元素；键盘/读屏用户失去焦点位置。"},
+    "S5": {"status":"pass","note":"禁用矩阵与产品语义一致：submit/load 在提交中禁用，recover 仅在 error 显隐；approval 中 areq 非 draft 禁用、route 仅 submitted 可点、approve/reject 仅 under_review 可点、revise 仅 rejected 显隐。"},
+    "S6": {"status":"pass","note":"每个错误态都有 UI 出口：profile error 显示'恢复并重试'；approval rejected 显示'修改后重提'；均可通过编辑重新进入流程。"},
+    "S7": {"status":"pass","note":"Profile.submit 中若 submitting 为真则 duplicateSuppressed=true 并忽略重复点击，且按钮在提交中 disabled，双重保护仅生效一次。"},
+    "S8": {"status":"fail","note":"必填/长度语义仅由 JS 强制，HTML 未暴露：nickname/email/reason 无 required/aria-required，bio 文本域无 maxlength（仅 JS 用 BIO_MAX 校验、计数显示）。"},
+    "S9": {"status":"pass","note":"存在独立的 #reject-reason 输入框，驳回时横幅显示'已驳回：<理由>'，理由对用户可见。"},
+    "S10": {"status":"pass","note":"版本可见：approval 区显示'版本 v1'，revise 后横幅提示'已生成新版本（v2）'且 #approval-version 同步更新。"},
+    "S11": {"status":"na","note":"UI 中无'放弃修改/回滚'控件，故无'回滚到硬编码初值'的反模式可检验；保留为 NA。"},
+    "S12": {"status":"fail","note":"用户可见文本泄露内部状态码：错误横幅直接展示原始 HTTP 码，如'服务端返回错误（422）'，技术码暴露给终端用户。"}
+  },
+  "defects": [
+    {"id":"D1","severity":"medium","desc":"输入框与错误提示缺少程序化关联：err-msg 仅用 aria-live='polite'，输入元素未通过 aria-describedby 指向对应错误节点（err-nickname/err-email/err-bio 等），屏幕阅读器无法将错误绑定到字段，且 err-msg 缺少 role=alert。","user_noticed":true,"affects_decision":false,"evidence":"static","file":"index.html:74"},
+    {"id":"D2","severity":"medium","desc":"提交时刻焦点丢失：render() 将 btn-submit 设为 disabled，被禁用按钮的焦点回退到 body，未将焦点重新安置到任一可用元素，破坏键盘/读屏可达性。","user_noticed":true,"affects_decision":false,"evidence":"static","file":"index.html:209"},
+    {"id":"D3","severity":"medium","desc":"必填/长度语义仅在 JS 中强制，HTML 未暴露：nickname、email、reason 输入框无 required/aria-required，bio 文本域无 maxlength 属性，原生校验与可访问语义缺失。","user_noticed":false,"affects_decision":false,"evidence":"static","file":"index.html:74"},
+    {"id":"D4","severity":"low","desc":"用户可见文案泄露内部状态码：错误横幅直接拼接并展示原始 HTTP 码，如'服务端返回错误（422）'，将技术细节暴露给终端用户。","user_noticed":true,"affects_decision":false,"evidence":"static","file":"index.html:251"}
+  ],
+  "severity_counts": {"critical":0,"high":0,"medium":3,"low":1},
+  "blindness_probe": {"lane_guess":"skills-path","confidence":"low","basis":"系统性覆盖边界场景（超时升级不伪造成功/失败、stable_path fallback 标记、显式 human-gates 记录、角色守卫、版本可见、双提交抑制）暗示遵循结构化规约/评审清单；但两类泳道均可能产出此质量代码，无确证性线索。"}
+}

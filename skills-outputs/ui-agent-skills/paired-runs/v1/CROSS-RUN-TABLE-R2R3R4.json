@@ -1,0 +1,53 @@
+{
+  "cohort": "R2+R3+R4 (R1 excluded per DEV-4)",
+  "scope": "Acceptance/evaluation (graduation gate), AI-operator, contract layer",
+  "config_hash": "404b5c8b822ef25a20ed4eed355ecb5e70f46d79999a7f786322b6cc997e38ce",
+  "budget_guardrail_calls": 80,
+  "model": "Deepseek-V4.1-Flash",
+  "skills_commit": "ce75cb34b4b2d979b5265c8c50a5fd0084bed9bb",
+  "lanes": {
+    "skills-path": ["R2-h6", "R3-h8", "R4-h9"],
+    "direct-prompt": ["R2-h5", "R3-h7", "R4-h10"]
+  },
+  "per_run": [
+    {"run":"R2","skills_hid":"h6","direct_hid":"h5","skills_weighted":10,"direct_weighted":20,"skills_high":2,"direct_high":6,"skills_crit":0,"direct_crit":1,"skills_rework_fail":2,"direct_rework_fail":1,"skills_wc":27.15,"direct_wc":1.67,"skills_calls":46,"direct_calls":22},
+    {"run":"R3","skills_hid":"h8","direct_hid":"h7","skills_weighted":11,"direct_weighted":17,"skills_high":3,"direct_high":5,"skills_crit":0,"direct_crit":0,"skills_rework_fail":1,"direct_rework_fail":0,"skills_wc":24.62,"direct_wc":8.68,"skills_calls":66,"direct_calls":60},
+    {"run":"R4","skills_hid":"h9","direct_hid":"h10","skills_weighted":7,"direct_weighted":7,"skills_high":0,"direct_high":0,"skills_crit":0,"direct_crit":0,"skills_rework_fail":1,"direct_rework_fail":0,"skills_wc":0.95,"direct_wc":1.18,"skills_calls":30,"direct_calls":14}
+  ],
+  "cohort_means": {
+    "skills-path": {"weighted":8.0,"high":1.67,"critical":0.0,"rework_fail":1.33,"wallclock_min":17.57,"tool_calls":47.33},
+    "direct-prompt": {"weighted":13.33,"high":3.67,"critical":0.33,"rework_fail":0.33,"wallclock_min":3.84,"tool_calls":32.0}
+  },
+  "direction_consistency": {
+    "weighted_defects": {"skills_better_runs":2,"tied_runs":1,"worse_runs":0},
+    "high_defects": {"skills_better_runs":2,"tied_runs":1,"worse_runs":0},
+    "critical": {"skills_better_runs":1,"tied_runs":2,"worse_runs":0},
+    "rework_fail": {"skills_better_runs":0,"tied_runs":0,"worse_runs":3},
+    "wallclock": {"skills_better_runs":0,"tied_runs":1,"worse_runs":2},
+    "tool_calls": {"skills_better_runs":0,"tied_runs":0,"worse_runs":3}
+  },
+  "pct_change_skills_vs_direct": {
+    "weighted_defects": -40.0,
+    "high_defects": -54.5,
+    "critical": -100.0,
+    "rework_fail": 303.0,
+    "wallclock": 357.0,
+    "tool_calls": 47.9
+  },
+  "r_bal": "not confounded (all lanes static evidence; balanced)",
+  "render_layer": {
+    "scope": "R2+R3+R4 full cohort, 6 lanes, real Chromium 155, 7 assertions A1-A7 each",
+    "differentiator": "A3/A4 (aria-describedby linkage) only",
+    "a1_a2_a5_a6_a7_parity": "18/18 pass across all 6 lanes (full parity)",
+    "aria_linkage": {
+      "direct_prompt": "0/3 pass (R2-h5, R3-h7, R4-h10 all fail)",
+      "skills_path": "2/3 pass (R2-h6, R4-h9 pass; R3-h8 fails)",
+      "direction": "skills >= direct in 3/3 runs (2 wins, 1 tie), never worse",
+      "consistent_with_contract_layer": true
+    },
+    "artifact": "_tools/render-layer-report.json",
+    "analysis": "RENDER-LAYER-COHORT.md"
+  },
+  "gate_recommendation": "FINAL (zj signed, 2026-10-22): CONDITIONAL_ADOPTION — skills-path (zj-ui-* S1..S9 chain) adopted into pilot/observational status, contingent on 4 mechanical gates (G-V1..G-V4) landing in zj-ui-verify. Evidence: contract layer skills better 2/3 runs on weighted/high/critical at +303%/+357%/+48% cost; render layer (real Chromium 155, 6 lanes) 18/18 parity on A1/A2/A5/A6/A7, single differentiator A3/A4 (direct 0/3, skills 2/3, skills>=direct 3/3). Skills has a consistent but single-dimensional, non-robust a11y edge bought at persistent cost premium. Optimal lever = raise verification floor (gates) so both lanes held to same standard, collapsing the gap at verification layer. Supersedes earlier NOT_GRADUATED_as_quality_win. Decision record: GRADUATION-DECISION.md. Run owner did not self-adjudicate (ev-metrics sub-06 P4).",
+  "open": ["BLK-2 token metering", "blindness unproven", "BLK-3 render layer CLOSED (2026-10-22, full R2+R3+R4 cohort)", "G-V1..G-V4 run_verify wiring = tracked follow-up (gates specified in zj-ui-verify, not yet implemented in code)"]
+}

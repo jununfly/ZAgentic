@@ -1,0 +1,23 @@
+{
+  "role": "operator",
+  "lane_hidden_id": "h3",
+  "config_hash": "3235655e0978279fa004a8e3727677ec3bc6c56d18a963bf921797af13f61791",
+  "model": "Deepseek-V4.1-Flash",
+  "operator_id": "operator-h3",
+  "fixture_set": ["F-1", "F-2", "F-3", "F-4", "F-5", "F-6", "A-1", "A-2", "A-3", "A-4", "A-5", "A-6"],
+  "artifacts": [
+    "artifact/index.html",
+    "artifact/form.html",
+    "artifact/approval.html",
+    "artifact/run-fixtures.mjs",
+    "artifact/src/form/machine.mjs",
+    "artifact/src/approval/machine.mjs",
+    "artifact/src/shared/store.mjs"
+  ],
+  "budget_used": {
+    "tool_calls": 59,
+    "tokens": null,
+    "tokens_note": "not measurable from operator side",
+    "wallclock_minutes": 3.5
+  }
+}

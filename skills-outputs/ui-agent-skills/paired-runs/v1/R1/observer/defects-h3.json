@@ -1,0 +1,171 @@
+{
+  "hid": "h3",
+  "reviewed_files": [
+    "form.html",
+    "approval.html",
+    "index.html",
+    "src/ui.css",
+    "src/form/machine.mjs",
+    "src/approval/machine.mjs",
+    "src/shared/store.mjs",
+    "run-fixtures.mjs"
+  ],
+  "artifact_ran": true,
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "high",
+      "desc": "表单保存成功即进入死胡同：locked 把 success 也算进去，三个输入框与确认勾选框永久 disabled，而 recover 按钮条件为 state!=='error' 故恒隐藏，submit() 对 success 只返回 already_saved。用户保存后想再改一个字，页面上没有任何出口，只能刷新（刷新后表单回 idle 才可编辑）。form.html:154,161,167,172 + src/form/machine.mjs:95,146-150",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D2",
+      "severity": "high",
+      "desc": "超时的「结果未知」警告会被第一次按键抹掉：超时后 state=error 且 lastError 已设，但 error 属于 EDITABLE，用户只要改任何一个字符，edit() 就把 state 置为 validating，render() 的 error 分支不再命中，banner 被 setBanner('','','') 清空。此时确认勾选框仍是勾选态，提交按钮立刻可用——用户看到的是一个干净的表单，一次点击即重试，完全失去「上一次可能已在服务端生效」的提示，存在重复保存风险。form.html:176-196,168 + src/form/machine.mjs:73-80,19",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D3",
+      "severity": "high",
+      "desc": "提交瞬间焦点丢失：提交路径里 render() 直接对三个 input 及 submit 按钮设 disabled（aria-busy 只加在 form 上），被禁用的正是当前焦点元素（点击按钮时焦点在按钮上，回车提交时焦点在输入框上），浏览器会把焦点抛回 body；success 后整张卡片再无任何可聚焦控件，也没有把焦点移到成功 banner。键盘/读屏用户提交后失去位置，需从文档开头重新 Tab。form.html:161,167,169,219-233",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D4",
+      "severity": "high",
+      "desc": "审批页的「无权审批」错误粘住不消失：app.denied 在 #guardApprover 里赋值后全文件再无任何清空（revise/submit/approve 都不重置），render() 又把 denied 分支排在 deciding 之前。于是申请人误点一次「通过」之后，即使切回审批人身份、单据仍在 under_review，banner 仍写「无权审批，单据状态没有变化」；驳回→修改成 v2 草稿后也继续显示这句错误，永久盖住「审批中」的指引，用户无法判断自己现在到底还能不能操作。approval.html:279-281 + src/approval/machine.mjs:116-124",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D5",
+      "severity": "high",
+      "desc": "审批通过后页面永久锁死且刷新也救不回来：initialState 取自 localStorage 的 status，approve 已 commit 了 approved，刷新后仍是 approved，表单全部 disabled、revise 仅 rejected 才显示，页面上没有任何「新建/重置」入口。用户再也无法发起第二张报销单，唯一出路是手动清 localStorage（界面无提示）。approval.html:120,237,261 + src/approval/machine.mjs:61-63,134-143",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D6",
+      "severity": "medium",
+      "desc": "所有字段级错误信息的红色样式被吃掉：.card p（0,1,1）比 .err（0,1,0）特异性高，color 与 font-size、margin 全部由 .card p 生效，.err 实际渲染成 14px 的 --muted 灰字、行距与正文一致。两页共 5 处错误文案（昵称/邮箱/简介/金额/事由）在视觉上都退化成普通说明文字，只剩输入框的红色边框提示出错。ui.css:86-90 vs 157-161；hint（.card p 同为 0,1,1）的 12px 与 5px 上边距同样失效。",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D7",
+      "severity": "medium",
+      "desc": "上一版的审批意见与勾选态会残留到下一版：revise 只清了两个 checkbox，没有清 #decision-reason，approve/reject 成功后也不清。v1 因「票据不完整」被驳回 → 修改生成 v2 → 审批人打开时意见框里仍是上一版驳回理由，勾选框在 revise 后虽已重置但意见文字还在；一旦随手勾选提交，v2 会带着旧驳回理由被「通过」。approval.html:348-354,320-341",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D8",
+      "severity": "medium",
+      "desc": "「当前身份」对提交无效：提交处理器写死 role:'applicant'、actor:seed.applicant，即使把身份切到「审批人 approver-001」或「其他人」，「确认并提交」仍以申请人身份成功提交并写盘。身份选择器看起来是全局身份，实际只影响审批动作，界面上没有任何说明，用户会以为自己是在以审批人身份操作。approval.html:307-312 vs 314-318",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D9",
+      "severity": "medium",
+      "desc": "必填性对辅助技术不可见：昵称/邮箱（表单页）与金额/事由（审批页）的必填星号都是 aria-hidden=\"true\"，input 上没有 required 也没有 aria-required，也没有可见的「必填」文字。读屏用户只有在校验报错之后才知道字段必填；* 对色觉/读屏用户等同于不存在。form.html:30-31,37-38；approval.html:30-31,37-38",
+      "user_noticed": false,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D10",
+      "severity": "medium",
+      "desc": "实时校验 + role=\"alert\" 造成逐键打断：错误段落是 role=alert，每次 input 事件都重写 textContent，输入邮箱时会逐字符触发「邮箱格式不正确…」的打断式播报，覆盖用户正在输入的内容；同时简介计数器 #bio-count 是不带 aria-live 的纯文本，读屏用户听不到字数变化，只能在超限后靠 error 得知。form.html:33,40,47,163,165",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D11",
+      "severity": "medium",
+      "desc": "驳回理由的报错与字段没有程序关联：decision-err 是孤立 role=alert 段落，#decision-reason 既没有 aria-describedby 也没设 aria-invalid（其它字段都有）。报错只在点击后播报一次，之后聚焦回该输入框时读屏用户听不到「驳回必须填写理由」。approval.html:74-77,339",
+      "user_noticed": false,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D12",
+      "severity": "medium",
+      "desc": "时间线（审计轨迹）只在内存里，刷新即清空：history 不进 store，commit 只存 status/version/decision。用户驳回、改稿、重新提交后刷新页面，状态与版本号仍在，但「v1 驳回：票据不完整」这条依据消失，无法核对驳回原因——与需求「旧版本保留在时间线里」直接冲突，而状态机测试不会覆盖刷新。approval.html:53,185-211,100-105",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D13",
+      "severity": "medium",
+      "desc": "直接双击打开 form.html / approval.html 是静默死页：两页都靠 type=\"module\" 加载 ./src/*.mjs，file:// 下被模块策略拦截，脚本整体不执行——用户看到的是空输入框、恒灰的提交按钮、pill 停在初始值，页面没有任何错误提示。只有 index.html 底部有一行 footnote 说明需要静态服务器，从子页进入的人看不到。form.html:80-81,236；approval.html:105-106；index.html:45",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D14",
+      "severity": "low",
+      "desc": "「返回编辑」按钮名不副实：error 态本来就属于 EDITABLE，字段一直是可编辑的；这个按钮只调用 recover() 把 state 改成 validating，效果是关掉失败 banner、把 422/超时的说明清掉，并没有把用户「带回」任何编辑态。用户点它之后会以为失败已被撤销。form.html:66,172,214-217 + src/form/machine.mjs:146-150",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D15",
+      "severity": "low",
+      "desc": "「已升级，请由人工接管」提示与可操作按钮自相矛盾：timeout() 只设 escalation，state 仍为 under_review，于是「通过/驳回」按钮在升级提示出现的同一面板里保持可用，界面一边说等人接管、一边允许当前审批人直接拍板。approval.html:269-272 vs 263-267",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "static"
+    },
+    {
+      "id": "D16",
+      "severity": "low",
+      "desc": "刷新后「写入次数」归零却仍有记录：createLocalStore 用已有记录做 seed，但 writes 计数从 0 起，于是「最近一次保存 / 本地记录」里明明有数据，却显示 写入次数 0，与「只有真正写入后才会出现在这里」的文案互相打脸。form.html:142；approval.html:225；src/shared/store.mjs:12,31-38",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D17",
+      "severity": "low",
+      "desc": "机器内部状态名直接暴露给用户：两页右上角 pill 原样显示 idle / validating / submitting / under_review / approved，index 卡片还显示 `under_review · v1` 这类英文枚举，且无中文释义。form.html:16,155；approval.html:16,238；index.html:61-66",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "static"
+    },
+    {
+      "id": "D18",
+      "severity": "low",
+      "desc": "index 整张卡片是一个 <a>，里面塞了 <h2> 和两段 <p>，读屏会把「用户资料编辑 昵称、邮箱… 未保存」整段当成链接名朗读，卡片内的 pill 状态也变成链接文本的一部分；同时卡片内所有文字被做成链接，缺少「进入」这类明确的动作词。index.html:22-32",
+      "user_noticed": false,
+      "affects_decision": false,
+      "evidence": "static"
+    }
+  ],
+  "severity_counts": {
+    "critical": 0,
+    "high": 5,
+    "medium": 8,
+    "low": 5
+  },
+  "blindness_probe": {
+    "lane_guess": "structured",
+    "confidence": "low",
+    "basis": "状态机暴露的是契约式接口（report() 里的 human_gates / duplicate_suppressed / fallback=stable_path / explicit_marker，deny-first 守卫）并配了独立 fixture 驱动，像是先有中间层契约再落到视图；但视觉与文案层又相当即兴（英文枚举外泄、CSS 特异性击穿、必填语义缺失），所以不敢给高置信。"
+  }
+}

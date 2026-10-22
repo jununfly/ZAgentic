@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>费用报销审批</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 24px; color: #1f2328; }
+  .panel { border: 1px solid #d0d7de; border-radius: 8px; padding: 16px; max-width: 720px; }
+  .row { margin-bottom: 10px; }
+  label { display: inline-block; width: 96px; }
+  input, select { padding: 6px; width: 320px; }
+  .err { color: #cf222e; font-size: 12px; margin-left: 100px; }
+  .meta { font-size: 12px; color: #57606a; }
+  .feedback { background: #f6f8fa; padding: 8px; border-radius: 6px; min-height: 20px; font-size: 13px; }
+  button { padding: 6px 12px; margin-right: 6px; }
+</style>
+</head>
+<body>
+<h1>费用报销审批</h1>
+<p class="meta"><a href="./index.html">返回两个流程的列表页</a></p>
+
+<section class="panel">
+  <div class="row"><label for="a-role">当前身份</label>
+    <select id="a-role">
+      <option value="applicant">申请人（user-001）</option>
+      <option value="approver">审批人（approver-001）</option>
+      <option value="other">其他人（user-006，无审批权限）</option>
+    </select>
+  </div>
+  <div class="row"><label for="a-amount">金额</label><input id="a-amount" type="number" step="0.01" /></div>
+  <div class="err" id="a-err-amount"></div>
+  <div class="row"><label for="a-reason">事由</label><input id="a-reason" /></div>
+  <div class="err" id="a-err-reason"></div>
+  <div class="row"><label for="a-attachment">附件</label><input id="a-attachment" /></div>
+  <div class="row"><label for="a-comment">审批意见</label><input id="a-comment" placeholder="驳回必填" /></div>
+  <div class="row">
+    <input type="checkbox" id="a-confirm" /> <span>我确认本次提交 / 审批决定（人工确认）</span>
+  </div>
+  <div class="row">
+    <button id="a-submit" type="button">提交申请</button>
+    <button id="a-route" type="button">路由给审批人</button>
+    <button id="a-approve" type="button">通过</button>
+    <button id="a-reject" type="button">驳回</button>
+    <button id="a-timeout" type="button">模拟审批超时升级</button>
+    <button id="a-revise" type="button">修改并重提新版本</button>
+  </div>
+  <div class="meta">状态：<b id="a-state"></b> | 版本：<b id="a-version"></b> | 升级标记：<b id="a-escalated"></b> | 写入：<b id="a-writes"></b> | 已持久化：<b id="a-persisted"></b></div>
+  <div class="meta">人工确认：<b id="a-gates"></b></div>
+  <div class="meta">历史版本：<b id="a-history"></b></div>
+  <div class="feedback" id="a-feedback"></div>
+</section>
+
+<script type="module">
+  import { mountApprovalUI } from './src/ui/approval-ui.mjs';
+  mountApprovalUI(document);
+</script>
+</body>
+</html>

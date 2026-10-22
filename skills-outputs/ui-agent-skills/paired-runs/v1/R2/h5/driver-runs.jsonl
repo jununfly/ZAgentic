@@ -1,0 +1,2 @@
+{"seq":1,"ts":"2026-10-21T15:36:40Z","exit":1,"all_match":false,"mismatch_count":2,"mismatch_keys":["A-1","A-2"],"note":"first full run"}
+{"seq":2,"ts":"2026-10-21T15:37:48Z","exit":0,"all_match":true,"mismatch_count":0,"mismatch_keys":[],"note":"second run after approval actor fix"}

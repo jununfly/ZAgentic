@@ -1,0 +1,17 @@
+{
+  "run": "R3-contract-layer",
+  "fixture_set": ["F-1","F-2","F-3","F-4","F-5","F-6","A-1","A-2","A-3","A-4","A-5","A-6"],
+  "randomization": {
+    "method": "python random.shuffle",
+    "seed": 2026102201,
+    "candidates": ["skills-path", "direct-prompt"],
+    "note": "R1 h3=skills/h4=direct；R2 h5=direct/h6=skills；R3 h7=direct/h8=skills（与 R2 同序，随机结果）"
+  },
+  "map": {
+    "h7": "direct-prompt",
+    "h8": "skills-path"
+  },
+  "instruction_policy": "R3 的 operator 指令逐字复用 R2（含『状态迁移必须 UI 可达』与 driver-runs.jsonl），只替换 hid/路径/operator_id —— 见 DEV-4",
+  "sealed_at": "2026-10-22T00:47:00+08:00",
+  "rule": "Observer 落盘 defects-<hid>.json 前，主控不得做交叉比对；本文件不进 Observer 输入集。"
+}

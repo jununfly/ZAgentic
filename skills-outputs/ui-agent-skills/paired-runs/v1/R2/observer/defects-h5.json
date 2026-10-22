@@ -1,0 +1,198 @@
+{
+  "hid": "h5",
+  "reviewed_files": [
+    "index.html",
+    "run-fixtures.mjs",
+    "src/form/ui.mjs",
+    "src/form/machine.mjs",
+    "src/form/validation.mjs",
+    "src/form/store.mjs",
+    "src/approval/ui.mjs",
+    "src/approval/machine.mjs",
+    "src/approval/store.mjs",
+    "src/approval/roles.mjs"
+  ],
+  "artifact_ran": true,
+  "driver_exit": 0,
+  "driver_all_match": true,
+  "checklist": {
+    "S1": {
+      "status": "pass",
+      "note": "fixture 涉及的每条迁移都有控件触发：编辑(input) idle->validating、提交(f-submit)、mock 服务端响应下拉(422/超时)、失败后恢复编辑(f-recover)、提交申请(a-submit)、路由到审批人(a-route)、审批通过(a-approve)/驳回(a-reject)、基于驳回创建新版本(a-revise)、模拟审批超时(a-timeout)。已用 DOM 桩脚本逐条点过（a-route->under_review、a-revise->draft v2 等均已执行）。例外：idle 态直接点提交会死锁，见 D1。"
+    },
+    "S2": {
+      "status": "fail",
+      "note": "字段级文案基本可执行（'昵称为必填项'/'金额必须大于 0'/'事由为必填项'/'简介长度不能超过 120'），但 422 失败只给 '保存失败 code=422 error=server_side_constraint'，不说明哪个字段、违反什么约束、如何改；'邮箱格式不正确'也未说明正确格式。见 D9。"
+    },
+    "S3": {
+      "status": "fail",
+      "note": "全仓无 aria-describedby / role=alert / aria-live。实测：f-nickname 的 aria-describedby=null、f-err-nickname 的 role/aria-live=null、f-log 的 aria-live=null、a-amount 的 aria-describedby=null、a-err-amount 的 role=null。错误文案与状态变化对读屏用户完全静默。见 D7。"
+    },
+    "S4": {
+      "status": "fail",
+      "note": "实测：点击 f-submit 后 render() 立即把提交按钮与三个输入全部 disabled=true，焦点仍停在已禁用的 f-submit 上，代码中无任何 focus() 转移或恢复（全仓无 focus 调用）。真实浏览器下焦点会掉到 body，700ms 后控件恢复但焦点不回。见 D2。"
+    },
+    "S5": {
+      "status": "pass",
+      "note": "主体与产品语义一致：表单提交中锁定输入+提交按钮，失败/成功后恢复可编辑；报销单仅在 draft 可编辑，进入 submitted/under_review/approved/rejected 后金额/事由/附件均 disabled（实测）。次要不一致：a-decision-reason(审批意见) 在 draft 且身份为申请人时仍可编辑，审批按钮在任意状态均可点（越权时由状态机拒绝，见 D6）。"
+    },
+    "S6": {
+      "status": "fail",
+      "note": "422/超时 error 态有出口（实测 f-recover -> validating 且输入解禁）；rejected 有出口（a-revise -> draft v2）；校验错误态出口为继续编辑。但存在无出口的失败态：idle 直接提交后永久锁定且提示 '保存失败 code=undefined error=undefined'（D1，实测 f-recover/f-submit 均无法脱困）；且 submitting 期间点恢复会给出假的'已恢复'反馈（D10）。"
+    },
+    "S7": {
+      "status": "pass",
+      "note": "实测：同一 tick 内连点两次 f-submit，第二次被 input_locked 拦截，日志 '提交被拦截: input_locked'，store writes=1，duplicate_suppressed=true；报销单在 submitted/under_review 重复提交返回 duplicate_or_locked，状态不前进。"
+    },
+    "S8": {
+      "status": "fail",
+      "note": "实测 required=false、aria-required=null、f-bio maxlength=null、a-amount min=null；必填与 120 上限只存在于 label 文本和 JS。见 D11。"
+    },
+    "S9": {
+      "status": "fail",
+      "note": "有独立输入 a-decision-reason 且 reject() 强制非空（实测空理由返回 reason_required、状态不前进）✓；但理由只存进 machine.getDecisions()/store，界面从未渲染——实测驳回后全部 UI 文本为 a-state='rejected'、a-version='1'、日志'驳回成功，状态=rejected'，理由 '票据不完整，请补正' 不出现在任何位置。见 D5。"
+    },
+    "S10": {
+      "status": "pass",
+      "note": "meta 区有 '版本：N'，实测 reject->revise 后 a-version 由 1 变为 2，日志'已基于驳回创建新版本 v2'。弱项：只显示当前版本号，历史版本/各版审批结论不可见。"
+    },
+    "S11": {
+      "status": "na",
+      "note": "不存在'放弃修改/回滚'控件：f-reset 标签为'查看已持久化资料'，点击只往日志打印 JSON（src/form/ui.mjs:88-91），不回滚字段。无持久化数据时初始化回退到硬编码默认值 {nickname:'zj', email:'zj@example.com'}（src/form/ui.mjs:14）。因此'回滚到最近一次保存 vs 硬编码初始值'的语义无从比较。"
+    },
+    "S12": {
+      "status": "fail",
+      "note": "实测日志直出内部枚举：'提交被拦截: confirm_required'、'提交被拦截: client_validation'、'提交被拦截: input_locked'、'审批未完成: reason_required'、'审批被拒绝: role_not_allowed (role=user-006, actor=user-006)'、'保存失败 code=422 error=server_side_constraint'、'保存失败 code=0 error=timeout'；状态行直接显示英文内部状态名 idle/validating/submitting/error/under_review/rejected。见 D8。"
+    }
+  },
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "critical",
+      "desc": "页面加载后（state=idle）只要用户勾选确认并直接点“提交”（不先改动任何字段），表单会永久死锁：submit() 中 go('submitting') 在 idle 态不合法（TRANSITIONS.idle 只允许 ['validating']，machine.mjs:9），但 go() 的返回值被丢弃，随后仍执行 locked=true、gate 签名并返回 ok:true；700ms 后 persist() 因 state!=='submitting' 提前 return，不再把 locked 复位。实测结果：state 一直为 idle、isLocked=true、f-nickname/f-email/f-bio 与 f-submit 全部 disabled 且永不恢复，日志显示“已确认提交，等待服务端…”后接“保存失败 code=undefined error=undefined”，writes=0 什么都没保存；再点“失败后恢复编辑”和“提交”均无法脱困（recover() 只接受 error/success）。先编辑一个字符再提交则正常（writes=1、success），说明这是初始态专属的死锁。UI 侧 src/form/ui.mjs:64-80 无条件信任 res.ok 并锁控件，src/form/ui.mjs:47-50 执行禁用。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/form/machine.mjs:92"
+    },
+    {
+      "id": "D2",
+      "severity": "high",
+      "desc": "提交瞬间焦点丢失：点击 f-submit 后 render() 立刻把三个输入和提交按钮本身设为 disabled，而焦点正停在刚被点击的提交按钮上；全仓没有任何 focus() 调用做转移或恢复。实测 harness 中 activeElement 仍为 f-submit 且 disabled=true，真实浏览器下焦点会掉到 body，键盘/读屏用户在 700ms 提交窗口内失去位置，控件恢复可编辑后焦点也不会回到表单。",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "executed",
+      "file": "src/form/ui.mjs:47"
+    },
+    {
+      "id": "D3",
+      "severity": "high",
+      "desc": "表单的人工确认门只真正生效一次：render() 从不重置 #f-confirm 的 checked，勾选一次后永久保持。实测：勾选一次提交成功（writes=1）后，用户只改昵称再点“提交”，在未再次勾选的情况下直接成功（writes=2），第三次同样成功（writes=3）。违反“提交必须由用户显式确认”/“每次提交都要显式确认”，后续提交实质是未确认提交。",
+      "user_noticed": false,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/form/ui.mjs:62"
+    },
+    {
+      "id": "D4",
+      "severity": "high",
+      "desc": "报销流程共用同一个 #a-confirm 勾选框，且 render() 从不按状态/角色/决定次数重置它。实测：申请人首次提交勾选后，revise 出新版本 v2 再次提交时勾选框仍是 true，machine 直接放行（state=submitted，gate 记为 signed:true）；随后切到审批人身份点“审批通过”，审批人本轮并未勾选，仍凭残留的 true 直接 approved。违反“每次提交、每次审批决定都要用户/审批人显式确认”。",
+      "user_noticed": false,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/approval/ui.mjs:43"
+    },
+    {
+      "id": "D5",
+      "severity": "high",
+      "desc": "驳回理由从不展示给申请人：a-decision-reason 只是审批人的输入框，reject() 把理由存进 decisions/store，但 render()/renderErrors() 只渲染 amount/reason 两个字段级校验错误，界面没有任何位置渲染 lastDecision。实测驳回（理由“票据不完整，请补正”）后，全部渲染文本为“状态：rejected ｜ 版本：1”加日志“驳回成功，状态=rejected”，理由不出现在任何元素中。申请人只看到“被驳回”却不知道为什么、要改什么，驳回后的修改重提交链路事实上断裂。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/approval/ui.mjs:35"
+    },
+    {
+      "id": "D6",
+      "severity": "high",
+      "desc": "审批意见输入框跨状态、跨角色复用且从不随状态清空，导致决策记录写入错误意见。实测：先用“票据不完整，请补正”驳回 -> revise -> 重新提交 -> 路由 -> 切审批人 -> 未填任何意见直接点“审批通过”，machine.getDecisions() 最后一条为 {action:'approve', reason:'票据不完整，请补正'}，即把上一轮驳回理由当作通过意见持久化。审批人身份下该输入框也不随状态禁用/清空，申请人在 draft 态同样可以往“审批意见”里写内容。",
+      "user_noticed": false,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/approval/ui.mjs:84"
+    },
+    {
+      "id": "D7",
+      "severity": "high",
+      "desc": "错误信息与状态变化对辅助技术完全不可达：错误容器是普通 div（无 role=alert/aria-live），输入与错误容器之间没有 aria-describedby，状态行 f-state/a-state 与日志区也不是 live region。实测 f-nickname.aria-describedby=null、f-err-nickname.role=null、f-log.aria-live=null、a-amount.aria-describedby=null。读屏用户既听不到字段级校验错误，也听不到“保存失败/超时/审批被拒绝”，只能读到静态标签。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "index.html:48"
+    },
+    {
+      "id": "D8",
+      "severity": "medium",
+      "desc": "内部枚举与状态码直出用户文案：日志打印“提交被拦截: client_validation / confirm_required / input_locked”“审批未完成: reason_required”“审批被拒绝: role_not_allowed (role=user-006, actor=user-006)”“保存失败 code=422 error=server_side_constraint”“保存失败 code=0 error=timeout”；状态行还把 idle/validating/submitting/error/under_review/rejected 等英文内部状态名原样显示给用户。",
+      "user_noticed": true,
+      "affects_decision": false,
+      "evidence": "executed",
+      "file": "src/form/ui.mjs:67"
+    },
+    {
+      "id": "D9",
+      "severity": "medium",
+      "desc": "422 失败反馈不可执行：日志只有“保存失败 code=422 error=server_side_constraint”，未指出是哪个字段、违反了什么服务端约束、该怎么改；同时三个字段级错误区全为空，用户拿不到任何可操作指引。超时分支同理只有“保存失败 code=0 error=timeout”，缺少“未保存/请重试”的显式说明（状态行只显示 error）。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/form/ui.mjs:77"
+    },
+    {
+      "id": "D10",
+      "severity": "medium",
+      "desc": "“失败后恢复编辑”在提交进行中点击会给出假的成功反馈：处理器忽略 machine.recover() 的返回值，无论成败都打印“回到可编辑状态，可修改后重新提交”。实测：submitting 期间点击该按钮，日志显示已恢复，但 state 仍为 submitting、输入仍 disabled，700ms 后服务端响应才落地，用户被误导。",
+      "user_noticed": true,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/form/ui.mjs:83"
+    },
+    {
+      "id": "D11",
+      "severity": "medium",
+      "desc": "必填与长度/金额下限只由 JS 表达，HTML 语义缺失：实测 #f-nickname 无 required、无 aria-required；#f-bio 无 maxlength（可输入 200 字后才报“简介长度不能超过 120”）；#a-amount 无 min/required（type=number 也允许负数）。原生表单语义、输入法/自动填充和辅助技术都拿不到这些约束。",
+      "user_noticed": false,
+      "affects_decision": false,
+      "evidence": "executed",
+      "file": "index.html:47"
+    },
+    {
+      "id": "D12",
+      "severity": "low",
+      "desc": "persisted 标志在失败后不复位：persist() 只在成功分支置 persisted=true，失败分支不清零。实测：先成功保存一次，再走 422/超时失败后 snapshot 仍为 persisted=true（state=error、recoverable=true）。当前 UI 未直接渲染该字段，但状态模型对外声称“已保存”，与“超时不能让用户以为保存成功”相悖。",
+      "user_noticed": false,
+      "affects_decision": true,
+      "evidence": "executed",
+      "file": "src/form/machine.mjs:108"
+    },
+    {
+      "id": "D13",
+      "severity": "low",
+      "desc": "两个页签只用 class hidden 切换并维护 aria-selected，缺少 role=tablist/role=tab/role=tabpanel 与 aria-controls，隐藏面板也没有 aria-hidden/inert 兜底；切页签后焦点不转移，屏幕阅读器无法识别这是一组页签。",
+      "user_noticed": false,
+      "affects_decision": false,
+      "evidence": "static",
+      "file": "index.html:37"
+    }
+  ],
+  "severity_counts": {
+    "critical": 1,
+    "high": 6,
+    "medium": 4,
+    "low": 2
+  },
+  "blindness_probe": {
+    "lane_guess": "structured",
+    "confidence": "medium",
+    "basis": "代码被拆成 machine/validation/store/ui 四层并带显式 TRANSITIONS 状态表、deny-first 角色守卫、human_gates/fallback=stable_path/explicit_marker 等与 fixture 契约同构的词汇，且一次跑通 12 条 fixture，像是先有中间设计产物再落地，而非对着需求直写。"
+  }
+}

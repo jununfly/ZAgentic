@@ -1,0 +1,7 @@
+{"seq":1,"ts":"2026-10-21T09:40:47Z","fixture":"F-1","event":"start","detail":"read raw requirement and F-1 fixture"}
+{"seq":2,"ts":"2026-10-21T09:42:00Z","fixture":"F-1","event":"action","detail":"wrote state machine validation and mock repo"}
+{"seq":3,"ts":"2026-10-21T09:42:00Z","fixture":"F-1","event":"action","detail":"wrote html view and stylesheet"}
+{"seq":4,"ts":"2026-10-21T09:42:00Z","fixture":"F-1","event":"action","detail":"wrote fixture runner run-f1"}
+{"seq":5,"ts":"2026-10-21T09:42:18Z","fixture":"F-1","event":"validate","detail":"ran run-f1 exit 0 all asserted fields match"}
+{"seq":6,"ts":"2026-10-21T09:42:34Z","fixture":"F-1","event":"validate","detail":"verified 422 failure blocked submit and recovery to success"}
+{"seq":7,"ts":"2026-10-21T09:42:34Z","fixture":"F-1","event":"complete","detail":"deliverables written and F-1 passing"}

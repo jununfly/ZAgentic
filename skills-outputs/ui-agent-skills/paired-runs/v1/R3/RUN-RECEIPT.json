@@ -1,0 +1,739 @@
+{
+  "receipt_kind": "paired-run-receipt/v1",
+  "canonical_receipt": false,
+  "canonical_note": "非 R-RCP-1 verification receipt；R-RCP-1 绑定 dual_lane_runner 的 adapter/manifest/env 轴，1-9 走 operator 轴且无浏览器，硬套会产生不可归因字段。本收据不主张 1-5-4 的任何闸门。",
+  "run_id": "R2-contract-layer",
+  "issued_at": "2026-10-21T17:57:50Z",
+  "registration": {
+    "doc": "docs/plans/ui-agent-skills-paired-run-registration.md",
+    "config_hash": "3235655e0978279fa004a8e3727677ec3bc6c56d18a963bf921797af13f61791",
+    "model": "Deepseek-V4.1-Flash",
+    "skills_commit": "ce75cb34b4b2d979b5265c8c50a5fd0084bed9bb",
+    "browser_major": "155"
+  },
+  "fixture_set": {
+    "ids": [
+      "F-1",
+      "F-2",
+      "F-3",
+      "F-4",
+      "F-5",
+      "F-6",
+      "A-1",
+      "A-2",
+      "A-3",
+      "A-4",
+      "A-5",
+      "A-6"
+    ],
+    "files_hash": "baff1b6e8fbf47b44ee7f8ab65ec38c8ebbbd407b31fd16197dd1b1974ecb8a4"
+  },
+  "lanes": {
+    "h7": {
+      "lane": "direct-prompt",
+      "artifacts": [
+        {
+          "path": "h7/artifact/approval.html",
+          "sha256": "f095065c7594b1e64ec471d42c840517efbcd870752ed1e4dd0a51a7d3a8730d",
+          "bytes": 2759
+        },
+        {
+          "path": "h7/artifact/index.html",
+          "sha256": "fc6eb7170a211007c8d105dc0bbea9e7fb90bfb2b51c077aee6f4fb98a5a5936",
+          "bytes": 5060
+        },
+        {
+          "path": "h7/artifact/run-fixtures.mjs",
+          "sha256": "5e457a406e801c975eaa0dc6656aeb98530efd620c242b14c1375d894e2493f4",
+          "bytes": 5494
+        },
+        {
+          "path": "h7/artifact/src/approval/machine.mjs",
+          "sha256": "40e3a7ed88ee3bab5de7ef1fa9ba52e0960e4f1416eb0e3483902262ae35d1d0",
+          "bytes": 8307
+        },
+        {
+          "path": "h7/artifact/src/approval/roles.mjs",
+          "sha256": "eb84c562f7dc353f0427a6c71c5a6712cc3f34a73981286adae441bf720dc5bc",
+          "bytes": 1473
+        },
+        {
+          "path": "h7/artifact/src/approval/store.mjs",
+          "sha256": "8c1d815ee389b60811747e8a163a71dbf603f0ec88af5c84145288ceb9f7ceb6",
+          "bytes": 992
+        },
+        {
+          "path": "h7/artifact/src/approval/validation.mjs",
+          "sha256": "464a00d010a9d92f0d3ac48ac5c1df73ce11f2faf8565f1be0a90cbb71c4477b",
+          "bytes": 727
+        },
+        {
+          "path": "h7/artifact/src/form/machine.mjs",
+          "sha256": "c6e988b7aed737cde99cb456410580a8d022abc31217ad407083fd91d4fa1618",
+          "bytes": 5225
+        },
+        {
+          "path": "h7/artifact/src/form/store.mjs",
+          "sha256": "8fd521da6ba0dbe521d37fbd2316a9b6c31f2072c09b3e382461064fc54a9fc3",
+          "bytes": 718
+        },
+        {
+          "path": "h7/artifact/src/form/validation.mjs",
+          "sha256": "ceef9dc32170dc949bfa492956c3fc7cab2ef4c66d90890901d6c1b002a27caf",
+          "bytes": 1066
+        },
+        {
+          "path": "h7/artifact/src/mock/constants.mjs",
+          "sha256": "52d65cec704d1ddc914f7ccd2f9dfaf1b4bfdfd1f4061c4bddcbdf2ab12598af",
+          "bytes": 776
+        },
+        {
+          "path": "h7/artifact/src/mock/server.mjs",
+          "sha256": "3aba07cc8cce12baf555df027ab18504b6647bb74d1028e5c0b620cef02eb256",
+          "bytes": 846
+        },
+        {
+          "path": "h7/artifact/src/ui/approval-ui.mjs",
+          "sha256": "5aa348c6fe7d96825e496f7a6823622405d042f6e45ec5306140e994917e904f",
+          "bytes": 6159
+        },
+        {
+          "path": "h7/artifact/src/ui/form-ui.mjs",
+          "sha256": "1e43690732cad26302cb5d8c3f3e47b5e6c73b849fe184e74c2e8dc33c860a34",
+          "bytes": 3410
+        }
+      ],
+      "events": {
+        "path": "h7/events.jsonl",
+        "sha256": "de67c31001e02d2c10b01dbe9acbd0a30a01554c997adca5df552b95c77b42cb",
+        "lines": 60
+      },
+      "run_meta_sha256": "60fcec0c5254b1702fecdc5d9c6218ff1eb9ea8b9aed366168095b0c6dcbc649",
+      "driver_runs": {
+        "path": "h7/driver-runs.jsonl",
+        "sha256": "00c7bb0a9d39fb6384c9e4078e13f0659e72a79717c76d29924ef7391db09081"
+      },
+      "observer_defects": {
+        "path": "observer/defects-h7.json",
+        "sha256": "bb4c8775bab24beb2661dafc94b6741760c7335c72c994d555d3b153368f05aa"
+      },
+      "metrics": {
+        "lane": "direct-prompt",
+        "contract": {
+          "fixtures_total": 12,
+          "fixtures_passed": 12,
+          "all_match": true,
+          "mismatched": []
+        },
+        "rework": {
+          "count_selfreported": 1,
+          "per_fixture": 0.0833,
+          "source": "operator-logged event=rework",
+          "audited": false,
+          "audit_note": "rework 由 operator 自记，主控无法从产物独立复核 -> 只能当自报值",
+          "driver_runs_total": 1,
+          "driver_runs_failed": 0,
+          "independent": {
+            "source": "driver-runs.jsonl (host-verifiable)",
+            "failed_runs": 0,
+            "vs_selfreported": {
+              "selfreported_rework": 1,
+              "agrees": false,
+              "note": "两者测的不是同一件事：自记 rework 记修改轮次，failed_runs 记驱动失败次数；不要求相等"
+            }
+          }
+        },
+        "latency": {
+          "wallclock_min_events": 8.683,
+          "run_meta_wallclock_min": 8,
+          "metric_name": "operator completion latency (DEV-2)"
+        },
+        "inputs": {
+          "audited_steps": 44,
+          "unaudited_steps": 16,
+          "tool_calls_selfreported": 60,
+          "artifact_bytes": 48492,
+          "tokens": null,
+          "tokens_reason": "BLK-2: host 无法从 operator 侧读 token 计数"
+        },
+        "escaped_defects": {
+          "critical": 0,
+          "high": 5,
+          "medium": 7,
+          "low": 1,
+          "total": 13,
+          "weighted": 17,
+          "evidence_mix": {
+            "executed": 10,
+            "static": 3
+          },
+          "render_layer": "not_measured (BLK-3: 无浏览器引擎，静态推导)"
+        },
+        "log_quality": {
+          "lines": 60,
+          "malformed_lines": [],
+          "field_swapped_lines": [],
+          "append_only_verified": true,
+          "ts_source": "date -u at write time"
+        },
+        "blindness_probe": {
+          "lane_guess": "structured",
+          "confidence": "medium",
+          "basis": "代码按 machine/store/validation/ui 分层、每个状态迁移都有对应注释，且内嵌 STABLE_PATH、Human gate、deny-first、fallback 等流程设计术语，不像直接照着需求写页面。"
+        },
+        "observer_checklist": {
+          "reported_items": 12,
+          "counts": {
+            "pass": 5,
+            "fail": 7
+          },
+          "failed": [
+            "S11",
+            "S12",
+            "S2",
+            "S3",
+            "S4",
+            "S8",
+            "S9"
+          ]
+        }
+      }
+    },
+    "h8": {
+      "lane": "skills-path",
+      "artifacts": [
+        {
+          "path": "h8/artifact/index.html",
+          "sha256": "3ce995efdd1a7abd64b461bf65fcfa69bb650c87b3609967e0e10a8404809991",
+          "bytes": 20189
+        },
+        {
+          "path": "h8/artifact/run-fixtures.mjs",
+          "sha256": "16e85053a7030073db198c740a3d3495ef641945c8722848ad97289c1777ec2e",
+          "bytes": 5652
+        },
+        {
+          "path": "h8/artifact/src/approval/machine.mjs",
+          "sha256": "e4016f930cca7bc2e37f2d6f8d8ea5df6a1973c18d20f39db84cb31943169e47",
+          "bytes": 11675
+        },
+        {
+          "path": "h8/artifact/src/approval/persistence.mjs",
+          "sha256": "693620aec236952c90fe9216071159ce348a83e07b62241084ab434f4ffd9211",
+          "bytes": 2012
+        },
+        {
+          "path": "h8/artifact/src/approval/roles.mjs",
+          "sha256": "6068652b061a95f3abef1d38598874f64dffdbbf42bbbbddfc0d4ab913d08591",
+          "bytes": 2349
+        },
+        {
+          "path": "h8/artifact/src/core.mjs",
+          "sha256": "5e2571584f058ee6ee407add840147457428f810bd8e53a8e174d0286739e9ff",
+          "bytes": 2242
+        },
+        {
+          "path": "h8/artifact/src/form/machine.mjs",
+          "sha256": "83652fa57c382938012752de7146f084fe22069f88c997e2a9cca4d745379fb7",
+          "bytes": 10391
+        },
+        {
+          "path": "h8/artifact/src/form/persistence.mjs",
+          "sha256": "9fa84dde8081c2ea51df3b3d8021accb545fbae10c945164ae77cfc7424d6446",
+          "bytes": 2379
+        },
+        {
+          "path": "h8/artifact/src/form/validation.mjs",
+          "sha256": "09550b47c9b9b775df9d0be7643ce3b3910b8b8732ae299cad8936257f6e789b",
+          "bytes": 2003
+        }
+      ],
+      "events": {
+        "path": "h8/events.jsonl",
+        "sha256": "f695f09f47dc7afaf6d4d97289da25b5701de6974c5549d3ef4eba72b67a503d",
+        "lines": 66
+      },
+      "run_meta_sha256": "6b3cf1db812e5cafbc430fbec20e61c8d91feeb8fa4d45ba27adcb614ef9f341",
+      "driver_runs": {
+        "path": "h8/driver-runs.jsonl",
+        "sha256": "2b674c3f7a6c999567d70734f98a34aab468ce1701e7e0f32016cc9956322f8c"
+      },
+      "observer_defects": {
+        "path": "observer/defects-h8.json",
+        "sha256": "eebee43f01016ca0c3d8eaab3cb26e3bcb8495b824c4daec4028db650bc5bd88"
+      },
+      "metrics": {
+        "lane": "skills-path",
+        "contract": {
+          "fixtures_total": 12,
+          "fixtures_passed": 12,
+          "all_match": true,
+          "mismatched": []
+        },
+        "rework": {
+          "count_selfreported": 2,
+          "per_fixture": 0.1667,
+          "source": "operator-logged event=rework",
+          "audited": false,
+          "audit_note": "rework 由 operator 自记，主控无法从产物独立复核 -> 只能当自报值",
+          "driver_runs_total": 3,
+          "driver_runs_failed": 1,
+          "independent": {
+            "source": "driver-runs.jsonl (host-verifiable)",
+            "failed_runs": 1,
+            "vs_selfreported": {
+              "selfreported_rework": 2,
+              "agrees": false,
+              "note": "两者测的不是同一件事：自记 rework 记修改轮次，failed_runs 记驱动失败次数；不要求相等"
+            }
+          }
+        },
+        "latency": {
+          "wallclock_min_events": 24.617,
+          "run_meta_wallclock_min": 24,
+          "metric_name": "operator completion latency (DEV-2)"
+        },
+        "inputs": {
+          "audited_steps": 46,
+          "unaudited_steps": 20,
+          "tool_calls_selfreported": 66,
+          "artifact_bytes": 62860,
+          "tokens": null,
+          "tokens_reason": "BLK-2: host 无法从 operator 侧读 token 计数"
+        },
+        "escaped_defects": {
+          "critical": 0,
+          "high": 3,
+          "medium": 5,
+          "low": 4,
+          "total": 12,
+          "weighted": 11,
+          "evidence_mix": {
+            "executed": 8,
+            "static": 4
+          },
+          "render_layer": "not_measured (BLK-3: 无浏览器引擎，静态推导)"
+        },
+        "log_quality": {
+          "lines": 66,
+          "malformed_lines": [],
+          "field_swapped_lines": [],
+          "append_only_verified": true,
+          "ts_source": "date -u at write time"
+        },
+        "blindness_probe": {
+          "lane_guess": "structured",
+          "confidence": "medium",
+          "basis": "代码里成体系地出现 deny-first、unknown quartet、human_gates、explicit_marker/stable_path fallback、迁移表与 fixture 完全同构的 snapshot 字段，且 core.mjs:2 特意声明『此处不放方法论词汇』，指向存在中间设计产物。"
+        },
+        "observer_checklist": {
+          "reported_items": 12,
+          "counts": {
+            "pass": 5,
+            "fail": 7
+          },
+          "failed": [
+            "S11",
+            "S12",
+            "S2",
+            "S3",
+            "S4",
+            "S7",
+            "S8"
+          ]
+        }
+      }
+    }
+  },
+  "pairing": {
+    "a_hid": "h7",
+    "a_lane": "direct-prompt",
+    "b_hid": "h8",
+    "b_lane": "skills-path",
+    "critical_defects": {
+      "a": 0,
+      "b": 0,
+      "delta": null,
+      "note": "baseline 0 -> 相对变化无定义"
+    },
+    "total_defects": {
+      "a": 13,
+      "b": 12,
+      "delta": 0.0833
+    },
+    "weighted_defects": {
+      "a": 17,
+      "b": 11,
+      "delta": 0.5455
+    },
+    "rework_rate": {
+      "a": 0.0833,
+      "b": 0.1667,
+      "delta": -0.5003
+    },
+    "latency": {
+      "a": 8,
+      "b": 24,
+      "delta": -0.6667
+    },
+    "tool_calls": {
+      "a": 60,
+      "b": 66,
+      "delta": -0.0909
+    },
+    "artifact_bytes": {
+      "a": 48492,
+      "b": 62860,
+      "delta": -0.2286
+    },
+    "sample_size": 1,
+    "verdict_rule": "n=1 只允许描述方向，不允许当毕业证据（ev-metrics §1 要求三次 run）"
+  },
+  "checks": [
+    {
+      "id": "R3-C1",
+      "claim": "两 lane 契约层全绿（12/12 fixtures）",
+      "observed": {
+        "h7": {
+          "fixtures_total": 12,
+          "fixtures_passed": 12,
+          "all_match": true,
+          "mismatched": []
+        },
+        "h8": {
+          "fixtures_total": 12,
+          "fixtures_passed": 12,
+          "all_match": true,
+          "mismatched": []
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "id": "R3-C2",
+      "claim": "行为级反硬编码：三个变异体均被实现跟随（非哑输出）",
+      "observed": {
+        "h7": [
+          "F-5",
+          "F-6",
+          "A-6"
+        ],
+        "h8": [
+          "F-5",
+          "F-6",
+          "A-6"
+        ]
+      },
+      "status": "pass"
+    },
+    {
+      "id": "R3-C3",
+      "claim": "日志 append-only、seq 连续、ts 单调且来自真实时钟",
+      "observed": {
+        "h7": {
+          "lines": 60,
+          "malformed_lines": [],
+          "append_only_verified": true,
+          "ts_source": "date -u at write time"
+        },
+        "h8": {
+          "lines": 66,
+          "malformed_lines": [],
+          "append_only_verified": true,
+          "ts_source": "date -u at write time"
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "id": "R3-C4",
+      "claim": "产物无 lane 标注泄漏（机械扫描）",
+      "observed": {
+        "h7": {
+          "status": "clean",
+          "scanned": 15,
+          "hits": [],
+          "suppressed_css": 0
+        },
+        "h8": {
+          "status": "clean",
+          "scanned": 10,
+          "hits": [],
+          "suppressed_css": 0
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "id": "R3-C5",
+      "claim": "token 预算 ≤80k 可验证",
+      "observed": null,
+      "status": "not_measured",
+      "note": "BLK-2：host 侧无 token 计量，冻结的预算当前不可审计"
+    },
+    {
+      "id": "R3-C6",
+      "claim": "渲染层/键盘可达性缺陷实测",
+      "observed": null,
+      "status": "not_measured",
+      "note": "BLK-3：无浏览器引擎，escaped defect 全部为静态推导（h4 部分为驱动级 executed）"
+    },
+    {
+      "id": "R3-C7",
+      "claim": "S1 状态可达性（机械设备：产品要求的两条 transition 在 UI 上可达）",
+      "observed": {
+        "h7": {
+          "S1_approval_actions_reachable": {
+            "required_actions": [
+              "approve",
+              "reject",
+              "route",
+              "submit",
+              "timeout"
+            ],
+            "per_action": {
+              "approve": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "reject": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "route": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "submit": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "timeout": {
+                "machine_defines": false,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              }
+            },
+            "failed_actions": [],
+            "status": "pass",
+            "meaning": "动作在 UI 上没有控件 => 用户在界面上走不到该状态（fixture 用 initial_state 直接注入，永远测不到）"
+          },
+          "S6_form_recover": {
+            "view_has_recover_control": true,
+            "status": "present",
+            "gating_expression": [],
+            "meaning": "控件存在不等于可用：需人判 gating_expression 的极性，确认它在错误态可见（R1: h3 曾被观察员读反极性误报 high）"
+          }
+        },
+        "h8": {
+          "S1_approval_actions_reachable": {
+            "required_actions": [
+              "approve",
+              "reject",
+              "route",
+              "submit",
+              "timeout"
+            ],
+            "per_action": {
+              "approve": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "reject": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "route": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "submit": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              },
+              "timeout": {
+                "machine_defines": true,
+                "control_or_label": true,
+                "invoked_from_view": true,
+                "status": "pass"
+              }
+            },
+            "failed_actions": [],
+            "status": "pass",
+            "meaning": "动作在 UI 上没有控件 => 用户在界面上走不到该状态（fixture 用 initial_state 直接注入，永远测不到）"
+          },
+          "S6_form_recover": {
+            "view_has_recover_control": true,
+            "status": "present",
+            "gating_expression": [
+              "el('f-recover').hidden = s.final_state !== 'error';"
+            ],
+            "meaning": "控件存在不等于可用：需人判 gating_expression 的极性，确认它在错误态可见（R1: h3 曾被观察员读反极性误报 high）"
+          }
+        }
+      },
+      "status": "pass",
+      "note": "动作名从冻结 fixture 派生（submit/route/approve/reject/timeout），判据=HTML 是否有对应控件。R2 两 lane 均 pass —— 但见 DEV-4：R2 的 operator 指令显式要求了「状态迁移必须 UI 可达」，与 R1 不同，故 S1 不可跨 run 合并。"
+    },
+    {
+      "id": "R3-C8",
+      "claim": "返工有 host 侧独立口径（driver-runs.jsonl）",
+      "observed": {
+        "h7": {
+          "source": "driver-runs.jsonl (host-verifiable)",
+          "failed_runs": 0,
+          "vs_selfreported": {
+            "selfreported_rework": 1,
+            "agrees": false,
+            "note": "两者测的不是同一件事：自记 rework 记修改轮次，failed_runs 记驱动失败次数；不要求相等"
+          }
+        },
+        "h8": {
+          "source": "driver-runs.jsonl (host-verifiable)",
+          "failed_runs": 1,
+          "vs_selfreported": {
+            "selfreported_rework": 2,
+            "agrees": false,
+            "note": "两者测的不是同一件事：自记 rework 记修改轮次，failed_runs 记驱动失败次数；不要求相等"
+          }
+        }
+      },
+      "status": "pass",
+      "note": "BLK-4 在 R2 闭合：驱动失败次数不再只靠 operator 自记"
+    },
+    {
+      "id": "R3-C9",
+      "claim": "墙钟：host 实测（日志首末 ts）与 operator 自报一致",
+      "observed": {
+        "h7": {
+          "host_log_span_min": 8.68,
+          "self_reported_min": 8,
+          "gap_min": 0.68
+        },
+        "h8": {
+          "host_log_span_min": 24.62,
+          "self_reported_min": 24,
+          "gap_min": 0.62
+        }
+      },
+      "status": "pass",
+      "note": "差距 >2min 即视为自报不可信；本 run 以 host 实测为准"
+    }
+  ],
+  "status": {
+    "contract_layer": "pass_both_lanes",
+    "escaped_defects": "measured_static_only",
+    "graduation": "NOT_EVALUATED",
+    "graduation_note": "本 run 是 R2；且 DEV-4（operator 指令在中途变更）使 R1 与 R2 不可直接合并计为毕业样本"
+  },
+  "blindness": {
+    "unsealed_now": true,
+    "at_review_time": "Observers 只拿到 h3/h4 目录，lanemap 在 _sealed 且不在其输入集；评审完成后主控才交叉比对",
+    "probe": {
+      "h7": {
+        "lane_guess": "structured",
+        "confidence": "medium",
+        "basis": "代码按 machine/store/validation/ui 分层、每个状态迁移都有对应注释，且内嵌 STABLE_PATH、Human gate、deny-first、fallback 等流程设计术语，不像直接照着需求写页面。"
+      },
+      "h8": {
+        "lane_guess": "structured",
+        "confidence": "medium",
+        "basis": "代码里成体系地出现 deny-first、unknown quartet、human_gates、explicit_marker/stable_path fallback、迁移表与 fixture 完全同构的 snapshot 字段，且 core.mjs:2 特意声明『此处不放方法论词汇』，指向存在中间设计产物。"
+      }
+    },
+    "probe_power": "弱区分（h3→structured/low, h4→direct/medium）；不能称双盲已验证",
+    "evidence_balance": {
+      "rule": "R-BAL: 一条 lane executed>=3 而另一条 <1 -> confounded，缺陷差值不得用于 graduation",
+      "per_lane": {
+        "h7": {
+          "executed": 10,
+          "static": 3
+        },
+        "h8": {
+          "executed": 8,
+          "static": 4
+        }
+      },
+      "balanced": true,
+      "confounded": false,
+      "effect": null
+    }
+  },
+  "review": {
+    "defect_audit": {
+      "path": "observer/defect-audit.json",
+      "sha256": "8b76e27b91ebbf0f245130dd8e38011241fd52351f9c8968566c3ac2700f6722"
+    },
+    "audit_summary": {
+      "audited": 2,
+      "verified": 2,
+      "overstated": 0,
+      "refuted": 0
+    }
+  },
+  "unmeasurable": [
+    {
+      "id": "tokens",
+      "why": "BLK-2 host 无 token 计量",
+      "effect": "≤80k 预算当前不可验证"
+    },
+    {
+      "id": "render_layer_defects",
+      "why": "BLK-3 无浏览器引擎",
+      "effect": "escaped defect 仅静态推导，视觉/键盘实测缺失"
+    },
+    {
+      "id": "rework_truth",
+      "why": "operator 自记",
+      "effect": "返工率只能当自报值，未独立复核"
+    }
+  ],
+  "deviations": [
+    {
+      "id": "DEV-1",
+      "desc": "dual_lane_runner.py and ui-agent-skills-env-fingerprint.json keep browser_major=PENDING@1-7-3; fingerprint echoes the constant, does not detect the real browser. 1-7-3 was supposed to backfill it but did not.",
+      "impact": "1-9 registration env axis (155) is not byte-identical to the harness fingerprint; cannot claim 'harness == registered env'.",
+      "disposition": "1-9 env frozen at measured 155; fixing the harness constant is a CODE change, out of Acceptance read-only scope -> tracked as separate product-execution follow-up. Does not block 1-9 R1 start; blocks only the strong 'byte-identical env' claim."
+    }
+  ],
+  "blockers": [
+    {
+      "id": "BLK-2",
+      "what": "token 预算不可测",
+      "blocks": "预算护栏的可审计性"
+    },
+    {
+      "id": "BLK-3",
+      "what": "无浏览器 → 渲染层未测",
+      "blocks": "escaped defect 的完整性"
+    },
+    {
+      "id": "DEV-3",
+      "what": "观察员取证规程不统一",
+      "blocks": "跨 lane 缺陷计数的可比性"
+    }
+  ],
+  "caveats": [
+    "rework 为 operator 自记，主控无法独立复核（R3-C3 只证明日志机械完整性，不证明如实）",
+    "h3 日志有 4 行 fixture/event 字段对调（含结尾 complete 行）；按 ev-metrics §4 不重写日志，原样留存",
+    "两 observer 证据深度不对称（DEV-3），缺陷计数差含取证深度成分",
+    "artifact_bytes / tool_calls 含各自实现选择差异，不作为质量指标"
+  ]
+}

@@ -1,0 +1,20 @@
+{"seq":1,"ts":"2026-10-22T11:35:03Z","fixture":"GLOBAL","event":"start","detail":"operator-r4-h9 begin; lane skills-path; config_hash 404b5c8b...; 12 fixtures"}
+{"seq":2,"ts":"2026-10-22T11:35:06Z","fixture":"GLOBAL","event":"action","detail":"create file=artifact/src/core.mjs (stableStringify + validators)"}
+{"seq":3,"ts":"2026-10-22T11:35:09Z","fixture":"GLOBAL","event":"action","detail":"create file=artifact/src/form/persistence.mjs (createProfileApi)"}
+{"seq":4,"ts":"2026-10-22T11:35:12Z","fixture":"GLOBAL","event":"action","detail":"create file=artifact/src/form/machine.mjs (form state machine + park/resume)"}
+{"seq":5,"ts":"2026-10-22T11:35:15Z","fixture":"GLOBAL","event":"action","detail":"create file=artifact/src/approval/persistence.mjs (createApprovalApi)"}
+{"seq":6,"ts":"2026-10-22T11:35:18Z","fixture":"GLOBAL","event":"action","detail":"create file=artifact/src/approval/machine.mjs (approval state machine + role gate)"}
+{"seq":7,"ts":"2026-10-22T11:35:21Z","fixture":"GLOBAL","event":"action","detail":"create file=artifact/index.html (two-page UI wired to machines)"}
+{"seq":8,"ts":"2026-10-22T11:35:24Z","fixture":"F-1","event":"action","detail":"replay match=true; success 200 + persisted"}
+{"seq":9,"ts":"2026-10-22T11:35:27Z","fixture":"F-2","event":"action","detail":"replay match=true; required-field block"}
+{"seq":10,"ts":"2026-10-22T11:35:30Z","fixture":"F-3","event":"action","detail":"replay match=true; email format block (submit_blocked derived)"}
+{"seq":11,"ts":"2026-10-22T11:35:33Z","fixture":"F-4","event":"action","detail":"replay match=true; duplicate suppressed, writes=1"}
+{"seq":12,"ts":"2026-10-22T11:35:36Z","fixture":"F-5","event":"action","detail":"replay match=true; 422 recoverable error"}
+{"seq":13,"ts":"2026-10-22T11:35:39Z","fixture":"F-6","event":"action","detail":"replay match=true; timeout fallback=stable_path + explicit_marker"}
+{"seq":14,"ts":"2026-10-22T11:35:42Z","fixture":"A-1","event":"action","detail":"replay match=true; approve with double human gates"}
+{"seq":15,"ts":"2026-10-22T11:35:45Z","fixture":"A-2","event":"action","detail":"replay match=true; reject with reason, persisted"}
+{"seq":16,"ts":"2026-10-22T11:35:48Z","fixture":"A-3","event":"action","detail":"replay match=true; invalid amount/reason blocked at draft"}
+{"seq":17,"ts":"2026-10-22T11:35:51Z","fixture":"A-4","event":"action","detail":"replay match=true; duplicate submit ignored, stays submitted"}
+{"seq":18,"ts":"2026-10-22T11:35:54Z","fixture":"A-5","event":"action","detail":"replay match=true; timeout escalate, stays under_review"}
+{"seq":19,"ts":"2026-10-22T11:35:57Z","fixture":"A-6","event":"action","detail":"replay match=true; unauthorized approve denied, no advance"}
+{"seq":20,"ts":"2026-10-22T11:36:00Z","fixture":"GLOBAL","event":"complete","detail":"all 12 fixtures matched; exit 0; all_match true"}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>资料编辑与报销审批</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 24px; color: #1f2328; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; margin-top: 8px; }
+  .tabs button { margin-right: 8px; padding: 6px 12px; }
+  .panel { border: 1px solid #d0d7de; border-radius: 8px; padding: 16px; margin-top: 12px; max-width: 720px; }
+  .row { margin-bottom: 10px; }
+  label { display: inline-block; width: 96px; }
+  input, select, textarea { padding: 6px; width: 320px; }
+  .err { color: #cf222e; font-size: 12px; margin-left: 100px; }
+  .meta { font-size: 12px; color: #57606a; }
+  .feedback { background: #f6f8fa; padding: 8px; border-radius: 6px; min-height: 20px; font-size: 13px; }
+  button { padding: 6px 12px; margin-right: 6px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+<h1>两个流程：用户资料编辑 / 费用报销审批</h1>
+
+<div class="tabs">
+  <button id="tab-form" type="button">资料编辑表单</button>
+  <button id="tab-approval" type="button">费用报销审批</button>
+  <a href="./approval.html">在新页面打开报销审批</a>
+</div>
+
+<section class="panel" id="panel-form">
+  <h2>用户资料编辑</h2>
+  <div class="row"><label for="f-nickname">昵称</label><input id="f-nickname" /></div>
+  <div class="err" id="f-err-nickname"></div>
+  <div class="row"><label for="f-email">邮箱</label><input id="f-email" /></div>
+  <div class="err" id="f-err-email"></div>
+  <div class="row"><label for="f-bio">简介</label><textarea id="f-bio"></textarea></div>
+  <div class="err" id="f-err-bio"></div>
+
+  <div class="row">
+    <label for="f-scenario">服务端</label>
+    <select id="f-scenario">
+      <option value="200">200 成功</option>
+      <option value="422">422 服务端约束</option>
+      <option value="timeout">超时（结果未确认）</option>
+    </select>
+  </div>
+  <div class="row">
+    <input type="checkbox" id="f-confirm" /> <span>我确认提交这份资料（人工确认，不允许自动提交）</span>
+  </div>
+  <div class="row">
+    <button id="f-submit" type="button">提交</button>
+    <button id="f-respond" type="button">触发服务端响应</button>
+    <button id="f-recover" type="button">返回修改</button>
+  </div>
+  <div class="meta">状态：<b id="f-state"></b> | 写入次数：<b id="f-writes"></b> | 已持久化：<b id="f-persisted"></b> | 人工确认：<b id="f-gates"></b> | 标记：<b id="f-marker"></b></div>
+  <div class="feedback" id="f-feedback"></div>
+</section>
+
+<section class="panel" id="panel-approval" hidden>
+  <h2>费用报销审批</h2>
+  <div class="row"><label for="a-role">当前身份</label>
+    <select id="a-role">
+      <option value="applicant">申请人（user-001）</option>
+      <option value="approver">审批人（approver-001）</option>
+      <option value="other">其他人（user-006，无审批权限）</option>
+    </select>
+  </div>
+  <div class="row"><label for="a-amount">金额</label><input id="a-amount" type="number" step="0.01" /></div>
+  <div class="err" id="a-err-amount"></div>
+  <div class="row"><label for="a-reason">事由</label><input id="a-reason" /></div>
+  <div class="err" id="a-err-reason"></div>
+  <div class="row"><label for="a-attachment">附件</label><input id="a-attachment" /></div>
+  <div class="row"><label for="a-comment">审批意见</label><input id="a-comment" placeholder="驳回必填" /></div>
+  <div class="row">
+    <input type="checkbox" id="a-confirm" /> <span>我确认本次提交 / 审批决定（人工确认）</span>
+  </div>
+  <div class="row">
+    <button id="a-submit" type="button">提交申请</button>
+    <button id="a-route" type="button">路由给审批人</button>
+    <button id="a-approve" type="button">通过</button>
+    <button id="a-reject" type="button">驳回</button>
+    <button id="a-timeout" type="button">模拟审批超时升级</button>
+    <button id="a-revise" type="button">修改并重提新版本</button>
+  </div>
+  <div class="meta">状态：<b id="a-state"></b> | 版本：<b id="a-version"></b> | 升级标记：<b id="a-escalated"></b> | 写入：<b id="a-writes"></b> | 已持久化：<b id="a-persisted"></b></div>
+  <div class="meta">人工确认：<b id="a-gates"></b></div>
+  <div class="meta">历史版本：<b id="a-history"></b></div>
+  <div class="feedback" id="a-feedback"></div>
+</section>
+
+<script type="module">
+  import { mountFormUI } from './src/ui/form-ui.mjs';
+  import { mountApprovalUI } from './src/ui/approval-ui.mjs';
+
+  mountFormUI(document);
+  mountApprovalUI(document);
+
+  document.getElementById('tab-form').addEventListener('click', () => {
+    document.getElementById('panel-form').hidden = false;
+    document.getElementById('panel-approval').hidden = true;
+  });
+  document.getElementById('tab-approval').addEventListener('click', () => {
+    document.getElementById('panel-form').hidden = true;
+    document.getElementById('panel-approval').hidden = false;
+  });
+</script>
+</body>
+</html>

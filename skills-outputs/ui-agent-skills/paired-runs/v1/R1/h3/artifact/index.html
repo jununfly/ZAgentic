@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>工作台 · 两个本地 mock 流程</title>
+  <link rel="stylesheet" href="./src/ui.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="crumb">工作台</p>
+        <h1>两个流程</h1>
+      </div>
+      <span class="pill">本地 mock · 无后端</span>
+    </header>
+
+    <p class="lede">两个页面共用一套交互约定：输入即校验、提交前必须勾选确认、提交中锁定输入，失败与超时都不会被说成成功。数据只写入浏览器本地存储。</p>
+
+    <div class="grid">
+      <a class="card" href="./form.html" style="text-decoration:none;color:inherit">
+        <h2>用户资料编辑</h2>
+        <p>昵称、邮箱、简介的实时校验与手动提交；覆盖成功、422 与超时三种结果。</p>
+        <p><span class="pill" id="profile-state">未保存</span></p>
+      </a>
+
+      <a class="card" href="./approval.html" style="text-decoration:none;color:inherit">
+        <h2>费用报销审批</h2>
+        <p>申请人提交、审批人通过或驳回、驳回后改稿生成新版本；越权审批被拒绝且状态不前进。</p>
+        <p><span class="pill" id="expense-state">无记录</span></p>
+      </a>
+    </div>
+
+    <p class="section-title">共同约定</p>
+    <div class="card">
+      <ul style="margin:0;padding-left:20px;color:var(--muted);font-size:14px">
+        <li>提交与审批都是手动动作：确认勾选 + 点击按钮，两步都在同一次交互里，系统不会替你点。</li>
+        <li>提交中输入锁定，重复点击不会产生第二次写入。</li>
+        <li>服务端 422 与服务端超时都可复现：422 可以改完再提交；超时只显示「结果未知」，并留在当前页。</li>
+        <li>审批只接受审批人角色，越权调用会被拒绝，单据停在原状态。</li>
+      </ul>
+    </div>
+
+    <p class="footnote">页面通过 ES Modules 加载 <code>src/**/*.mjs</code>，请用本地静态服务器打开（例如 <code>python3 -m http.server</code>），直接双击 file:// 打开会被浏览器的模块策略拦截。</p>
+  </main>
+
+  <script type="module">
+    function read(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key) || 'null');
+      } catch {
+        return null;
+      }
+    }
+
+    const profile = read('mock.profile.v1');
+    const expense = read('mock.expense.v1');
+
+    const profilePill = document.getElementById('profile-state');
+    profilePill.dataset.state = profile ? 'success' : 'idle';
+    profilePill.textContent = profile ? `已保存 · ${profile.profile.nickname}` : '未保存';
+
+    const expensePill = document.getElementById('expense-state');
+    expensePill.dataset.state = expense ? expense.status : 'idle';
+    expensePill.textContent = expense ? `${expense.status} · v${expense.version}` : '无记录';
+  </script>
+</body>
+</html>

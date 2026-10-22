@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>用户中心 · 资料编辑 &amp; 报销审批</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --panel: #ffffff; --ink: #1f2933; --muted: #6b7280;
+    --line: #e5e7eb; --brand: #2563eb; --ok: #16a34a; --warn: #d97706; --err: #dc2626;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: var(--bg); color: var(--ink); line-height: 1.5; }
+  header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 20px; }
+  header h1 { font-size: 18px; margin: 0; }
+  nav.tabs { display: flex; gap: 8px; padding: 12px 20px 0; }
+  nav.tabs button { border: 1px solid var(--line); background: var(--panel); padding: 8px 16px;
+                    border-radius: 999px; cursor: pointer; font-size: 14px; color: var(--muted); }
+  nav.tabs button[aria-selected="true"] { color: #fff; background: var(--brand); border-color: var(--brand); }
+  main { padding: 20px; max-width: 880px; margin: 0 auto; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+           padding: 20px; display: none; }
+  .panel.active { display: block; }
+  h2 { margin-top: 0; font-size: 16px; }
+  .field { margin: 14px 0; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  input, textarea, select { width: 100%; padding: 9px 11px; border: 1px solid var(--line);
+                            border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .err-msg { color: var(--err); font-size: 12px; margin-top: 4px; min-height: 1em; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--err); }
+  .hint { font-size: 12px; color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button.act { border: 1px solid var(--brand); background: var(--brand); color: #fff;
+               padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  button.act:disabled { opacity: .5; cursor: not-allowed; }
+  button.ghost { background: #fff; color: var(--brand); }
+  button.warn { border-color: var(--warn); background: var(--warn); }
+  button.danger { border-color: var(--err); background: var(--err); }
+  .state-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px;
+                background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+  .banner { margin: 14px 0; padding: 12px 14px; border-radius: 8px; font-size: 14px; display: none; }
+  .banner.show { display: block; }
+  .banner.ok { background: #ecfdf5; color: var(--ok); border: 1px solid #a7f3d0; }
+  .banner.err { background: #fef2f2; color: var(--err); border: 1px solid #fecaca; }
+  .banner.info { background: #eff6ff; color: var(--brand); border: 1px solid #bfdbfe; }
+  .gates { margin-top: 16px; font-size: 13px; }
+  .gates ul { margin: 6px 0 0; padding-left: 18px; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .group { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 14px; }
+  .group h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 680px) { .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header><h1>用户中心 · 资料编辑 &amp; 报销审批（本地 Mock）</h1></header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-profile" aria-selected="true" onclick="show('profile')">① 用户资料编辑</button>
+  <button role="tab" id="tab-approval" aria-selected="false" onclick="show('approval')">② 费用报销审批</button>
+</nav>
+
+<main>
+  <!-- ===================== 页面一：资料编辑 ===================== -->
+  <section class="panel active" id="profile" role="tabpanel" aria-labelledby="tab-profile">
+    <h2>用户资料编辑</h2>
+    <div id="profile-banner" class="banner" role="status" aria-live="polite"></div>
+
+    <div class="group">
+      <h3>资料表单</h3>
+      <div class="field" id="f-nickname">
+        <label for="nickname">昵称（必填）</label>
+        <input id="nickname" type="text" autocomplete="off" />
+        <div class="err-msg" id="err-nickname" aria-live="polite"></div>
+      </div>
+      <div class="field" id="f-email">
+        <label for="email">邮箱</label>
+        <input id="email" type="email" autocomplete="off" />
+        <div class="err-msg" id="err-email" aria-live="polite"></div>
+      </div>
+      <div class="field" id="f-bio">
+        <label for="bio">简介（≤ 200 字）</label>
+        <textarea id="bio" rows="3"></textarea>
+        <div class="hint"><span id="bio-count">0</span>/200</div>
+        <div class="err-msg" id="err-bio" aria-live="polite"></div>
+      </div>
+      <div class="row">
+        <button class="act" id="btn-load" onclick="Profile.load()">加载资料</button>
+        <button class="act ghost" id="btn-submit" onclick="Profile.submit()">提交保存</button>
+        <button class="act ghost" id="btn-recover" onclick="Profile.recover()" style="display:none">恢复并重试</button>
+      </div>
+    </div>
+
+    <div class="meta">当前状态：<span class="state-pill" id="profile-state">idle</span></div>
+    <div class="gates">
+      <strong>人工确认记录（Human Gates）</strong>
+      <ul id="profile-gates"><li class="hint">暂无</li></ul>
+    </div>
+  </section>
+
+  <!-- ===================== 页面二：报销审批 ===================== -->
+  <section class="panel" id="approval" role="tabpanel" aria-labelledby="tab-approval">
+    <h2>费用报销审批</h2>
+    <div id="approval-banner" class="banner" role="status" aria-live="polite"></div>
+
+    <div class="two">
+      <!-- 申请人视图 -->
+      <div class="group">
+        <h3>申请人填报（角色：applicant）</h3>
+        <div class="field" id="a-amount">
+          <label for="amount">金额（&gt; 0）</label>
+          <input id="amount" type="number" min="0" step="0.01" />
+          <div class="err-msg" id="err-amount" aria-live="polite"></div>
+        </div>
+        <div class="field" id="a-reason">
+          <label for="reason">事由（必填）</label>
+          <input id="reason" type="text" />
+          <div class="err-msg" id="err-reason" aria-live="polite"></div>
+        </div>
+        <div class="field">
+          <label for="attachment">附件（Mock 引用）</label>
+          <select id="attachment">
+            <option value="">— 无 —</option>
+            <option value="mock://receipt-001">mock://receipt-001</option>
+            <option value="mock://receipt-002">mock://receipt-002</option>
+          </select>
+        </div>
+        <div class="row">
+          <button class="act" id="btn-areq" onclick="Approval.submit()">提交报销单</button>
+          <button class="act ghost" id="btn-revise" onclick="Approval.revise()" style="display:none">修改后重提</button>
+        </div>
+      </div>
+
+      <!-- 审批人视图 -->
+      <div class="group">
+        <h3>审批人处理（角色：approver）</h3>
+        <div class="row" style="margin-bottom:8px">
+          <button class="act" id="btn-route" onclick="Approval.route()">路由到审批</button>
+        </div>
+        <div class="field">
+          <label for="reject-reason">驳回理由（驳回时必填）</label>
+          <input id="reject-reason" type="text" placeholder="请说明驳回原因" />
+        </div>
+        <div class="row">
+          <button class="act" id="btn-approve" onclick="Approval.decide('approve')">通过</button>
+          <button class="act danger" id="btn-reject" onclick="Approval.decide('reject')">驳回</button>
+          <button class="act ghost" id="btn-timeout" onclick="Approval.timeout()">模拟超时升级</button>
+        </div>
+        <p class="hint" id="role-hint">越权提示：只有 approver 角色可审批，其他角色调用将被拒绝且状态不前进。</p>
+      </div>
+    </div>
+
+    <div class="meta">当前状态：<span class="state-pill" id="approval-state">draft</span>
+      <span class="hint">| 版本 v<span id="approval-version">1</span></span></div>
+    <div class="gates">
+      <strong>人工确认记录（Human Gates）</strong>
+      <ul id="approval-gates"><li class="hint">暂无</li></ul>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   极简状态机（与 headless 驱动同构，仅用于真实 UI 行为演示）
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+function show(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $(''+name).classList.add('active');
+  ['profile','approval'].forEach(t=>$('tab-'+t).setAttribute('aria-selected', t===name));
+}
+
+/* ---------- 页面一：资料编辑 ---------- */
+const Profile = (() => {
+  const BIO_MAX = 200;
+  const profile = { nickname:'zj', email:'zj@example.com', bio:'AI-Native 实践者' };
+  const data = { ...profile };
+  let state = 'idle';
+  let errors = [];
+  let duplicateSuppressed = false;
+  let submitting = false;
+  const gates = [];
+
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim());
+  const blank = v => !v || String(v).trim()==='';
+
+  function validate(){
+    errors = [];
+    if (blank(data.nickname)) errors.push('nickname');
+    if (!emailOk(data.email)) errors.push('email');
+    if (String(data.bio).length > BIO_MAX) errors.push('bio');
+    renderErrors();
+    return errors.length===0;
+  }
+  function renderErrors(){
+    ['nickname','email','bio'].forEach(f=>{
+      const msg = $('err-'+f); const wrap = $('f-'+f);
+      let m='';
+      if (f==='nickname' && errors.includes('nickname')) m='昵称为必填项';
+      if (f==='email' && errors.includes('email')) m='邮箱格式不正确';
+      if (f==='bio' && errors.includes('bio')) m='简介超出 200 字上限';
+      msg.textContent = m;
+      wrap.classList.toggle('invalid', !!m);
+    });
+  }
+  function render(){
+    $('profile-state').textContent = state;
+    $('btn-submit').disabled = submitting;
+    $('btn-load').disabled = submitting;
+    $('btn-recover').style.display = (state==='error') ? 'inline-block':'none';
+    const ul = $('profile-gates'); ul.innerHTML='';
+    if (!gates.length){ ul.innerHTML='<li class="hint">暂无</li>'; }
+    gates.forEach(g=>{ const li=document.createElement('li');
+      li.textContent = `角色=${g.role} 签署=${g.signed?'是':'否'} 步骤#${g.at_step}`; ul.appendChild(li); });
+  }
+  function banner(type, text){ const b=$('profile-banner'); b.className='banner show '+type; b.textContent=text; }
+
+  function bind(){
+    ['nickname','email','bio'].forEach(f=>{
+      const el = $(f);
+      el.addEventListener('input', ()=>{
+        data[f] = el.value;
+        if (state==='idle'||state==='success'||state==='error') state='validating';
+        if (f==='bio') $('bio-count').textContent = String(el.value).length;
+        validate();
+      });
+    });
+  }
+
+  return {
+    init(){ bind(); this.load(); },
+    load(){
+      data.nickname = profile.nickname; data.email = profile.email; data.bio = profile.bio;
+      $('nickname').value=data.nickname; $('email').value=data.email; $('bio').value=data.bio;
+      $('bio-count').textContent = String(data.bio).length;
+      state='validating'; validate(); banner('info','已加载当前资料，可编辑后提交。'); render();
+    },
+    submit(){
+      if (submitting){ duplicateSuppressed=true; banner('info','提交进行中，已忽略重复点击。'); render(); return; }
+      if (!validate()){ banner('err','校验未通过，请先修正高亮字段再提交。'); return; }
+      submitting = true; state='submitting';
+      gates.push({ role:'user', signed:true, at_step: gates.length+1 });
+      banner('info','已提交，等待服务端确认…'); render();
+      // 模拟服务端：200 成功 / 0 超时 / 422 约束
+      const code = mockServer();
+      setTimeout(()=>{
+        submitting=false;
+        if (code===200){ state='success'; banner('ok','保存成功！'); }
+        else if (code===0){ state='error'; banner('err','服务端超时，未保存成功。可点“恢复并重试”。（fallback: stable_path）'); }
+        else { state='error'; banner('err','服务端返回错误（'+code+'），保存未成功。可点“恢复并重试”后修改再提交。'); }
+        render();
+      }, 600);
+    },
+    recover(){ if (state==='error'){ state='validating'; banner('info','已恢复为可编辑状态，可修改后重新提交。'); } render(); },
+  };
+  function mockServer(){ const r=Math.random(); return r<0.6?200:(r<0.8?0:422); }
+})();
+
+/* ---------- 页面二：报销审批 ---------- */
+const Approval = (() => {
+  const applicantId = 'user-001';
+  const approverId = 'approver-001';
+  let state = 'draft';
+  let version = 1;
+  let decision = null;
+  const history = [];
+  const gates = [];
+  const req = { amount:0, reason:'', attachment_ref:null };
+
+  function validate(){
+    const e=[];
+    if (!(Number(req.amount)>0)) e.push('amount');
+    if (!req.reason || !req.reason.trim()) e.push('reason');
+    $('err-amount').textContent = e.includes('amount')?'金额必须大于 0':'';
+    $('err-reason').textContent = e.includes('reason')?'事由必填':'';
+    $('a-amount').classList.toggle('invalid', e.includes('amount'));
+    $('a-reason').classList.toggle('invalid', e.includes('reason'));
+    return e.length===0;
+  }
+  function render(){
+    $('approval-state').textContent = state;
+    $('approval-version').textContent = version;
+    const inFlight = state!=='draft';
+    $('btn-areq').disabled = inFlight;
+    $('btn-revise').style.display = (state==='rejected')?'inline-block':'none';
+    $('btn-route').disabled = state!=='submitted';
+    $('btn-approve').disabled = state!=='under_review';
+    $('btn-reject').disabled = state!=='under_review';
+    const ul=$('approval-gates'); ul.innerHTML='';
+    if(!gates.length){ ul.innerHTML='<li class="hint">暂无</li>'; }
+    gates.forEach(g=>{ const li=document.createElement('li');
+      li.textContent=`角色=${g.role} 签署=${g.signed?'是':'否'} 步骤#${g.at_step}`; ul.appendChild(li); });
+  }
+  function banner(type,text){ const b=$('approval-banner'); b.className='banner show '+type; b.textContent=text; }
+  function gate(role, signed){ gates.push({role, signed, at_step:gates.length+1}); }
+
+  function readForm(){
+    req.amount = parseFloat($('amount').value)||0;
+    req.reason = $('reason').value;
+    req.attachment_ref = $('attachment').value || null;
+  }
+
+  return {
+    init(){ render(); },
+    submit(){
+      readForm();
+      if (state!=='draft'){ gate('applicant',false); banner('info','已在流程中，重复提交被忽略。'); render(); return; }
+      if (!validate()){ gate('applicant',false); banner('err','校验未通过：金额必须>0 且事由必填。'); render(); return; }
+      gate('applicant',true);
+      state='submitted'; banner('info','报销单已提交，等待路由到审批人。'); render();
+    },
+    route(){
+      if (state!=='submitted'){ banner('info','当前状态无法路由。'); return; }
+      state='under_review'; banner('info','已路由至审批人，等待审批决定。'); render();
+    },
+    decide(kind){
+      if (state!=='under_review'){ banner('info','当前不在审批中。'); return; }
+      // 角色守卫：必须是 approver 角色
+      const requestedRole = approverId; // UI 以 approver 身份操作
+      if (requestedRole!==approverId){ banner('err','越权：非审批人角色，操作被拒绝，状态不前进。'); return; }
+      if (kind==='reject'){
+        const reason = $('reject-reason').value.trim();
+        if (!reason){ banner('err','驳回必须填写理由。'); return; }
+        decision={kind,reason}; gate('approver',true); state='rejected';
+        banner('warn','已驳回：'+reason+' 可“修改后重提”生成新版本。'); render(); return;
+      }
+      decision={kind,reason:$('reject-reason').value.trim()}; gate('approver',true); state='approved';
+      banner('ok','审批通过，报销完成。'); render();
+    },
+    timeout(){
+      if (state!=='under_review'){ banner('info','仅审批中可触发超时升级。'); return; }
+      banner('warn','审批超时，已升级处理（不伪造成功/失败），等待人工接管。'); render();
+    },
+    revise(){
+      if (state!=='rejected'){ banner('info','仅被驳回后可修改重提。'); return; }
+      history.push({version, req:{...req}, decision});
+      version+=1; decision=null; state='draft';
+      banner('info','已生成新版本（v'+version+'），旧驳回记录保留，可修改后重新提交。'); render();
+    },
+    // 演示越权拦截：以申请人身份尝试审批
+    attemptAsApplicant(){
+      if (state!=='under_review'){ banner('info','当前不在审批中。'); return; }
+      const requestedRole = applicantId;
+      if (requestedRole!==approverId){ banner('err','越权：申请人尝试审批被拒绝，状态不前进。'); render(); }
+    }
+  };
+})();
+
+Profile.init();
+Approval.init();
+</script>
+</body>
+</html>

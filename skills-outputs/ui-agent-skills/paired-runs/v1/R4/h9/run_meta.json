@@ -1,0 +1,30 @@
+{
+  "role": "operator",
+  "lane_hidden_id": "h9",
+  "config_hash": "404b5c8b822ef25a20ed4eed355ecb5e70f46d79999a7f786322b6cc997e38ce",
+  "model": "Deepseek-V4.1-Flash",
+  "operator_id": "operator-r4-h9",
+  "fixture_set": [
+    "F-1",
+    "F-2",
+    "F-3",
+    "F-4",
+    "F-5",
+    "F-6",
+    "A-1",
+    "A-2",
+    "A-3",
+    "A-4",
+    "A-5",
+    "A-6"
+  ],
+  "artifacts": [
+    "artifact/index.html"
+  ],
+  "budget_used": {
+    "tool_calls": 30,
+    "tokens": null,
+    "tokens_note": "not measurable from operator side",
+    "wallclock_minutes": 12
+  }
+}

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>费用报销审批</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="./index.html">用户资料编辑</a>
+        <a href="./approval.html">费用报销审批</a>
+      </nav>
+      <h1>费用报销审批</h1>
+      <p class="muted">本地 mock 数据与 mock 附件引用；每一次提交与审批决定都要本人确认。</p>
+
+      <section class="card">
+        <div class="row">
+          <span class="badge" id="state-badge">draft</span>
+          <span class="muted" id="meta"></span>
+        </div>
+
+        <form id="request-form" novalidate>
+          <label for="amount">金额（必须大于 0）</label>
+          <input id="amount" name="amount" inputmode="decimal" aria-describedby="err-amount" />
+          <p class="error-text" id="err-amount" role="alert"></p>
+
+          <label for="reason">事由（必填）</label>
+          <input id="reason" name="reason" autocomplete="off" aria-describedby="err-reason" />
+          <p class="error-text" id="err-reason" role="alert"></p>
+
+          <label for="attachment">附件引用（mock，选填）</label>
+          <input id="attachment" name="attachment" autocomplete="off" />
+
+          <label for="currency">币种</label>
+          <select id="currency">
+            <option value="CNY">CNY</option>
+            <option value="USD">USD</option>
+          </select>
+        </form>
+
+        <div class="row" style="margin-top: 12px">
+          <button id="submit-btn" class="primary" type="button">提交报销单</button>
+          <button id="revise-btn" type="button" hidden>修改并重提（新版本）</button>
+        </div>
+        <div class="banner" id="banner" role="status" hidden></div>
+      </section>
+
+      <section class="card">
+        <h2 style="font-size: 15px; margin-top: 0">工作流 · 路由与超时</h2>
+        <div class="row">
+          <button id="route-btn" type="button">路由到审批人（受理）</button>
+          <button id="escalate-btn" type="button">模拟审批超时升级</button>
+        </div>
+        <p class="muted" id="workflow-note"></p>
+        <ul class="timeline" id="history"></ul>
+      </section>
+
+      <section class="card">
+        <h2 style="font-size: 15px; margin-top: 0">审批人控制台</h2>
+        <label for="approver-id">当前操作审批人</label>
+        <select id="approver-id">
+          <option value="approver-001">approver-001（有权限）</option>
+          <option value="user-006">user-006（申请人本人，禁止自审批）</option>
+        </select>
+        <label for="decision-reason">决定理由（驳回必填）</label>
+        <input id="decision-reason" autocomplete="off" />
+        <div class="row" style="margin-top: 12px">
+          <button id="approve-btn" class="primary" type="button">通过</button>
+          <button id="reject-btn" type="button">驳回</button>
+        </div>
+        <p class="error-text" id="deny-note" role="alert"></p>
+      </section>
+
+      <section class="card">
+        <h2 style="font-size: 15px; margin-top: 0">Human gate 记录</h2>
+        <ul class="timeline" id="gates"></ul>
+      </section>
+    </main>
+
+    <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+      <h2 id="confirm-title" style="font-size: 16px; margin-top: 0">确认操作</h2>
+      <p class="muted" id="confirm-body"></p>
+      <div class="row" style="justify-content: flex-end">
+        <button id="confirm-cancel" type="button">取消</button>
+        <button id="confirm-ok" class="primary" type="button">我确认</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./src/approval/app.mjs"></script>
+  </body>
+</html>
