@@ -1,16 +1,21 @@
 {
   "fixture_id": "FF-VER-01",
   "stage": "verify",
-  "description": "全链路 PASS：checks 链路字段齐全、evidence_new=true、fingerprint 可归因 → OK + 提交 receipt",
+  "description": "全链路 PASS + 强制门禁 G-V1..G-V4 全覆盖通过（enforce_gates=true）→ OK + 提交 receipt",
   "request": {
     "input_revision": "rev-ver-01",
+    "enforce_gates": true,
     "candidate": {
       "checks": [
         {"dimension": "dom_aria", "claim": "所有交互元素有可访问名", "threshold": "无违规", "command": "axe --tags wcag21a", "commit": "abc123", "fixture_hash": "fh-1", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true},
-        {"dimension": "contrast", "claim": "正文对比度>=4.5", "threshold": ">=4.5", "command": "contrast-check", "commit": "abc123", "fixture_hash": "fh-2", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true}
+        {"dimension": "contrast", "claim": "正文对比度>=4.5", "threshold": ">=4.5", "command": "contrast-check", "commit": "abc123", "fixture_hash": "fh-2", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true},
+        {"dimension": "state-reachability", "claim": "状态迁移均有 UI 入口", "threshold": "全部可达", "command": "ui-reachability", "commit": "abc123", "fixture_hash": "fh-3", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true, "gate": "G-V1"},
+        {"dimension": "no-fake-success", "claim": "error 态不渲染为成功", "threshold": "无伪成功", "command": "ui-fail-state", "commit": "abc123", "fixture_hash": "fh-4", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true, "gate": "G-V2"},
+        {"dimension": "illegal-transition", "claim": "非法迁移返回值被校验", "threshold": "全部拒绝", "command": "ui-illegal", "commit": "abc123", "fixture_hash": "fh-5", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true, "gate": "G-V3"},
+        {"dimension": "aria-describedby", "claim": "必填输入 aria-describedby 关联", "threshold": "全部关联", "command": "ui-aria", "commit": "abc123", "fixture_hash": "fh-6", "env_hash": "fp-a1b2c3", "artifact": "preview-01", "status": "PASS", "evidence_new": true, "gate": "G-V4"}
       ],
       "fingerprint": {"hash": "fp-a1b2c3", "env": "baseline"},
-      "checked": 2
+      "checked": 6
     }
   }
 }
