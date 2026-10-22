@@ -2,7 +2,7 @@
 
 > **冻结文档。** 本文件定义 `plan` / `decision` / `revision` / `handoff` / `receipt` 五类编排记录的持久化结构、存储模型、跨会话重放协议、崩溃恢复不变式与一致性闸门。
 
-> 本文件属于**计划层交付物**：不写存储引擎、不写重放代码、不跑断言。存储引擎与重放实现归 1-6（目录与 SKILL.md 落地）；G-19..G-25 实测证据归 1-9（真实 skill + fixture 验证）回写。
+> 本文件属于**计划层交付物**：不写存储引擎、不写重放代码、不跑断言。存储引擎与重放实现的**实际载体是 `zj-roadmap-driven` 技能**（single-file JSON + SQLite 双 carrier），并非 ui-agent-skills 的 1-6 节点；G-19..G-25 实测证据由 **1-9-5**（真实 `zj-roadmap-driven` skill + fixture 验证）回写（§6）。
 
 > **与 1-3-1/2/3 的边界**：本节点只规定「记录什么、怎么存、怎么重放重建、崩溃怎么恢复」，不实现。PlanRecord 字段直接复用 1-3-2 §5.1，不重定义；run/lease/handoff 事件语义见 1-3-3，本文件只规定它们必须落盘成何种记录。
 
@@ -15,7 +15,7 @@
   - `MASTER.md` L56（恢复基线 = 最后完整 canonical revision）、L99（恢复失败不得伪造成功）
   - 1-3-2 §5（Plan 结构与 `plan_hash`）、1-3-3 §2.1/§4/§5.2（run/lease/handoff 事件与 fencing 持久化要求）
   - `ui-agent-skills-golden-fixtures-spec.md`（离线/adapter 删除恢复协议、GF-10/GF-11）
-- **不在本节点**：存储引擎选型与实现、重放代码、并发控制实现、任何可执行断言。这些是 1-6 / 1-9 的职责。
+- **不在本节点**：存储引擎选型与实现、重放代码、并发控制实现、任何可执行断言。存储引擎的实际实现归 `zj-roadmap-driven` 技能；本契约 G-19..G-25 的实测回写归 **1-9-5**（§6 已完成）。
 - **退出判据**：跨会话可从 `revision`、`decision`、`plan`、`receipt`、`handoff` 重建当前工作 —— 由 §4 重放协议 + §6 闸门覆盖，属实测项，本节点不宣称通过。
 
 ---
@@ -160,7 +160,7 @@
 ## 7. 上下游义务
 
 - **上游（产出记录）**：1-3-2 resolver 产 `PlanRecord`；1-3-3 run/lease/handoff 事件产 `HandoffRecord` 与 `RevisionRecord`；1-9 verifier 产 `ReceiptRecord`；规划期 Human 决策产 `DecisionRecord`。
-- **下游（落地与验证）**：1-6 负责存储引擎与目录/SKILL.md 落地，须满足本文件 §2/§3/§4；1-9 用真实 skill + fixture 回写 G-19..G-25 与 exit 判据实测证据。
+- **下游（落地与验证）**：存储引擎与目录/SKILL.md 落地的**实际载体是 `zj-roadmap-driven` 技能**（single-file JSON + SQLite 双 carrier，满足本文件 §2/§3/§4），**并非** ui-agent-skills 的 1-6 节点（1-6 = 十个 UI skills 的契约化本地闭环，与存储引擎无关）；G-19..G-25 与 exit 判据实测证据由 **1-9-5** 用真实 `zj-roadmap-driven` skill + fixture 回写（§6 已完成）。
 
 ---
 
