@@ -1,0 +1,19 @@
+{
+  "schema": "zj-research-brief/v1",
+  "topic": "Multi-device multi-agent co-design and co-work context architecture",
+  "criteria": [
+    {"id":"sync","question":"How does the project share and synchronize context across devices, sessions, or agents?","critical":true,"keywords":["StoreSyncService","profile-sync","checkpoint","channel-data-plane","multi-kl-server","shared"]},
+    {"id":"ownership","question":"How are Human and Agent responsibility, memory scope, identity, and collaboration boundaries represented?","critical":true,"keywords":["users","teams","Agents","tasks","memberships","ownership","persona","permission"]},
+    {"id":"versioning","question":"How are facts, context, versions, conflicts, and historical changes handled?","critical":true,"keywords":["skill-versioning","migration","checkpoint-design","history","incremental","snapshot"]},
+    {"id":"security","question":"What are the data privacy, access control, deployment, and operational recovery properties?","critical":true,"keywords":["local-first","auth","sanitize","skill-permission","recovery-design","Dockerfile","health"]},
+    {"id":"integration","question":"What APIs, storage interfaces, retrieval mechanisms, observability, and extension points are provided?","critical":true,"keywords":["MemoryCore","SDK","MCP","FastAPI","query-api","metrics","OpenTelemetry","opencontext"]},
+    {"id":"maturity","question":"What evidence exists for project maturity, maintenance, adoption, and production readiness?","critical":true,"keywords":["tests","evaluation","benchmark","CI","release","license","README"]}
+  ],
+  "repositories": [
+    {"owner":"volcengine","name":"MineContext"},
+    {"owner":"openTrinity","name":"mycontext"},
+    {"owner":"TencentCloud","name":"TencentDB-Agent-Memory"}
+  ],
+  "policyVersion":"public-github/v1",
+  "budget":{"maxFiles":60,"maxBytes":2400000,"deadlineMs":180000}
+}
