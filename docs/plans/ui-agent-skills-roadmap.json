@@ -352,7 +352,7 @@
       "id": "1-10",
       "uid": "01a154254edb-cf2d0fde0c",
       "label": "长期文档、维护治理与 rollout 决策",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -1730,16 +1730,43 @@
       "id": "1-10-4",
       "uid": "01a15426bea1-13b926982f",
       "label": "输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-10",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "Pilot 试点的范围、观察口径与退出到 rollout-review 的触发条件是什么？",
+          "answer": "skills-path 维持 observational（非默认/非生产）；沿用 R2+R3+R4 cohort 与 G-V1..G-V4（enforce_gates=true 可选）。每 run 跟踪两指标：成本溢价（rework/wall-clock/calls，基线 +303%/+357%/+48%）与 a11y-gate 通过率（skills vs direct）。退出到 rollout-review 硬条件：a11y-gate 通过率 skills 大于等于 direct 连续大于等于3 run，且成本溢价趋势不恶化（或 Human gate 接受溢价）。",
+          "note": "与 DECISIONS-RISKS §4 Pilot 观察态一致；门槛数值为首次建议待 zj review"
+        },
+        {
+          "q": "skills-path 从 observational 提升到 default/生产路径的 rollout 触发条件是什么？",
+          "answer": "非自动，须显式 Human gate 签署 + 满足 pilot 退出条件 + G-V1..G-V4 在干净 run 上 enforce_gates=true 校验通过 + revalidation 通过。分波推广（参考 1-1-4 Wave 0 资源）：canary（1 个 experience-version）到 cohort 到 full。任一步回退到 observational 须重走 pilot 退出条件。",
+          "note": "CONDITIONAL_ADOPTION 状态不变；rollout 不可逆自动，强制 Human gate"
+        },
+        {
+          "q": "skills-path 或单 adapter 的 kill-switch 自动与手动触发条件是什么？",
+          "answer": "自动熔断（置 degraded/disabled + 通知 owner + 冻结推广）：(a) a11y-gate 通过率 skills 小于 direct 连续大于等于2 run；(b) 重新出现 critical escaped defect（基线 critical=0）；(c) 某 G-V1..G-V4 门禁回归（曾通过现失败）；(d) active adapter 远端不可达且无本地 degraded fallback。手动熔断：Human 或 owner 随时触发。熔断后须 revalidation 通过方可重新 promote。",
+          "note": "熔断是 rollout 反向安全网；触发即冻结推广不等 Human 轮询；阈值数值为首次建议待 zj review"
+        },
+        {
+          "q": "何时移除一个 adapter（含 opt-in 的 json-render/A2UI/M3E 或 active Storybook）？",
+          "answer": "触发：1-10-3 版本重评确认 provider drift 使候选版本与 capability-fit 证据账本不兼容 到 标记 deprecate；且 1-7-2 removal test 通过（本地恢复、degraded/disabled/quarantine 在无该 adapter 时仍成立）；且 大于等于30 天弃用通知 + owner 签署 + 无活跃 pilot 依赖它。移除须保留 AdapterBoundary v1 与 fallback，保证本地路径不被破坏。",
+          "note": "与 1-7 adapter 生命周期、1-10-3 版本重评联动；移除渐进不得一刀切断本地路径；阈值数值为首次建议待 zj review"
+        },
+        {
+          "q": "何时触发后续 revalidation（重验证）？",
+          "answer": "触发：任一 adapter 版本变更（provider drift，由 1-10-3 触发）；config hash 变更（预算护栏/门禁）；kill-switch 恢复后重 promote 前；G-V1..G-V4 spec 变更；周期性每 90 天。revalidation = 重跑 verification-matrix（1-5）+ paired-run 子集 + 门禁检查，产出 revalidation_required 清除或 stale 标记。",
+          "note": "revalidation 是闭环末端也是 rollout/kill-switch/adapter 移除的前置证据；周期 90 天为建议值待 review"
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "exit_criteria": [
         "rollout、kill-switch、adapter 移除和 revalidation 的触发条件可执行"
-      ]
+      ],
+      "rounds": 1
     },
     "1-9-5": {
       "id": "1-9-5",
@@ -1909,7 +1936,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-22 17:59:10",
+    "updated": "2026-10-22 18:13:50",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

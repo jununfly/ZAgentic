@@ -2,7 +2,7 @@
 
 > 权威收敛页。逐条带来源 / 决策回链。讨论过程保留于 `discussions/ui-agent-skills-complete-solution/`，不在本页维护。
 >
-> 关联 roadmap：`docs/plans/ui-agent-skills-roadmap.json`（1-9-4 completed；1-9-5 单独立项 G-19..G-25；1-10 治理进行中）。
+> 关联 roadmap：`docs/plans/ui-agent-skills-roadmap.json`（1-9-4 completed；1-9-5 单独立项 G-19..G-25；1-10-4 治理触发条件已落盘）。
 
 ## 1. 毕业裁定（GRADUATION GATE）
 
@@ -47,7 +47,42 @@
 - 重评触发：门禁生效后若 pilot 显示 skills-path a11y-gate 通过率 ≤ direct（门禁未闭合差距），升级到新一轮 gate review。
 - 1-10-1 完成判据（本页范围）：稳定契约 / 决策 / 风险 / 验收已迁移到本权威页 + 来源 / 决策回链完整 + 讨论过程未删（**待 zj review**）。
 
-## 5. 回链
+## 5. 治理触发条件（rollout / pilot / kill-switch / adapter 移除 / revalidation）
+
+> 来源：roadmap 1-10-4（5 条决策已落盘）。触发条件可执行；门槛数值为首次建议，待 zj review。
+
+### 5.1 Pilot（试点）
+- skills-path 维持 **observational**（非默认 / 非生产）；沿用 R2+R3+R4 cohort 与 G-V1..G-V4（`enforce_gates=true` 可选）。
+- 每 run 跟踪两指标：**成本溢价**（rework / wall-clock / calls，基线 +303% / +357% / +48%）与 **a11y-gate 通过率**（skills vs direct）。
+- 退出到 rollout-review 硬条件：a11y-gate 通过率 skills ≥ direct **连续 ≥3 run**，且成本溢价趋势不恶化（或 Human gate 接受溢价）。
+
+### 5.2 Rollout（发布 / 推广）
+- **非自动**：须显式 Human gate 签署 + 满足 pilot 退出条件 + G-V1..G-V4 在干净 run 上 `enforce_gates=true` 校验通过 + revalidation 通过。
+- 分波推广（参考 1-1-4 Wave 0 资源）：**canary（1 个 experience-version）→ cohort → full**。
+- 任一步回退到 observational 须重走 pilot 退出条件。CONDITIONAL_ADOPTION 状态不变。
+
+### 5.3 Kill-switch（熔断）
+自动熔断（置 `degraded` / `disabled` + 通知 owner + 冻结推广）：
+- (a) a11y-gate 通过率 skills < direct **连续 ≥2 run**；
+- (b) 重新出现 **critical escaped defect**（基线 critical=0）；
+- (c) 某 **G-V1..G-V4 门禁回归**（曾通过现失败）；
+- (d) **active adapter 远端不可达且无本地 degraded fallback**。
+- 手动熔断：Human 或 owner 随时触发。熔断后须 revalidation 通过方可重新 promote。
+
+### 5.4 Adapter 移除
+- 触发：1-10-3 版本重评确认 **provider drift** 使候选版本与 capability-fit 证据账本不兼容 → 标记 `deprecate`；且 **1-7-2 removal test 通过**（本地恢复、degraded / disabled / quarantine 在无该 adapter 时仍成立）；且 **≥30 天弃用通知 + owner 签署 + 无活跃 pilot 依赖它**。
+- 移除须保留 **AdapterBoundary v1** 与 fallback，保证本地路径不被破坏。与 1-7 adapter 生命周期联动。
+
+### 5.5 Revalidation（重验证）
+触发：
+- 任一 **adapter 版本变更**（provider drift，由 1-10-3 触发）；
+- **config hash 变更**（预算护栏 / 门禁）；
+- **kill-switch 恢复后重 promote 前**；
+- **G-V1..G-V4 spec 变更**；
+- **周期性每 90 天**（建议值，待 review）。
+- revalidation = 重跑 verification-matrix（1-5）+ paired-run 子集 + 门禁检查，产出 `revalidation_required` 清除或 `stale` 标记。
+
+## 6. 回链
 
 - 毕业裁定底表：`../../skills-outputs/ui-agent-skills/paired-runs/v1/GRADUATION-DECISION.md`
 - 路线图：`../plans/ui-agent-skills-roadmap.json`（1-9-4、1-9-5、1-10）

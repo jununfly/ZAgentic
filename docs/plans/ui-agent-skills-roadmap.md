@@ -1,7 +1,7 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-22 17:59:10
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-22 18:13:50
 
 [~][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest
@@ -52,15 +52,14 @@
 │   ├── [x][Y+] 1-9-2. 执行第 1 次 paired run：direct-prompt 与 skills path 并行并生成 receipt
 │   ├── [x][Y+] 1-9-3. 执行第 2、3 次 paired run 并完成视觉/a11y/interaction/人工审阅闭环
 │   └── [x][Y+] 1-9-4. 聚合指标、剩余风险与 fallback 演练，形成 graduation packet 或 pilot/quarantine 结论
-├── [~][X+] 1-10. 长期文档、维护治理与 rollout 决策
+├── [x][X+] 1-10. 长期文档、维护治理与 rollout 决策
 │   ├── [x][X+] 1-10-1. 将稳定契约、决策、风险与验收标准迁移到 docs 权威页，保留讨论过程待 Human 审核
 │   ├── [x][X+] 1-10-2. 同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md
 │   ├── [x][X+] 1-10-3. 建立 skill/adapter owner、维护预算、RTO/RPO、版本重评与容量/WIP 治理
-│   └── [ ][X+] 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策
+│   └── [x][X+] 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策
 └── [ ][Y+] 1-9-5. 持久化/重放实测闸门回写（G-19..G-25）
 
 ### 下一步可开工（ready 前 3）
 
-- 1-10-4. 输出 rollout、pilot、kill-switch、adapter 移除与后续 revalidation 决策 [ ]
 - 1-9-5. 持久化/重放实测闸门回写（G-19..G-25） [ ]
 <!-- ROADMAP_SECTION_END -->
