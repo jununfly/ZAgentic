@@ -143,6 +143,7 @@ throwaway answer to one design question.
 
 For a problem too complex for flat chat: decompose it, discuss it in parallel, then synthesize.
 
+- **`/zj-doc-collab`** — the base layer for document-backed multi-agent collaboration: one shared document set as the single source of truth, per-agent scoped private memory layered on it, and a mechanical non-degradation structural gate. Other zj-* skills reference it when several Agents/SubAgents must collaborate over one document set; not user-query triggered on its own. `/zj-discuss` is built on top of it.
 - **`/zj-discuss`** — when flat prompt-and-answer chat cannot resolve the problem: decompose it into a master doc plus independent sub-documents, run role-based multi-agent discussion per sub-problem through a fixed+dynamic agenda, synthesize, and hand off to `/zj-docs-ontology` for durable deposition. For a single issue, use `/zj-discuss-view` + `/zj-steelman` directly instead.
 - **`/zj-discuss-view`** — companion to `/zj-discuss`: in a separate, independent Agent session, read a sub-document original and write one structurally different role's isolated viewpoint (anti-echo-chamber). Run once per role, per sub-document.
 

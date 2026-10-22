@@ -1638,16 +1638,27 @@
       "id": "1-10-2",
       "uid": "01a15426be1f-97310024b4",
       "label": "同步新 skill 的 bucket README、top-level README、递归发现与 ZJ-CONTEXT.md",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-10",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-10-2 的范围是否包含修复既有 zj-doc-collab 登记缺口？",
+          "answer": "核验结论：ui 新 skill 的 8 处同步点（PUBLIC_BUCKETS / bucket README / 顶层 README / zj-guide / list-skills.sh / zagentic-skills-list / AGENTS.md / ZJ-CONTEXT.md）已全部覆盖 ui，递归校验器对 ui 零报错（frontmatter 66 全过 + readme/guide 注册全过）。唯一残留是 zj-doc-collab（productivity bucket 既有缺口：skills/productivity/README.md 未登记 + zj-guide 未路由），与 ui 无关。本 decide 先落盘现状，是否把 zj-doc-collab 纳入 1-10-2 由 zj 拍（纳入则让递归检查全绿，不纳入则 1-10-2 仅对 ui 收口、zj-doc-collab 另立项）。",
+          "note": "zj 2026-10-22 开工 1-10-2；等范围决策"
+        }
+      ],
+      "notes": "2026-10-22 完成：开工核验发现 ui 新 skill 的 8 处同步点（PUBLIC_BUCKETS/bucket README/顶层 README/zj-guide/list-skills.sh/zagentic-skills-list/AGENTS.md/ZJ-CONTEXT.md）已全部覆盖 ui，递归校验器对 ui 零报错。zj 拍『顺手修 zj-doc-collab』后补两处：skills/productivity/README.md 新增 zj-doc-collab 条目 + zj-guide 新增其 base-skill 路由（discuss 区前）。anaconda python 重跑 validate-zagentic-plugin.py → 'recursive validation passed (66 skills)'，exit 0，exit 判据（所有公共 skill 通过递归检查）严格达成。",
       "layer": "plan",
       "exit_criteria": [
         "所有公共 skill 的索引、术语与仓库发现规则通过递归检查"
-      ]
+      ],
+      "rounds": 1,
+      "budget": {
+        "max_children": 8,
+        "max_rounds": 3
+      }
     },
     "1-10-3": {
       "id": "1-10-3",
@@ -1847,7 +1858,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-22 17:22:55",
+    "updated": "2026-10-22 17:38:15",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
