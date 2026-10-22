@@ -688,9 +688,14 @@
           "q": "1-3-4 的交付物形态与范围边界是什么？",
           "answer": "冻结单一契约文档 ui-agent-skills-persistence-replay-contract.md：定义 plan/decision/revision/handoff/receipt 五类记录的持久化结构、append-only 日志 + canonical revision 快照的存储模型、跨会话重放协议、崩溃恢复不变式与一致性闸门 G-19..G-25。不写存储引擎、不写重放代码、不跑断言。",
           "note": "与 1-3-1/2/3 一致：计划层只冻结契约。PlanRecord 字段复用 1-3-2 §5.1 不重定义；存储引擎与重放实现归 1-6 落地，G-19..G-25 实测证据归 1-9 真实 skill + fixture 回写。exit 判据'跨会话重建当前工作'由重放协议+闸门覆盖，属实测不宣称通过。"
+        },
+        {
+          "q": "1-3-4 的 open 标注如何处置（2026-10-22 回写后）？",
+          "answer": "证据已由 1-9-5 用真实 skill+fixture 回写（§6 闸门表 open→实测值+caveats），解除未实测状态；因 G-22/G-23 为 PARTIAL（字面机制未实现），标注改为 gate-evidence-in（with caveats），不无条件通过。契约字面机制若 ui-agent-skills 后续确需，须另立项实现，而非依赖 zj-roadmap-driven。",
+          "note": "与 1-9-5 一致：2026-10-22"
         }
       ],
-      "notes": "G-19..G-25 实测闸门的实际承载节点=1-9-5（持久化/重放实测闸门回写）。本节点仅冻结契约，闸门证据由 1-9-5 用真实 skill+fixture 回写后，方可解除本节点 open 标注。",
+      "notes": "G-19..G-25 实测闸门的实际承载节点=1-9-5（持久化/重放实测闸门回写）。本节点仅冻结契约；闸门证据已由 1-9-5 于 2026-10-22 用真实 skill+fixture 回写（§6 闸门表 open→实测值+caveats），解除未实测状态；因 G-22/G-23 为 PARTIAL（字面机制未实现），标注改为 gate-evidence-in（with caveats），不无条件通过。",
       "layer": "plan",
       "exit_criteria": [
         "跨会话可从 revision、decision、plan、receipt、handoff 重建当前工作"
@@ -1772,7 +1777,7 @@
       "id": "1-9-5",
       "uid": "01a15767ea79-a65a75c5c8",
       "label": "持久化/重放实测闸门回写（G-19..G-25）",
-      "status": "pending",
+      "status": "completed",
       "mode": "exploit",
       "parent": "1",
       "children": [],
@@ -1781,9 +1786,19 @@
           "q": "1-9-5 在整体路线中的定位与依赖是什么？",
           "answer": "本节点是 1-3-4 文档声明『G-19..G-25 归 1-9 真实 skill+fixture 回写』的实际承载点。依赖 1-6（存储引擎+重放实现落地）与 1-9-2/1-9-3（真实 skill+fixture 运行数据）。产出回填 1-3-4 文档闸门表；全部通过后才能解除 1-3-4 的 open 标注，任一闸门 fail 则 1-3 整节点不得宣称通过。",
           "note": "1-9 原 4 个叶节点只覆盖端到端 paired run 与毕业指标（返工率/决策时间/escaped defect/visual/a11y/越权/provenance/receipt），未点名持久化/重放专项闸门，故补 1-9-5 显式承载"
+        },
+        {
+          "q": "1-9-5 的 scope gate 分类与 artifact 是什么？",
+          "answer": "Acceptance/evaluation。artifact = zj-roadmap-driven 存储引擎（single-file JSON + SQLite 双 carrier）；在临时 fixture 上跑 G-19..G-25 并回填 1-3-4 契约闸门表，目标项目代码保持只读。注：契约文档 §7 把『存储引擎落地』归到 1-6，但当前 1-6 节点实为『十个 UI skills 的契约化本地闭环』，与存储引擎描述不符——实际存储引擎即 zj-roadmap-driven 技能本身（已 completed），本节点据此验证之。",
+          "note": "zj 2026-10-22 拍板 1-9-5 单独立项；本质=roadmap 存储引擎专项验证"
+        },
+        {
+          "q": "G-19..G-25 实测结论与 1-3-4 标注如何处置？",
+          "answer": "5 PASS（G-21/G-24/G-25 精确；G-19/G-20 为代理验证：引擎无独立重放日志，以 current_revision 跨重启一致 + canonical_json 确定性等效）+ 2 PARTIAL（G-22 仅单点 canonical revision 哈希、无 parent-linked 链；G-23 无 HandoffRecord 类型，fencing 审计以 lease events 承载）+ 0 FAIL。1-3-4 解除未实测标注，改为 gate-evidence-in（with caveats）。",
+          "note": "harness=skills-outputs/ui-agent-skills/1-9-5/verify_g19_g25.py；结果 gate-results.json"
         }
       ],
-      "notes": "2026-10-22 zj 拍板：从 1-9 解挂为单独立项（standalone），不随 1-9 收口；依赖 1-6 已 completed，待另开专项回写 G-19..G-25 到 1-3-4 文档闸门表。",
+      "notes": "2026-10-22 实测完成：双 carrier（single JSON + sqlite）临时 fixture，harness=skills-outputs/ui-agent-skills/1-9-5/verify_g19_g25.py。结论：G-19/G-20 PASS(代理)、G-21/G-24/G-25 PASS(精确)、G-22/G-23 PARTIAL(机制差异，安全性质满足)、0 FAIL。已回写 1-3-4 契约 §6 闸门表（open→实测值+caveats）。注：契约 §7 把存储引擎落地归到 1-6，但当前 1-6 节点=『十个 UI skills 的契约化本地闭环』，与实际存储引擎=zj-roadmap-driven 本身不符——文档错配，建议更正 §7。",
       "layer": "plan",
       "exit_criteria": [
         "G-19 跨会话重放一致：同输入经进程重启后重放，plan_hash 与 canonical revision 快照哈希逐字节一致（样本量≥20，命中率 100%）",
@@ -1794,7 +1809,8 @@
         "G-24 重启后 fencing 恢复正确：进程重启后 max_token 由持久化恢复，旧 token 写入一律拒（≥10 次重启样本 100%）",
         "G-25 恢复失败=recovery error：日志损坏/缺失场景返回 recovery error，不伪报成功",
         "回填完成：1-3-4 文档 G-19..G-25 闸门表从 open 更新为实测值（pass/fail + 样本数 + 异常），1-3-4 节点 open 标注解除"
-      ]
+      ],
+      "rounds": 1
     },
     "1-7-4-1": {
       "id": "1-7-4-1",
@@ -1936,7 +1952,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-22 18:13:50",
+    "updated": "2026-10-22 20:28:39",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [

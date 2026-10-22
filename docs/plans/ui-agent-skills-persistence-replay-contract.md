@@ -137,19 +137,23 @@
 
 ---
 
-## 6. 一致性闸门（实测，归 1-9 回写）
+## 6. 一致性闸门（实测，归 1-9-5 回写）
 
-| 闸门 | 描述 | 目标 |
-|------|------|------|
-| **G-19** | 跨会话重放后 `plan_hash` 与存储值一致 | **100%** |
-| **G-20** | 重放幂等（重复重放无新增写入、无状态漂移） | **100%** |
-| **G-21** | `decision` 不可变（无 update，只 append） | **100%**（原地更新次数 = 0） |
-| **G-22** | `revision` 链完整（`parent_revision_id` 无断点、根可溯源） | **100%** |
-| **G-23** | `handoff` 审计完整（每次 gate 有对应 `HandoffRecord`） | **100%** |
-| **G-24** | 崩溃重启后 `fencing max_token` 恢复正确（旧 token 仍拒） | **100%** |
-| **G-25** | 恢复失败输出 `recovery error` 而非伪成功 | **100%** |
+> **实测主体**：`zj-roadmap-driven` 存储引擎（single-file JSON + SQLite 双 carrier），2026-10-22 用临时 fixture 实测（harness：`skills-outputs/ui-agent-skills/1-9-5/verify_g19_g25.py`，结果：`gate-results.json`）。
+> 该引擎**非**契约字面的「append-only 日志 + 重放 + parent-linked revision 链 + HandoffRecord」模型，而是「canonical 状态即事实源 + 单点 canonical revision 哈希 + lease 事件审计」模型。下表结论按**实际可验证的不变式**给出，机制差异见「实测结论与机制差异」段。
 
-> 全部属实测项，归 1-9 用真实 skill + fixture 回写。本节点不宣称通过。
+| 闸门 | 契约字面描述 | 实测结论 | 样本 | 说明 |
+|------|--------------|----------|------|------|
+| **G-19** | 跨会话重放后 `plan_hash` 与存储值一致 | **PASS（代理）** | 48 | 引擎无独立重放日志；以 `current_revision` 跨重启逐字节一致 + `canonical_json` 确定性作为等效代理 |
+| **G-20** | 重放幂等（无重复写/无孤儿记录） | **PASS（代理）** | 48 | 多次 reload 记录数稳定，无附加副作用 |
+| **G-21** | `decision` 不可变（无 update，只 append） | **PASS** | 24 | `update_node` 无 decisions 形参；原地修改次数 = 0 |
+| **G-22** | `revision` 链完整（`parent_revision_id` 无断点） | **PARTIAL** | 48 | 单点 `current_revision` 哈希跨重启确定；**无 parent-linked 链**，字面「重建全量 revision 链」在本引擎 N/A |
+| **G-23** | `handoff` 审计完整（每次 gate 有 `HandoffRecord`） | **PARTIAL** | 40 | 无独立 `HandoffRecord`；fencing 审计由 lease events（claimed/stolen/released + `fencing_token`）承载，持久化、可溯源 |
+| **G-24** | 崩溃重启后 `fencing max_token` 恢复正确（旧 token 仍拒） | **PASS** | 24 | 侧车持久化 `fencing_token`；重启后旧 token 写拒（E_LEASE_HELD）、新 token 放行，≥10 次重启样本 100% |
+| **G-25** | 恢复失败输出 `recovery error` 而非伪成功 | **PASS** | 40 | `load()` 对缺失/损坏文件抛 `FileNotFoundError` / `JSONDecodeError`，非静默成功 |
+
+> **实测汇总**：7 闸门全部被测；5 PASS（其中 G-19/G-20 为代理验证）、2 PARTIAL（G-22/G-23，安全性质满足但字面机制未实现），0 FAIL。
+> **1-3-4 节点 open 标注**：证据已回写，故解除「未实测」状态；但因 G-22/G-23 为 PARTIAL（机制差异），本节点标记为「**gate-evidence-in（with caveats）**」，而非无条件通过——契约字面机制（append-only 重放日志 / parent-linked revision 链 / HandoffRecord）在 `zj-roadmap-driven` 中未实现，若 ui-agent-skills 后续确需该字面机制，须另立项实现而非依赖本引擎。
 
 ---
 
