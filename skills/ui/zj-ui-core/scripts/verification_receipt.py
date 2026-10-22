@@ -1000,7 +1000,7 @@ def main(argv=None):
     ap.add_argument("cmd", choices=["build", "validate", "freshness", "selftest"])
     ap.add_argument("file", nargs="?")
     ap.add_argument("--lane", choices=list(LANES), default="baseline")
-    ap.add_argument("--plans", default=runner.default_plans_dir())
+    ap.add_argument("--plans", default=None)
     ap.add_argument("--observations", default=None)
     ap.add_argument("--commit", default="UNPINNED")
     ap.add_argument("--reviewer", default=None)
@@ -1017,12 +1017,14 @@ def main(argv=None):
         return 0 if res["ok"] else 1
 
     if args.cmd == "build":
-        lane_receipt = runner.run_lane(args.lane, args.plans, args.observations)
+        # 惰性解析：显式 --plans 优先，缺省时才推导（见 dual_lane_runner.default_plans_dir）
+        plans = args.plans or runner.default_plans_dir()
+        lane_receipt = runner.run_lane(args.lane, plans, args.observations)
         receipt = build_receipt(
             lane_receipt, commit=args.commit,
             artifacts=[artifact_entry(p) for p in args.artifact],
             reviewer={"name": args.reviewer, "signed_at": _iso(_now())} if args.reviewer else None,
-            plans_dir=args.plans, ttl_days=args.ttl_days,
+            plans_dir=plans, ttl_days=args.ttl_days,
             worktree_dirty=args.worktree_dirty,
         )
         print(canonical_json(receipt))
@@ -1040,7 +1042,7 @@ def main(argv=None):
         return 0 if res["ok"] else 1
 
     if args.cmd == "freshness":
-        res = check_freshness(receipt, plans_dir=args.plans,
+        res = check_freshness(receipt, plans_dir=args.plans or runner.default_plans_dir(),
                              now=_parse_iso(args.now) if args.now else None)
         print(canonical_json(res))
         return 0 if res["status"] == "FRESH" else 1

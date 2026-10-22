@@ -155,15 +155,39 @@ def make_rng(seed: int = SEED):
 # 路径与加载
 # --------------------------------------------------------------------------- #
 
-def default_plans_dir() -> str:
-    # scripts live at <repo>/skills/ui/zj-ui-core/scripts; walk up to repo root (.git)
-    cur = os.path.dirname(os.path.abspath(__file__))
-    while cur and not os.path.isdir(os.path.join(cur, ".git")):
+def _find_repo_root(start: str):
+    """Walk up from `start` looking for a .git directory; None when unreachable."""
+    cur = os.path.abspath(start)
+    while True:
+        if os.path.isdir(os.path.join(cur, ".git")):
+            return cur
         parent = os.path.dirname(cur)
         if parent == cur:
-            break
+            return None
         cur = parent
-    return os.path.join(cur, "docs", "designs", "ui-agent-skills")
+
+
+def default_plans_dir() -> str:
+    """Locate <repo>/docs/designs/ui-agent-skills.
+
+    Installed skills live outside the project (e.g. ~/.claude/skills/zj-ui-core),
+    so this file's location cannot identify the target repository -- the operating
+    project (current working directory) can. The file location is kept as a
+    fallback so source-tree invocation from an unrelated cwd keeps working.
+
+    Raises RuntimeError when no repository is reachable from either base instead
+    of returning a bogus path rooted at "/"; callers should then pass --plans.
+    """
+    bases = [os.getcwd(), os.path.dirname(os.path.abspath(__file__))]
+    for base in bases:
+        root = _find_repo_root(base)
+        if root is not None:
+            return os.path.join(root, "docs", "designs", "ui-agent-skills")
+    raise RuntimeError(
+        "无法定位 ui-agent-skills 计划目录（应为 <repo>/docs/designs/ui-agent-skills）："
+        "已从 $PWD(%s) 与脚本位置(%s) 向上查找 .git 均未命中；请显式传入 --plans DIR。"
+        % (bases[0], bases[1])
+    )
 
 
 def load_json(path: str) -> dict:
@@ -453,8 +477,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="R-HAR-1 dual-lane deterministic verifier")
     ap.add_argument("cmd",
                     choices=["init", "fingerprint", "plan", "run", "selfcheck", "demo"])
-    ap.add_argument("--plans", default=default_plans_dir(),
-                    help="docs/designs/ui-agent-skills 目录（默认自动推导）")
+    ap.add_argument("--plans", default=None,
+                    help="docs/designs/ui-agent-skills 目录；缺省时惰性推导（先 $PWD 再脚本位置向上找 .git），"
+                         "定位不到即报错而非返回 / 下的假路径")
     ap.add_argument("--lane", choices=["baseline", "degraded"], default="baseline")
     ap.add_argument("--write", action="store_true",
                     help="将计算结果写回 docs/designs/ui-agent-skills/*.json（本会话默认 print-only）")
@@ -463,17 +488,22 @@ def main(argv=None) -> int:
                          "缺省时 baseline 全部 NOT_EXECUTED（fail-closed）")
     args = ap.parse_args(argv)
 
+    def plans_arg() -> str:
+        # Resolved lazily: a command that does not use the plans dir (demo/plan)
+        # stays usable outside a repository, and an explicit --plans always wins.
+        return args.plans or default_plans_dir()
+
     if args.cmd == "demo":
         print(canonical_json(demo()))
         return 0
 
     if args.cmd == "init":
-        res = init_fixtures(args.plans, write=args.write)
+        res = init_fixtures(plans_arg(), write=args.write)
         print(canonical_json(res))
         return 0
 
     if args.cmd == "fingerprint":
-        res = fingerprint(args.plans, write=args.write)
+        res = fingerprint(plans_arg(), write=args.write)
         print(canonical_json(res))
         return 0
 
@@ -482,11 +512,11 @@ def main(argv=None) -> int:
         return 0
 
     if args.cmd == "run":
-        print(canonical_json(run_lane(args.lane, args.plans, args.observations)))
+        print(canonical_json(run_lane(args.lane, plans_arg(), args.observations)))
         return 0
 
     if args.cmd == "selfcheck":
-        print(canonical_json(selfcheck(args.plans)))
+        print(canonical_json(selfcheck(plans_arg())))
         return 0
 
     return 2
