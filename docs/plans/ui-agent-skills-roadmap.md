@@ -1,9 +1,9 @@
 <!-- ROADMAP_SECTION_START -->
 ## ZJ Roadmap
 
-> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-22 20:28:39
+> 数据文件: `ui-agent-skills-roadmap.json` | 最后更新: 2026-10-22 21:40:40
 
-[~][Y+] 1. UI Agent Skills 全生命周期落地路线
+[x][Y+] 1. UI Agent Skills 全生命周期落地路线
 ├── [x][Y+] 1-1. 范围闸门与 Experience Version manifest
 │   ├── [x][Y+] 1-1-1. 冻结 Experience Version scope manifest、in-scope/out-of-scope 与成功标准
 │   ├── [x][Y+] 1-1-2. 锁定 React/Next.js 表单或审批流样例、角色、状态、环境和责任人

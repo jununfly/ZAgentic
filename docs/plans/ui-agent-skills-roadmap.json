@@ -7,7 +7,7 @@
       "id": "1",
       "uid": "01a154234149-f35fe96a32",
       "label": "UI Agent Skills 全生命周期落地路线",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "exploit",
       "parent": null,
       "children": [
@@ -38,6 +38,11 @@
           "q": "实现为什么按 Wave 0→1→2→3 排序？",
           "answer": "先锁范围/契约/安全/验证，再做十个本地 skill，再接 adapter，最后做三次 paired run 与 graduation。",
           "note": "避免先做漂亮 demo 再补权限、证据和回退。"
+        },
+        {
+          "q": "路线图根节点 1 是否标记 completed（收口）？",
+          "answer": "是，2026-10-22 收口：所有子节点（1-1..1-10、1-9-5）均已 completed；ready 为空、critical-path 仅根节点自身，无 pending/blocked 节点，故根节点 1 标记 completed。",
+          "note": ""
         }
       ],
       "notes": "产品实现路线；方案事实源为 discussions/ui-agent-skills-complete-solution/MASTER.md。路线只允许 ZAgentic-owned canonical artifact 与编排能力成为 SSOT；外部能力通过选择性复用或可移除 adapter 纳入。",
@@ -1952,7 +1957,7 @@
   },
   "metadata": {
     "created": "2026-10-19 20:29:19",
-    "updated": "2026-10-22 20:28:39",
+    "updated": "2026-10-22 21:40:40",
     "md_file": "ui-agent-skills-roadmap.md"
   },
   "edges": [
