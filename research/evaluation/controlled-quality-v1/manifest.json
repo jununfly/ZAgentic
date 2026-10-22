@@ -1,0 +1,31 @@
+{
+  "schema": "zj-research-experiment/v1",
+  "id": "controlled-quality-v1",
+  "lane": "controlled",
+  "corpusVersion": "controlled-quality/v1",
+  "compiler": { "version": "research/v1", "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+  "policyVersion": "public-github/v1",
+  "model": { "provider": "fixture", "id": "research-generator", "configFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+  "judge": { "id": "blind-judge", "promptVersion": "judge/v1", "configFingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" },
+  "reportFamily": "technical-c4/v1",
+  "cacheCohort": "cold",
+  "navigationFingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "repetitions": 3,
+  "budget": { "maxDurationMs": 300000, "maxInputTokens": 65536, "maxOutputTokens": 32768, "maxSourceBytes": 1000000 },
+  "arms": [
+    { "id": "agent", "adapter": "agent-adapter" },
+    { "id": "skill", "adapter": "skill-adapter" }
+  ],
+  "cases": [
+    { "id": "zh-harness-selection", "language": "zh", "purpose": "quality", "scenario": "multi-repository-selection", "briefFingerprint": "0101010101010101010101010101010101010101010101010101010101010101", "ledgerFingerprint": "1111111111111111111111111111111111111111111111111111111111111111", "rubricVersion": "selection/v1" },
+    { "id": "en-storage-selection", "language": "en", "purpose": "quality", "scenario": "multi-repository-selection", "briefFingerprint": "0202020202020202020202020202020202020202020202020202020202020202", "ledgerFingerprint": "1212121212121212121212121212121212121212121212121212121212121212", "rubricVersion": "selection/v1" },
+    { "id": "zh-session-architecture", "language": "zh", "purpose": "quality", "scenario": "single-repository-deep-read", "briefFingerprint": "0303030303030303030303030303030303030303030303030303030303030303", "ledgerFingerprint": "1313131313131313131313131313131313131313131313131313131313131313", "rubricVersion": "deep-read/v1" },
+    { "id": "en-sandbox-architecture", "language": "en", "purpose": "quality", "scenario": "single-repository-deep-read", "briefFingerprint": "0404040404040404040404040404040404040404040404040404040404040404", "ledgerFingerprint": "1414141414141414141414141414141414141414141414141414141414141414", "rubricVersion": "deep-read/v1" },
+    { "id": "zh-insufficient-governance", "language": "zh", "purpose": "quality", "scenario": "insufficient-evidence", "briefFingerprint": "0505050505050505050505050505050505050505050505050505050505050505", "ledgerFingerprint": "1515151515151515151515151515151515151515151515151515151515151515", "rubricVersion": "unknown/v1" },
+    { "id": "en-insufficient-cost", "language": "en", "purpose": "quality", "scenario": "insufficient-evidence", "briefFingerprint": "0606060606060606060606060606060606060606060606060606060606060606", "ledgerFingerprint": "1616161616161616161616161616161616161616161616161616161616161616", "rubricVersion": "unknown/v1" },
+    { "id": "zh-conflicting-security", "language": "zh", "purpose": "quality", "scenario": "conflicting-evidence", "briefFingerprint": "0707070707070707070707070707070707070707070707070707070707070707", "ledgerFingerprint": "1717171717171717171717171717171717171717171717171717171717171717", "rubricVersion": "conflict/v1" },
+    { "id": "en-conflicting-durability", "language": "en", "purpose": "quality", "scenario": "conflicting-evidence", "briefFingerprint": "0808080808080808080808080808080808080808080808080808080808080808", "ledgerFingerprint": "1818181818181818181818181818181818181818181818181818181818181818", "rubricVersion": "conflict/v1" },
+    { "id": "zh-navigation-fallback", "language": "zh", "purpose": "quality", "scenario": "navigation-degraded", "briefFingerprint": "0909090909090909090909090909090909090909090909090909090909090909", "ledgerFingerprint": "1919191919191919191919191919191919191919191919191919191919191919", "rubricVersion": "degraded/v1" },
+    { "id": "en-navigation-stale", "language": "en", "purpose": "quality", "scenario": "navigation-degraded", "briefFingerprint": "1010101010101010101010101010101010101010101010101010101010101010", "ledgerFingerprint": "2020202020202020202020202020202020202020202020202020202020202020", "rubricVersion": "degraded/v1" }
+  ]
+}

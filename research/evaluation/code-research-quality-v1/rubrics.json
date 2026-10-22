@@ -1,0 +1,28 @@
+{
+  "schema": "zj-code-research-rubric-set/v1",
+  "corpusVersion": "code-research-quality/v1",
+  "rubrics": [
+    {
+      "id": "landscape/v1",
+      "scenario": "repository-landscape",
+      "criteria": [
+        {"id": "scope-pinning", "description": "Pins the repository revision or working-tree fingerprint and states exclusions.", "weight": 20},
+        {"id": "inventory-coverage", "description": "Measures the source inventory without collapsing absent surfaces into guesses.", "weight": 20},
+        {"id": "navigation-stability", "description": "Provides deterministic targets that bind to actual repository paths.", "weight": 25},
+        {"id": "degradation-disclosure", "description": "Keeps unreadable, skipped, or unknown surfaces explicit.", "weight": 15},
+        {"id": "handoff-usefulness", "description": "Makes the next bounded Architecture Study target and reason clear.", "weight": 20}
+      ]
+    },
+    {
+      "id": "deep-read/v1",
+      "scenario": "architecture-deep-read",
+      "criteria": [
+        {"id": "target-adherence", "description": "Studies the selected map target and preserves its source binding.", "weight": 20},
+        {"id": "evidence-fidelity", "description": "Connects claims to line-addressable evidence from the pinned source.", "weight": 25},
+        {"id": "certainty-separation", "description": "Separates observed, inferred, unknown, and decision records.", "weight": 20},
+        {"id": "runtime-ownership-risk", "description": "Covers runtime, persistence, extension, security, ownership, or explicitly records unknowns.", "weight": 20},
+        {"id": "follow-up-utility", "description": "Leaves concrete next targets for unresolved architecture questions.", "weight": 15}
+      ]
+    }
+  ]
+}

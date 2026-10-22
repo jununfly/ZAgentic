@@ -1,0 +1,34 @@
+{
+  "schema": "zj-code-research-human-annotation-set/v1",
+  "corpusVersion": "code-research-quality/v1",
+  "cases": [
+    {
+      "caseId": "landscape-balanced",
+      "rubricVersion": "landscape/v1",
+      "expected": {"minimumFiles": 5, "minimumTargets": 5, "requiredTargetKinds": ["package", "integration", "workflow"]}
+    },
+    {
+      "caseId": "landscape-sparse",
+      "rubricVersion": "landscape/v1",
+      "expected": {"minimumFiles": 2, "minimumTargets": 2, "requiredTargetKinds": ["root", "top-level"]}
+    },
+    {
+      "caseId": "deep-read-runtime",
+      "rubricVersion": "deep-read/v1",
+      "expected": {
+        "requiredEvidenceSubjects": ["entrypoint", "execution", "persistence"],
+        "requiredRisks": ["execution-and-sandbox", "persistence-and-recovery", "ownership"],
+        "minimumFollowups": 1
+      }
+    },
+    {
+      "caseId": "deep-read-unknowns",
+      "rubricVersion": "deep-read/v1",
+      "expected": {
+        "requiredUnknownCategories": ["persistence", "execution-and-sandbox", "runtime-flow"],
+        "requiredRisks": ["ownership"],
+        "minimumFollowups": 1
+      }
+    }
+  ]
+}

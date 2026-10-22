@@ -1,0 +1,68 @@
+{
+  "schema": "zj-research-human-annotation-set/v1",
+  "version": "controlled-quality-annotations/v1",
+  "corpusVersion": "controlled-quality/v1",
+  "rubricSetVersion": "controlled-quality-rubrics/v1",
+  "cases": [
+    {
+      "caseId": "zh-harness-selection",
+      "rubricVersion": "selection/v1",
+      "evidence": [{ "criterionId": "team-scale", "verdict": "supported", "sourceSpans": [{ "evidenceId": "zh-harness-team-scale", "quoteSha256": "3131313131313131313131313131313131313131313131313131313131313131" }] }],
+      "decision": { "requiredTradeoffIds": ["governance-vs-flexibility"], "requiredRiskIds": ["adoption-cost"], "acceptableRecommendationFingerprints": ["4141414141414141414141414141414141414141414141414141414141414141"], "abstentionAcceptable": false }
+    },
+    {
+      "caseId": "en-storage-selection",
+      "rubricVersion": "selection/v1",
+      "evidence": [{ "criterionId": "durability", "verdict": "supported", "sourceSpans": [{ "evidenceId": "en-storage-durability", "quoteSha256": "3232323232323232323232323232323232323232323232323232323232323232" }] }],
+      "decision": { "requiredTradeoffIds": ["durability-vs-complexity"], "requiredRiskIds": ["migration-risk"], "acceptableRecommendationFingerprints": ["4242424242424242424242424242424242424242424242424242424242424242"], "abstentionAcceptable": false }
+    },
+    {
+      "caseId": "zh-session-architecture",
+      "rubricVersion": "deep-read/v1",
+      "evidence": [{ "criterionId": "event-lifecycle", "verdict": "supported", "sourceSpans": [{ "evidenceId": "zh-session-events", "quoteSha256": "3333333333333333333333333333333333333333333333333333333333333333" }] }],
+      "decision": { "requiredTradeoffIds": ["append-only-vs-update"], "requiredRiskIds": ["replay-compatibility"], "acceptableRecommendationFingerprints": ["4343434343434343434343434343434343434343434343434343434343434343"], "abstentionAcceptable": false }
+    },
+    {
+      "caseId": "en-sandbox-architecture",
+      "rubricVersion": "deep-read/v1",
+      "evidence": [{ "criterionId": "isolation-path", "verdict": "supported", "sourceSpans": [{ "evidenceId": "en-sandbox-isolation", "quoteSha256": "3434343434343434343434343434343434343434343434343434343434343434" }] }],
+      "decision": { "requiredTradeoffIds": ["isolation-vs-portability"], "requiredRiskIds": ["platform-gap"], "acceptableRecommendationFingerprints": ["4444444444444444444444444444444444444444444444444444444444444444"], "abstentionAcceptable": false }
+    },
+    {
+      "caseId": "zh-insufficient-governance",
+      "rubricVersion": "unknown/v1",
+      "evidence": [{ "criterionId": "governance-policy", "verdict": "unknown", "sourceSpans": [] }],
+      "decision": { "requiredTradeoffIds": ["unknown-governance"], "requiredRiskIds": ["policy-assumption"], "acceptableRecommendationFingerprints": [], "abstentionAcceptable": true }
+    },
+    {
+      "caseId": "en-insufficient-cost",
+      "rubricVersion": "unknown/v1",
+      "evidence": [{ "criterionId": "operating-cost", "verdict": "unknown", "sourceSpans": [] }],
+      "decision": { "requiredTradeoffIds": ["unknown-cost"], "requiredRiskIds": ["cost-assumption"], "acceptableRecommendationFingerprints": [], "abstentionAcceptable": true }
+    },
+    {
+      "caseId": "zh-conflicting-security",
+      "rubricVersion": "conflict/v1",
+      "evidence": [{ "criterionId": "security-enforcement", "verdict": "conflicting", "sourceSpans": [{ "evidenceId": "zh-security-doc", "quoteSha256": "3737373737373737373737373737373737373737373737373737373737373737" }, { "evidenceId": "zh-security-code", "quoteSha256": "4747474747474747474747474747474747474747474747474747474747474747" }] }],
+      "decision": { "requiredTradeoffIds": ["documented-vs-observed"], "requiredRiskIds": ["security-ambiguity"], "acceptableRecommendationFingerprints": ["4545454545454545454545454545454545454545454545454545454545454545"], "abstentionAcceptable": true }
+    },
+    {
+      "caseId": "en-conflicting-durability",
+      "rubricVersion": "conflict/v1",
+      "evidence": [{ "criterionId": "write-durability", "verdict": "conflicting", "sourceSpans": [{ "evidenceId": "en-durability-doc", "quoteSha256": "3838383838383838383838383838383838383838383838383838383838383838" }, { "evidenceId": "en-durability-code", "quoteSha256": "4848484848484848484848484848484848484848484848484848484848484848" }] }],
+      "decision": { "requiredTradeoffIds": ["declared-vs-runtime"], "requiredRiskIds": ["data-loss"], "acceptableRecommendationFingerprints": ["4646464646464646464646464646464646464646464646464646464646464646"], "abstentionAcceptable": true }
+    },
+    {
+      "caseId": "zh-navigation-fallback",
+      "rubricVersion": "degraded/v1",
+      "evidence": [{ "criterionId": "fallback-coverage", "verdict": "supported", "sourceSpans": [{ "evidenceId": "zh-fallback-read", "quoteSha256": "3939393939393939393939393939393939393939393939393939393939393939" }] }],
+      "decision": { "requiredTradeoffIds": ["coverage-vs-latency"], "requiredRiskIds": ["missed-path"], "acceptableRecommendationFingerprints": ["4949494949494949494949494949494949494949494949494949494949494949"], "abstentionAcceptable": false }
+    },
+    {
+      "caseId": "en-navigation-stale",
+      "rubricVersion": "degraded/v1",
+      "evidence": [{ "criterionId": "stale-navigation", "verdict": "unknown", "sourceSpans": [] }],
+      "decision": { "requiredTradeoffIds": ["stale-speed-vs-freshness"], "requiredRiskIds": ["stale-path"], "acceptableRecommendationFingerprints": ["5050505050505050505050505050505050505050505050505050505050505050"], "abstentionAcceptable": true }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "zj-code-research-evaluation-manifest/v1",
+  "id": "code-research-quality-v1",
+  "method": "zj-code-research",
+  "corpusVersion": "code-research-quality/v1",
+  "minimumSemanticScore": 80,
+  "calibration": {
+    "minimumSamples": 4,
+    "scoreTolerance": 10,
+    "maxMeanAbsoluteError": 5,
+    "minWithinToleranceRate": 0.8,
+    "minRecommendationAgreement": 0.9,
+    "maxRiskCountMeanAbsoluteError": 0.5
+  },
+  "cases": [
+    {"id": "landscape-balanced", "artifactKind": "repository-map", "fixture": "fixtures/landscape-balanced", "rubricVersion": "landscape/v1", "annotationId": "landscape-balanced"},
+    {"id": "landscape-sparse", "artifactKind": "repository-map", "fixture": "fixtures/landscape-sparse", "rubricVersion": "landscape/v1", "annotationId": "landscape-sparse"},
+    {"id": "deep-read-runtime", "artifactKind": "architecture-study", "fixture": "fixtures/deep-read-runtime", "rubricVersion": "deep-read/v1", "annotationId": "deep-read-runtime"},
+    {"id": "deep-read-unknowns", "artifactKind": "architecture-study", "fixture": "fixtures/deep-read-unknowns", "rubricVersion": "deep-read/v1", "annotationId": "deep-read-unknowns"}
+  ]
+}
