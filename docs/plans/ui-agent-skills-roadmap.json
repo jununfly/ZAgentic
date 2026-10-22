@@ -2243,12 +2243,6 @@
       "from": "01a15426bd9d-9b90016b3c",
       "to": "01a15426bdde-ce41ce2957",
       "type": "blocks"
-    },
-    {
-      "id": "e70",
-      "from": "01a15767ea79-a65a75c5c8",
-      "to": "01a15426bd9d-9b90016b3c",
-      "type": "blocks"
     }
   ],
   "edge_seq": 70
