@@ -123,7 +123,7 @@
 | `rule.doc-kind-declared` | G | 每篇文档声明 doc-kind 与 authority（doc-map 除外） | ✅ | ta-*.md |
 | `rule.no-dangling-reference` | P | 关联端点必解析到存在的实例 | ✅ | ontology |
 | `rule.bucket-inventory-consistent` | P | 文档桶清单须与真实 skills/ 树一致（保鲜核心） | ✅ | overview vs skills/ |
-| `rule.contract-before-graduation` | G | ui 契约在毕业闸门前必须满足 | ❌ | ui 决策收敛页(`docs/designs/ui-agent-skills/README.md`) |
+| `rule.contract-before-graduation` | G | ui 契约在毕业闸门前必须满足 | ❌ | ADR 0008（ui-agent-skills 毕业裁定 CONDITIONAL_ADOPTION） |
 | `rule.immutable-fixtures` | G | 黄金夹具不可变，删即炸 CI | ❌ | ui golden-fixtures-spec |
 
 ---
@@ -142,6 +142,6 @@ python3 docs/ontology/validate.py docs/ontology/graph.json
 - **新增文档**：frontmatter 声明 `doc-kind`/`authority`/`authority-id`；doc-map 除外。若为主视图则 `rule.stable-authority-id` 强制。
 - **改桶结构**：`rule.bucket-reorg-is-adr-bearing` 要求先有 ADR；否则 `rule.bucket-inventory-consistent` 抓出文档与活树不一致。
 - **改 doc-map**：务必遵守 `rule.G1-docmap-binding`——每个 `authority-id` 用独立 bullet 绑定到恰好一页，不要把 id 放在含多个链接的块里（否则 `MAP_AUTHORITY_CONFLICT`）。
-- **人工评审项**（契约/夹具）由 reviewer 依据决策收敛页(`docs/designs/ui-agent-skills/README.md`)与 `golden-fixtures-spec` 核对，不进自动校验。
+- **人工评审项**（契约/夹具）由 reviewer 依据 `docs/zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已于 2026-10-24 删除，结论迁入该 ADR）与 `golden-fixtures-spec` 核对，不进自动校验。
 
 > 设计原则：**图谱是派生事实，活代码树是真相源**。本体（本文件）只在术语/约束本身演进时才改；日常增删改只动代码树 + 重跑两脚本，即可保持文档系统高新鲜度。Module G 的治理逻辑由可移植技能 `zj-docs-ontology` 单一拥有，本仓库通过组合调用复用，不重复实现（治理契约明确容忍技能间不跨目录 import 的"私有副本"模式）。

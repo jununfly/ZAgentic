@@ -83,8 +83,9 @@ built, reviewed, broken, verified, and handed off. The bucket covers:
 
 - [Bucket README](../../skills/ui/README.md) — local index.
 - [ZJ-CONTEXT.md](../../ZJ-CONTEXT.md) — vocabulary the bucket respects.
-- [UI agent-skills designs](../designs/ui-agent-skills/README.md) — the
-  contract and decision authority for the chain.
+- [ADR 0008](../zj-adr/0008-ui-agent-skills-graduation-verdict.md) — the
+  graduation verdict (CONDITIONAL_ADOPTION) for the chain; its retired
+  decision-convergence page has no successor page.
 - [zj-ui-core](../../skills/ui/zj-ui-core/SKILL.md) — the S0 contract base.
 - [zj-ui-brief](../../skills/ui/zj-ui-brief/SKILL.md) — S1 intake.
 - [zj-ui-discover](../../skills/ui/zj-ui-discover/SKILL.md) — S2 discovery.

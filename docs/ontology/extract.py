@@ -91,8 +91,11 @@ def doc_subtype(fm, relpath):
         return "Agreement"
     if dk in ("prd", "capability-spec"):
         return "CapabilitySpec"
-    if "ui-agent-skills" in relpath:
-        return "Contract"
+    # NOTE: `Contract` used to be derived here from a `ui-agent-skills in relpath`
+    # special case, which only matched the retired docs/designs/ui-agent-skills/
+    # page. The ontology (ONTOLOGY.md) defines Contract as the machine-readable
+    # artifacts under `skills/<bucket>/<skill>/contracts/`, so contracts are now
+    # scanned where they actually live — see the contracts block in build_graph().
     if dk == "design":
         return "Design"
     return "DocPage"
@@ -202,6 +205,29 @@ def build_graph(repo_root=None):
                     attrs["status"] = fm.get("status", "")
                 add_node(did, subtype, attrs)
                 doc_ids.append((did, rel, subtype))
+
+    # Contracts shipped inside a skill (skill runtime closure). ONTOLOGY.md
+    # defines Contract as the machine-readable artifacts under
+    # `skills/<bucket>/<skill>/contracts/` — that is where the ui-agent-skills
+    # contracts (adapter-boundary-v1, canonical-schema, hard-gates, ...) live
+    # since they moved out of docs/ on 2026-10-23.
+    if os.path.isdir(skills_dir):
+        for bucket in sorted(os.listdir(skills_dir)):
+            bpath = os.path.join(skills_dir, bucket)
+            if not os.path.isdir(bpath):
+                continue
+            for skill_name in sorted(os.listdir(bpath)):
+                cdir = os.path.join(bpath, skill_name, "contracts")
+                if not os.path.isdir(cdir):
+                    continue
+                sid = f"skill:{bucket}/{skill_name}"
+                for f in sorted(os.listdir(cdir)):
+                    if not f.endswith(".md"):
+                        continue
+                    rel = os.path.relpath(os.path.join(cdir, f), root).replace(os.sep, "/")
+                    cid = f"contract:{rel}"
+                    add_node(cid, "Contract", {"id": rel, "skill": skill_name, "bucket": bucket})
+                    add_edge("ownedBy", cid, sid)
 
     # Doc relations: routesTo (architecture -> any doc) and references (any -> ADR)
     for did, rel, subtype in doc_ids:
