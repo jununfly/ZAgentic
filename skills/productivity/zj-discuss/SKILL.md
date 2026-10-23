@@ -275,7 +275,7 @@ set and, after Human confirmation, delete the folder.
 - `scripts/check_subdoc.py` — structural gate enforcing the invariants (see `REFERENCE.md「结构性闸门」`). 通用闸机委托给 `zj-doc-collab/scripts/gate_core.py`；本文件保留 `VALID_STATUS` / `沉淀指令` 校验 / per-role N 闸门等领域层。
 - `scripts/metrics.py` — R4 recomputable metrics registry (compression ratio etc.); read-only, prints JSON for a discussions/ folder or one sub-doc.
 - `tests/` — regression guards for all scripts (`python3 <test-file>.py`).
-- `docs/designs/zj-discuss/` — product / architecture / design docs (full spec, durable).
+- 产品 / 架构 / 设计文档（完整规格，长期维护）位于源仓库 `docs/designs/zj-discuss/`，**不随本 portable skill 安装**；本 skill 仅承载上方 references/ 与 scripts/ 中的可操作层。
 
 ## 兄弟技能集成（引用而非重做）
 

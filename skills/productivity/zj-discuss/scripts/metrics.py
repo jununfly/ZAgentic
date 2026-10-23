@@ -2,7 +2,7 @@
 """R4 — zj-discuss 复盘度量注册表：纯可重算度量计算机（只读，不写不注入）。
 
 给定 discussions/<slug>/ 目录（或单个子文档路径），按
-docs/designs/zj-discuss/design.md §9 的单一 schema 重算度量。
+zj-discuss 设计文档（源仓库）§9 的单一 schema 重算度量。
 
 设计要点（与 §8 边界一致）：本脚本**只读磁盘文件、不写入、不注入任何
 digest / learnings**。所有字段随时可从磁盘重算，无隐藏状态（recomputable 恒 true）。

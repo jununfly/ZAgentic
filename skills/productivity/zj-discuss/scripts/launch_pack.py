@@ -10,8 +10,8 @@ This is deliberately a *static* generator:
 - it only reads Markdown and writes Markdown;
 - it never starts, orchestrates, or contacts an Agent session;
 
-the design decision behind that boundary is recorded in
-``docs/designs/zj-discuss/architecture.md`` (building a session runtime would
+the design decision behind that boundary is recorded in the zj-discuss design
+docs in the ZAgentic source repository (building a session runtime would
 reclassify the whole approach, so the generator stays inert).
 
 Usage:
