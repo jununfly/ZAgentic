@@ -230,6 +230,43 @@ class TestGates(unittest.TestCase):
         res = classify_candidate(data, "O1")
         self.assertEqual(res.recommended, "BLOCKED")
 
+    def test_g1_missing_notes_blocks(self):
+        # 单元缺 notes 字段 -> G1 不过 (结论须留痕可复核)
+        cell = {"coverage": 1.0, "semantic_match": 1.0, "composability": 1.0,
+                "status": "native", "evidence": "src:x"}  # 无 notes
+        data = _base(
+            [{"id": "R1", "statement": "s", "priority": "must", "critical": True, "acceptance": "a"}],
+            {"R1": cell},
+        )
+        gates = run_gates(data, "O1")
+        self.assertTrue(any(g.name == "G1-matrix-complete" and not g.ok for g in gates))
+        res = classify_candidate(data, "O1")
+        self.assertEqual(res.recommended, "BLOCKED")
+
+    def test_g6_illegal_mode_blocks(self):
+        # adaptation.mode 不在契约枚举 -> G6 不过、阻塞分类
+        data = _base(
+            [{"id": "R1", "statement": "s", "priority": "must", "critical": True, "acceptance": "a"}],
+            {"R1": _cell(1.0, 1.0, 1.0, "native")},
+            adaptation={"scope": ["q"], "mode": "bogus"},
+        )
+        gates = run_gates(data, "O1")
+        self.assertTrue(any(g.name == "G6-adaptation-mode" and not g.ok for g in gates))
+        res = classify_candidate(data, "O1")
+        self.assertEqual(res.recommended, "BLOCKED")
+
+    def test_g6_empty_or_absent_mode_ok(self):
+        # mode 缺省/空串表示待细分通用 B，不算非法
+        for mode in (None, ""):
+            data = _base(
+                [{"id": "R1", "statement": "s", "priority": "must", "critical": True, "acceptance": "a"}],
+                {"R1": _cell(1.0, 1.0, 1.0, "native")},
+                adaptation={"scope": ["q"], "mode": mode},
+            )
+            gates = run_gates(data, "O1")
+            self.assertFalse(any(g.name == "G6-adaptation-mode" and not g.ok for g in gates),
+                             f"mode={mode!r} 不应触发 G6")
+
     def test_gate_version_missing_blocks(self):
         data = {
             "goal": "t",
