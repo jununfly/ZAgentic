@@ -15,14 +15,24 @@ Fingerprints (see docs/designs/zj-skill-runtime-closure.md):
   ERROR  ZAgentic-specific ontology path:        docs/ontology
   WARN   absolute source-repo path (review):     /Users/.../ZAgentic/ ,
                                                  /home/.../jununfly/ , C:\\...
-  WARN   unresolved reference:                   a path-bearing `example/x.json`
-                                                 whose target exists in neither
-                                                 the skill install nor the repo.
+  ERROR  unresolved reference:                   a path-bearing `example/x.json`
+                                                 whose target exists in none of
+                                                 the reference bases (below).
                                                  Bare filenames and paths rooted
                                                  in the target project (docs/,
                                                  .claude/, agents/, ...) are not
                                                  flagged; those name the repo the
                                                  skill runs in, not skill content.
+
+Resolution bases for a path-bearing reference -- a skill is installed with every
+other skill side by side under one root, so a pointer at a sibling skill is
+legitimate (zj-discuss reaches zj-doc-collab/scripts/... this way):
+  1. the referring file's own directory
+  2. the referring skill's install root
+  3. its bucket root (skills/<bucket>/)
+  4. every sibling skill root directly under that bucket
+  5. the repo root
+Add `# closure-allow` to a line to suppress it inline.
 
 Scan scope: the `skills/` tree, excluding dev/test scopes
 (tests/, fixtures/, artifacts/, evals/, __pycache__, node_modules, binaries).
@@ -108,15 +118,41 @@ def _find_repo_root(start: str) -> str:
 
 
 def _skill_root_of(rel: str, root: str) -> str | None:
-    """`<skill-install>` dir for rel like skills/<bucket>/<skill>/<...>."""
+    """`<skill-install>` dir for rel like skills/<bucket>/<skill>/<...>.
+
+    Returns None for bucket-level files (skills/<bucket>/README.md): those are
+    repo navigation indexes rather than an installable skill unit.
+    """
     parts = rel.split(os.sep)
     if parts[0] == "skills" and len(parts) >= 3:
-        return os.path.join(root, "skills", parts[1], parts[2])
+        cand = os.path.join(root, "skills", parts[1], parts[2])
+        return cand if os.path.isdir(cand) else None
     return None
 
 
 def _ref_resolves(ref: str, bases: list[str]) -> bool:
     return any(os.path.exists(os.path.join(b, ref)) for b in bases if b)
+
+
+def _resolution_bases(path: str, rel: str, root: str) -> list[str]:
+    """Every root a path-bearing reference is allowed to resolve against."""
+    bases = [os.path.dirname(path)]
+    skill_root = _skill_root_of(rel, root)
+    if skill_root:
+        bases.append(skill_root)
+    parts = rel.split(os.sep)
+    if parts[0] == "skills" and len(parts) >= 2:
+        bucket = os.path.join(root, "skills", parts[1])
+        bases.append(bucket)
+        try:
+            for name in sorted(os.listdir(bucket)):
+                full = os.path.join(bucket, name)
+                if os.path.isdir(full):
+                    bases.append(full)
+        except OSError:
+            pass
+    bases.append(root)
+    return bases
 
 
 # Cache of <skill-install-root> -> its file paths relative to that root.
@@ -165,7 +201,7 @@ def scan_file(path: str, rel: str, findings: list[dict], root: str) -> None:
         # may legitimately name a target-project artifact the skill operates on
         # rather than ships (UI-BRIEF.md, input.json), so it is not evidence of
         # a broken pointer.
-        skill_root = _skill_root_of(rel, root)
+        bases = _resolution_bases(path, rel, root)
         for ref in RE_REF_PATH.findall(line):
             if ref.startswith(("/", "~", "#", "$", "./")) or "://" in ref:
                 continue
@@ -176,14 +212,15 @@ def scan_file(path: str, rel: str, findings: list[dict], root: str) -> None:
                 continue
             if norm.startswith(TARGET_PROJECT_ROOTS):
                 continue
-            if _ref_resolves(ref, [os.path.dirname(path), skill_root, root]):
+            if _ref_resolves(ref, bases):
                 continue
+            skill_root = _skill_root_of(rel, root)
             if skill_root and norm in _skill_files(skill_root):
                 continue
             findings.append({
-                "severity": "WARN", "code": "SKILL_UNRESOLVED_REF", "path": rel,
+                "severity": "ERROR", "code": "SKILL_UNRESOLVED_REF", "path": rel,
                 "line": lineno, "match": ref,
-                "hint": "referenced file resolves nowhere in skill or repo",
+                "hint": "referenced file resolves in no reference base",
             })
 
 
