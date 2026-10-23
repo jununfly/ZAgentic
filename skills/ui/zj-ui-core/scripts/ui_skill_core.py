@@ -54,7 +54,7 @@ def worst(*statuses: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Canonical artifacts (schema frozen by 1-2-1 / `canonical-schema.md`)
+# Canonical artifacts (schema frozen by  / `canonical-schema.md`)
 # --------------------------------------------------------------------------- #
 
 BRIEF = "UI-BRIEF.md"
@@ -244,7 +244,7 @@ def sha256_text(text: str) -> str:
 
 
 def revision_of(payload) -> str:
-    """`revision` = sha256 of the canonical content (schema version 1-2-1 rule)."""
+    """`revision` = sha256 of the canonical content (schema version  rule)."""
     return sha256_text(canonical_json(payload))
 
 
@@ -317,7 +317,7 @@ def validate_quartets(entries) -> list:
 
 
 def reject(field: str, reason: str, suggested_owner: str = "", recoverable: bool = False) -> dict:
-    """Uniform deny-first reply (1-2-2 §3). Never downgraded to a warning."""
+    """Uniform deny-first reply. Never downgraded to a warning."""
     return {
         "field": field,
         "reason": reason,

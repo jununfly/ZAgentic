@@ -1,8 +1,8 @@
 """Ten-skill capability manifest registry for the `zj-ui-*` chain (S1..S10).
 
 This is the machine-readable form of `ui-agent-skills-skill-capability-manifest.md`
-§3 (roadmap node 1-3-1). Every skill carries the full 16-field manifest so the
-resolver's static checks (resolver-contract.md §2) can run against it. The
+ (). Every skill carries the full 16-field manifest so the
+resolver's static checks (resolver-contract.md ) can run against it. The
 registry is read-only data: the resolver never mutates it, and a malformed entry
 is dropped by `registry_static_check`, never silently repaired.
 
@@ -18,7 +18,7 @@ stage in the chain.
 from __future__ import annotations
 
 # The 16 fields each manifest must carry. Missing any of them -> the skill is
-# excluded from the registry (resolver-contract.md §2.3).
+# excluded from the registry (resolver-contract.md ).
 MANIFEST_FIELDS = (
     "skill_id",
     "manifest_version",
@@ -370,7 +370,7 @@ MANIFESTS = [
 
 
 def registry_static_check(registry=None):
-    """resolver-contract.md §2: drop malformed entries and report why.
+    """resolver-contract.md : drop malformed entries and report why.
 
     Returns ``(clean, problems)`` where ``clean`` is the list of manifests that
     survive all three checks and ``problems`` is a list of human-readable
@@ -440,7 +440,7 @@ def get_registry():
 def precedence_version(registry):
     """sha256 of the normalized (skill_id, manifest_version, precedence) triples.
 
-    resolver-contract.md §5.1: ``precedence_version`` is the registry-wide
+    resolver-contract.md : ``precedence_version`` is the registry-wide
     canonical hash so a precedence/manifest change changes every plan hash.
     """
     import json

@@ -5,12 +5,12 @@ resolver is a pure function: same inputs -> byte-identical `plan_hash`, same
 `next_action`, zero writes, zero hidden state. It never calls a skill, never
 touches a canonical artifact, never reads the clock.
 
-Seven fixed steps (§4): R1 schema check -> R2 filter forbidden -> R3 match
+Seven fixed steps : R1 schema check -> R2 filter forbidden -> R3 match
 required_capabilities -> R4 stage-owner filter -> R5 precedence top (unique) ->
 R6 Human gate -> R7 single next_action. Any hard stop freezes the plan with zero
-skill invocations (§6).
+skill invocations .
 
-Frozen terminal statuses (§5.1):
+Frozen terminal statuses :
     PLANNED, WAITING_FOR_HUMAN, FROZEN_CONFLICT, UNSUPPORTED_INPUT,
     AMBIGUOUS, CONFIG_ERROR, INVALID_INPUT
 """
@@ -26,7 +26,7 @@ import ui_registry as reg
 
 
 # --------------------------------------------------------------------------- #
-# Plan statuses (resolver-contract.md §5.1)
+# Plan statuses (resolver-contract.md )
 # --------------------------------------------------------------------------- #
 
 PLANNED = "PLANNED"
@@ -37,7 +37,7 @@ AMBIGUOUS = "AMBIGUOUS"
 CONFIG_ERROR = "CONFIG_ERROR"
 INVALID_INPUT = "INVALID_INPUT"
 
-# Statuses under which the orchestrator MUST NOT execute any skill (§6).
+# Statuses under which the orchestrator MUST NOT execute any skill .
 FROZEN_STATUSES = {
     WAITING_FOR_HUMAN,
     FROZEN_CONFLICT,
@@ -47,7 +47,7 @@ FROZEN_STATUSES = {
     INVALID_INPUT,
 }
 
-# Gate states (§1.1). Only APPROVED lets a required-gate skill proceed.
+# Gate states . Only APPROVED lets a required-gate skill proceed.
 GATE_APPROVED = "APPROVED"
 GATE_PENDING = "PENDING"
 GATE_REJECTED = "REJECTED"
@@ -56,7 +56,7 @@ GATE_NOT_REQUIRED = "NOT_REQUIRED"
 
 
 # --------------------------------------------------------------------------- #
-# Canonicalization (resolver-contract.md §3, N1-N7)
+# Canonicalization (resolver-contract.md , N1-N7)
 # --------------------------------------------------------------------------- #
 
 
@@ -94,10 +94,10 @@ def _normalize(value, _in_unknown=False):
 
 
 def canonicalize_request(request: dict, artifact_snapshot: dict) -> dict:
-    """§3 normalization of the request + artifact snapshot, minus `request_id`.
+    """ normalization of the request + artifact snapshot, minus `request_id`.
 
     `request_id` is audit-only and is explicitly excluded from `plan_hash`
-    (§1.1). `unknown` quartets are preserved, never collapsed (§3 N2 exception).
+    . `unknown` quartets are preserved, never collapsed N2 exception).
     """
     req = dict(request or {})
     req.pop("request_id", None)
@@ -109,7 +109,7 @@ def canonicalize_request(request: dict, artifact_snapshot: dict) -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# Fingerprints + plan hash (§5.2 / §5.3)
+# Fingerprints + plan hash / )
 # --------------------------------------------------------------------------- #
 
 
@@ -131,7 +131,7 @@ def route_fingerprint(normalized_request: dict, artifact_ref: dict,
 def plan_hash(route_fp: str, *, stage: str, owner_skill: str, manifest_version: str,
               candidates: list, eliminated: list, next_action: dict | None,
               gate_state: str, artifact_ref: dict) -> str:
-    # candidates / eliminated are sorted so ordering never alters the hash (§4 R5).
+    # candidates / eliminated are sorted so ordering never alters the hash R5).
     payload = canonical_json(
         {
             "route_fingerprint": route_fp,
@@ -215,13 +215,13 @@ def _plan(*, status: str, stage: str | None, registry, gate_state: str,
         "artifact_ref": artifact_ref,
         "status": status,
         "reason": reason,
-        # The number of skill invocations a frozen plan permits: always 0 (§6).
+        # The number of skill invocations a frozen plan permits: always 0 .
         "permitted_writes": 0 if status in FROZEN_STATUSES else 1,
     }
 
 
 # --------------------------------------------------------------------------- #
-# The resolver (resolver-contract.md §4)
+# The resolver (resolver-contract.md )
 # --------------------------------------------------------------------------- #
 
 

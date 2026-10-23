@@ -65,7 +65,7 @@ S6 · BUILD · `emit`（只产出显式声明的非 canonical 产物 `preview`�
 ## 职责与边界
 
 `owner_scope=emit`：本 skill **不拥有任何 canonical artifact 的写锁**。`writes` 里声明的
-`preview` 是规范 §1.3 允许显式声明的非 canonical 产物，不是 schema 中的第六类 artifact。
+`preview` 是规范允许显式声明的非 canonical 产物，不是 schema 中的第六类 artifact。
 实现切片与 preview 都从这里出去；`UI-BRIEF.md` / `UI-DESIGN.md` / `ui-flow/v1` 一律只读。
 
 - **effect 不等于做事**：先出 `effect intent`（目标、参数摘要、权限、可撤销性、数据分类），

@@ -1,11 +1,11 @@
-"""Sample-flow drill harness for the Experience Version form/approval paths (roadmap 1-8-5).
+"""Sample-flow drill harness for the Experience Version form/approval paths ().
 
 The form (F-1~F-6) and approval (A-1~A-6) fixtures under
 ``tests/ui-agent-skills/fixtures/{form,approval}`` were landed as data-only
-(ev-sample-flow §4.5) and, until this harness, were never executed by any
+(ev-sample-flow ) and, until this harness, were never executed by any
 runner. This module is the missing drill: it runs each fixture through a
 deterministic state-machine simulator and injects the four degradation
-scenarios the 1-8-5 exit criteria demand:
+scenarios the  exit criteria demand:
 
     ① remote adapter closed  -> static-preview fallback, no fake success
     ② asset / license quarantine -> isolated, degraded, recovery preserved

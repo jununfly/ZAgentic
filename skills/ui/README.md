@@ -4,7 +4,7 @@
 review → break → verify → handoff。一个 skill 一个阶段，每个 `(stage, artifact)` 恰好一个写
 owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 
-上游契约在源仓库的 `docs/designs/ui-agent-skills/`（由源仓库维护，不随本 skills 目录安装）：
+上游契约定义（不随本 skills 目录安装）见源仓库的 ui-agent-skills 设计文档：
 `ui-agent-skills-skill-capability-manifest.md`（16 字段与阶段责任卡）、
 `ui-agent-skills-canonical-schema.md`（六类 canonical artifact）、
 `ui-agent-skills-ui-flow-v1-contract.md`（六义）。新增 skill 前先读

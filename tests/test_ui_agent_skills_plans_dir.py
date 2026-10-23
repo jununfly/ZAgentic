@@ -60,7 +60,7 @@ class PlansDirResolution(unittest.TestCase):
                     runner.default_plans_dir()
         message = str(caught.exception)
         self.assertIn("--plans", message)
-        self.assertIn("docs/designs/ui-agent-skills", message)
+        self.assertIn("ui-agent-skills 计划目录", message)
 
     def test_explicit_plans_works_without_a_repository(self):
         """Would fail if --plans were resolved eagerly while building the parser."""

@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-R-HAR-2 — UI Agent Skills 硬门禁（1-5-3 交付物）
+R-HAR-2 — UI Agent Skills 硬门禁
 
-职责（契约见源仓库 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md，不随 skill 安装）：
+职责（契约见源仓库 ui-agent-skills-hard-gates.md）：
   硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态。
 
 设计原则：
 - 纯 stdlib，无网络 / 无浏览器 / 无外部依赖。门禁只吃「观察证据」（observation bundle），
-  浏览器真实捕获由 1-7-3 Storybook active adapter 供给；本模块不做采集、不做 DOM 解析。
+  浏览器真实捕获由  Storybook active adapter 供给；本模块不做采集、不做 DOM 解析。
 - fail-closed：证据缺失或为空 -> HUMAN_REVIEW_REQUIRED，绝不因为「没断言可跑」而 PASS。
-  这是 golden-fixtures-spec §8 与 capability manifest S8/S9 的硬要求（禁止把 overflow/focus
+  这是 golden-fixtures-spec  与 capability manifest S8/S9 的硬要求（禁止把 overflow/focus
   失败记为 warning，禁止用「部分通过」冒充 PASS）。
 - 确定性：所有判定为纯函数，迭代顺序显式 sorted，输出可逐字节复现（不受 PYTHONHASHSEED 影响）。
-- 可归因：每条 finding 带 code / severity / node_id / observed / expected，供 1-5-4 receipt
+- 可归因：每条 finding 带 code / severity / node_id / observed / expected，供  receipt
   直接落 observed 字段；无法归因的证据走 QUARANTINED。
 
-契约（R-OBS-1，详见源仓库 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md，不随 skill 安装）：
+契约（observation bundle 校验）：
   <observations>/<fixture_id>/<viewport>.json  ->  observation bundle
   bundle = {schema, fixture_id, class, viewport, captured_by, captured_at,
             dom, focus, contrast, layout, motion, states, quarantine}
@@ -74,7 +74,7 @@ CONTROL_TAGS = {"input", "select", "textarea"}
 # 名称来源不可接受的取值（placeholder / 文本内容当 label 是一种 a11y blocker）
 BAD_NAME_SOURCES = {"placeholder", "text"}
 
-# EV-v0.1 冻结状态机（scope-manifest §1）
+# EV-v0.1 冻结状态机（scope-manifest ）
 ALLOWED_TRANSITIONS = {
     ("idle", "validating"),
     ("validating", "idle"),
@@ -146,7 +146,7 @@ def _finish(gate, bundle, findings, checked):
     """统一收口：quarantine 优先于 PASS/WARNING/evidence，但不掩盖 hard。
 
     severity="unattributable" 的 finding 不参与 status 计算（它表达的是"无法归因"，
-    而非某条断言失败），但必须出现在 findings 里供 1-5-4 receipt 记录。
+    而非某条断言失败），但必须出现在 findings 里供  receipt 记录。
     """
     quarantined = bool(bundle.get("quarantine"))
     findings = list(findings)
@@ -1292,7 +1292,7 @@ def missing_fixtures_result(dimension, fixture_ids, fixture_class=None):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="R-HAR-2 hard gates (1-5-3)")
+    ap = argparse.ArgumentParser(description="R-HAR-2 hard gates")
     ap.add_argument("cmd", choices=["selftest", "check", "schema"])
     ap.add_argument("--bundle", help="check: 单 bundle 文件路径")
     ap.add_argument("--fixture", default="F-1")
