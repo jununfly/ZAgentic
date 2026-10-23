@@ -30,3 +30,21 @@ jobs:
         # docs/ tree, so anything read at runtime must be closed over inside the
         # skill. Pure stdlib; see scripts/check-skill-runtime-closure.py.
         run: python3 scripts/check-skill-runtime-closure.py --repo .
+
+  docs-dangling-refs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fail on dangling docs/ navigation links
+        # Deleting docs/designs/ui-agent-skills/README.md (2026-10-24) left four
+        # references behind, one of them written relative
+        # (`../designs/ui-agent-skills/README.md`) so a literal path search never
+        # finds it. No other workflow reads docs/ links, so this class was
+        # silent. Only markdown links fail; bare prose paths are WARN (they are
+        # often historical narrative or describe another tree).
+        # NOT a required check: keep it out of the branch-protection contexts so
+        # an unrelated PR is never blocked by it (see PR #211).
+        run: python3 scripts/check-docs-dangling-refs.py --repo-root .

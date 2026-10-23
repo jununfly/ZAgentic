@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+r"""Fail when a navigation link inside `docs/` points at a missing file.
+
+Why this exists
+---------------
+`docs/designs/ui-agent-skills/README.md` was deleted on 2026-10-24 after its
+conclusion had been moved into ADR 0008. References to it survived in four
+places — including `docs/architecture/ta-skill-bucket-ui.md`, which a literal
+`docs/designs/ui-agent-skills` search never finds because the link is written
+relative (`../designs/ui-agent-skills/README.md`). No CI workflow reads `docs/`
+links, so that class of dangling reference is silent forever. This script makes
+it mechanically visible.
+
+Severity model (deliberately asymmetric)
+----------------------------------------
+* **ERROR — markdown navigation links** (`\[text\](target)`) that do not
+  resolve. A link is a navigation promise; a dead one is always a defect.
+* **WARN — bare paths in prose** (`docs/ontology/graph.json` written as plain
+  text). Prose paths are often historical narrative, exemplar placeholders
+  (`/SKILL.md`) or descriptions of another tree (`skills/...`), so they are
+  reported for review but do not fail the run unless `--strict` is passed.
+
+Calibration note: the first version treated both forms as errors and produced 49
+findings on a clean tree — unusable as a gate, and unusable as a signal. Rules
+that nobody can act on are worse than no rules, so prose paths were demoted and
+two suppression classes were added (see below). Re-check the WARN count before
+promoting anything else to ERROR.
+
+Suppression
+-----------
+* `RETIRED_NAMESPACES` — trees removed by earlier governance (`skills-outputs/`,
+  `docs/plans/`). ADRs legitimately cite them as history; chasing those
+  citations is a separate governance sweep, not this gate's job.
+* A line that also mentions deletion/removal (`已删除`, `已移除`, `deleted`,
+  `removed`) or carries `# docs-ref-allow` is skipped: it is narrating a file
+  that no longer exists, not pointing a reader at it.
+
+Usage
+-----
+    python3 scripts/check-docs-dangling-refs.py [--repo-root PATH] [--strict]
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+ARTEFACT_SUFFIXES = (".md", ".json", ".py", ".sh", ".yaml", ".yml")
+SKIP_DIR_PARTS = {".git", "__pycache__", ".workbuddy", "node_modules"}
+
+# Removed by earlier governance sweeps; ADRs cite them as history.
+RETIRED_NAMESPACES = ("skills-outputs/", "docs/plans/")
+# A line narrating a deletion is not a navigation promise.
+HISTORICAL_MARKERS = ("已删除", "已移除", "deleted", "removed", "# docs-ref-allow")
+
+LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+BARE_PATH_RE = re.compile(r"[A-Za-z0-9_./\-]+\.(?:md|json|py|sh|yaml|yml)")
+
+
+def _clean(target: str) -> str:
+    target = target.strip()
+    if target.startswith("<") and ">" in target:
+        target = target[1 : target.index(">")]
+    for sep in ("#", "?"):
+        if sep in target:
+            target = target.split(sep, 1)[0]
+    return target.strip().strip("`").strip()
+
+
+def _is_external(target: str) -> bool:
+    lowered = target.lower()
+    return (
+        lowered.startswith(("http://", "https://", "mailto:", "tel:", "file://"))
+        or lowered.startswith("//")
+        or lowered == ""
+    )
+
+
+def _is_retired(target: str) -> bool:
+    return any(ns in target for ns in RETIRED_NAMESPACES)
+
+
+def _bases(md: Path, repo_root: Path) -> list[Path]:
+    return [md.parent, repo_root / "docs", repo_root]
+
+
+def _resolves(target: str, bases: list[Path]) -> list[Path]:
+    hits: list[Path] = []
+    for base in bases:
+        candidate = base / target
+        if candidate.exists():
+            hits.append(candidate)
+    return hits
+
+
+def scan(repo_root: Path) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warns: list[str] = []
+    for md in sorted((repo_root / "docs").rglob("*.md")):
+        rel_md = md.relative_to(repo_root)
+        if any(part in SKIP_DIR_PARTS for part in rel_md.parts):
+            continue
+        bases = _bases(md, repo_root)
+        for lineno, line in enumerate(
+            md.read_text(encoding="utf-8", errors="replace").splitlines(), start=1
+        ):
+            if any(marker in line.lower() or marker in line for marker in HISTORICAL_MARKERS):
+                continue
+            for kind, regex in (("link", LINK_RE), ("path", BARE_PATH_RE)):
+                for raw in regex.findall(line):
+                    target = _clean(raw)
+                    if _is_external(target) or _is_retired(target):
+                        continue
+                    if kind == "path" and "/" not in target:
+                        continue
+                    if _resolves(target, bases):
+                        continue
+                    entry = f"{rel_md}:{lineno}: [{kind}] {target}"
+                    (errors if kind == "link" else warns).append(entry)
+    return errors, warns
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="fail on dangling docs/ references")
+    parser.add_argument("--repo-root", default=None, help="defaults to the parent of scripts/")
+    parser.add_argument("--strict", action="store_true", help="fail on WARN findings too")
+    args = parser.parse_args(argv)
+
+    repo_root = (
+        Path(args.repo_root).resolve() if args.repo_root else Path(__file__).resolve().parent.parent
+    )
+    if not (repo_root / "docs").is_dir():
+        print(f"ERROR: no docs/ directory under {repo_root}")
+        return 1
+
+    errors, warns = scan(repo_root)
+    for line in errors:
+        print(f"ERROR: {line}")
+    for line in warns:
+        print(f"WARN: {line}")
+    print(
+        f"check-docs-dangling-refs: {len(errors)} dangling link(s), "
+        f"{len(warns)} unresolved prose path(s) (repo_root={repo_root})"
+    )
+    if errors:
+        return 1
+    if args.strict and warns:
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
