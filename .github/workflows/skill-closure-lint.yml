@@ -1,0 +1,32 @@
+name: Skill runtime-closure lint
+
+# Critical, do NOT "optimise" away:
+#
+# This workflow reports `closure-lint` on EVERY push / pull_request, because the
+# branch has that check as REQUIRED. A required check that never reports is
+# treated as unsatisfied, so a path-filtered version would leave every unrelated
+# PR (e.g. docs-only, or a PR that only touches skills/foo while another skill
+# is clean) stuck on `mergeStateStatus: BLOCKED` with `checks: 0`.
+# Verified empirically on the sibling ui-contract gate: probe PR #211 touched
+# only docs/ and was BLOCKED solely because a path-filtered required check did
+# not report.
+#   => Keep this trigger unfiltered. The lint scans the whole skills/ tree and is
+#      cheap (~1s); it exits 0 on a clean tree, so unrelated PRs stay green.
+on:
+  push:
+  pull_request:
+
+jobs:
+  closure-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run skill runtime-closure lint
+        # Scans skills/ for references that escape into the ZAgentic source repo
+        # (e.g. ../../docs, docs/ontology) — skills are installed without the
+        # docs/ tree, so anything read at runtime must be closed over inside the
+        # skill. Pure stdlib; see scripts/check-skill-runtime-closure.py.
+        run: python3 scripts/check-skill-runtime-closure.py --repo .
