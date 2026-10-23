@@ -44,9 +44,11 @@ from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 CLI = SKILL_DIR / "roadmap_cli.py"
 TMP_ROOT = Path(os.environ.get("TMPDIR") or "/tmp")
 
-# 两条"别人机器上"的路径：一台 Windows、一台 macOS。
-WINDOWS_MD = "C:\\workspace\\ZAgentic\\app\\ROADMAP.md"
-POSIX_MD = "/Users/bilibili/workspace/ZAgentic/app/ROADMAP.md"
+# 两条"别人机器上"的**合成**绝对路径：一台 Windows、一台 macOS。
+# 仅用于验证异机绝对路径被拒（契约 3），绝不写本机/本仓库的真实路径——
+# foreignness 判定只看 OS 家族前缀，不看路径是否真实存在。
+WINDOWS_MD = "C:\\Users\\contributor\\roadmap-project\\app\\ROADMAP.md"
+POSIX_MD = "/home/contributor/roadmap-project/app/ROADMAP.md"
 
 
 class MdFilePortabilityContractTest:
