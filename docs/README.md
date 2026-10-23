@@ -57,8 +57,8 @@ doc-kind: doc-map
 - [designs/zj-skill-runtime-closure.md](designs/zj-skill-runtime-closure.md) — skill 运行期闭包自包含（源仓 docs 不得运行时依赖、SSOT 不迁单 skill）; authority-id: `design.skill-runtime-closure`
 
 ### Contract（ui-agent-skills 子系统机器可读契约/清单/账本等）
-枢纽页：designs/ui-agent-skills/README.md；决策与风险：designs/ui-agent-skills/DECISIONS-RISKS.md。
-子契约（约 37 个，含 `adapter-boundary-v1`、`canonical-schema`、`resolver-contract`、`trust-chain-contract`、`lease-state-machine`、`hard-gates`、`verification-receipt`、`fixture-manifest`、`skill-capability-manifest` 等）详见该目录；完整实例见知识图谱。
+枢纽页（决策收敛与治理状态）：designs/ui-agent-skills/README.md。
+子契约（含 `adapter-boundary-v1`、`canonical-schema`、`resolver-contract`、`trust-chain-contract`、`lease-state-machine`、`hard-gates`、`verification-receipt`、`fixture-manifest`、`skill-capability-manifest` 等）详见 `skills/ui/zj-ui-core/contracts/`；完整实例见知识图谱。
 
 ### ADR（已接受的不易逆转决策，authority: historical）
 ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authority-id`。

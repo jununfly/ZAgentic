@@ -49,7 +49,7 @@ python3 docs/ontology/tests/test_ontology.py
 - **新增文档**：frontmatter 声明 `doc-kind`/`authority`/`authority-id`；主视图须满足 `rule.stable-authority-id`。
 - **改桶结构**：`rule.bucket-reorg-is-adr-bearing` 要求先有 ADR；否则 `rule.bucket-inventory-consistent` 抓出文档与活树不一致。
 - **改 doc-map（docs/README.md）**：务必遵守 `rule.G1-docmap-binding`——每个 `authority-id` 用独立 bullet 绑到恰好一页，且描述性文字/表格中不要夹带 markdown 链接（否则绑定探测器会把游离链接折进前一个 id）。
-- **人工评审项**（契约/夹具，如 `rule.contract-before-graduation`、`rule.immutable-fixtures`）由 reviewer 依据 `designs/ui-agent-skills/` 下对应规格核对，不进自动校验。
+- **人工评审项**（契约/夹具，如 `rule.contract-before-graduation`、`rule.immutable-fixtures`）由 reviewer 依据 `skills/ui/zj-ui-core/contracts/` 下对应规格核对，不进自动校验。
 
 ## 设计原则
 
