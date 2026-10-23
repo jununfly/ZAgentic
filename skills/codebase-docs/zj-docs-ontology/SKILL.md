@@ -45,6 +45,22 @@ proposal or confirmed execution. Read
 [proposal-tool-contract.md](references/proposal-tool-contract.md) before
 interpreting a report, changing the tool, or adding a fixture.
 
+## Portability boundary
+
+This skill owns the **governance layer** of a documentation system: the
+`doc-kind` vocabulary, `authority` levels, lifecycle categories, and the
+`docMapBinds` 1:1 rule that drives `MAP_AUTHORITY_CONFLICT`. That contract is
+fully contained here (this file, `references/`, and `scripts/docs_governance.py`),
+so the skill installs and runs unchanged in any target repository.
+
+A consuming repository may layer a **product-domain model** on top of this
+governance layer (for example platform / bucket / skill / pipeline entities
+specific to that repo). Such a model is *that repository's* concern and is
+**not** shipped with this skill — it lives wherever that repo keeps its own
+documentation ontologies, not inside the installed skill. The two layers share
+one vocabulary, so there is no naming collision; this skill only ever owns the
+governance layer.
+
 ## Completion
 
 Complete the pass when the Human can see the selected map, categories,

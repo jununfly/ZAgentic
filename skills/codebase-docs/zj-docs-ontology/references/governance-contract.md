@@ -13,8 +13,17 @@ repository wins over this convention.
 
 | Lifecycle | Categories |
 | --- | --- |
-| Long-lived | `methods`, `prds`, `architecture`, `agreements`, `designs`, `testing`, `benchmarks`, `references`, `zj-adr` |
+| Long-lived | `methods`, `prds`, `architecture`, `agreements`, `designs`, `testing`, `benchmarks`, `references`, `zj-adr`, `ontology` |
 | Process | `plans`, `zj-retros` |
+
+`ontology` is the unified documentation ontology home (ZAgentic-local): the T-Box
+(`ONTOLOGY.md` + `ontology.schema.json`) and the product-domain extraction /
+validation (`extract.py` + `validate.py`). It is long-lived but ZAgentic-specific;
+other repos do not carry it. The governance layer (this skill's `doc-kind` /
+`authority` / lifecycle categories, plus `MAP_*`) is the contract's **Module G**;
+the product-domain model (platform / bucket / skill / pipeline / validator) is
+**Module P**. Both share one vocabulary defined in that repository's ontology
+schema file.
 
 Fixture documentation can live beside its fixture and is registered by the
 map. Code, tests, fixtures, raw benchmark profiles, logs, research packages,
@@ -74,6 +83,23 @@ resolves terminology, `zj-debrief` captures process closeout, and
 `zj-neat-freak` reconciles broader knowledge drift. `zj-repo-init` configures
 tracker/triage entrypoints only after a selected map exists; it never invokes
 this skill.
+
+### Layering: this skill is the governance layer
+
+A consuming repository may express its documentation system as one unified
+ontology with **two concern layers**. This skill owns the **governance layer
+(Module G)**: the `doc-kind` vocabulary, `authority` levels, lifecycle
+categories, and the `docMapBinds` 1:1 rule that drives `MAP_AUTHORITY_CONFLICT`.
+The product-domain layer (Module P: for example platform / bucket / skill /
+pipeline / validator entities) is that repository's own extension and is **not**
+part of this installed skill — it lives in that repository's documentation
+ontology, not inside the skill directory. A single combined check in that repo
+composes this skill's `docs_governance.py --validate` with the product-domain
+rules so one run covers both layers. The two layers share one vocabulary, so
+there is no naming collision, and the governance logic stays portable
+(installable into any repo) while the product-domain logic stays local —
+consistent with this contract's tolerance of skill-local copies over cross-skill
+imports.
 
 ### What overlaps with `zj-docs-architecture`, and who owns it
 

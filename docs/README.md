@@ -1,117 +1,98 @@
+---
+doc-kind: doc-map
+---
+
 # ZAgentic documentation map
 
-This map routes readers to the maintained documentation for this repository.
-It distinguishes long-lived authority from process material and evidence
-surfaces; navigation order does not establish global truth precedence.
+> **本仓库文档化系统以【统一本体 + 知识图谱】驱动**（见 [`ontology/ONTOLOGY.md`](ontology/ONTOLOGY.md)）。
+> 概念主干（实体/属性/关联/规则，含 Module G 治理层 + Module P 产品域层）在
+> [`ontology/ONTOLOGY.md`](ontology/ONTOLOGY.md)；机器可读本体在
+> [`ontology/ontology.schema.json`](ontology/ontology.schema.json)；知识图谱与约束校验在
+> [`ontology/validate.py`](ontology/validate.py)（一次覆盖 Module G 的 `MAP_*` 与 Module P 全部规则）。
+> 本文档地图是**按实体类型组织的导航层**，不重述各页内容。
+
+本地图区分长生命周期权威、过程材料与证据面；导航顺序不确立全局真值优先。每个 `authority-id`
+用独立条目绑定到恰好一页（治理契约 `rule.G1-docmap-binding`）。
 
 ## Start here
 
-| Question | Entry | Boundary |
+| 问题 | 入口 | 边界 |
 | --- | --- | --- |
-| What vocabulary does ZAgentic use? | [ZJ-CONTEXT.md](../ZJ-CONTEXT.md) | Root-level external documentation entry; its glossary owns terminology. |
-| Which skill or workflow fits? | [root README](../README.md) and [`zj-guide`](../skills/engineering/zj-guide/SKILL.md) | Public skill catalog and routing, not architecture authority. |
-| How must an Agent work in this repository? | [AGENTS.md](../AGENTS.md) | Immediate repository rules; agreements are created lazily when concrete collaboration configuration needs them. |
+| 文档化系统的概念主干是什么？ | [`docs/ontology/`](ontology/ONTOLOGY.md) | 实体/属性/关联/规则 + 推理校验 + 保鲜工作流 |
+| ZAgentic 用什么词汇？ | [ZJ-CONTEXT.md](../ZJ-CONTEXT.md) | 根级外部文档入口；术语表拥有词汇 |
+| 该用哪个技能/流程？ | [根 README](../README.md) 与 [`zj-guide`](../skills/engineering/zj-guide/SKILL.md) | 公共技能目录与路由，非架构权威 |
+| Agent 在本仓库须怎么工作？ | [AGENTS.md](../AGENTS.md) | 即时仓库规则；协议按需惰性创建 |
 
-## Long-lived documentation
+## 文档实体清单（按本体类型）
 
-| Question | Location | Authority boundary |
+下面每一类对应本体中的一种 `DocPage` 子类型（`ArchitectureView` / `Design` / `ADR` /
+`Agreement` / `CapabilitySpec` / `Contract` / `DocMap`）。地图把每个 `authority-id` 绑到一页。
+
+### ArchitectureView（架构手册主视图，authority: primary）
+- [architecture/README.md](architecture/README.md) — 当前架构是什么、哪页答哪问？; authority-id: `architecture.map.zagentic`
+- [architecture/ta-zagentic-overview.md](architecture/ta-zagentic-overview.md) — ZAgentic 是什么/不是什么？; authority-id: `architecture.overview.zagentic`
+- [architecture/ta-zagentic-layers.md](architecture/ta-zagentic-layers.md) — 层间允许/禁止哪些依赖？; authority-id: `architecture.layers.zagentic`
+- [architecture/ta-zagentic-pipelines.md](architecture/ta-zagentic-pipelines.md) — 安装/校验/治理流程端到端？; authority-id: `architecture.flow.install-and-docs-governance`
+- [architecture/ta-skill-bucket-boundary.md](architecture/ta-skill-bucket-boundary.md) — 单一共享桶纪律是什么？; authority-id: `architecture.cross-cutting.bucket-discipline`
+- [architecture/ta-skill-bucket-engineering.md](architecture/ta-skill-bucket-engineering.md) — engineering 桶拥有什么？; authority-id: `architecture.subsystem.bucket.engineering`
+- [architecture/ta-skill-bucket-codebase-docs.md](architecture/ta-skill-bucket-codebase-docs.md) — codebase-docs 桶拥有什么？; authority-id: `architecture.subsystem.bucket.codebase-docs`
+- [architecture/ta-skill-bucket-productivity.md](architecture/ta-skill-bucket-productivity.md) — productivity 桶拥有什么？; authority-id: `architecture.subsystem.bucket.productivity`
+- [architecture/ta-skill-bucket-misc.md](architecture/ta-skill-bucket-misc.md) — misc 桶拥有什么？; authority-id: `architecture.subsystem.bucket.misc`
+- [architecture/ta-skill-bucket-research.md](architecture/ta-skill-bucket-research.md) — research 桶拥有什么？; authority-id: `architecture.subsystem.bucket.research`
+- [architecture/ta-skill-bucket-ui.md](architecture/ta-skill-bucket-ui.md) — ui 桶拥有什么？（2026-10-23 新增，见 ADR 0006）; authority-id: `architecture.subsystem.bucket.ui`
+- [architecture/ta-zagentic-personal-tree.md](architecture/ta-zagentic-personal-tree.md) — personal 树拥有什么？; authority-id: `architecture.subsystem.personal-tree`
+
+> ⚠️ **保鲜提示**：架构视图的桶清单由 ontology/validate.py 自动核对活树 `skills/`。当前活树含 `ui/` 公共桶（11 技能），`ta-zagentic-overview.md` 已同步为 6+1 模型 + ADR 0006（见 ontology/README.md）。
+
+### Design（设计权威，authority: primary）
+- [designs/zj-cross-stage-skills.md](designs/zj-cross-stage-skills.md) — 跨阶段检查点模型; authority-id: `design.cross-stage-checkpoints`
+- [designs/zj-skill-frontmatter-schema.md](designs/zj-skill-frontmatter-schema.md) — 技能 frontmatter schema; authority-id: `design.skill-frontmatter-schema`
+- [designs/zj-wayfinder-roadmap-dual-mode.md](designs/zj-wayfinder-roadmap-dual-mode.md) — wayfinder/roadmap carrier seam; authority-id: `design.wayfinder-roadmap-carrier-seam`
+- [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) — roadmap 并发模型; authority-id: `design.roadmap-concurrency-model`
+- [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md) — roadmap 执行图; authority-id: `design.roadmap-execution-graph`
+- [designs/zj-discuss/product.md](designs/zj-discuss/product.md) — zj-discuss 产品模型; authority-id: `design.zj-discuss-product`
+- [designs/zj-discuss/architecture.md](designs/zj-discuss/architecture.md) — zj-discuss 架构; authority-id: `design.zj-discuss-architecture`
+- [designs/zj-discuss/design.md](designs/zj-discuss/design.md) — zj-discuss 设计; authority-id: `design.zj-discuss-spec`
+- [designs/zj-composer-plan-product-form.md](designs/zj-composer-plan-product-form.md) — composer plan/product form; authority-id: `design.composer-plan-product-form`
+- [designs/zj-skill-runtime-closure.md](designs/zj-skill-runtime-closure.md) — skill 运行期闭包自包含（源仓 docs 不得运行时依赖、SSOT 不迁单 skill）; authority-id: `design.skill-runtime-closure`
+
+### Contract（ui-agent-skills 子系统机器可读契约/清单/账本等）
+枢纽页：designs/ui-agent-skills/README.md；决策与风险：designs/ui-agent-skills/DECISIONS-RISKS.md。
+子契约（约 37 个，含 `adapter-boundary-v1`、`canonical-schema`、`resolver-contract`、`trust-chain-contract`、`lease-state-machine`、`hard-gates`、`verification-receipt`、`fixture-manifest`、`skill-capability-manifest` 等）详见该目录；完整实例见知识图谱。
+
+### ADR（已接受的不易逆转决策，authority: historical）
+ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authority-id`。
+- [0001](zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md) — 哪些技能必须要求 `/zj-repo-init` 配置？
+- [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) — 一次跨仓 skill-pair 如何处理/命名/归档？
+- [0003](zj-adr/0003-khazix-wave-absorb-key-decisions.md) — 整波吸收第三方技能的规则？
+- [0004](zj-adr/0004-research-report-improvement-scope.md) — research-skills 重架构的范围？
+- [0005](zj-adr/0005-composer-authority-and-plan-contract.md) — Composer 的权威与 Plan 契约？
+- [0006](zj-adr/0006-ui-public-bucket-addition.md) — 新增 `ui` 公共桶（6+1 模型）？
+- [0007](zj-adr/0007-unified-ontology-module-g-and-p.md) — zj-docs-ontology 扩展为统一本体（Module G + Module P，部署二分）？
+
+### Agreement（方法论 SSOT，authority: primary）
+- [agreements/open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) — 开源能力契合决策模型; authority-id: `agreement.open-source-capability-fit-decision-model`
+
+### CapabilitySpec（产品/能力边界，authority: supporting）
+- [prds/codebase-docs-capability.md](prds/codebase-docs-capability.md) — 单代码库文档治理技能的能力边界；当前技能行为仍为准
+
+## 过程材料（ProcessMaterial）
+| 问题 | 位置 | 生命周期 |
 | --- | --- | --- |
-| What capability boundary governs one codebase's documentation system? | [Codebase Docs capability spec](prds/codebase-docs-capability.md) | Approved product and delivery boundary; current skill behavior remains authoritative. |
-| Why and how does a bounded design work? | [docs/designs/](designs/) | Design rationale and implementation-facing explanations. |
-| What is the current technical architecture of ZAgentic? | [docs/architecture/](architecture/) | Long-lived architecture handbook; routing only — view pages own their bounded questions and link (not duplicate) design and ADR authorities. |
-| Why was a hard-to-reverse decision accepted? | [docs/zj-adr/](zj-adr/) | Decision rationale; it does not replace current architecture or rules. |
+| 已完成会话揭示了什么？ | `docs/zj-retros/`（由 `zj-debrief` 惰性创建） | 待持久抽取、权威审计、显式确认删除 |
+| 哪些跨仓工单已就绪？ | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | 该 roadmap 关闭前为本地执行源 |
 
-### Primary design authorities
+## 证据面（EvidenceSurface）
+`research/` 与 `skills-outputs/` 曾是个人工作区的临时容器，已于 2026-10-22 治理移除，不进入持久文档生命周期。ui-agent-skills 证据包（SYNTHESIS / CROSS-RUN-TABLE 等）未长期保留，结论已纳入 DECISIONS-RISKS。
 
-| Authority ID | Bounded question | Page |
-| --- | --- | --- |
-| `design.cross-stage-checkpoints` | Which focused checkpoints complement a ticketed delivery flow? | [Cross-stage checkpoints](designs/zj-cross-stage-skills.md) |
-| `design.skill-frontmatter-schema` | What frontmatter and sidecar rules make a skill mechanically discoverable? | [Skill frontmatter validation boundary](designs/zj-skill-frontmatter-schema.md) |
-| `design.wayfinder-roadmap-carrier-seam` | How do wayfinding and roadmap tracking hand off across their carriers? | [Wayfinder and roadmap carrier seam](designs/zj-wayfinder-roadmap-dual-mode.md) |
-| `design.roadmap-concurrency-model` | How do concurrent multi-agent writes stay safe, dependencies expressible, and reads scale across carriers? | [Roadmap concurrency & dependency model](designs/zj-roadmap-concurrency-model.md) |
-| `design.roadmap-execution-graph` | How are execution-time discoveries recorded and context supplied without bloating the human view? | [Roadmap execution graph (trace layer)](designs/zj-roadmap-execution-graph.md) |
-| `design.zj-discuss-product` | What problem does the zj-discuss discussion-methodology skill solve, for whom, and against which usability/rigor/usefulness axes? | [zj-discuss product](designs/zj-discuss/product.md) |
-| `design.zj-discuss-architecture` | Which components, lifecycle, file layout, role pool, and agenda engine make up zj-discuss? | [zj-discuss architecture](designs/zj-discuss/architecture.md) |
-| `design.zj-discuss-spec` | What is the full, durable specification of zj-discuss (consensus, paradigm-derived revisions, role pool, hard rules, templates)? | [zj-discuss design/spec](designs/zj-discuss/design.md) |
-| `design.composer-plan-product-form` | What product boundary governs Composer, Plan, capability gaps, Human approval, and removable validation? | [Composer and Plan product form](designs/zj-composer-plan-product-form.md) |
+## 惰性目录（Lazy categories）
+仅在仓库有对应有界问题的文档时才创建：当前空目录为 `methods/`、`testing/`、`benchmarks/`、`references/`。创建时须在此声明生命周期、有界问题与权威边界。新架构页遵循 `zj-docs-architecture` 视图契约。
 
-### Accepted decision records
+## 关联速查（推理用）
+- `Skill —belongsTo→ SkillBucket —installedTo→ Platform`
+- `ArchitectureView —routesTo→ Design/ADR/CapabilitySpec`（只路由不重述）
+- `Design —references→ ADR`（ADR 为史据，非现行权威）
+- `Contract —validatedBy→ Validator`；`Pipeline —uses→ Validator`；`CapabilitySpec —constrains→ Pipeline`
+- `DocMap —docMapBinds(authority-id)→ DocPage`（每 id 恰绑一页，否则 `MAP_AUTHORITY_CONFLICT`）
 
-Historical rationale for hard-to-reverse decisions. These pages carry no
-`authority-id` (only primary pages do), and none of them replaces the current
-architecture or rules.
-
-| ADR | Question it settles | Status |
-| --- | --- | --- |
-| [0001](zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md) | Which skills must demand `/zj-repo-init` config, and which may merely reference it? | accepted |
-| [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) | How is one skill-pair between two repositories processed, named and filed? | accepted |
-| [0003](zj-adr/0003-khazix-wave-absorb-key-decisions.md) | Under which rules do we absorb third-party skills wholesale? | accepted |
-| [0004](zj-adr/0004-research-report-improvement-scope.md) | What scope was ratified for the research-skills rearchitecture? | accepted |
-| [0005](zj-adr/0005-composer-authority-and-plan-contract.md) | What authority and Plan contract govern the Composer product form? | accepted |
-
-### UI Agent Skills subsystem
-
-Lifecycle contract, decision, risk, and acceptance hub for the ten `zj-ui-*` skills
-and their adapter boundary. Promoted from the former `docs/plans/` process material
-to long-lived on 2026-10-22 (recoverable via git history).
-
-| Question | Location | Boundary |
-| --- | --- | --- |
-| What is the ui-agent-skills contract / decision / risk hub? | [README.md](designs/ui-agent-skills/README.md) | Subsystem hub; stable contracts live beside it as siblings. |
-| What are the graduation gate, open risks, acceptance, and governance triggers? | [DECISIONS-RISKS.md](designs/ui-agent-skills/DECISIONS-RISKS.md) | Decision rationale; does not replace current architecture or rules. |
-## Process material
-
-| Question | Location | Lifecycle |
-| --- | --- | --- |
-| What did a completed session reveal? | `docs/zj-retros/` (created lazily by `zj-debrief`) | Process material pending durable extraction, authority audit, and separately confirmed deletion. The 2026-09-09 / 2026-09-12 retros had their durable concepts extracted into `ZJ-CONTEXT.md` and were deleted on 2026-09-17 after user-confirmed cleanup (recoverable via git history `929b4ab`). |
-| What is specified and ready for an Agent to build? | `docs/plans/` (created lazily) | Process material: an Agent-grabbable spec produced by `zj-to-spec` records intent, decisions and test seams; it awaits durable extraction and does not replace ADR rationale or current skill behavior. The roadmap concurrency / execution-graph specs were extracted into [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) and [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md), then deleted after confirmation (recoverable via `929b4ab`). The completed Composer buildable spec and roadmap were extracted into [designs/zj-composer-plan-product-form.md](designs/zj-composer-plan-product-form.md), [ADR 0005](zj-adr/0005-composer-authority-and-plan-contract.md), the owning skill contracts, and regression evidence, then deleted after confirmation (last retained at `e008ef8`). On 2026-10-22 the ui-agent-skills specs and adapter contracts were extracted into `docs/designs/ui-agent-skills/` and `docs/plans/` was removed (recoverable via git history). |
-| Which active cross-repository tickets are ready for an Agent? | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | Target-defined process material: the ZAgentic skill-layer tickets (T02–T04) for the cross-repository Slice 1 roadmap. Keep them as the local execution source until that roadmap closes; the product-level source lives in the sibling ZKnowledgeCompounding repository. |
-
-## Evidence boundaries
-
-`research/` and `skills-outputs/` were *temporary holding containers* in the
-personal workspace, excluded from the durable-doc lifecycle. On 2026-10-22 a
-governance pass removed both: the one referenced durable artifact
-(`skills-outputs/ui-agent-skills/paired-runs/v1/GRADUATION-DECISION.md`) was
-inlined into `docs/designs/ui-agent-skills/DECISIONS-RISKS.md` (附录 A); all
-remaining generated output and exploratory research was deleted (recoverable via
-git history). Until a dedicated knowledge-compounding facility exists, no
-temporary container of this kind is registered here. The `ui-agent-skills`
-subsystem evidence packet (SYNTHESIS / CROSS-RUN-TABLE / RENDER-LAYER-COHORT /
-R1–R4) was intentionally not long-term-preserved; its conclusion is captured in
-DECISIONS-RISKS.
-
-### Primary architecture authorities
-
-Each bullet below binds the page to its primary `authority-id`. The
-architecture map itself links to these pages from the routing table; the
-table here is the readable inventory. Source authority is held by
-`docs/architecture/README.md` (the architecture map), which the validator
-recognises as the routing surface rather than a primary view page.
-
-- [System overview](architecture/ta-zagentic-overview.md) — What is ZAgentic, what is it not, and which view answers which question about it?; authority-id: `architecture.overview.zagentic`.
-- [Layers](architecture/ta-zagentic-layers.md) — Which dependencies are allowed between the layers of this repository, and which ones are explicitly forbidden?; authority-id: `architecture.layers.zagentic`.
-- [Pipelines](architecture/ta-zagentic-pipelines.md) — What are the install / validate flow and the documentation governance flow, end to end?; authority-id: `architecture.flow.install-and-docs-governance`.
-- [Bucket discipline](architecture/ta-skill-bucket-boundary.md) — What single shared rule governs the public-bucket / personal-tree / authority boundary?; authority-id: `architecture.cross-cutting.bucket-discipline`.
-- [Engineering bucket](architecture/ta-skill-bucket-engineering.md) — What does the `engineering/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.engineering`.
-- [Codebase-docs bucket](architecture/ta-skill-bucket-codebase-docs.md) — What does the `codebase-docs/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.codebase-docs`.
-- [Productivity bucket](architecture/ta-skill-bucket-productivity.md) — What does the `productivity/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.productivity`.
-- [Misc bucket](architecture/ta-skill-bucket-misc.md) — What does the `misc/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.misc`.
-- [Research bucket](architecture/ta-skill-bucket-research.md) — What does the `research/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.bucket.research`.
-- [Personal skill tree](architecture/ta-zagentic-personal-tree.md) — What does the root-level `personal/` subsystem own, expose, and how does it fail?; authority-id: `architecture.subsystem.personal-tree`.
-
-## Agreements
-
-Long-lived agreement documents that bind cross-document methodology decisions.
-Each is a methodology SSOT maintained in-repo.
-
-- [Open-source capability-fit decision model](agreements/open-source-capability-fit-decision-model.md) — How do we decide whether to ingest / merge an external OSS capability (`R × O` matrix → `A/B/C/D`)? It is ZAgentic's own methodology SSOT, applied by `zj-discuss` §0/§2 and operationalized by the `zj-open-source-capability-fit` skill (`skills/research/zj-open-source-capability-fit/`); authority-id: `agreement.open-source-capability-fit-decision-model`.
-
-## Lazy categories
-
-Create a category only when the repository has a concrete document for its
-bounded question. The current empty categories are `methods/`,
-`testing/`, `benchmarks/`, and `references/` (`agreements/` is now active — see
-its section above). When created, each must state its lifecycle, bounded question, and
-authority boundary here. New architecture pages also follow `zj-docs-architecture`'s
-view contract.
+完整关联与实例由 [`ontology/extract.py`](ontology/extract.py) 从活树生成，由 [`ontology/validate.py`](ontology/validate.py) 校验（一次覆盖 Module G + Module P）。
