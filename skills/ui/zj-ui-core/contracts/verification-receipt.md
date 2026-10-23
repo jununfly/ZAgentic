@@ -3,7 +3,7 @@
 - **归属节点**：1-5-4（确定性验证、fixture 与 receipt · 计划层 · `exploit`）
 - **事实源**：ui-agent-skills 路线图（已收口，carrier 文件已清理）
 - **机器实现**：`skills/ui/zj-ui-core/scripts/verification_receipt.py`（R-RCP-1，纯 stdlib），稳定契约见本文件
-- **上游**：`/docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md`（lane receipt 结构占位）、`hard-gates.md`（cell `status` / `observed` / `findings` 语义）、`/docs/designs/ui-agent-skills/ui-agent-skills-verification-matrix.md`（`matrix_key`）、`env-fingerprint.json`（env 轴）、`fixture-manifest.json`（fixture 全集）
+- **上游**：`/docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md`（lane receipt 结构占位）、`hard-gates.md`（cell `status` / `observed` / `findings` 语义）、`env-fingerprint.json`（env 轴）、`fixture-manifest.json`（fixture 全集）
 - **下游**：1-9 paired run（receipt 是唯一结论载体）、1-10 rollout（过期与重验决策）、`zj-ui-verify`（S9 产物）
 - **退出判据对齐**：1-5-4 退出 = receipt 聚合、过期重评和无法归因 quarantine 状态可审计。
 - **状态**：契约冻结 + 判定实现完成；真实证据仍待 1-7-3（observation bundle）与 1-6/1-9（契约维度）。

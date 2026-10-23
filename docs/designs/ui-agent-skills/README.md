@@ -51,8 +51,8 @@
 
 ### 1-5 确定性验证
 
-- `fixture-manifest.md` / `.json`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— fixture-manifest、verification-matrix、env fingerprint
-- `env-fingerprint.md` / `.json`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— browser / environment fingerprint（Chromium 155 等）
+- `skills/ui/zj-ui-core/contracts/fixture-manifest.json` — fixture-manifest 权威源（原 `ui-agent-skills-fixture-manifest.md` 已于 2026-10-23 作为类 3 遗留规格删除）
+- `skills/ui/zj-ui-core/contracts/env-fingerprint.json` — browser / environment fingerprint 权威源（原 `ui-agent-skills-env-fingerprint.md` 同删）
 - `ui-agent-skills-dual-lane-runner.md` — baseline / degraded 双 lane、固定字体 / 网络回放 / 时钟 / seed
 - `hard-gates.md`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— DOM / ARIA / focus / contrast / overflow / responsive / motion / state 硬门禁
 - `verification-receipt.md`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— verification receipt、聚合状态、stale / revalidation_required
@@ -63,8 +63,8 @@
 
 ### 1-7 Adapter 生命周期
 
-- `adapter-boundary-v1/`（目录）— AdapterBoundary v1、manifest、schema lock、mapping、fallback、removal test
-- `adapter-capability-fit/`（目录）— Storybook / json-render / A2UI / M3E Canvas 候选 capability-fit 证据
+- `adapter-boundary-v1.md`（单文件，非目录）— AdapterBoundary v1 规格：manifest、schema lock、mapping、fallback、removal test
+- ~~`adapter-capability-fit/`（目录）~~ 适配器选型证据（Storybook / json-render / A2UI / M3E Canvas 候选 capability-fit）随临时容器删除、未长期化（核心裁定见 `DECISIONS-RISKS.md` 附录 A）
 
 ### 1-9 Paired-run 毕业
 

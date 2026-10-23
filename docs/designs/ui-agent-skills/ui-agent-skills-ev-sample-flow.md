@@ -2,7 +2,7 @@
 
 > **归属节点**：1-8-1（为表单/审批 Experience Version 固化 PRD、角色状态、canonical artifact 与 fixture manifest）
 > **事实源**：ui-agent-skills 路线图（已收口，carrier 文件已清理）
-> **对齐文档**：`ui-agent-skills-scope-manifest.md`（EV-v0.1 冻结）、`ui-agent-skills-ev-form-lock.md`、`ui-agent-skills-ev-metrics.md`、`ui-agent-skills-canonical-schema.md`、`ui-agent-skills-ui-flow-v1-contract.md`、`ui-agent-skills-fixture-manifest.md`、`ui-agent-skills-trust-chain-contract.md`、`ui-agent-skills-deny-fixtures-contract.md`、`ui-agent-skills-skill-capability-manifest.md`
+> **对齐文档**：`ui-agent-skills-scope-manifest.md`（EV-v0.1 冻结）、`ui-agent-skills-ev-form-lock.md`、`ui-agent-skills-ev-metrics.md`、`ui-agent-skills-canonical-schema.md`、`ui-agent-skills-ui-flow-v1-contract.md`、`skills/ui/zj-ui-core/contracts/fixture-manifest.json`、`ui-agent-skills-trust-chain-contract.md`、`ui-agent-skills-deny-fixtures-contract.md`、`ui-agent-skills-skill-capability-manifest.md`
 > **状态**：sample flow 冻结版（**双样例：表单 + 审批**）。审批流于 **2026-10-21** 经 zj 决策从 Wave 1 候选提升为 Wave 0 **第二条独立 sample**（见 §0）。
 
 ---
@@ -28,7 +28,7 @@
 - **框架锁**：Next.js 14（App Router）+ React 18 + TypeScript 5.x + 固定 major 的 Chromium（`ev-form-lock.md` §1；与 `env-fingerprint` 对齐）。
 - **数据边界**：本地 mock / 内存态，无真实后端写回；远程写回仅作 `1-8-5` 演练项（`scope-manifest.md` §1）。
 - **安全边界**：危险 action（真实网络写回、删除账号等）deny-first（`trust-chain-contract.md` / `deny-fixtures-contract.md`）。
-- **确定性**：fixture + env fingerprint 固定（`fixture-manifest.md` / `env-fingerprint.md`）。
+- **确定性**：fixture + env fingerprint 固定（`skills/ui/zj-ui-core/contracts/fixture-manifest.json` / `env-fingerprint.md`）。
 
 #### 1.A.3 成功标准（success_criteria）
 - 成功路径 **F-1**：合法提交 → mock 200 + 本地持久化 + `success` 态。
@@ -121,7 +121,7 @@
 
 ## 4. Fixture manifest（sample 选择，复用全局冻结清单 + 新增审批类）
 
-本 sample **直接复用** `ui-agent-skills-fixture-manifest.md`（`1-5-1` 冻结）中的 **form 六类 F-1~F-6** 与 **contract GF-01~GF-11**（sample 全链路必过），并**新增 approval 六类 A-1~A-6 + approval 专属 contract GF-A1~GF-A3**。新增项须在 `1-5-1` 正式登记（经 `decide` 落盘并重算 `manifest_hash`）后方可进入 `1-9` paired run；本节点只冻结**选择口径**，不落地数据。
+本 sample **直接复用** `skills/ui/zj-ui-core/contracts/fixture-manifest.json`（`1-5-1` 冻结）中的 **form 六类 F-1~F-6** 与 **contract GF-01~GF-11**（sample 全链路必过），并**新增 approval 六类 A-1~A-6 + approval 专属 contract GF-A1~GF-A3**。新增项须在 `1-5-1` 正式登记（经 `decide` 落盘并重算 `manifest_hash`）后方可进入 `1-9` paired run；本节点只冻结**选择口径**，不落地数据。
 
 ### 4.1 form 六类（sample 主路径，已冻结）
 | ID | 内容 | 触发路径 | 预期结果 | 落地点 |
@@ -133,7 +133,7 @@
 | F-5 | 服务端 422 | 模拟 mock 422 | `error` 态 + 可恢复回 editable | `tests/ui-agent-skills/fixtures/form/F-5` |
 | F-6 | 超时 | 模拟服务端超时 | fallback 到稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/form/F-6` |
 
-### 4.2 approval 六类（已登记，2026-10-21 追溯登记，见 `fixture-manifest.md` §2.5）
+### 4.2 approval 六类（已登记，2026-10-21 追溯登记，见 `skills/ui/zj-ui-core/contracts/fixture-manifest.json` §2.5）
 | ID | 内容 | 触发路径 | 预期结果 | 落地点 |
 | --- | --- | --- | --- | --- |
 | A-1 | 成功审批（合法申请 → approver 通过） | `draft→submitted→under_review→approved` | mock 持久化 + approved | `tests/ui-agent-skills/fixtures/approval/A-1` |
@@ -156,15 +156,15 @@
 - GF-10 离线恢复（服务关闭仅凭本地 canonical 重建 flow/恢复状态/重放动作）
 - GF-11 adapter 删除恢复（删 adapter 后仍可从最后完整 canonical revision 恢复）
 
-### 4.4 approval 专属 contract（已登记，2026-10-21 追溯登记，见 `fixture-manifest.md` §2.3）
+### 4.4 approval 专属 contract（已登记，2026-10-21 追溯登记，见 `skills/ui/zj-ui-core/contracts/fixture-manifest.json` §2.3）
 - **GF-A1** 审批 action 必须 `role=approver`，否则 deny-first 阻断（role separation）。
 - **GF-A2** approver 决定的 `APPROVED`/`REJECTED` 必须由 Human 实签，不可系统自动生成。
 - **GF-A3** `rejected` 后申请人重提交生成**新 revision**，旧 `approved` 状态不污染新链路。
 
 ### 4.5 fixture 选择约束
-- sample 的 paired run（`1-9`）fixture 必须取自本清单 F-1~F-6 + A-1~A-6 + 相关 GF / GF-A*；任何未列 fixture → 该 run 按 invalid 处理（`fixture-manifest.md` §5）。
-- 数据文件落地：F-1~F-6 与 A-1~A-6 的 `input.json`+`expected.json` 已于 **2026-10-21** 经独立 chore 落盘（见 `fixture-manifest.md` §2.1 / §2.5），状态均 `ready`；本节点仍只冻结**选择口径**与契约，不编写可执行断言（可执行断言待 1-5-2 runner 与 1-6 技能实现后跑）。
-- A-* 与 GF-A* 已于 2026-10-21 登记（见 `fixture-manifest.md` §2.5 / §2.3）；paired run 取用须按本清单，未登记 fixture 不得使用。
+- sample 的 paired run（`1-9`）fixture 必须取自本清单 F-1~F-6 + A-1~A-6 + 相关 GF / GF-A*；任何未列 fixture → 该 run 按 invalid 处理（`skills/ui/zj-ui-core/contracts/fixture-manifest.json` §5）。
+- 数据文件落地：F-1~F-6 与 A-1~A-6 的 `input.json`+`expected.json` 已于 **2026-10-21** 经独立 chore 落盘（见 `skills/ui/zj-ui-core/contracts/fixture-manifest.json` §2.1 / §2.5），状态均 `ready`；本节点仍只冻结**选择口径**与契约，不编写可执行断言（可执行断言待 1-5-2 runner 与 1-6 技能实现后跑）。
+- A-* 与 GF-A* 已于 2026-10-21 登记（见 `skills/ui/zj-ui-core/contracts/fixture-manifest.json` §2.5 / §2.3）；paired run 取用须按本清单，未登记 fixture 不得使用。
 
 ---
 
@@ -179,4 +179,4 @@
 ---
 
 ## 6. 引用
-`ui-agent-skills-scope-manifest.md` · `ui-agent-skills-ev-form-lock.md` · `ui-agent-skills-ev-metrics.md` · `ui-agent-skills-canonical-schema.md` · `ui-agent-skills-ui-flow-v1-contract.md` · `ui-agent-skills-fixture-manifest.md` · `ui-agent-skills-env-fingerprint.md` · `ui-agent-skills-trust-chain-contract.md` · `ui-agent-skills-deny-fixtures-contract.md` · `ui-agent-skills-golden-fixtures-spec.md` · `ui-agent-skills-skill-capability-manifest.md`
+`ui-agent-skills-scope-manifest.md` · `ui-agent-skills-ev-form-lock.md` · `ui-agent-skills-ev-metrics.md` · `ui-agent-skills-canonical-schema.md` · `ui-agent-skills-ui-flow-v1-contract.md` · `skills/ui/zj-ui-core/contracts/fixture-manifest.json` · `skills/ui/zj-ui-core/contracts/env-fingerprint.json` · `ui-agent-skills-trust-chain-contract.md` · `ui-agent-skills-deny-fixtures-contract.md` · `ui-agent-skills-golden-fixtures-spec.md` · `ui-agent-skills-skill-capability-manifest.md`

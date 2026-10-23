@@ -97,7 +97,7 @@ class RealRuntimeSeam(unittest.TestCase):
 
     def test_quarantined_receipt_does_not_become_a_seam_failure(self):
         """receipt 级 QUARANTINED ≠ seam 级故障，也不等于 adapter lifecycle quarantine。
-        这正是 quarantine-disambiguation.md 在 seam 上的落地。"""
+        这正是 adapter-boundary-v1.md §6.1 中 quarantine 术语辨析在 seam 上的落地。"""
         request = load_request()
         request["candidate"].pop("fingerprint", None)
         driver = seam.RealAdapterSeam("storybook-local-verify", adapter.run)

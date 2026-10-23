@@ -3,7 +3,7 @@
 - **归属节点**：1-5-2（确定性验证、fixture 与 receipt · 计划层 · `exploit`）
 - **事实源**：ui-agent-skills 路线图（已收口，carrier 文件已清理）
 - **机器实现**：`skills/ui/zj-ui-core/scripts/dual_lane_runner.py`（R-HAR-1，纯 stdlib）
-- **输入**：`ui-agent-skills-fixture-manifest.json`、`ui-agent-skills-env-fingerprint.json`、`ui-agent-skills-verification-matrix.md`
+- **输入**：`skills/ui/zj-ui-core/contracts/fixture-manifest.json`、`skills/ui/zj-ui-core/contracts/env-fingerprint.json`
 - **状态**：双 lane + 确定性控制已落地并冻结首跑值；真实 cell 断言待 1-6/1-7。
 - **退出判据对齐**：1-5-2 退出 = baseline/degraded 双 lane 固定 browser/font/network/clock/seed 并可复跑。
 

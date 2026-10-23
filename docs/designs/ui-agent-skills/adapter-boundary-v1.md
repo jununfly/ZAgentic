@@ -12,7 +12,7 @@ AdapterBoundary 是 **canonical artifact（ui-flow/v1、UI-BRIEF 等）** 与 **
 - Boundary 负责 **schema lock（锁定 canonical 与 manifest 契约）**、**mapping 校验（禁止 silent drop）**、**owner/reviewer 登记**、**fallback 编排（降级/禁用/隔离）** 与 **removal test（删除后不变量）**。
 - Boundary 本身不实现渲染逻辑；它只做契约仲裁与生命周期编排，具体能力由下游 adapter 实现。
 
-> **实现（1-7-5, a1）**：`skills/ui/zj-ui-core/scripts/adapter_boundary.py` —— 四态状态机与调用守卫（§6.1）、三类故障回退分发（§6.2）、本地恢复不变量断言、removal_test 执行器（§7）。它是 **outcome 分类与回退契约的唯一事实源**；测试 double（`tests/ui_agent_skills_adapter_seam.py`）单向 import 其常量，两处不得各自定义。证据：`tests/test_ui_agent_skills_adapter_boundary.py`（28 用例）。测试主体分层见 [`invocation-seam.md`](./invocation-seam.md)。
+> **实现（1-7-5, a1）**：`skills/ui/zj-ui-core/scripts/adapter_boundary.py` —— 四态状态机与调用守卫（§6.1）、三类故障回退分发（§6.2）、本地恢复不变量断言、removal_test 执行器（§7）。它是 **outcome 分类与回退契约的唯一事实源**；测试 double（`tests/ui_agent_skills_adapter_seam.py`）单向 import 其常量，两处不得各自定义。证据：`tests/test_ui_agent_skills_adapter_boundary.py`（28 用例）。测试主体分层见 §6.2（测试主体分层）。
 
 ## 2. adapter manifest 字段集（六个必需类别）
 
@@ -58,7 +58,7 @@ manifest 必须包含以下字段（完整 schema 见 `skills/ui/zj-ui-core/cont
 | `disabled` | 主动关闭 | 人为关闭；canonical artifact + 静态 preview 仍服务 |
 | `quarantine` | 被隔离 | 安全闸门/capability-fit 失败；永不调用，待修复或移除 |
 
-> ⚠️ **术语消歧**：本处的 `quarantine` 是 **adapter 生命周期状态**（manifest `lifecycle` 枚举值，小写 `"quarantine"`，持久、管理隔离）。它**不等于** verification receipt 里的 `QUARANTINED` 状态（大写带 D，瞬态、单次运行证据不可信的判定，来源 `ui_skill_core` / `hard_gates`）。二者机制、层级、触发、持久性全不同，1-7-5 不得混淆。完整辨析见 [`quarantine-disambiguation.md`](./quarantine-disambiguation.md)。
+> ⚠️ **术语消歧**：本处的 `quarantine` 是 **adapter 生命周期状态**（manifest `lifecycle` 枚举值，小写 `"quarantine"`，持久、管理隔离）。它**不等于** verification receipt 里的 `QUARANTINED` 状态（大写带 D，瞬态、单次运行证据不可信的判定，来源 `ui_skill_core` / `hard_gates`）。二者机制、层级、触发、持久性全不同，1-7-5 不得混淆。完整辨析见 `skills/ui/zj-ui-core/contracts/verification-receipt.md`（`QUARANTINED` 定义源）与本段上文。
 
 > `removal`（删除）是 **经 removal_test 校验的瞬态**，不持久化为状态：删除动作完成后 adapter 从 registry 消失，不保留 `removed` 状态位。
 
@@ -69,7 +69,7 @@ manifest 必须包含以下字段（完整 schema 见 `skills/ui/zj-ui-core/cont
 - **本地恢复不变量**（任何回退都必须保证）：canonical artifact、静态 preview、本地验证（a11y/interaction baseline）在 adapter 不可用或断网/远程故障时仍可用。
 - 对 A 群 `active-verify`（Storybook）默认 `on_failure: local-verify`、`on_network_loss: static-preview`、`on_remote_failure: static-preview`——本地验证优先，远程/网络问题回落静态 preview。
 
-> 📐 **测试主体分层（1-7-5）**：回退决策的被测对象是 **boundary 在 adapter 调用 seam 上的行为**，与 adapter 自身有无运行时**正交**。故 Storybook（有真实运行时）作 L1 保真基准 + `SimulatedAdapterSeam` 作 L2 故障注入穷举矩阵；json-render / A2UI 无运行时投影引擎，声明式**退出** invocation/回退执行测试面（`invocation_surface: none`，deny-first 未声明即报错）。另：`network_loss` / `remote_failure` 在本仓库**无真实运行时观测支撑**（Storybook 为离线确定性引擎），属 seam 契约定义，不得声称已真实验证。完整契约见 [`invocation-seam.md`](./invocation-seam.md)。
+> 📐 **测试主体分层（1-7-5）**：回退决策的被测对象是 **boundary 在 adapter 调用 seam 上的行为**，与 adapter 自身有无运行时**正交**。故 Storybook（有真实运行时）作 L1 保真基准 + `SimulatedAdapterSeam` 作 L2 故障注入穷举矩阵；json-render / A2UI 无运行时投影引擎，声明式**退出** invocation/回退执行测试面（`invocation_surface: none`，deny-first 未声明即报错）。另：`network_loss` / `remote_failure` 在本仓库**无真实运行时观测支撑**（Storybook 为离线确定性引擎），属 seam 契约定义，不得声称已真实验证。完整契约见 §6.2。
 
 ## 7. removal test（删除后不变量）
 
@@ -88,8 +88,8 @@ manifest 必须包含以下字段（完整 schema 见 `skills/ui/zj-ui-core/cont
 - `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json` — adapter manifest JSON Schema v1（字段集事实源）。
 - `adapter-boundary-v1.md` — 本规格说明。
 - `examples/storybook-local-verify.manifest.json` — Storybook active adapter 示例 manifest（模板，供 `1-7-3` 消费；`source_commit` / `sbom_ref` / `lockfile_ref` 须在集成时钉死）。
-- `quarantine-disambiguation.md` — `quarantine`(adapter 生命周期) vs `QUARANTINED`(receipt 判定) 消歧事实源。
-- `invocation-seam.md` — adapter 调用 seam 契约：三层测试主体、故障注入保真度护栏、调用面 deny-first 索引、诚实账本。
+- `skills/ui/zj-ui-core/contracts/verification-receipt.md` — `QUARANTINED`(receipt 判定) 定义源；`quarantine`(adapter 生命周期) 见 §6.1。
+- 见 §6.2（adapter 调用 seam 契约：三层测试主体、故障注入保真度护栏、调用面 deny-first 索引、诚实账本）。
 
 ## 9. 退出标准核对（1-7-2）
 
