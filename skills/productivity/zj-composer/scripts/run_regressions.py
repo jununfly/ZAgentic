@@ -1087,7 +1087,12 @@ def run_regressions(root: Path, output: Path) -> dict[str, Any]:
             relative = item.get("path") if isinstance(item, dict) else None
             if isinstance(relative, str):
                 source_paths.append(ROOT / relative)
-    source_paths = list(dict.fromkeys(source_paths))
+    # The manifest pins skill files plus source-repo-only docs/designs and
+    # docs/zj-adr entries (used for in-repo integrity regression). When this
+    # harness runs outside the ZAgentic source tree — e.g. an installed skill
+    # copy without the repo's docs/ — those paths are absent, so skip them
+    # instead of failing the run.
+    source_paths = [p for p in dict.fromkeys(source_paths) if p.exists()]
     source_before = {path.as_posix(): sha256(path) for path in source_paths}
     fixtures_result: list[dict[str, Any]] = []
 

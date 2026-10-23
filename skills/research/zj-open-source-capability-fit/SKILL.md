@@ -21,8 +21,9 @@ source: zagentic
 自信分类——任何结论都可被第三 Agent 凭决策记录复核。
 
 > 模型来源（自创或外部 ingest）对本 skill 的计算逻辑与机械闸门**不产生增量价值**——
-> 本 skill 完全由 `docs/agreements/open-source-capability-fit-decision-model.md` 的模型定义驱动，
-> 与模型出自何处无关。
+> 判定逻辑由 `scripts/capability_fit.py` 确定性硬编码实现（运行时自包含，不读取任何外部文件），
+> 并忠实对应源仓库 SSOT《开源能力拟合决策模型》（`docs/agreements/...`，仅源仓库维护、不随
+> skill 安装）；本文件与 `references/model-application.md` 是该逻辑的可操作映射，不复制模型本体定义。
 
 ## 与兄弟技能的边界
 
@@ -32,8 +33,10 @@ source: zagentic
   不重做判定逻辑。本技能**不写报告**，只给决策仪器与决策记录。
 - **`zj-research` / `zj-code-research`**（上游证据）：本技能要求矩阵单元带一手证据
   （固定版本代码 / 文档 / 可复现实验）；证据采集交给这两个技能，本技能只消费其结论。
-- 本技能是**决策仪器**，不是方法论本体。模型定义唯一真源在
-  `docs/agreements/open-source-capability-fit-decision-model.md`（SSOT），本文件不复述定义。
+- 本技能是**决策仪器**，不是方法论本体。模型定义的权威真源在源仓库
+  `docs/agreements/open-source-capability-fit-decision-model.md`（SSOT，仅源仓库维护、不随
+  skill 安装）；本文件不复述模型定义，仅给出其与脚本输入/计算/闸门的**可操作映射**
+  （见 `references/model-application.md`）。
 
 ## 工作流
 
@@ -96,8 +99,8 @@ Human/Agent 在决策记录「最终拍板」段填写：选定组合 C / 缺口
 `references/model-application.md`。
 
 ## References
-- `references/model-application.md` — 输入 schema 映射 + 计算规则 + 闸门清单（指向 SSOT，不复制）。
+- `references/model-application.md` — 输入 schema 映射 + 计算规则 + 闸门清单（操作化映射；模型本体见源仓库 SSOT，不复制）。
 - `references/decision-record-template.md` — 决策记录骨架（对齐模型决策记录要求 + 完成标准）。
 - `scripts/capability_fit.py` — 确定性计算与闸门仪器（stdlib，零新依赖）。
 - `tests/test_capability_fit.py` — 回归守卫（stdlib unittest，`python3 tests/test_capability_fit.py`）。
-- 模型 SSOT — `docs/agreements/open-source-capability-fit-decision-model.md`。
+- 模型 SSOT（源仓库，不随 skill 安装）— `docs/agreements/open-source-capability-fit-decision-model.md`（权威定义，供交叉核对；脚本已硬编码其逻辑，运行时自包含）。

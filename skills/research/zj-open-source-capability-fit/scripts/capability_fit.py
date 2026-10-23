@@ -4,7 +4,7 @@
 把本仓库《开源能力拟合决策模型》从方法论文档操作化成带机械闸门的决策工具。
 
 权威模型 SSOT: docs/agreements/open-source-capability-fit-decision-model.md
-（本仓库 SSOT）。
+（源仓库 SSOT，仅源仓库维护、不随 skill 安装；本脚本已将上述模型逻辑硬编码，运行时自包含）。
 
 本脚本只做确定性计算与闸门校验，不做主观判断；最终分类由 Human/Agent 拍板，
 但脚本必须给出**可复核的推荐分类 + 依据**，满足模型「完成标准」：
@@ -399,8 +399,8 @@ def render_decision_record(data: dict, results: list[CandidateResult]) -> str:
     lines: list[str] = []
     lines.append("# 开源能力拟合决策记录")
     lines.append("")
-    lines.append(f"> 由 `zj-open-source-capability-fit` 依据 "
-                 f"[开源能力拟合决策模型](../../docs/agreements/open-source-capability-fit-decision-model.md) 生成。")
+    lines.append("> 由 `zj-open-source-capability-fit` 依据《开源能力拟合决策模型》生成"
+                 "（模型权威定义见源仓库 docs/agreements/open-source-capability-fit-decision-model.md）。")
     lines.append("")
     lines.append(f"## 目标需求 R")
     lines.append("")
