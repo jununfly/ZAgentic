@@ -204,7 +204,11 @@ class FailureNamesTheReason(unittest.TestCase):
         )
         joined = "\n".join(check_subdoc.check(doc(self._b_blocks(blocks))))
 
-        self.assertIn("原文", joined)
+        # Must name the specific defect — a viewpoint whose "发现" has no source
+        # citation back to what the Agent Read — not merely contain the word
+        # "原文" somewhere (which any passing block also carries).
+        self.assertIn("没有「原文」引用", joined)
+        self.assertRegex(joined, r"第 [1-9]、?.*块没有「原文」引用")
 
 
 class CompliantCitationsStillPass(unittest.TestCase):

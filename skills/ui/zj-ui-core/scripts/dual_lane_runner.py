@@ -3,7 +3,7 @@
 """
 R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner（1-5-2 交付物）
 
-职责（来自 ui-agent-skills-roadmap.json 节点 1-5-2 退出判据）：
+职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md，节点 1-5-2 双 lane 验证）：
   实现 baseline 与 degraded 双 lane、固定 browser/font/network/clock/seed 并可复跑。
 
 设计原则：
@@ -47,6 +47,7 @@ from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hard_gates as hg  # noqa: E402  R-HAR-2（1-5-3 硬门禁）
+import ui_skill_core as core  # noqa: E402  single canonical/hash source (F6)
 
 # --------------------------------------------------------------------------- #
 # 固定确定性常量（1-5-2 退出判据：固定 browser/font/network/clock/seed）
@@ -135,12 +136,13 @@ class VirtualClock:
 
 
 def sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    """Delegates to ui_skill_core.sha256_text — single hash base (F6)."""
+    return core.sha256_text(text)
 
 
 def canonical_json(obj) -> str:
-    """稳定序列化：sort_keys + 固定分隔，保证跨进程/跨时间一致。"""
-    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    """Delegates to ui_skill_core.canonical_json — single canonical form (F6)."""
+    return core.canonical_json(obj)
 
 
 def config_hash() -> str:
@@ -516,8 +518,12 @@ def main(argv=None) -> int:
         return 0
 
     if args.cmd == "selfcheck":
-        print(canonical_json(selfcheck(plans_arg())))
-        return 0
+        res = selfcheck(plans_arg())
+        print(canonical_json(res))
+        # Surface the verdict in the exit code: a non-idempotent selfcheck is a
+        # real failure, not a green. The gate parses the JSON too, but the exit
+        # code is the honest signal.
+        return 0 if res.get("rerun_idempotent") else 1
 
     return 2
 

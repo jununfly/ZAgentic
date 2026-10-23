@@ -47,11 +47,11 @@ DEFAULT_MIN_WIDTH = 48
 
 
 def _sha(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    return core.sha256_text(text)
 
 
 def _canonical(obj) -> str:
-    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return core.canonical_json(obj)
 
 
 def _stories(ui_flow: dict) -> list:

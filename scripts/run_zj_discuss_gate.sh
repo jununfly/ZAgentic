@@ -17,10 +17,14 @@ REPO_ROOT="$(cd "$(dirname "${0}")/.." && pwd)"
 PY="${PYTHON:-python3}"
 
 echo "==> [face 1/2] repo-root landing guard (tests/test_zj_discuss_*.py)"
+cd "$REPO_ROOT"
 "$PY" -m unittest tests.test_zj_discuss_r1_r6_landing tests.test_zj_discuss_pr149_review_findings
 
 echo "==> [face 2/2] skill-local regression suite (skills/productivity/zj-discuss/tests)"
 cd "$REPO_ROOT/skills/productivity/zj-discuss/tests"
-"$PY" -m unittest discover -p 'test_*.py'
+FACE2_LOG="$(mktemp)"
+"$PY" -m unittest discover -p 'test_*.py' 2>&1 | tee "$FACE2_LOG"
+"$PY" "$REPO_ROOT/scripts/assert_unittest_result.py" "$FACE2_LOG" "zj-discuss skill-local suite"
+rm -f "$FACE2_LOG"
 
 echo "==> zj-discuss dual gate: ALL GREEN"

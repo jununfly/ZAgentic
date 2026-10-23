@@ -3,7 +3,7 @@
 """
 R-HAR-2 — UI Agent Skills 硬门禁（1-5-3 交付物）
 
-职责（来自 ui-agent-skills-roadmap.json 节点 1-5-3 退出判据）：
+职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md，节点 1-5-3 硬门禁）：
   硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态。
 
 设计原则：
@@ -33,6 +33,9 @@ import argparse
 import json
 import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ui_skill_core as core  # single WCAG contrast source of truth (F3)
 
 # --------------------------------------------------------------------------- #
 # 契约常量（单一事实源：runner 从这里 import，不另行抄一份）
@@ -300,20 +303,15 @@ def _parse_color(value):
     return None
 
 
-def _linear(channel):
-    c = channel / 255.0
-    return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
-
-
-def _luminance(rgb):
-    r, g, b = (_linear(x) for x in rgb)
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b
-
-
 def contrast_ratio(fg, bg):
-    la, lb = _luminance(fg), _luminance(bg)
-    hi, lo = max(la, lb), min(la, lb)
-    return (hi + 0.05) / (lo + 0.05)
+    """Delegates to ui_skill_core.contrast_ratio_rgb — the single WCAG source.
+
+    Previously this file kept its own copy of the WCAG math with a different
+    linearization threshold (0.03928) and no rounding, which could flip the
+    PASS/FAIL verdict versus the stage check (S4) on borderline ratios. Both
+    now share one implementation.
+    """
+    return core.contrast_ratio_rgb(fg, bg)
 
 
 def _is_large_text(size_px, weight):

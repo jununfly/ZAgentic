@@ -238,9 +238,14 @@ def canonical_json(payload) -> str:
     return json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
 
+def sha256_text(text: str) -> str:
+    """sha256 of a text string — the single hash base for manifest/receipt ids."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def revision_of(payload) -> str:
     """`revision` = sha256 of the canonical content (schema version 1-2-1 rule)."""
-    return hashlib.sha256(canonical_json(payload).encode("utf-8")).hexdigest()
+    return sha256_text(canonical_json(payload))
 
 
 def commit(store: dict, artifact_kind: str, payload, idempotency_key: str) -> dict:
@@ -429,13 +434,29 @@ def luminance(color: str) -> float:
     if len(digits) == 3:
         digits = "".join(ch * 2 for ch in digits)
     red, green, blue = (int(digits[i : i + 2], 16) for i in (0, 2, 4))
-    return 0.2126 * _linear(red) + 0.7152 * _linear(green) + 0.0722 * _linear(blue)
+    return _luminance_rgb((red, green, blue))
+
+
+def _luminance_rgb(rgb: tuple) -> float:
+    r, g, b = (_linear(c) for c in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
 def contrast_ratio(foreground: str, background: str) -> float:
-    """WCAG 2.x relative-luminance ratio, rounded to 3 decimals."""
+    """WCAG 2.x relative-luminance ratio.
+
+    Full precision — do NOT round before the threshold comparison, or a ratio
+    of 4.4996 would round to 4.500 and wrongly pass WCAG AA (4.5). The
+    stage check and the hard-gate must compare the same number.
+    """
     light, dark = sorted((luminance(foreground), luminance(background)), reverse=True)
-    return round((light + 0.05) / (dark + 0.05), 3)
+    return (light + 0.05) / (dark + 0.05)
+
+
+def contrast_ratio_rgb(fg: tuple, bg: tuple) -> float:
+    """Same WCAG ratio but for (r,g,b) 0-255 tuples (the hard-gate's input)."""
+    light, dark = sorted((_luminance_rgb(fg), _luminance_rgb(bg)), reverse=True)
+    return (light + 0.05) / (dark + 0.05)
 
 
 def contrast_pairs(color: dict) -> list:

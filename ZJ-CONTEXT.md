@@ -625,6 +625,48 @@ forbids a shared `_lib/` (every immediate child of `skills/<bucket>/` must hold 
 silently becomes a nullable string. `zj-ui-core` is the only one today.
 _Avoid_: helper skill, lib skill, utility folder
 
+**AdapterBoundary**:
+The thin orchestration layer (S1/S7 seam) that maps an external design tool's
+native objects (e.g. a Storybook active session) onto the chain's canonical
+artifact shape, and back. It owns only translation, never the artifact's
+authoritative content — any claim it emits carries its source revision so the
+write owner can revalidate.
+_Avoid_: adapter, connector, plugin
+
+**Dual Lane Runner**:
+The deterministic verifier (R-HAR-1) that runs every UI gate twice — once on the
+baseline lane, once on a degraded/offline lane — under a fixed virtual clock,
+fixed RNG seed, replayed network and frozen config_hash, then asserts the two
+runs produce identical `manifest_hash` / `env_hash` / `matrix_key`
+(`rerun_idempotent`). Its selfcheck exits non-zero when the two lanes disagree.
+_Avoid_: test runner, dual check, replay harness
+
+**Resolver**:
+The stage-engine component that, given a `(stage, artifact_kind)` pair, returns
+the single write owner and the contract skeleton that the request must satisfy,
+so ownership is never resolved by precedence or discovery order.
+_Avoid_: dispatcher, router, lookup
+
+**M3E**:
+The PoC at node 1-7-4-3 whose verdict was recorded as `out-of-core` — the
+capability (e.g. a model's multi-modal embed) is intentionally out of the Wave 0
+harness and gated for a later wave rather than faked into a pass.
+_Avoid_: model plugin, embedding step
+
+**Golden fixture**:
+An immutable observation or receipt fixture that the contract tests pin as the
+expected output of a gate/adapter version. It lives under
+`research/evaluation/{controlled-quality-v1, code-research-quality-v1}` and
+`research/multi-device-agent-context`, is referenced by
+`research-compiler-contract.yml`, and must never be silently deleted.
+_Avoid_: sample, seed data, example
+
+**Drift harness**:
+The shared golden-diff / version-drift detector (1-7-4-4) that compares two
+versions of a golden fixture and reports a non-zero exit when they diverge, so a
+replay regression cannot read as green. It is wired into the ui gate.
+_Avoid_: diff tool, comparator
+
 ### Roadmap
 
 **Roadmap**:

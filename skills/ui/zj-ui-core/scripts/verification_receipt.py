@@ -3,7 +3,7 @@
 """
 R-RCP-1 — UI Agent Skills verification receipt 契约与判定（1-5-4 交付物）
 
-职责（来自 ui-agent-skills-roadmap.json 节点 1-5-4 退出判据）：
+职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md，节点 1-5-4 verification receipt）：
   定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine，
   且三者状态可审计。
 

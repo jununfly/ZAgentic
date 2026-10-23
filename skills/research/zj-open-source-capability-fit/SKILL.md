@@ -67,8 +67,8 @@ python3 <skill-dir>/scripts/capability_fit.py assess \
 # 仅查闸门
 python3 <skill-dir>/scripts/capability_fit.py validate --input fit_input.json
 ```
-脚本输出每候选的**推荐分类 + 逐条依据 + 闸门状态**；任一硬闸门(G1–G4)未过退出码为 1，
-提醒不要盲信。
+脚本输出每候选的**推荐分类 + 逐条依据 + 闸门状态**；除 G5 外的任一硬闸门(G1–G4、G6)未过
+退出码为 1，提醒不要盲信。
 
 ### 5. 拍板与归档（对齐模型 §决策记录要求 + 完成标准）
 Human/Agent 在决策记录「最终拍板」段填写：选定组合 C / 缺口 G / E / PoC 结论 / 最终分类 /
@@ -76,10 +76,20 @@ Human/Agent 在决策记录「最终拍板」段填写：选定组合 C / 缺口
 能否复核分类依据并区分证据 vs 假设。
 
 ## 结构性闸门（机械校验，不是自觉约定）
-由 `scripts/capability_fit.py` 在 `assess`/`validate` 中强制：G1 矩阵完整 / G2 需求字段 /
-G3 版本固定 / G4 证据非空（**硬闸门**，不过则退出码 1、拒绝自信分类）；G5 未知项 PoC 为
-**就绪度提示、不阻塞**（仅附理由，不影响退出码）。完整判定条件与后果见
-`references/model-application.md` §3。
+由 `scripts/capability_fit.py` 在 `assess`/`validate` 中强制。除 G5 外均为**硬闸门**（不过则
+退出码 1、拒绝自信分类）：
+
+- **G1 矩阵完整**：每个 `(R, O)` 单元必须存在且为 object，且具备全部字段
+  `coverage / semantic_match / composability / status / evidence / notes`；
+  `status` 须 ∈ {native, adapted, unknown, unsupported}；`coverage / semantic_match /
+  composability` 三个拟合因子必须为 `[0,1]` 区间的实数（布尔值按非法处理）。缺 `notes` 即
+  判 G1 不过——结论须来自一手资料、留痕可复核。
+- **G2 需求字段** / **G3 版本固定** / **G4 证据非空**（满足态必须有非空 `evidence`）。
+- **G5 未知项 PoC** 为**就绪度提示、不阻塞**（仅附理由，不影响退出码）。
+- **G6 适配模式枚举**（新增）：`adaptation[O].mode` 缺省或空串表示待细分的通用 B；若为显式
+  值，必须 ∈ {adapter, plugin, sidecar, upstream-contrib, fork}，否则 G6 不过、阻塞分类。
+
+完整判定条件与后果见 `references/model-application.md` §3。
 
 关键口径：模型 `D = 继续搜索`（搜索循环回环态，**非终态否决**）；`B` 细分 B1/B2/B3；
 "可控 B = 可移除薄层"，适配层触碰主体能力则降 C/D。详见
