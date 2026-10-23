@@ -13,6 +13,14 @@ Public skills live under `skills/`; private skills live in root-level `personal/
 Keep reusable templates with their owning skill (normally `references/`); put
 skill-produced artifacts in `skills-outputs/<skill>/<topic>/`.
 
+**Skill runtime closure:** a skill is a self-contained published unit — anything
+it reads at runtime (via `open()` in `scripts/`, or instructions in `SKILL.md`/
+`references/`) must live inside the skill directory. Do not depend on
+`ZAgentic/docs` at runtime; installed skills run without the source repo.
+Repo-level SSOT docs stay in `docs/`, not in a single skill. See
+`docs/designs/zj-skill-runtime-closure.md` (mechanical gate:
+`scripts/check-skill-runtime-closure.py`).
+
 Every public skill must participate in recursive `./skills/` discovery and have
 a name-linked, one-line entry in both its bucket `README.md` and the top-level
 `README.md`. `personal/README.md` is its local index and stays out of public
