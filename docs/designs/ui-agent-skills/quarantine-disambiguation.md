@@ -19,7 +19,7 @@
 
 ## 1. A — spec `quarantine`（adapter 生命周期状态）
 
-来源：`adapter-boundary-v1.md` §6.1 四态生命周期 + `adapter-manifest.schema.json` 的
+来源：`adapter-boundary-v1.md` §6.1 四态生命周期 + `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json` 的
 `lifecycle` 枚举 `["active","degraded","disabled","quarantine"]`。
 
 - 含义：adapter 被**隔离**——安全闸门 / capability-fit 失败；**永不调用**，待修复或移除。

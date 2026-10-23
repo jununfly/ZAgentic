@@ -25,8 +25,8 @@ from datetime import datetime, timezone
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 SKILL_DIR = REPO / "skills/ui/zj-ui-core/scripts"
-DOC = REPO / "docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md"
-PLANS = REPO / "docs/designs/ui-agent-skills"
+DOC = REPO / "skills/ui/zj-ui-core/contracts/verification-receipt.md"
+PLANS = REPO / "skills/ui/zj-ui-core/contracts"
 
 sys.path.insert(0, str(SKILL_DIR))
 import hard_gates as hg  # noqa: E402
@@ -41,7 +41,7 @@ ISSUED = datetime(2026, 10, 20, tzinfo=timezone.utc)
 def _all_pass_lane(bundles=3, checked=5):
     """A fully-covered baseline receipt that *claims* PASS (for sign-off tests)."""
     fp = runner.fingerprint(str(PLANS), write=False)
-    manifest = runner.load_json(str(PLANS / "ui-agent-skills-fixture-manifest.json"))
+    manifest = runner.load_json(str(PLANS / "fixture-manifest.json"))
     cells = []
     for cell in runner.plan_cells("baseline"):
         cells.append({

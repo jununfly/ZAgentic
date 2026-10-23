@@ -1,7 +1,7 @@
 """AdapterBoundary v1 — 薄边界编排层（, a1）。
 
 契约来源：源仓库 `adapter-boundary-v1.md`。
-配套：`adapter-manifest.schema.json`（字段集）、`invocation-seam.md`（调用 seam 与
+配套：`skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json`（字段集）、`invocation-seam.md`（调用 seam 与
 测试主体分层）、`quarantine-disambiguation.md`（术语消歧）。
 
 Boundary **不实现渲染逻辑**，只做契约仲裁与生命周期编排：

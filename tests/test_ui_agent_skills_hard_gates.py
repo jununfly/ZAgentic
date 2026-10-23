@@ -20,13 +20,13 @@ import unittest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
 SKILL_DIR = REPO / "skills/ui/zj-ui-core/scripts"
-DOC = REPO / "docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md"
+DOC = REPO / "skills/ui/zj-ui-core/contracts/hard-gates.md"
 
 sys.path.insert(0, str(SKILL_DIR))
 import hard_gates as hg  # noqa: E402
 import dual_lane_runner as runner  # noqa: E402
 
-PLANS = REPO / "docs/designs/ui-agent-skills"
+PLANS = REPO / "skills/ui/zj-ui-core/contracts"
 ALL_GATES = hg.SINGLE_BUNDLE_GATES + hg.CROSS_VIEWPORT_GATES
 
 

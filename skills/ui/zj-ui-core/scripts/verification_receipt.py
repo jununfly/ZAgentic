@@ -3,7 +3,7 @@
 """
 R-RCP-1 — UI Agent Skills verification receipt 契约与判定
 
-职责（契约见源仓库 ui-agent-skills-verification-receipt.md）：
+职责（契约见 ui-agent-skills-verification-receipt.md，位于 docs/designs/ui-agent-skills/）：
   定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine，
   且三者状态可审计。
 
@@ -17,7 +17,7 @@ R-RCP-1 — UI Agent Skills verification receipt 契约与判定
 - 判定与生成分离：`validate` / `check_freshness` / `validate_quarantine` 都是纯函数，
   不写盘、不重跑，供 1-9 paired run 与 1-10 rollout 复核直接调用。
 
-契约文档：源仓库 ui-agent-skills-verification-receipt.md
+契约文档：ui-agent-skills-verification-receipt.md（docs/designs/ui-agent-skills/）
 
 CLI：
   verification_receipt.py build --lane <baseline|degraded> [--observations DIR]
@@ -169,7 +169,7 @@ def current_facts(plans_dir=None):
     }
     try:
         manifest = runner.load_json(
-            os.path.join(plans_dir, "ui-agent-skills-fixture-manifest.json"))
+            os.path.join(plans_dir, "fixture-manifest.json"))
         fp = runner.fingerprint(plans_dir, write=False)
         facts.update({
             "manifest_hash": runner.compute_manifest_hash(manifest),
@@ -465,7 +465,7 @@ def build_receipt(lane_receipt, *, commit="UNPINNED", artifacts=None, command=""
 
     manifest = runner.load_json(
         os.path.join(plans_dir or runner.default_plans_dir(),
-                     "ui-agent-skills-fixture-manifest.json"))
+                     "fixture-manifest.json"))
     fixtures = {
         "manifest_hash": facts.get("manifest_hash"),
         "entries": facts.get("fixtures", {}).get("entries", []),

@@ -1,7 +1,7 @@
 # AdapterBoundary v1 规格说明
 
 > 路线图节点 `1-7-2`（定义节点，非实现）。实现落在 `1-7-3`（Storybook active adapter）与 `1-7-5`（删除/断网/远程故障恢复）。
-> 配套可机读契约：`adapter-manifest.schema.json`（adapter manifest 字段集的 JSON Schema v1）；示例：`examples/storybook-local-verify.manifest.json`。
+> 配套可机读契约：`skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json`（adapter manifest 字段集的 JSON Schema v1）；示例：`examples/storybook-local-verify.manifest.json`。
 > 前置结论来自 `1-7-1` capability-fit 证据账本：Storybook / json-render / A2UI = B（采纳），M3E = D（out-of-core）。
 
 ## 1. 定位
@@ -16,7 +16,7 @@ AdapterBoundary 是 **canonical artifact（ui-flow/v1、UI-BRIEF 等）** 与 **
 
 ## 2. adapter manifest 字段集（六个必需类别）
 
-manifest 必须包含以下字段（完整 schema 见 `adapter-manifest.schema.json`，`additionalProperties:false`）。按节点退出标准，六类字段必须齐全：
+manifest 必须包含以下字段（完整 schema 见 `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json`，`additionalProperties:false`）。按节点退出标准，六类字段必须齐全：
 
 | 类别 | 字段 | 说明 |
 |---|---|---|
@@ -85,7 +85,7 @@ manifest 必须包含以下字段（完整 schema 见 `adapter-manifest.schema.j
 
 ## 8. artifact 清单
 
-- `adapter-manifest.schema.json` — adapter manifest JSON Schema v1（字段集事实源）。
+- `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json` — adapter manifest JSON Schema v1（字段集事实源）。
 - `adapter-boundary-v1.md` — 本规格说明。
 - `examples/storybook-local-verify.manifest.json` — Storybook active adapter 示例 manifest（模板，供 `1-7-3` 消费；`source_commit` / `sbom_ref` / `lockfile_ref` 须在集成时钉死）。
 - `quarantine-disambiguation.md` — `quarantine`(adapter 生命周期) vs `QUARANTINED`(receipt 判定) 消歧事实源。

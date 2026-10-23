@@ -24,7 +24,7 @@ import ui_skill_core as core  # noqa: E402
 import storybook_adapter as adapter  # noqa: E402
 from ui_agent_skills_registry_fixture import ResettableRegistryFixture  # noqa: E402
 
-SCHEMA = REPO / "docs/designs/ui-agent-skills/adapter-manifest.schema.json"
+SCHEMA = REPO / "skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json"
 REGISTRY = FIXTURES / "registry/main-registry.snapshot.json"
 
 

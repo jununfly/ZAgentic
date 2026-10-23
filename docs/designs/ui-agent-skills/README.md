@@ -15,8 +15,8 @@
 `zj-ui-brief` · `zj-ui-discover` · `zj-ui-direction` · `zj-ui-design-system` · `zj-ui-flow` · `zj-ui-prototype` · `zj-ui-visual-review` · `zj-ui-break` · `zj-ui-verify` · `zj-ui-handoff`
 
 - 入口目录：`../../skills/ui/`（各 skill 含 `SKILL.md` + `scripts/ui_stages.py` 等）
-- 能力 manifest 规范：`./ui-agent-skills-skill-capability-manifest.md`
-- SKILL.md 模板：`./ui-agent-skills-skill-md-template.md`
+- 能力 manifest 规范：`skills/ui/zj-ui-core/contracts/skill-capability-manifest.md`（已随 skill 安装，不在本目录）
+- SKILL.md 模板：`skills/ui/zj-ui-core/contracts/skill-md-template.md`
 
 ## 2. 稳定契约索引（按路线阶段分组，链到本目录 `ui-agent-skills-*` 契约）
 
@@ -37,7 +37,7 @@
 
 ### 1-3 Skill 编排与持久化
 
-- `ui-agent-skills-skill-capability-manifest.md` — 十 skill 能力 manifest、禁止事项、依赖、停止条件
+- `skill-capability-manifest.md`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— 十 skill 能力 manifest、禁止事项、依赖、停止条件
 - `ui-agent-skills-resolver-contract.md` — 唯一 owner / precedence / resolver / plan hash / 冲突冻结
 - `ui-agent-skills-lease-state-machine.md` — lease / 幂等键 / 失败阶梯 / NEEDS_CONTEXT / quarantine / degraded
 - `ui-agent-skills-persistence-replay-contract.md` — plan / decision / revision / handoff 可恢复编排（G-19..G-25）
@@ -51,11 +51,11 @@
 
 ### 1-5 确定性验证
 
-- `ui-agent-skills-fixture-manifest.md` / `.json` — fixture-manifest、verification-matrix、env fingerprint
-- `ui-agent-skills-env-fingerprint.md` / `.json` — browser / environment fingerprint（Chromium 155 等）
+- `fixture-manifest.md` / `.json`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— fixture-manifest、verification-matrix、env fingerprint
+- `env-fingerprint.md` / `.json`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— browser / environment fingerprint（Chromium 155 等）
 - `ui-agent-skills-dual-lane-runner.md` — baseline / degraded 双 lane、固定字体 / 网络回放 / 时钟 / seed
-- `ui-agent-skills-hard-gates.md` — DOM / ARIA / focus / contrast / overflow / responsive / motion / state 硬门禁
-- `ui-agent-skills-verification-receipt.md` — verification receipt、聚合状态、stale / revalidation_required
+- `hard-gates.md`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— DOM / ARIA / focus / contrast / overflow / responsive / motion / state 硬门禁
+- `verification-receipt.md`（已迁移至 `skills/ui/zj-ui-core/contracts/`）— verification receipt、聚合状态、stale / revalidation_required
 
 ### 1-6 技能本地闭环
 

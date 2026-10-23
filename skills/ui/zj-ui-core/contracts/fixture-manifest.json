@@ -178,7 +178,7 @@
     {
       "id": "FF-BRIEF-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "对话含四类必填",
       "expected": "OK + writes=1 + unknown 为空",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRIEF-01",
@@ -187,7 +187,7 @@
     {
       "id": "FF-BRIEF-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "缺 success_criteria",
       "expected": "NEEDS_CONTEXT + writes=0 + 四元组完整",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRIEF-02",
@@ -196,7 +196,7 @@
     {
       "id": "FF-BRIEF-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "草稿含未注册字段 successCriteria",
       "expected": "REJECTED + writes=0（deny-first，不静默丢弃）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRIEF-03",
@@ -205,7 +205,7 @@
     {
       "id": "FF-DISC-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "三处缺口由可归因证据补齐",
       "expected": "OK + writes=1 + unknown 清零",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DISC-01",
@@ -214,7 +214,7 @@
     {
       "id": "FF-DISC-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "证据来源为 assumed",
       "expected": "OK + 值不写入 + 保留 unknown 四元组",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DISC-02",
@@ -223,7 +223,7 @@
     {
       "id": "FF-DISC-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "questions_asked=3 > budget=2",
       "expected": "NEEDS_CONTEXT + writes=0",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DISC-03",
@@ -232,7 +232,7 @@
     {
       "id": "FF-DIR-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "三张卡 + Human 选 card-b",
       "expected": "OK + writes=1 + direction_choice=card-b",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DIR-01",
@@ -241,7 +241,7 @@
     {
       "id": "FF-DIR-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "两卡并列、Human 未签",
       "expected": "HUMAN_REVIEW_REQUIRED + writes=0 + 候选保留",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DIR-02",
@@ -250,7 +250,7 @@
     {
       "id": "FF-DIR-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "参考 license unknown",
       "expected": "QUARANTINED + 不进默认产物 + writes=0",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DIR-03",
@@ -259,7 +259,7 @@
     {
       "id": "FF-DS-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "tokens + 已注册 catalog",
       "expected": "OK + writes=1 + contrast 达标",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-01",
@@ -268,7 +268,7 @@
     {
       "id": "FF-DS-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "未注册组件 DateRangePicker",
       "expected": "BLOCKED + writes=0（adapter 不得扩表）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-02",
@@ -277,7 +277,7 @@
     {
       "id": "FF-DS-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "contrast 4.478 < 4.5",
       "expected": "BLOCKED + writes=0 + 不替换相近色",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-DS-03",
@@ -286,7 +286,7 @@
     {
       "id": "FF-FLOW-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "六义齐全 + 引用闭合",
       "expected": "OK + writes=1 + revision 原子提交",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-FLOW-01",
@@ -295,7 +295,7 @@
     {
       "id": "FF-FLOW-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "重复 state id（双 owner / 歧义）",
       "expected": "REJECTED + writes=0（hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-FLOW-02",
@@ -304,7 +304,7 @@
     {
       "id": "FF-FLOW-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "action 引用不存在的 intent（intent 丢失）",
       "expected": "REJECTED + writes=0（hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-FLOW-03",
@@ -313,7 +313,7 @@
     {
       "id": "FF-PROTO-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "本地 preview + catalog 内组件 + 人已签",
       "expected": "OK + writes=1 + 发出预览（非 canonical）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-PROTO-01",
@@ -322,7 +322,7 @@
     {
       "id": "FF-PROTO-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "未注册组件 DateRangePicker",
       "expected": "REJECTED + writes=0（deny）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-PROTO-02",
@@ -331,7 +331,7 @@
     {
       "id": "FF-PROTO-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "远程 adapter 不可用且未声明本地 fallback",
       "expected": "HUMAN_REVIEW_REQUIRED + writes=0（不伪造成功）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-PROTO-03",
@@ -340,7 +340,7 @@
     {
       "id": "FF-VR-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "Human 签署 + fingerprint 可归因 + 发现齐全",
       "expected": "OK + writes=1 + review record",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-VR-01",
@@ -349,7 +349,7 @@
     {
       "id": "FF-VR-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "fingerprint 缺失",
       "expected": "QUARANTINED + writes=0（不产出成功结论）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-VR-02",
@@ -358,7 +358,7 @@
     {
       "id": "FF-VR-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "Human 未签",
       "expected": "HUMAN_REVIEW_REQUIRED + writes=0（下游冻结）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-VR-03",
@@ -367,7 +367,7 @@
     {
       "id": "FF-BRK-01",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "全矩阵 + 三档视口跑完",
       "expected": "OK + writes=1 + receipt 记录实测值",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-01",
@@ -376,7 +376,7 @@
     {
       "id": "FF-BRK-02",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "1440 下 overflow → FAIL",
       "expected": "BLOCKED + writes=1（receipt 记录 FAIL，不降级）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-02",
@@ -385,7 +385,7 @@
     {
       "id": "FF-BRK-03",
       "class": "skill",
-      "source": "ui-agent-skills-skill-capability-manifest.md#4",
+      "source": "skill-capability-manifest.md#4",
       "trigger": "fixture matrix 缺失（cells 为空）",
       "expected": "BLOCKED + writes=0（不得冒充 PASS）",
       "landed_at": "tests/ui-agent-skills/fixtures/skills/FF-BRK-03",

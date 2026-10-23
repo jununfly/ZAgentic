@@ -1,6 +1,6 @@
 """Ten-skill capability manifest registry for the `zj-ui-*` chain (S1..S10).
 
-This is the machine-readable form of `ui-agent-skills-skill-capability-manifest.md`
+This is the machine-readable form of `skill-capability-manifest.md` (skills/ui/zj-ui-core/contracts/)
  (). Every skill carries the full 16-field manifest so the
 resolver's static checks (resolver-contract.md ) can run against it. The
 registry is read-only data: the resolver never mutates it, and a malformed entry

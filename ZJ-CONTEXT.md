@@ -1036,7 +1036,7 @@ canonical 语义：`D` 是搜索循环的**回环态**——该候选不满足�
 _Avoid_: 把 D 当否决, 在单候选下混用两语义
 
 **观察包 (observation bundle)**:
-采集端（浏览器/adapter）产出的**结构化证据**，按 `<fixture_id>/<viewport>.json` 落盘，契约 R-OBS-1 见 `docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md` §1。门禁只吃观察包、不做采集：DOM 节点（含 computed accessible name / ARIA / tabindex）、焦点序列与可见样式、对比度采样、布局盒模型、动效描述、状态机 trace。**"没有观察包"是一种结论（证据缺失），不是"没问题"**。
+采集端（浏览器/adapter）产出的**结构化证据**，按 `<fixture_id>/<viewport>.json` 落盘，契约 R-OBS-1 见 `skills/ui/zj-ui-core/contracts/hard-gates.md` §1。门禁只吃观察包、不做采集：DOM 节点（含 computed accessible name / ARIA / tabindex）、焦点序列与可见样式、对比度采样、布局盒模型、动效描述、状态机 trace。**"没有观察包"是一种结论（证据缺失），不是"没问题"**。
 _Avoid_: 把浏览器截图当观察包, 让门禁自己抓 DOM, 用空段代表零缺陷
 
 **硬门禁 (hard gate)**:
@@ -1044,7 +1044,7 @@ _Avoid_: 把浏览器截图当观察包, 让门禁自己抓 DOM, 用空段代表
 _Avoid_: 把 hard gate 叫 lint, 用 warning 表示硬失败, 允许部分覆盖算通过
 
 **收据 (verification receipt)**:
-可归因、可重算、可过期的验证结论载体（R-RCP-1，`skills/ui/zj-ui-core/scripts/verification_receipt.py`；契约 `docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md`）。14 个固定段 + 身份段，每个 cell 带 `status` / `observed` / 判据快照（threshold、oracle、command），使结论离线可复核；签发后 append-only，同 `receipt_id` 内容变化即失效。与"报告"的区别：报告给人读，收据给机器与复核人判。
+可归因、可重算、可过期的验证结论载体（R-RCP-1，`skills/ui/zj-ui-core/scripts/verification_receipt.py`；契约 `skills/ui/zj-ui-core/contracts/verification-receipt.md`）。14 个固定段 + 身份段，每个 cell 带 `status` / `observed` / 判据快照（threshold、oracle、command），使结论离线可复核；签发后 append-only，同 `receipt_id` 内容变化即失效。与"报告"的区别：报告给人读，收据给机器与复核人判。
 _Avoid_: 把运行日志当收据, 用通过率代替覆盖率判 PASS, 签发后原地改状态
 
 **stale / revalidation_required**:

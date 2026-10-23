@@ -3,7 +3,7 @@
 """
 R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner
 
-职责（契约见源仓库 ui-agent-skills-dual-lane-runner.md）：
+职责（契约见 ui-agent-skills-dual-lane-runner.md，位于 docs/designs/ui-agent-skills/）：
   实现 baseline 与 degraded 双 lane、固定 browser/font/network/clock/seed 并可复跑。
 
 设计原则：
@@ -170,26 +170,26 @@ def _find_repo_root(start: str):
 
 
 def default_plans_dir() -> str:
-    """Locate 源仓库契约目录（ui-agent-skills 计划目录，不随 skill 安装）.
+    """Locate the skill-bundled contract directory (closure-compliant).
 
-    Installed skills live outside the project (e.g. ~/.claude/skills/zj-ui-core),
-    so this file's location cannot identify the target repository -- the operating
-    project (current working directory) can. The file location is kept as a
-    fallback so source-tree invocation from an unrelated cwd keeps working.
+    The UI delivery-chain contracts live inside the skill at
+    `<skill>/contracts/`, so they ship with the skill install and are
+    resolvable from this file's own location -- no dependency on the
+    surrounding repository or the current working directory.
 
-    Raises RuntimeError when no repository is reachable from either base instead
-    of returning a bogus path rooted at "/"; callers should then pass --plans.
+    Raises RuntimeError when the contracts dir is absent (e.g. a broken
+    install) instead of returning a bogus path; callers should then pass
+    --plans.
     """
-    bases = [os.getcwd(), os.path.dirname(os.path.abspath(__file__))]
-    for base in bases:
-        root = _find_repo_root(base)
-        if root is not None:
-            return os.path.join(root, "docs", "designs", "ui-agent-skills")
-    raise RuntimeError(
-        "无法定位 ui-agent-skills 计划目录（应为源仓库 <repo>/ui-agent-skills 计划目录，不随 skill 安装）："
-        "已从 $PWD(%s) 与脚本位置(%s) 向上查找 .git 均未命中；请显式传入 --plans DIR。"
-        % (bases[0], bases[1])
-    )
+    here = os.path.dirname(os.path.abspath(__file__))      # .../zj-ui-core/scripts
+    contracts = os.path.join(os.path.dirname(here), "contracts")
+    if not os.path.isdir(contracts):
+        raise RuntimeError(
+            "ui-agent-skills 契约目录未找到：%s。"
+            "契约随 skill 安装，应位于 <skill>/contracts/；"
+            "若需指向其他目录，请显式传入 --plans DIR。" % contracts
+        )
+    return contracts
 
 
 def load_json(path: str) -> dict:
@@ -217,33 +217,39 @@ def compute_manifest_hash(fixture_doc: dict) -> str:
     return sha256_text(canonical_json(rows))
 
 
-def init_fixtures(plans_dir: str, write: bool = False) -> dict:
+def init_fixtures(plans_dir: str, write: bool = False, out: str = None) -> dict:
     """幂等建立 fixture 目录骨架 + 计算 manifest_hash。
 
     真实 fixture 数据由 1-6/1-7 落地；此处仅就 manifest 元数据记录计算 hash。
+    写回目标为 out 或 plans_dir（缺省同 plans_dir）。
+
+    目录骨架建立属于写操作，仅在 write=True 时执行——读模式（selfcheck/
+    fingerprint 默认 write=False）不得在工作区创建任何目录，避免污染 skill
+    安装树或仓库布局。
     """
-    manifest_path = os.path.join(plans_dir, "ui-agent-skills-fixture-manifest.json")
+    manifest_path = os.path.join(plans_dir, "fixture-manifest.json")
     doc = load_json(manifest_path)
     mh = compute_manifest_hash(doc)
     doc["manifest_hash"] = mh
 
-    root = doc.get("storage_root", "tests/ui-agent-skills/fixtures/")
-    # 建立 landed_at 目录骨架（幂等）
     created = []
-    for fx in doc.get("fixtures", []):
-        landed = fx.get("landed_at")
-        if landed:
-            d = os.path.join(os.path.dirname(plans_dir), "..", landed) \
-                if not os.path.isabs(landed) else landed
-            try:
-                os.makedirs(d, exist_ok=True)
-                created.append(d)
-            except OSError:
-                # 工作区写沙箱可能拒绝；骨架非阻断，数据落地阶段再建
-                pass
-
     if write:
-        save_json(manifest_path, doc)
+        root = doc.get("storage_root", "tests/ui-agent-skills/fixtures/")
+        # 建立 landed_at 目录骨架（幂等）
+        for fx in doc.get("fixtures", []):
+            landed = fx.get("landed_at")
+            if landed:
+                d = os.path.join(os.path.dirname(plans_dir), "..", landed) \
+                    if not os.path.isabs(landed) else landed
+                try:
+                    os.makedirs(d, exist_ok=True)
+                    created.append(d)
+                except OSError:
+                    # 工作区写沙箱可能拒绝；骨架非阻断，数据落地阶段再建
+                    pass
+        target = out or plans_dir
+        os.makedirs(target, exist_ok=True)
+        save_json(os.path.join(target, "fixture-manifest.json"), doc)
     return {"manifest_hash": mh, "manifest_path": manifest_path,
             "dirs_touched": len(created)}
 
@@ -290,14 +296,14 @@ def matrix_key(manifest_hash: str, env_h: str) -> str:
     return sha256_text(blob)
 
 
-def fingerprint(plans_dir: str, write: bool = False) -> dict:
-    env_path = os.path.join(plans_dir, "ui-agent-skills-env-fingerprint.json")
+def fingerprint(plans_dir: str, write: bool = False, out: str = None) -> dict:
+    env_path = os.path.join(plans_dir, "env-fingerprint.json")
     env_doc = load_json(env_path)
     cfg_h = config_hash()
     axes = build_axes(env_doc, cfg_h)
     eh = env_hash_from_axes(axes)
 
-    manifest_path = os.path.join(plans_dir, "ui-agent-skills-fixture-manifest.json")
+    manifest_path = os.path.join(plans_dir, "fixture-manifest.json")
     mh = compute_manifest_hash(load_json(manifest_path))
     mk = matrix_key(mh, eh)
 
@@ -314,7 +320,9 @@ def fingerprint(plans_dir: str, write: bool = False) -> dict:
     )
 
     if write:
-        save_json(env_path, env_doc)
+        target = out or plans_dir
+        os.makedirs(target, exist_ok=True)
+        save_json(os.path.join(target, "env-fingerprint.json"), env_doc)
     return {"env_hash": eh, "matrix_key": mk, "config_hash": cfg_h,
             "env_path": env_path, "axes": axes}
 
@@ -343,7 +351,7 @@ def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
     degraded：adapter-off 路径，全部 DEGRADED_SKIP（离线恢复归 1-6/1-9）。
     """
     fp = fingerprint(plans_dir, write=False)
-    manifest = load_json(os.path.join(plans_dir, "ui-agent-skills-fixture-manifest.json"))
+    manifest = load_json(os.path.join(plans_dir, "fixture-manifest.json"))
     fixtures = manifest.get("fixtures", [])
     mh = compute_manifest_hash(manifest)
     clock = VirtualClock()
@@ -475,6 +483,52 @@ def demo() -> dict:
 # CLI
 # --------------------------------------------------------------------------- #
 
+def resolve_write_target(out: str, plans_dir: str):
+    """写回目标解析（Q7 决策：--out 缺省时改为「询问 Human」，而非直接报错）。
+
+    - out 已给定：直接采用，不询问。
+    - out 未给定且为交互终端：打印选项并读取 Human 输入——
+        1) 写回 skill 内契约目录（会修改已安装 skill，不推荐）；
+        2) 自定义目录（推荐，例如某个可写工作区）；
+        n) 取消，仅打印结果、不写回。
+    - 非交互环境（无 TTY，CI/管道）无法询问：打印提示并返回 None，
+      调用方据此跳过写回，绝不静默写只读安装目录。
+
+    返回写回目录路径；Human 取消或非交互时返回 None。
+    """
+    if out:
+        return out
+    if not sys.stdin.isatty():
+        sys.stderr.write(
+            "ERROR: --write 未指定 --out，且当前非交互环境无法询问 Human 写回目标。"
+            "请显式传入 --out <目录>，或去掉 --write 仅打印结果。\n")
+        return None
+    sys.stderr.write(
+        "\n[写回目标未指定] 需要将生成的契约/指纹写回到何处？\n"
+        "  1) 写回 skill 内契约目录（会修改已安装 skill，不推荐）: %s\n"
+        "  2) 输入一个自定义目录路径（推荐，例如可写工作区）\n"
+        "  n) 取消，仅打印计算结果、不写回\n"
+        "请选择 1 或 2，或直接输入目标路径；输入 n 取消：\n> " % plans_dir
+    )
+    try:
+        ans = input().strip()
+    except EOFError:
+        sys.stderr.write("已取消写回（未读到输入）。\n")
+        return None
+    if ans.lower() in ("n", "no"):
+        return None
+    if ans == "1":
+        return plans_dir
+    if ans in ("2", ""):
+        sys.stderr.write("请输入目标目录路径：\n> ")
+        try:
+            path = input().strip()
+        except EOFError:
+            return None
+        return path or plans_dir
+    return ans  # 直接把输入当路径
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="R-HAR-1 dual-lane deterministic verifier")
     ap.add_argument("cmd",
@@ -484,7 +538,10 @@ def main(argv=None) -> int:
                          "定位不到即报错而非返回 / 下的假路径")
     ap.add_argument("--lane", choices=["baseline", "degraded"], default="baseline")
     ap.add_argument("--write", action="store_true",
-                    help="将计算结果写回源仓库 *.json（不随 skill 安装，本会话默认 print-only）")
+                    help="将计算结果写回；缺省落点（无 --out）时交互式询问 Human 决策写回目标")
+    ap.add_argument("--out", default=None,
+                    help="写回目标目录；与 --write 配合。缺省时 --write 会交互式询问 Human"
+                         "写回目标，避免静默写只读的 skill 安装目录")
     ap.add_argument("--observations", default=None,
                     help="observation bundle 根目录（<fixture_id>/<viewport>.json）；"
                          "缺省时 baseline 全部 NOT_EXECUTED（fail-closed）")
@@ -500,12 +557,14 @@ def main(argv=None) -> int:
         return 0
 
     if args.cmd == "init":
-        res = init_fixtures(plans_arg(), write=args.write)
+        out = resolve_write_target(args.out, plans_arg()) if args.write else None
+        res = init_fixtures(plans_arg(), write=args.write and out is not None, out=out)
         print(canonical_json(res))
         return 0
 
     if args.cmd == "fingerprint":
-        res = fingerprint(plans_arg(), write=args.write)
+        out = resolve_write_target(args.out, plans_arg()) if args.write else None
+        res = fingerprint(plans_arg(), write=args.write and out is not None, out=out)
         print(canonical_json(res))
         return 0
 

@@ -14,7 +14,7 @@ from unittest import mock
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "ui" / "zj-ui-core" / "scripts"
-PLANS = REPO_ROOT / "docs" / "designs" / "ui-agent-skills"
+PLANS = REPO_ROOT / "skills" / "ui" / "zj-ui-core" / "contracts"
 
 
 def _load():

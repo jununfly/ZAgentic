@@ -3,7 +3,7 @@
 """
 R-HAR-2 — UI Agent Skills 硬门禁
 
-职责（契约见源仓库 ui-agent-skills-hard-gates.md）：
+职责（契约见 skills/ui/zj-ui-core/contracts/hard-gates.md）：
   硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态。
 
 设计原则：

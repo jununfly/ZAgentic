@@ -27,7 +27,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${0}")/.." && pwd)"
 PY="${PYTHON:-python3}"
 SCRIPTS="$REPO_ROOT/skills/ui/zj-ui-core/scripts"
-PLANS="$REPO_ROOT/docs/designs/ui-agent-skills"
+PLANS="$REPO_ROOT/skills/ui/zj-ui-core/contracts"
 
 STAGE=""
 cleanup() { if [ -n "$STAGE" ] && [ -d "$STAGE" ]; then rm -rf "$STAGE"; fi; }
@@ -88,17 +88,18 @@ print(f"    OK  dual_lane_runner: idempotent, matrix_key={d['matrix_key'][:12]}.
 EOF
 
 echo "==> [3/5] installed-copy resolution guard (PR #209 regression class)"
-# A skill installed under ~/.codex|~/.workbuddy|~/.claude/skills has no .git
-# ancestor. Plan-dir discovery must therefore resolve from $PWD (the project
-# being worked on), not from __file__ — otherwise it silently degrades to
-# "/docs/designs/...". Compare an out-of-repo copy against the in-repo source:
-# same answers are the contract.
+# The UI contracts now ship INSIDE the skill at <skill>/contracts/ (see
+# AGENTS.md "Skill runtime closure"), so an installed copy resolves them from
+# its own __file__ location, independent of $PWD or any surrounding repo. The
+# guard copies only the scripts (an incomplete install) and therefore passes
+# --plans explicitly; it then compares the installed copy's selfcheck against
+# the in-repo source. Same answers are the contract.
 INSTALLED="$STAGE/installed/scripts"
 mkdir -p "$INSTALLED"
 cp "$SCRIPTS"/*.py "$INSTALLED/"
-if ! (cd "$REPO_ROOT" && "$PY" "$INSTALLED/dual_lane_runner.py" selfcheck) >"$STAGE/installed.json"; then
+if ! (cd "$REPO_ROOT" && "$PY" "$INSTALLED/dual_lane_runner.py" selfcheck --plans "$PLANS") >"$STAGE/installed.json"; then
     echo "FAIL: installed copy of dual_lane_runner could not even run from the repo root."
-    echo "      This is the /docs/designs/... degradation class — see PR #209."
+    echo "      Verify the contracts ship with the skill at <skill>/contracts/ — see PR #209."
     exit 1
 fi
 "$PY" - "$STAGE/installed.json" "$STAGE/selfcheck.json" <<'EOF'

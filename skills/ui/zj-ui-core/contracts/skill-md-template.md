@@ -3,9 +3,9 @@
 > **这份文件是模板的单一事实源。** `skills/ui/zj-ui-*/SKILL.md` 的骨架必须与它同形；
 > 新增第 11 个 UI skill 时先改这里，再复制成形，不要凭记忆手写。
 >
-> 归属路线图节点 1-6-1。上游契约：`ui-agent-skills-skill-capability-manifest.md`（16 字段、
-> 阶段责任卡、fixture→owner 矩阵）、`ui-agent-skills-canonical-schema.md`（六类 canonical
-> artifact）、`ui-agent-skills-ui-flow-v1-contract.md`（六义）。
+> 归属路线图节点 1-6-1。上游契约：`skill-capability-manifest.md`（16 字段、
+> 阶段责任卡、fixture→owner 矩阵）、`/docs/designs/ui-agent-skills/ui-agent-skills-canonical-schema.md`（六类 canonical
+> artifact）、`/docs/designs/ui-agent-skills/ui-agent-skills-ui-flow-v1-contract.md`（六义）。
 >
 > 机械守卫：`tests/test_ui_agent_skills_layout.py`（目录、frontmatter、16 字段、stage 唯一、
 > fixture 归属、四份索引与术语登记是否同步）。

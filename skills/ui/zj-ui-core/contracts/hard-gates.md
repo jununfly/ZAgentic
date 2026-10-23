@@ -4,7 +4,7 @@
 - **事实源**：ui-agent-skills 路线图（已收口，carrier 文件已清理）
 - **机器实现**：`skills/ui/zj-ui-core/scripts/hard_gates.py`（R-HAR-2，纯 stdlib）
 - **接线**：`skills/ui/zj-ui-core/scripts/dual_lane_runner.py`（R-HAR-1，`run --lane baseline --observations DIR`）
-- **上游**：`ui-agent-skills-verification-matrix.md`（维度 × cell 门禁）、`ui-agent-skills-fixture-manifest.json`（fixture 全集）、`ui-agent-skills-env-fingerprint.json`（env 指纹）、`ui-agent-skills-dual-lane-runner.md`（双 lane）
+- **上游**：`/docs/designs/ui-agent-skills/ui-agent-skills-verification-matrix.md`（维度 × cell 门禁）、`fixture-manifest.json`（fixture 全集）、`env-fingerprint.json`（env 指纹）、`/docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md`（双 lane）
 - **状态**：门禁逻辑已实现并自检；真实浏览器捕获待 1-7-3，真实 fixture 数据待 1-6/1-7。
 - **退出判据对齐**：1-5-3 退出 = 硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态。
 
@@ -270,7 +270,7 @@ python -m unittest tests.test_ui_agent_skills_hard_gates   # 该测试随原型�
   的 fixture 全集（class 覆盖）；消费 env-fingerprint 的 config_hash 参与 `matrix_key`。
 - **向下（1-5-4）**：每 cell 提供 `observed` + `status` + `findings[]`，evidence /
   unattributable 两级语义已分离，receipt 可直接引用。→ 已于 1-5-4 定稿：
-  `ui-agent-skills-verification-receipt.md`（R-RCP-1）与
+  `verification-receipt.md`（R-RCP-1）与
   `verification_receipt.py`，收据的 `checks[]` 即本节点的 cell 集合（含 `checked`）。
 - **向下（1-6/1-7）**：adapter 必须按 R-OBS-1 产出 bundle；`name` 为 computed accessible
   name，`name_source` 缺省即放弃 HG-DOM-03（不得由采集端自行补判）。

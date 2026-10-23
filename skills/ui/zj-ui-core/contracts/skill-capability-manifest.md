@@ -13,7 +13,7 @@
 > 存在的理由：本桶不允许共享 `_lib/`（`skills/<bucket>/` 的直接子目录必须含 `SKILL.md`），而
 > "unknown 四元组 / deny-first / 原子提交"只应有一份实现。它的 16 字段同样适用，只是 §2 的阶段
 > 目录与 §4 的 fixture→owner 矩阵仍按十个 stage 计算。引擎契约见
-> `ui-agent-skills-stage-engine.md`。
+> `/docs/designs/ui-agent-skills/ui-agent-skills-stage-engine.md`。
 
 ---
 
@@ -249,7 +249,7 @@
 
 ## 7. 上下游契约义务
 
-- **对上游（1-2）**：本文件的 `writes` / `reads` 必须与 `ui-agent-skills-canonical-schema.md` 的六类 artifact 与 `ui-agent-skills-ui-flow-v1-contract.md` 的六义一致；如 1-2 修订 schema，必须回写本文件的 `dependencies`。
+- **对上游（1-2）**：本文件的 `writes` / `reads` 必须与 `/docs/designs/ui-agent-skills/ui-agent-skills-canonical-schema.md` 的六类 artifact 与 `/docs/designs/ui-agent-skills/ui-agent-skills-ui-flow-v1-contract.md` 的六义一致；如 1-2 修订 schema，必须回写本文件的 `dependencies`。
 - **对下游（1-3-2）**：必须可直接实现 §5.2 的 resolver 顺序、§5.3 的 plan hash 与 §5.4 的 gate 语义；本文件不给出具体哈希算法与并列消解阈值（留给 1-3-2 决策并 `decide` 落盘）。
 - **对下游（1-3-3）**：必须可实现 §5.5 四类失败结果、§5.6 幂等键、§5.7 租约与 §5.8 失败阶梯。
 - **对下游（1-6）**：十个 skill 目录与 SKILL.md 落地时，必须逐字包含本文件 §1 的 16 个字段，且 `failure_fixtures` 引用 §4 的 fixture id。
