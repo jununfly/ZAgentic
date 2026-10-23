@@ -217,6 +217,14 @@ def compute_manifest_hash(fixture_doc: dict) -> str:
     return sha256_text(canonical_json(rows))
 
 
+def write_back(out: str | None, plans_dir: str, filename: str, doc: dict) -> str:
+    """把 doc 写回 out（显式 --out 优先）或 skill 内 plans_dir，返回实际落点目录。"""
+    target = out or plans_dir
+    os.makedirs(target, exist_ok=True)
+    save_json(os.path.join(target, filename), doc)
+    return target
+
+
 def init_fixtures(plans_dir: str, write: bool = False, out: str = None) -> dict:
     """幂等建立 fixture 目录骨架 + 计算 manifest_hash。
 
@@ -234,22 +242,23 @@ def init_fixtures(plans_dir: str, write: bool = False, out: str = None) -> dict:
 
     created = []
     if write:
-        root = doc.get("storage_root", "tests/ui-agent-skills/fixtures/")
-        # 建立 landed_at 目录骨架（幂等）
-        for fx in doc.get("fixtures", []):
-            landed = fx.get("landed_at")
-            if landed:
-                d = os.path.join(os.path.dirname(plans_dir), "..", landed) \
-                    if not os.path.isabs(landed) else landed
+        # landed_at 是仓库相对路径（tests/ui-agent-skills/fixtures/...）。骨架只能建在
+        # Human 显式给出的写回目录 out 下：plans_dir 现在位于 skill 安装目录内，若按旧写
+        # 法从 plans_dir 向上取 ".." 再拼 landed_at，实际会落到 skills/ui/ 而非仓库根，
+        # 等于把骨架写进已安装的 skill（污染安装树）。无 out 时一律不建骨架。
+        if out:
+            for fx in doc.get("fixtures", []):
+                landed = fx.get("landed_at")
+                if not landed:
+                    continue
                 try:
+                    d = os.path.join(out, landed)
                     os.makedirs(d, exist_ok=True)
                     created.append(d)
                 except OSError:
-                    # 工作区写沙箱可能拒绝；骨架非阻断，数据落地阶段再建
+                    # 目标不可写（沙箱/只读）；骨架非阻断，数据落地阶段再建
                     pass
-        target = out or plans_dir
-        os.makedirs(target, exist_ok=True)
-        save_json(os.path.join(target, "fixture-manifest.json"), doc)
+        write_back(out, plans_dir, "fixture-manifest.json", doc)
     return {"manifest_hash": mh, "manifest_path": manifest_path,
             "dirs_touched": len(created)}
 
@@ -320,9 +329,7 @@ def fingerprint(plans_dir: str, write: bool = False, out: str = None) -> dict:
     )
 
     if write:
-        target = out or plans_dir
-        os.makedirs(target, exist_ok=True)
-        save_json(os.path.join(target, "env-fingerprint.json"), env_doc)
+        write_back(out, plans_dir, "env-fingerprint.json", env_doc)
     return {"env_hash": eh, "matrix_key": mk, "config_hash": cfg_h,
             "env_path": env_path, "axes": axes}
 
@@ -483,7 +490,7 @@ def demo() -> dict:
 # CLI
 # --------------------------------------------------------------------------- #
 
-def resolve_write_target(out: str, plans_dir: str):
+def resolve_write_target(out: str, plans_dir: str) -> str | None:
     """写回目标解析（Q7 决策：--out 缺省时改为「询问 Human」，而非直接报错）。
 
     - out 已给定：直接采用，不询问。
@@ -492,9 +499,10 @@ def resolve_write_target(out: str, plans_dir: str):
         2) 自定义目录（推荐，例如某个可写工作区）；
         n) 取消，仅打印结果、不写回。
     - 非交互环境（无 TTY，CI/管道）无法询问：打印提示并返回 None，
-      调用方据此跳过写回，绝不静默写只读安装目录。
+      调用方据此失败退出（非零），绝不静默写只读安装目录。
+    - 空输入（直接回车）等同取消，绝不落到「写回安装目录」这个不推荐选项。
 
-    返回写回目录路径；Human 取消或非交互时返回 None。
+    返回写回目录路径；Human 取消、非交互或空输入时返回 None。
     """
     if out:
         return out
@@ -508,24 +516,27 @@ def resolve_write_target(out: str, plans_dir: str):
         "  1) 写回 skill 内契约目录（会修改已安装 skill，不推荐）: %s\n"
         "  2) 输入一个自定义目录路径（推荐，例如可写工作区）\n"
         "  n) 取消，仅打印计算结果、不写回\n"
-        "请选择 1 或 2，或直接输入目标路径；输入 n 取消：\n> " % plans_dir
+        "请选择 1 或 2，或直接输入目标路径；输入 n 或直接回车取消：\n> " % plans_dir
     )
     try:
         ans = input().strip()
     except EOFError:
         sys.stderr.write("已取消写回（未读到输入）。\n")
         return None
-    if ans.lower() in ("n", "no"):
+    if ans.lower() in ("n", "no", ""):
         return None
     if ans == "1":
         return plans_dir
-    if ans in ("2", ""):
+    if ans == "2":
         sys.stderr.write("请输入目标目录路径：\n> ")
         try:
             path = input().strip()
         except EOFError:
             return None
-        return path or plans_dir
+        if not path:
+            sys.stderr.write("未给定目录，已取消写回。\n")
+            return None
+        return path
     return ans  # 直接把输入当路径
 
 
@@ -556,15 +567,16 @@ def main(argv=None) -> int:
         print(canonical_json(demo()))
         return 0
 
-    if args.cmd == "init":
+    if args.cmd in ("init", "fingerprint"):
+        # A requested write-back needs a resolvable target. When none can be
+        # determined (non-interactive env without --out, no Human answer, or an
+        # explicit cancel) nothing is written -- surface that as a non-zero exit
+        # so CI cannot mistake a skipped write-back for a success.
         out = resolve_write_target(args.out, plans_arg()) if args.write else None
-        res = init_fixtures(plans_arg(), write=args.write and out is not None, out=out)
-        print(canonical_json(res))
-        return 0
-
-    if args.cmd == "fingerprint":
-        out = resolve_write_target(args.out, plans_arg()) if args.write else None
-        res = fingerprint(plans_arg(), write=args.write and out is not None, out=out)
+        if args.write and out is None:
+            return 1
+        res = (init_fixtures if args.cmd == "init" else fingerprint)(
+            plans_arg(), write=out is not None, out=out)
         print(canonical_json(res))
         return 0
 

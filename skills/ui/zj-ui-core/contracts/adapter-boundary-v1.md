@@ -1,7 +1,7 @@
 # AdapterBoundary v1 规格说明
 
 > 路线图节点 `1-7-2`（定义节点，非实现）。实现落在 `1-7-3`（Storybook active adapter）与 `1-7-5`（删除/断网/远程故障恢复）。
-> 配套可机读契约：`skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json`（adapter manifest 字段集的 JSON Schema v1）；示例：`examples/storybook-local-verify.manifest.json`。
+> 配套可机读契约：`skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json`（adapter manifest 字段集的 JSON Schema v1）。
 > 前置结论来自 `1-7-1` capability-fit 证据账本：Storybook / json-render / A2UI = B（采纳），M3E = D（out-of-core）。
 
 ## 1. 定位
@@ -87,7 +87,6 @@ manifest 必须包含以下字段（完整 schema 见 `skills/ui/zj-ui-core/cont
 
 - `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json` — adapter manifest JSON Schema v1（字段集事实源）。
 - `adapter-boundary-v1.md` — 本规格说明。
-- `examples/storybook-local-verify.manifest.json` — Storybook active adapter 示例 manifest（模板，供 `1-7-3` 消费；`source_commit` / `sbom_ref` / `lockfile_ref` 须在集成时钉死）。
 - `skills/ui/zj-ui-core/contracts/verification-receipt.md` — `QUARANTINED`(receipt 判定) 定义源；`quarantine`(adapter 生命周期) 见 §6.1。
 - 见 §6.2（adapter 调用 seam 契约：三层测试主体、故障注入保真度护栏、调用面 deny-first 索引、诚实账本）。
 

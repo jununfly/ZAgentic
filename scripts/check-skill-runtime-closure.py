@@ -15,6 +15,14 @@ Fingerprints (see docs/designs/zj-skill-runtime-closure.md):
   ERROR  ZAgentic-specific ontology path:        docs/ontology
   WARN   absolute source-repo path (review):     /Users/.../ZAgentic/ ,
                                                  /home/.../jununfly/ , C:\\...
+  WARN   unresolved reference:                   a path-bearing `example/x.json`
+                                                 whose target exists in neither
+                                                 the skill install nor the repo.
+                                                 Bare filenames and paths rooted
+                                                 in the target project (docs/,
+                                                 .claude/, agents/, ...) are not
+                                                 flagged; those name the repo the
+                                                 skill runs in, not skill content.
 
 Scan scope: the `skills/` tree, excluding dev/test scopes
 (tests/, fixtures/, artifacts/, evals/, __pycache__, node_modules, binaries).
@@ -52,6 +60,22 @@ RE_ABS_SOURCE = re.compile(
     r"(?:/Users/|/home/|/root/|C:\\)[^\"'<>\s]*/(?:ZAgentic|jununfly)/"
 )
 
+# Missing-reference check: a skill may point at a file (contract, script, schema,
+# template) that itself must be present somewhere resolvable. A pointer at a file
+# that exists nowhere is a broken reference even when it never escapes the skill
+# dir -- which is exactly the class the escape patterns above cannot see.
+RE_REF_PATH = re.compile(r"`([^`\s]+?\.(?:md|json|ya?ml|py|sh|js|ts))`")
+# Placeholder/example shapes ("<skill>/SKILL.md", "*.md", "…/foo.py") are not real referents.
+RE_PLACEHOLDER = re.compile(r"[<>*{}?\[\]]|…")
+# Path prefixes that live in the project the skill RUNS IN, not in the skill
+# install itself. Pointing there is not evidence of a broken skill reference.
+TARGET_PROJECT_ROOTS = (
+    "docs/", ".claude/", ".codex/", ".workbuddy/", ".zj-out-of-scope/",
+    ".zj-retros/", "safe-bin/", "agents/", "discussions/", "skills-outputs/",
+    # Layouts belonging to the repo a docs skill maintains, not to the skill:
+    "handbook/", "architecture/", "views/", "navigation/", "app/",
+)
+
 ERROR_PATTERNS = (
     ("SKILL_ESCAPE_DOCS", RE_UP_ESCAPE, "relative escape out of skill into source docs/"),
     ("SKILL_ZAGENTIC_ONTOLOGY", RE_ONTOLOGY, "ZAgentic-specific docs/ontology path"),
@@ -83,7 +107,35 @@ def _find_repo_root(start: str) -> str:
         cur = parent
 
 
-def scan_file(path: str, rel: str, findings: list[dict]) -> None:
+def _skill_root_of(rel: str, root: str) -> str | None:
+    """`<skill-install>` dir for rel like skills/<bucket>/<skill>/<...>."""
+    parts = rel.split(os.sep)
+    if parts[0] == "skills" and len(parts) >= 3:
+        return os.path.join(root, "skills", parts[1], parts[2])
+    return None
+
+
+def _ref_resolves(ref: str, bases: list[str]) -> bool:
+    return any(os.path.exists(os.path.join(b, ref)) for b in bases if b)
+
+
+# Cache of <skill-install-root> -> its file paths relative to that root.
+_SKILL_FILES: dict[str, set[str]] = {}
+
+
+def _skill_files(skill_root: str) -> set[str]:
+    if skill_root not in _SKILL_FILES:
+        found: set[str] = set()
+        for dirpath, dirnames, filenames in os.walk(skill_root):
+            dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
+            for fn in filenames:
+                rel = os.path.relpath(os.path.join(dirpath, fn), skill_root)
+                found.add(rel.replace(os.sep, "/"))
+        _SKILL_FILES[skill_root] = found
+    return _SKILL_FILES[skill_root]
+
+
+def scan_file(path: str, rel: str, findings: list[dict], root: str) -> None:
     if _is_binary(path):
         return
     try:
@@ -108,6 +160,31 @@ def scan_file(path: str, rel: str, findings: list[dict]) -> None:
                     "severity": "WARN", "code": code, "path": rel,
                     "line": lineno, "match": m.group(0), "hint": hint,
                 })
+        # A referenced file must resolve, or exist somewhere inside the skill
+        # install. Only *path-bearing* references are enforced: a bare filename
+        # may legitimately name a target-project artifact the skill operates on
+        # rather than ships (UI-BRIEF.md, input.json), so it is not evidence of
+        # a broken pointer.
+        skill_root = _skill_root_of(rel, root)
+        for ref in RE_REF_PATH.findall(line):
+            if ref.startswith(("/", "~", "#", "$", "./")) or "://" in ref:
+                continue
+            if RE_PLACEHOLDER.search(ref):
+                continue
+            norm = ref.replace(os.sep, "/")
+            if "/" not in norm:
+                continue
+            if norm.startswith(TARGET_PROJECT_ROOTS):
+                continue
+            if _ref_resolves(ref, [os.path.dirname(path), skill_root, root]):
+                continue
+            if skill_root and norm in _skill_files(skill_root):
+                continue
+            findings.append({
+                "severity": "WARN", "code": "SKILL_UNRESOLVED_REF", "path": rel,
+                "line": lineno, "match": ref,
+                "hint": "referenced file resolves nowhere in skill or repo",
+            })
 
 
 def scan_tree(root: str, skills_dir: str, findings: list[dict]) -> None:
@@ -116,7 +193,7 @@ def scan_tree(root: str, skills_dir: str, findings: list[dict]) -> None:
         for fn in filenames:
             full = os.path.join(dirpath, fn)
             rel = os.path.relpath(full, root)
-            scan_file(full, rel, findings)
+            scan_file(full, rel, findings, root)
 
 
 def main(argv: list[str] | None = None) -> int:
