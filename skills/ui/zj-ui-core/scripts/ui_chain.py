@@ -1,4 +1,4 @@
-"""Local closed-loop orchestrator for the `zj-ui-*` chain (roadmap 1-6-5).
+"""Local closed-loop orchestrator for the `zj-ui-*` chain.
 
 This is the faithful reification of `ui-agent-skills-stage-engine.md §6/§8`:
 the ten stages (S1..S10) are wired into one deterministic pipeline. For every

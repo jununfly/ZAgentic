@@ -1,7 +1,7 @@
 """Stage runners S1..S4 for the `zj-ui-*` chain.
 
 Each runner takes the **structured request** an agent already extracted from the
-conversation (roadmap 1-6-2 decision: the code never parses prose) and returns a
+conversation (roadmap decision: the code never parses prose) and returns a
 fixed-shape result. The runners are deliberately thin: all semantics that can be
 shared — schema, quartet, deny-first, commit, contrast — live in
 `ui_skill_core.py`, because two implementations of "unknown" is how the quartet

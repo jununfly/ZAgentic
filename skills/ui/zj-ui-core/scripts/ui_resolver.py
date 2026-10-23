@@ -1,4 +1,4 @@
-"""Deterministic resolver for the `zj-ui-*` chain (roadmap 1-3-2 / 1-6-5).
+"""Deterministic resolver for the `zj-ui-*` chain.
 
 This is the faithful reification of `ui-agent-skills-resolver-contract.md`. The
 resolver is a pure function: same inputs -> byte-identical `plan_hash`, same

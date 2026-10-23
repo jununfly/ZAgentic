@@ -1,4 +1,4 @@
-"""Chain-level fixture harness for the `zj-ui-*` closed loop (roadmap 1-6-5).
+"""Chain-level fixture harness for the `zj-ui-*` closed loop.
 
 A chain fixture is a checked-in `input.json` (a `chain_request`) / `expected.json`
 pair. It asserts the orchestrator's end-to-end guarantee: resolver-gated

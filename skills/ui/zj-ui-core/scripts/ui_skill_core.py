@@ -7,7 +7,7 @@ cheap to write in prose and impossible to falsify — "missing required field be
 idempotency key". Without a single deterministic implementation those claims decay
 into adjectives the moment someone edits a SKILL.md.
 
-Division of labour (frozen by roadmap 1-6-2 decision):
+Division of labour (frozen by roadmap decision):
 
 * an agent reads the human conversation and produces a **structured request**;
 * this module never parses natural language — it validates, refuses, preserves and
