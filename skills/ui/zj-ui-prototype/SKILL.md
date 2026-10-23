@@ -4,11 +4,10 @@ description: >-
   S6 BUILD：从 ui-flow/v1 生成可交互的本地 preview 或实现切片，只用 catalog 内组件；
   任何代码执行、网络、凭据、远程写回都先出 effect intent，经 policy / approval / sandbox 才执行。
   Use when flow 已成型，需要把人能看见、能点的 preview 做出来，而不是直接改生产代码。
-  已实现于 1-6-3（run_prototype，确定性实现见 ui_stages.py）。
+  确定性实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_prototype`。
 argument-hint: "<ui-flow/v1 路径与 preview 输出目录>"
 metadata:
   status: implemented
-  implemented_in: 1-6-3
 source: zagentic
 ---
 
@@ -16,7 +15,7 @@ source: zagentic
 
 S6 · BUILD · `emit`（只产出显式声明的非 canonical 产物 `preview`）
 
-> **状态：已实现（1-6-3）。** capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
+> capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
 > 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_prototype`（复用
 > `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
 > `tests/ui-agent-skills/fixtures/skills/FF-PROTO-*` 验收。
@@ -48,7 +47,7 @@ S6 · BUILD · `emit`（只产出显式声明的非 canonical 产物 `preview`�
   ],
   "dependencies": [
     "S5 revision",
-    "policy → approval → sandbox lease → executor 单入口（1-4-2）"
+    "policy → approval → sandbox lease → executor 单入口"
   ],
   "required_capabilities": ["local-preview-runtime", "effect-intent-generator"],
   "stop_conditions": [
@@ -66,7 +65,7 @@ S6 · BUILD · `emit`（只产出显式声明的非 canonical 产物 `preview`�
 ## 职责与边界
 
 `owner_scope=emit`：本 skill **不拥有任何 canonical artifact 的写锁**。`writes` 里声明的
-`preview` 是 1-3-1 §1.3 允许显式声明的非 canonical 产物，不是 schema 中的第六类 artifact。
+`preview` 是规范允许显式声明的非 canonical 产物，不是 schema 中的第六类 artifact。
 实现切片与 preview 都从这里出去；`UI-BRIEF.md` / `UI-DESIGN.md` / `ui-flow/v1` 一律只读。
 
 - **effect 不等于做事**：先出 `effect intent`（目标、参数摘要、权限、可撤销性、数据分类），

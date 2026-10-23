@@ -4,11 +4,10 @@ description: >-
   S8 BREAK：用版本化 fixture matrix 打断界面——长文本、空值、错误、极值、多语言，
   加 390 / 768 / 1440 三档视口，overflow、focus、恢复失败一律 FAIL 而非 warning。
   Use when preview 已过视觉复审，需要证明它在极端数据与窄屏下仍然可用。
-  已实现于 1-6-3（run_break，确定性实现见 ui_stages.py）。
+  确定性实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_break`。
 argument-hint: "<preview 路径与 fixture matrix 版本>"
 metadata:
   status: implemented
-  implemented_in: 1-6-3
 source: zagentic
 ---
 
@@ -16,7 +15,7 @@ source: zagentic
 
 S8 · BREAK · `write` owner of `verification receipt`（break cell）
 
-> **状态：已实现（1-6-3）。** capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
+> capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
 > 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_break`（复用
 > `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
 > `tests/ui-agent-skills/fixtures/skills/FF-BRK-*` 验收。
@@ -45,7 +44,7 @@ S8 · BREAK · `write` owner of `verification receipt`（break cell）
   ],
   "dependencies": [
     "S7 通过的 review record",
-    "fixture-manifest（1-5-1）"
+    "fixture-manifest"
   ],
   "required_capabilities": ["versioned-fixture-matrix", "responsive-runner"],
   "stop_conditions": [

@@ -1,4 +1,4 @@
-"""Storybook active local-verify adapter — B1 (roadmap 1-7-3).
+"""Storybook active local-verify adapter — B1 ().
 
 Offline, deterministic verification engine. It projects a canonical `ui-flow/v1`
 into the Storybook shape (a *story* = one `screen` × one `state`) and verifies

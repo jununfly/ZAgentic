@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-R-RCP-1 — UI Agent Skills verification receipt 契约与判定（1-5-4 交付物）
+R-RCP-1 — UI Agent Skills verification receipt 契约与判定
 
-职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md，节点 1-5-4 verification receipt）：
+职责（契约见源仓库 ui-agent-skills-verification-receipt.md）：
   定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine，
   且三者状态可审计。
 
@@ -17,7 +17,7 @@ R-RCP-1 — UI Agent Skills verification receipt 契约与判定（1-5-4 交付�
 - 判定与生成分离：`validate` / `check_freshness` / `validate_quarantine` 都是纯函数，
   不写盘、不重跑，供 1-9 paired run 与 1-10 rollout 复核直接调用。
 
-契约文档：docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md
+契约文档：源仓库 ui-agent-skills-verification-receipt.md
 
 CLI：
   verification_receipt.py build --lane <baseline|degraded> [--observations DIR]
@@ -49,7 +49,7 @@ RECEIPT_VERSION = "1.0"
 DEFAULT_TTL_DAYS = 14
 LANES = ("baseline", "degraded")
 
-# 14 段固定字段（dual-lane-runner.md §6 的字段清单）
+# 14 段固定字段（dual-lane-runner.md  的字段清单）
 REQUIRED_SECTIONS = (
     "claim", "checks", "risks", "fixtures", "env", "oracles", "thresholds",
     "command", "commit", "artifacts", "observed", "status", "reviewer", "expiry",
@@ -66,7 +66,7 @@ PRECEDENCE = ("FAIL", "HUMAN_REVIEW_REQUIRED", "QUARANTINED", "WARNING", "PASS")
 EXCLUDED_FROM_DENOMINATOR = ("QUARANTINED", "NOT_EXECUTED", "DEGRADED_SKIP")
 ATTRIBUTABLE_STATUSES = ("PASS", "WARNING", "FAIL", "HUMAN_REVIEW_REQUIRED")
 
-# 维度 -> oracle（verification-matrix §1；runner.VERIFICATION_CONFIG["oracles"] 是其全集）
+# 维度 -> oracle（verification-matrix ；runner.VERIFICATION_CONFIG["oracles"] 是其全集）
 ORACLE_BY_DIMENSION = {
     "dom_aria": ["static-assert"],
     "focus": ["interaction-sim"],
@@ -388,7 +388,7 @@ def _assemble(checks, *, lane, run_id, commit, artifacts, command, reviewer,
             "asserts": "cells 的 status 由 R-HAR-2 硬门禁对 observation bundle 判定",
             "not_asserts": [
                 "不证明 fixture 数据本身正确（fixture 由 1-6/1-7 提供）",
-                "不证明浏览器真实渲染（采集归 1-7-3）",
+                "不证明浏览器真实渲染（采集由浏览器引擎负责）",
                 "不覆盖 round_trip/migration/offline_recovery 的实测结论",
             ],
         },

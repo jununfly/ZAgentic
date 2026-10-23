@@ -1,7 +1,7 @@
 """Stage runners S1..S4 for the `zj-ui-*` chain.
 
 Each runner takes the **structured request** an agent already extracted from the
-conversation (roadmap 1-6-2 decision: the code never parses prose) and returns a
+conversation (roadmap decision: the code never parses prose) and returns a
 fixed-shape result. The runners are deliberately thin: all semantics that can be
 shared — schema, quartet, deny-first, commit, contrast — live in
 `ui_skill_core.py`, because two implementations of "unknown" is how the quartet
@@ -55,7 +55,7 @@ def run_brief(request: dict, store: dict | None = None) -> dict:
         )
 
     # Deny-first: an unregistered field is a typo or an unratified concept. Either
-    # way it must not be quietly dropped (1-2-2 §3).
+    # way it must not be quietly dropped (deny-first reply).
     problems = core.validate_document(core.BRIEF, candidate)
     if problems:
         return core.result(
@@ -126,7 +126,7 @@ def run_discover(request: dict, store: dict | None = None) -> dict:
         )
 
     # Budget is policy, not preference: once spent, the stage stops instead of
-    # asking a third question (1-3-1 §2 forbids "追问超过 2 次").
+    # asking a third question (contract forbids "追问超过 2 次").
     if asked > budget:
         return core.result(
             "zj-ui-discover",
@@ -463,7 +463,7 @@ def run_design_system(request: dict, store: dict | None = None) -> dict:
 # --------------------------------------------------------------------------- #
 
 def _flow_id_problems(states, actions, intents) -> list:
-    """Hard-fail gates for ui-flow/v1 (contract 1-2-3 §7): duplicate ids and
+    """Hard-fail gates for ui-flow/v1 (ui-flow/v1 contract): duplicate ids and
     dangling references mean a meaning was silently lost or two owners collided.
     """
     problems = []
@@ -646,7 +646,7 @@ def run_visual_review(request: dict, store: dict | None = None) -> dict:
             reason="必填缺口，转 unknown 后停止，零写入",
             questions=questions, unknown=unknown,
         )
-    # fingerprint 缺失或无法归因 → 隔离，不产出成功结论（契约 1-3 §3 不代签/不伪 PASS）。
+    # fingerprint 缺失或无法归因 → 隔离，不产出成功结论（契约 1-3  不代签/不伪 PASS）。
     fingerprint = candidate.get("fingerprint")
     if not (isinstance(fingerprint, dict) and core.is_attributable(fingerprint.get("hash"))):
         return core.result(
@@ -698,7 +698,7 @@ def run_break(request: dict, store: dict | None = None) -> dict:
             rejected=problems,
         )
     cells = candidate.get("cells") or []
-    # fixture matrix 缺失 = 没有断言 = 不得用"部分通过"冒充 PASS（契约 1-3 §3）。
+    # fixture matrix 缺失 = 没有断言 = 不得用"部分通过"冒充 PASS（契约 1-3 ）。
     if not cells:
         return core.result(
             "zj-ui-break", core.BLOCKED, writes=0,
@@ -751,7 +751,7 @@ def run_break(request: dict, store: dict | None = None) -> dict:
 
 VERIFY_CHAIN_FIELDS = ("claim", "threshold", "command", "commit", "fixture_hash", "env_hash", "artifact", "status")
 
-#: 毕业 gate 派生强制门禁（1-9-4 CONDITIONAL_ADOPTION 采纳前提，见 GRADUATION-DECISION.md）。
+#: 毕业 gate 派生强制门禁（采纳前提）。
 #: run_verify 在 request["enforce_gates"]=true 时要求 receipt 的 checks 覆盖全部 4 门禁且每门禁
 #: 至少一个 PASS——缺失即验证矩阵不完整（不生成成功 receipt），未通过即下游冻结。
 #: 默认关闭：通用 Storybook adapter 产出五维通用 checks（不含 gate 标记），门禁是叠加在
@@ -777,7 +777,7 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
     store = {} if store is None else store
     candidate = request.get("candidate") or {}
     input_revision = request.get("input_revision") or ""
-    # 毕业 gate 派生强制门禁（1-9-4 CONDITIONAL_ADOPTION 采纳前提）。默认关闭：通用
+    # 毕业 gate 派生强制门禁（ CONDITIONAL_ADOPTION 采纳前提）。默认关闭：通用
     # Storybook adapter 产出的五维通用 checks 不含 gate 标记；门禁是叠加在状态机/表单
     # UI 之上的验收层，由显式 enforce_gates=true 触发，避免误伤既有 adapter 路径。
     enforce_gates = bool(request.get("enforce_gates"))
@@ -811,7 +811,7 @@ def run_verify(request: dict, store: dict | None = None) -> dict:
         )
 
     checks = candidate.get("checks") or []
-    # 空证据不放行：checked==0 一律 HUMAN_REVIEW_REQUIRED，不判 PASS（1-5-3 框架兜底）。
+    # 空证据不放行：checked==0 一律 HUMAN_REVIEW_REQUIRED，不判 PASS（ 框架兜底）。
     if not checks:
         return core.result(
             "zj-ui-verify", core.HUMAN_REVIEW_REQUIRED, writes=0,

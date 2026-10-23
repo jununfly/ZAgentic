@@ -7,7 +7,7 @@ allowlist drifts. So this file asserts the things the roadmap nodes claim:
 1. eleven directories exist — one S0 code carrier plus one per stage — and the
    recursion actually returns them;
 2. every SKILL.md carries the frozen 16-field capability manifest, with exactly
-   the keys 1-3-1 declared — no extras, no missing, no renamed;
+   the keys the manifest contract declared — no extras, no missing, no renamed;
 3. the stage/precedence/fixture declarations stay mutually consistent, and the
    S0 carrier does **not** smuggle itself into the S1..S10 chain;
 4. a skill may only claim `implemented` when its engine and fixtures exist, so
@@ -48,7 +48,7 @@ EXPECTED_SKILLS = [
 
 ALL_SKILLS = [BASE_SKILL] + EXPECTED_SKILLS
 
-#: Skills whose deterministic implementation landed in 1-6-2. The rest are still
+#: Skills whose deterministic implementation landed in the UI delivery chain. The rest are still
 #: contract skeletons and say so; `SkeletonIsNotClaimedAsWorking` enforces both.
 IMPLEMENTED_SKILLS = {
     "zj-ui-brief",
@@ -266,7 +266,7 @@ class SkeletonIsNotClaimedAsWorking(unittest.TestCase):
                 frontmatter = frontmatter_of(skill)
                 self.assertIn("status: implemented", frontmatter)
                 body = read(UI_ROOT / skill / "SKILL.md")
-                self.assertIn("状态：已实现（1-6-", body)
+                self.assertIn("确定性实现", body)  # 节点无关的实现声明（原门禁硬编码路线图节点 1-6-，清理后改为节点无关标记）
                 self.assertIn("ui_stages.py", body)
                 self.assertNotIn("契约骨架", body)
 
@@ -275,9 +275,8 @@ class SkeletonIsNotClaimedAsWorking(unittest.TestCase):
             with self.subTest(skill=skill):
                 frontmatter = frontmatter_of(skill)
                 self.assertIn("status: contract-skeleton", frontmatter)
-                self.assertIn("implemented_in: 1-6-", frontmatter)
                 body = read(UI_ROOT / skill / "SKILL.md")
-                self.assertIn("状态：契约骨架（1-6-1）", body)
+                self.assertIn("状态：契约骨架", body)
                 self.assertIn("实现落地前不要把本 skill", body)
 
 

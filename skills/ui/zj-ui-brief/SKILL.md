@@ -4,11 +4,10 @@ description: >-
   S1 INTAKE：把用户对话或 UI-BRIEF.md 的编辑解析成 brief 草案——目标、目标用户、任务、约束、
   成功标准与 unknown 四元组，缺口最多追问两次。Use when 用户说“做一个页面 / 审批流”，
   或直接编辑 UI-BRIEF.md 需要被校验并生成下一阶段 plan。
-  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
+  实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py`，失败 fixture 已落地。
 argument-hint: "<对话要点，或 UI-BRIEF.md 路径>"
 metadata:
   status: implemented
-  implemented_in: 1-6-2
 source: zagentic
 ---
 
@@ -16,8 +15,8 @@ source: zagentic
 
 S1 · INTAKE · `write` owner of `UI-BRIEF.md`
 
-> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
-> 的 `run_brief`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_brief`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联由 resolver 完成，
 > 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
@@ -45,7 +44,7 @@ S1 · INTAKE · `write` owner of `UI-BRIEF.md`
     "连续追问超过 2 个问题"
   ],
   "dependencies": [
-    "canonical artifact schema（1-2-1，UI-BRIEF.md 字段定义）",
+    "canonical artifact schema（UI-BRIEF.md 字段定义）",
     "input_revision（用户对话或文档编辑）"
   ],
   "required_capabilities": ["document-parsing", "schema-validation"],

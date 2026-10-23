@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner（1-5-2 交付物）
+R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner
 
-职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md，节点 1-5-2 双 lane 验证）：
+职责（契约见源仓库 ui-agent-skills-dual-lane-runner.md）：
   实现 baseline 与 degraded 双 lane、固定 browser/font/network/clock/seed 并可复跑。
 
 设计原则：
-- 纯 stdlib，可在「无网络 / 无凭据 / 无外部设计工具」下运行（golden-fixtures-spec §8 fail-closed）。
+- 纯 stdlib，可在「无网络 / 无凭据 / 无外部设计工具」下运行（golden-fixtures-spec  fail-closed）。
 - 确定性：固定虚拟时钟、固定 RNG seed、network=replay、固定字体策略、config_hash 冻结断言配置。
 - 双 lane：
     * baseline  —— 全维度硬门禁；需要浏览器/adapter 才能执行真实 cell 断言。
@@ -16,10 +16,10 @@ R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner（1-5-2 交付物）
   NOT_EXECUTED / DEGRADED_SKIP，绝不输出假 pass（fail-closed）。
 - 可复跑：init / fingerprint 幂等，同输入两次运行得到相同 manifest_hash / env_hash / matrix_key。
 
-注意（已知延迟，非静默接受偏差，见节点 1-5-2 decide）：
+注意（已知延迟，非静默接受偏差，见契约 decide）：
 - browser_major 不在本仓库 Wave 0 harness 内捕获（无内置浏览器引擎），
-  延迟到 1-7-3（Storybook active adapter）。env_hash 当前基于 6 个 concrete 轴
-  + browser_major=PENDING@1-7-3 占位；1-7-3 回填真实 major 时按 revalidation 规则触发全量重验。
+  延迟到 （Storybook active adapter）。env_hash 当前基于 6 个 concrete 轴
+  + browser_major=PENDING@1-7-3 占位； 回填真实 major 时按 revalidation 规则触发全量重验。
 - 真实 fixture 数据文件（F-1..GF-11）由 1-6/1-7 落地；本 runner 仅就 fixture-manifest
   的元数据记录计算 manifest_hash，数据落地后须重算。
 
@@ -32,7 +32,7 @@ CLI：
   dual_lane_runner.py demo                           # 确定性控制自检（虚拟时钟 + seed）
 
 本会话执行方式：以 --print-only（默认）把计算结果输出到 stdout，由专用工具写回
-docs/designs/ui-agent-skills/*.json，规避工作区写沙箱；runner 自身仍含 write-back 逻辑，未来环境可直接落盘。
+源仓库 *.json，规避工作区写沙箱；runner 自身仍含 write-back 逻辑，未来环境可直接落盘。
 """
 
 from __future__ import annotations
@@ -46,11 +46,11 @@ import sys
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import hard_gates as hg  # noqa: E402  R-HAR-2（1-5-3 硬门禁）
+import hard_gates as hg  # noqa: E402  R-HAR-2
 import ui_skill_core as core  # noqa: E402  single canonical/hash source (F6)
 
 # --------------------------------------------------------------------------- #
-# 固定确定性常量（1-5-2 退出判据：固定 browser/font/network/clock/seed）
+# 固定确定性常量（ 退出判据：固定 browser/font/network/clock/seed）
 # --------------------------------------------------------------------------- #
 
 # 固定 RNG seed —— 保证截图/布局随机性可复现
@@ -59,20 +59,20 @@ SEED = 20261020
 # 固定虚拟时钟 epoch —— 无墙钟依赖（clock_source = fixed virtual time）
 VIRTUAL_EPOCH_ISO = "2026-01-01T00:00:00+00:00"
 
-# 字体策略（env-fingerprint §1，2026-10-20 定值，SIL OFL 1.1，@fontsource 自托管锁版本）
+# 字体策略（env-fingerprint ，2026-10-20 定值，SIL OFL 1.1，@fontsource 自托管锁版本）
 FONT_AXIS_VALUE = "noto-sans-sc+inter+jetbrains-mono(conditional)"
 
-# 网络模式（env-fingerprint §1，R-MOCK-1/R-RISK-5）
+# 网络模式（env-fingerprint ）
 NETWORK_MODE = "replay"
 
-# 浏览器主版本：本仓库 Wave 0 无内置浏览器引擎，延迟到 1-7-3 捕获真实 major
+# 浏览器主版本：本仓库 Wave 0 无内置浏览器引擎，延迟到  捕获真实 major
 BROWSER_MAJOR = "PENDING@1-7-3"
 
-# Node 运行时约束（env-fingerprint §1，R-ENV-1）：目标 EV 运行时（Next.js 14）
+# Node 运行时约束（env-fingerprint ）：目标 EV 运行时（Next.js 14）
 NODE_VERSION = ">=18.17"
 
-# 固定断言配置（env-fingerprint §1 config_hash 来源）
-# v0.2（1-5-3）：viewport 集对齐 1-3 capability manifest（S8 FF-BRK 必测 390/768/1440），
+# 固定断言配置（env-fingerprint  config_hash 来源）
+# v0.2：viewport 集对齐 1-3 capability manifest（S8 FF-BRK 必测 390/768/1440），
 # 阈值并入 hard_gates.GATE_THRESHOLDS（单一事实源），config_hash 随之重算。
 VERIFICATION_CONFIG = {
     "version": "0.2",
@@ -88,13 +88,13 @@ VERIFICATION_CONFIG = {
     ],
 }
 
-# 冻结验证维度（verification-matrix §1）
+# 冻结验证维度（verification-matrix ）
 DIMENSIONS = [
     "dom_aria", "focus", "contrast", "overflow", "responsive", "motion",
     "state", "round_trip", "migration", "offline_recovery",
 ]
 
-# 冻结 cell 门禁（verification-matrix §2）：dimension -> {form, adapter, contract}
+# 冻结 cell 门禁（verification-matrix ）：dimension -> {form, adapter, contract}
 # A=适用并硬门禁, W=适用仅 warning, -=不适用
 CELL_GATE = {
     "dom_aria":          {"form": "A", "adapter": "A", "contract": "A"},
@@ -109,7 +109,7 @@ CELL_GATE = {
     "offline_recovery":  {"form": "-", "adapter": "-", "contract": "A"},
 }
 
-# 门禁是否可执行由「有没有 observation bundle」决定（1-5-3）：不再维护维度级 adapter 依赖表，
+# 门禁是否可执行由「有没有 observation bundle」决定：不再维护维度级 adapter 依赖表，
 # 因为同一维度在不同 class/fixture 下的证据来源不同；缺证据一律 HUMAN_REVIEW_REQUIRED。
 
 
@@ -170,7 +170,7 @@ def _find_repo_root(start: str):
 
 
 def default_plans_dir() -> str:
-    """Locate <repo>/docs/designs/ui-agent-skills.
+    """Locate 源仓库契约目录（ui-agent-skills 计划目录，不随 skill 安装）.
 
     Installed skills live outside the project (e.g. ~/.claude/skills/zj-ui-core),
     so this file's location cannot identify the target repository -- the operating
@@ -186,7 +186,7 @@ def default_plans_dir() -> str:
         if root is not None:
             return os.path.join(root, "docs", "designs", "ui-agent-skills")
     raise RuntimeError(
-        "无法定位 ui-agent-skills 计划目录（应为 <repo>/docs/designs/ui-agent-skills）："
+        "无法定位 ui-agent-skills 计划目录（应为源仓库 <repo>/ui-agent-skills 计划目录，不随 skill 安装）："
         "已从 $PWD(%s) 与脚本位置(%s) 向上查找 .git 均未命中；请显式传入 --plans DIR。"
         % (bases[0], bases[1])
     )
@@ -253,7 +253,7 @@ def init_fixtures(plans_dir: str, write: bool = False) -> dict:
 # --------------------------------------------------------------------------- #
 
 def build_axes(env_doc: dict, cfg_hash: str) -> dict:
-    """回填确定性可固定的轴；保留 PENDING 占位（browser_major 延迟到 1-7-3）。"""
+    """回填确定性可固定的轴；保留 PENDING 占位（browser_major 延迟到 ）。"""
     axes = env_doc.get("axes", {})
     fixed = {
         "browser_major": BROWSER_MAJOR,
@@ -273,7 +273,7 @@ def build_axes(env_doc: dict, cfg_hash: str) -> dict:
 
 
 def env_hash_from_axes(axes: dict) -> str:
-    # 与 env-fingerprint §2 固定顺序一致
+    # 与 env-fingerprint  固定顺序一致
     order = ["browser_major", "node_version", "font",
              "network_mode", "clock_source", "seed", "config_hash"]
     joined = "|".join(str(axes[k]["value"]) for k in order)
@@ -308,9 +308,9 @@ def fingerprint(plans_dir: str, write: bool = False) -> dict:
     env_doc["note"] = (
         "机器可读环境指纹（config v" + VERIFICATION_CONFIG["version"] + "）。确定性轴"
         "（network_mode/clock_source/seed/config_hash/font/node_version）由 R-HAR-1 捕获并冻结；"
-        "1-5-3 将 viewport 集对齐 capability manifest（390/768/1440）并重算 config_hash/env_hash/"
+        " 将 viewport 集对齐 capability manifest（390/768/1440）并重算 config_hash/env_hash/"
         "matrix_key。browser_major=" + BROWSER_MAJOR + "（本仓库 Wave 0 无内置浏览器引擎，"
-        "延迟到 1-7-3 捕获真实 major，届时按 revalidation 规则触发全量重验）。"
+        "延迟到  捕获真实 major，届时按 revalidation 规则触发全量重验）。"
     )
 
     if write:
@@ -363,7 +363,7 @@ def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
             reason = "degraded lane 不执行视觉/adapter 门禁，离线恢复归 1-6/1-9"
         elif dim not in hg.GATES:
             status = "NOT_EXECUTED"
-            reason = "门禁不在 1-5-3 口径（round_trip/migration/offline_recovery 属 1-6/1-9）"
+            reason = "门禁不在  口径（round_trip/migration/offline_recovery 属 1-6/1-9）"
         else:
             class_fixtures = [f for f in fixtures if f.get("class") == cls]
             gate_results = []
@@ -388,7 +388,7 @@ def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
                     gate_results.append(hg.missing_fixtures_result(dim, missing, cls))
                 detail["missing_fixtures"] = missing
                 detail["findings"] = [f for r in gate_results for f in r["findings"]]
-                # checked>0 是 1-5-4 收据判"非空转"的唯一凭据（RCP-A-05），必须在 runner 就留下
+                # checked>0 是  收据判"非空转"的唯一凭据（RCP-A-05），必须在 runner 就留下
                 detail["checked"] = sum(int(r.get("checked") or 0) for r in gate_results)
                 status = hg.aggregate(gate_results)
                 if missing:
@@ -419,7 +419,7 @@ def run_lane(lane: str, plans_dir: str, observations_dir: str = None) -> dict:
         "cells": results,
         "note": ("fail-closed：仅对存在 observation bundle 的 cell 执行硬门禁；缺证据记 "
                  "HUMAN_REVIEW_REQUIRED，绝不以 NOT_EXECUTED 或部分覆盖冒充 PASS。"
-                 "本 receipt 仍为结构占位，完整字段由 1-5-4 定稿。"),
+                 "本 receipt 仍为结构占位，完整字段由  定稿。"),
     }
     return receipt
 
@@ -480,11 +480,11 @@ def main(argv=None) -> int:
     ap.add_argument("cmd",
                     choices=["init", "fingerprint", "plan", "run", "selfcheck", "demo"])
     ap.add_argument("--plans", default=None,
-                    help="docs/designs/ui-agent-skills 目录；缺省时惰性推导（先 $PWD 再脚本位置向上找 .git），"
+                    help="源仓库 ui-agent-skills 计划目录；缺省时惰性推导（先 $PWD 再脚本位置向上找 .git），"
                          "定位不到即报错而非返回 / 下的假路径")
     ap.add_argument("--lane", choices=["baseline", "degraded"], default="baseline")
     ap.add_argument("--write", action="store_true",
-                    help="将计算结果写回 docs/designs/ui-agent-skills/*.json（本会话默认 print-only）")
+                    help="将计算结果写回源仓库 *.json（不随 skill 安装，本会话默认 print-only）")
     ap.add_argument("--observations", default=None,
                     help="observation bundle 根目录（<fixture_id>/<viewport>.json）；"
                          "缺省时 baseline 全部 NOT_EXECUTED（fail-closed）")

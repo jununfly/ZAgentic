@@ -5,11 +5,10 @@ description: >-
   产出带完整链路字段的 verification receipt 并聚合状态；receipt 缺链路、用 baseline 冒充新通过、
   把 stale 基线当当前证据，都不生成成功 receipt。Use when 视觉复审与极限测试都过了，
   需要一次可归因、可重放的自动化验证结论。
-  已实现于 1-6-4（run_verify，确定性实现见 ui_stages.py）。
+  确定性实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_verify`。
 argument-hint: "<preview 路径、verification matrix 与 environment fingerprint>"
 metadata:
   status: implemented
-  implemented_in: 1-6-4
 source: zagentic
 ---
 
@@ -17,7 +16,7 @@ source: zagentic
 
 S9 · VERIFY · `write` owner of `verification receipt`（a11y / interaction / motion cell）
 
-> **状态：已实现（1-6-4）。** capability manifest、输入输出、禁止事项、停止条件与失败
+> capability manifest、输入输出、禁止事项、停止条件与失败
 > fixture id 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_verify`
 > （复用 `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
 > `tests/ui-agent-skills/fixtures/skills/FF-VER-*` 验收。
@@ -34,8 +33,8 @@ S9 · VERIFY · `write` owner of `verification receipt`（a11y / interaction / m
   "reads": ["preview", "review record"],
   "input": [
     {"name": "preview / implementation slice", "type": "artifact", "required": "yes", "source": "S6"},
-    {"name": "verification matrix", "type": "object", "required": "yes", "source": "1-5-1"},
-    {"name": "environment fingerprint", "type": "object", "required": "yes", "source": "1-5-2"},
+    {"name": "verification matrix", "type": "object", "required": "yes", "source": "contract"},
+    {"name": "environment fingerprint", "type": "object", "required": "yes", "source": "contract"},
     {"name": "oracle_version", "type": "string", "required": "yes", "source": "runner"}
   ],
   "output": [
@@ -53,8 +52,8 @@ S9 · VERIFY · `write` owner of `verification receipt`（a11y / interaction / m
   ],
   "dependencies": [
     "S7 与 S8 完成",
-    "Storybook active adapter（B1，1-7-3，已实现：skills/ui/zj-ui-core/scripts/adapters/storybook_adapter.py，确定性引擎产出 checks 后由本 skill 聚合 receipt）",
-    "verification receipt 契约（1-5-4）"
+    "Storybook active adapter（B1；实现见 skills/ui/zj-ui-core/scripts/adapters/storybook_adapter.py，确定性引擎产出 checks 后由本 skill 聚合 receipt）",
+    "verification receipt 契约"
   ],
   "required_capabilities": [
     "dom-aria-check",
@@ -89,7 +88,7 @@ receipt 的每一格都要能回答"谁跑的、跑的是什么、环境是哪�
 
 - **baseline 不等于通过**：baseline 只证明"和上次一样"，不证明"这次对了"。
 - **stale 要显式**：fingerprint 变了，旧证据自动作废为 `stale / revalidation_required`。
-- **空证据不放行**：`checked==0` 一律 `HUMAN_REVIEW_REQUIRED`，不判 PASS（1-5-3 的框架级兜底）。
+- **空证据不放行**：`checked==0` 一律 `HUMAN_REVIEW_REQUIRED`，不判 PASS（框架级兜底）。
 
 ## 停止条件与 Human gate
 
@@ -103,16 +102,16 @@ receipt 的每一格都要能回答"谁跑的、跑的是什么、环境是哪�
 - `FF-VER-02` 冲突：a11y blocker → 无成功 receipt，下游冻结。
 - `FF-VER-03` 失败：fingerprint mismatch → `STALE`，旧基线只作 fallback。
 
-## 强制门禁（毕业 gate 派生，1-9-4 CONDITIONAL adoption 条件）
+## 强制门禁（毕业 gate 派生）
 
-1-9-4 毕业 gate 裁定（zj 签署，2026-10-22，CONDITIONAL_ADOPTION）的采纳前提：以下 4 条硬门禁在本 skill 成为强制验证项。`run_verify` 已实现门禁强制（见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `REQUIRED_VERIFY_GATES` + `enforce_gates` 分支）：当 verification request 带 `enforce_gates=true` 且 checks 含 `gate` 标记时，缺覆盖或任一门禁非 PASS → BLOCKED、不生成成功 receipt。通用 Storybook adapter 产出五维通用 checks（不含 gate 标记），故默认不触发门禁；状态机/表单 UI 的验收须以 `enforce_gates=true` + 4 条 gate-tagged checks 叠加验收。任一门禁 fail → 不生成成功 receipt，下游冻结。
+以下 4 条硬门禁在本 skill 成为强制验证项。`run_verify` 已实现门禁强制（见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `REQUIRED_VERIFY_GATES` + `enforce_gates` 分支）：当 verification request 带 `enforce_gates=true` 且 checks 含 `gate` 标记时，缺覆盖或任一门禁非 PASS → BLOCKED、不生成成功 receipt。通用 Storybook adapter 产出五维通用 checks（不含 gate 标记），故默认不触发门禁；状态机/表单 UI 的验收须以 `enforce_gates=true` + 4 条 gate-tagged checks 叠加验收。任一门禁 fail → 不生成成功 receipt，下游冻结。
 
-- **G-V1 state-transition UI reachability**：契约层状态机的每个合法迁移都必须有对应 UI 可达入口/控件；状态可达但 UI 无入口 = 验证失败。（cohort §6 盲点#1）
-- **G-V2 no-fake-success / no-silent-data-loss**：任何 `error`/`failed` 终态不得渲染或汇报为 `success`；持久化/提交失败必须显式报错，禁止静默吞掉空成功。（cohort §6 盲点#2）
-- **G-V3 illegal-transition return checked**：非法/未定义迁移的返回值不得被静默丢弃，必须显式校验并拒绝。（cohort §6 盲点#3）
-- **G-V4 required-input aria-describedby linkage**：每个必填输入在验证失败时必须通过 `aria-describedby` 关联错误提示区域；缺失关联 = 验证失败（无障碍）。（渲染层 A3/A4：direct 0/3、skills 2/3 缺失）
+- **G-V1 state-transition UI reachability**：契约层状态机的每个合法迁移都必须有对应 UI 可达入口/控件；状态可达但 UI 无入口 = 验证失败。
+- **G-V2 no-fake-success / no-silent-data-loss**：任何 `error`/`failed` 终态不得渲染或汇报为 `success`；持久化/提交失败必须显式报错，禁止静默吞掉空成功。
+- **G-V3 illegal-transition return checked**：非法/未定义迁移的返回值不得被静默丢弃，必须显式校验并拒绝。
+- **G-V4 required-input aria-describedby linkage**：每个必填输入在验证失败时必须通过 `aria-describedby` 关联错误提示区域；缺失关联 = 验证失败（无障碍）。
 
-> 派生来源：`docs/designs/ui-agent-skills/DECISIONS-RISKS.md`（附录 A 毕业裁定底表；原 `skills-outputs/ui-agent-skills/paired-runs/v1/GRADUATION-DECISION.md` 已随临时容器删除并于 2026-10-22 内联至此）。一旦落地，direct 的 0/3 与 skills 的 1/3 漏检都被硬拦截，质量差异在验证层被抹平，采纳决策回归成本权衡。
+> 这些门禁的判定口径源自本仓库的 UI Agent Skills 契约（源仓库维护，不随 skill 安装）。一旦落地，direct 与 skills 两条链路的漏检都被硬拦截，质量差异在验证层被抹平。
 
 ## 交接
 
