@@ -1,0 +1,198 @@
+{
+  "$schema": "https://zagentic.local/ontology/v1",
+  "ontology": "ZAgentic Unified Codebase Documentation Ontology",
+  "version": "2.0.0",
+  "generated_for": "docs/ — the codebase documentation system of jununfly/ZAgentic",
+  "description": "统一本体（实体/属性/关联/规则）+ 知识图谱主干，服务于 docs/ 文档化系统的四个工程目标：(1) 语义统一，消除歧义; (2) 支持推理与约束校验; (3) 让 Agent 与 Human 更容易懂业务; (4) 知识可复用、可设计、增删改保持高新鲜度。本 schema 是【单一真相源】，含两个 concern 模块：Module G（治理层，文档系统自身的分类/权威/生命周期契约，由可移植技能 zj-docs-ontology 实现）与 Module P（产品域层，ZAgentic 作为技能集合产品的领域模型，实现位于 docs/ontology/）。实体按 module 标注归属；校验器 docs/ontology/validate.py 一次性执行 G+P 全部可校验规则（Module G 的 MAP_* 机械检查由可移植技能脚本组合进来）。",
+  "modules": {
+    "G_governance": {
+      "name": "治理层 (Documentation Governance)",
+      "purpose": "文档系统自身的分类、权威与生命周期契约：doc-kind 词表、authority 层级、生命周期类别、doc-map 绑定契约。",
+      "owner": "skills/codebase-docs/zj-docs-ontology (可移植，装到任意代码库)",
+      "source": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md"
+    },
+    "P_product": {
+      "name": "产品域层 (Product Domain)",
+      "purpose": "ZAgentic 作为技能集合产品的领域模型：平台/桶/技能/管道/校验器，承载业务语义。",
+      "owner": "docs/ontology/ (ZAgentic 本地)",
+      "source": "docs/ontology/ONTOLOGY.md"
+    }
+  },
+  "entities": {
+    "Platform": {
+      "module": "P_product",
+      "kind": "code-domain",
+      "description": "ZAgentic 技能所发布的 Agent 平台。",
+      "attributes": {
+        "id": {"type": "string", "required": true, "description": "稳定标识符，如 claude / codex / workbuddy"},
+        "discovery": {"type": "string", "description": "平台如何解析 SKILL.md（标准递归扫描）"}
+      }
+    },
+    "SkillBucket": {
+      "module": "P_product",
+      "kind": "code-domain",
+      "description": "公共或个人技能分组目录（skills/<bucket>/ 或 personal/）。",
+      "attributes": {
+        "id": {"type": "string", "required": true, "description": "桶名，如 engineering / ui / personal"},
+        "kind": {"type": "enum", "enum": ["public", "personal"], "required": true},
+        "responsibility": {"type": "string", "description": "该桶拥有的职责边界"},
+        "readme_index": {"type": "boolean", "description": "是否在本桶 README.md 有一行注册"},
+        "top_level_registration": {"type": "boolean", "description": "是否在仓库根 README.md 有一行注册"}
+      }
+    },
+    "Skill": {
+      "module": "P_product",
+      "kind": "code-domain",
+      "description": "单个技能（SKILL.md + 辅助脚本）。",
+      "attributes": {
+        "id": {"type": "string", "required": true, "description": "技能名（目录名）"},
+        "bucket": {"type": "string", "required": true, "description": "所属桶"},
+        "source_path": {"type": "string", "required": true},
+        "name": {"type": "string", "description": "frontmatter.name"},
+        "description": {"type": "string", "description": "frontmatter.description"},
+        "source": {"type": "string", "description": "frontmatter.source"},
+        "discoverable": {"type": "boolean", "description": "是否满足 skill-frontmatter-schema 且被注册"}
+      }
+    },
+    "Pipeline": {
+      "module": "P_product",
+      "kind": "code-domain",
+      "description": "安装/校验/文档治理流程。",
+      "attributes": {
+        "id": {"type": "string", "required": true},
+        "stage": {"type": "string"},
+        "enforces": {"type": "string", "description": "其强制的规则或能力边界"}
+      }
+    },
+    "Validator": {
+      "module": "P_product",
+      "kind": "code-domain",
+      "description": "检查脚本（如 validate-zagentic-plugin.py、docs/ontology/validate.py）。",
+      "attributes": {
+        "id": {"type": "string", "required": true},
+        "enforces_rule": {"type": "string"}
+      }
+    },
+    "DocMap": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "文档地图本身（docs/README.md）。它把 authority-id 绑定到各页；doc-map 自身是索引，不持有 primary authority-id。",
+      "attributes": {
+        "id": {"type": "string", "required": true, "description": "相对 docs/ 的路径，恒为 README.md"},
+        "doc_kind": {"type": "enum", "enum": ["doc-map"], "required": true, "description": "frontmatter.doc-kind = doc-map"},
+        "map_origin": {"type": "string", "description": "地图来源：explicit-pointer / default / candidate / greenfield / ambiguous"}
+      }
+    },
+    "DocPage": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "docs/ 下任意一篇文档（doc-map 除外），按 doc-kind 区分语义角色。",
+      "attributes": {
+        "id": {"type": "string", "required": true, "description": "相对 docs/ 的路径"},
+        "doc_kind": {"type": "string", "description": "frontmatter.doc-kind（见 governance-contract 词表）"},
+        "authority": {"type": "enum", "enum": ["primary", "supporting", "historical", "process", "external"], "description": "frontmatter.authority"},
+        "authority_id": {"type": "string", "description": "稳定权威标识；primary 页拥有，doc-map 不拥有"},
+        "bounded_question": {"type": "string", "description": "该页回答的单一有界问题"},
+        "category": {"type": "string", "description": "所在目录，如 architecture / designs / zj-adr"}
+      }
+    },
+    "ArchitectureView": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "架构手册中回答单一有界问题的主视图页（authority: primary）。",
+      "attributes": {
+        "authority_id": {"type": "string", "required": true},
+        "bounded_question": {"type": "string", "required": true},
+        "owns_rule": {"type": "string", "description": "该视图独占拥有的那条持久规则"}
+      }
+    },
+    "Design": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "设计权威页（持有规范/契约/决策）。",
+      "attributes": {
+        "authority_id": {"type": "string", "required": true},
+        "bounded_question": {"type": "string", "required": true}
+      }
+    },
+    "ADR": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "已接受的不易逆转决策记录（历史权威，非现行权威）。",
+      "attributes": {
+        "id": {"type": "string", "required": true},
+        "status": {"type": "enum", "enum": ["accepted", "proposed", "superseded"], "required": true},
+        "authority_id": {"type": "string", "description": "ADR 不得拥有 authority-id（仅主视图/设计拥有）"}
+      }
+    },
+    "Agreement": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "方法论单一事实源（SSOT），约束跨文档方法决策。",
+      "attributes": {
+        "authority_id": {"type": "string", "required": true},
+        "bounded_question": {"type": "string", "required": true}
+      }
+    },
+    "CapabilitySpec": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "产品或能力边界规格（如 codebase-docs-capability）。",
+      "attributes": {
+        "authority_id": {"type": "string", "required": true},
+        "boundary": {"type": "string"}
+      }
+    },
+    "Contract": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "ui-agent-skills 子系统内机器可读的契约/清单/账本/租赁/决策记录等。",
+      "attributes": {
+        "id": {"type": "string", "required": true},
+        "schema_path": {"type": "string", "description": "对应的 .schema.json（若有）"},
+        "immutable": {"type": "boolean", "description": "是否为不可变黄金资产（契约测试钉死）"},
+        "gate": {"type": "string", "description": "毕业闸门前必须满足的约束"}
+      }
+    },
+    "EvidenceSurface": {
+      "module": "G_governance",
+      "kind": "doc-artifact",
+      "description": "临时证据面（research/、skills-outputs/），已被治理移除，不进入持久文档生命周期。",
+      "attributes": {
+        "id": {"type": "string", "required": true}
+      }
+    }
+  },
+  "relations": [
+    {"id": "docMapBinds", "domain": "DocMap", "range": "DocPage", "cardinality": "exactly-one-per-id", "module": "G_governance", "description": "doc-map 把每个 authority-id 绑定到恰好一页；同一 id 绑多页是机械失败（MAP_AUTHORITY_CONFLICT）。绑定是事实而非解读。"},
+    {"id": "classifies", "domain": "DocPage", "range": "string", "cardinality": "exactly-one", "module": "G_governance", "description": "DocPage 由 doc_kind 分类（亦建模为关联以便推理）。"},
+    {"id": "belongsTo", "domain": "Skill", "range": "SkillBucket", "cardinality": "exactly-one", "module": "P_product", "inverse": "contains", "description": "技能必须且只能属于一个桶"},
+    {"id": "installedTo", "domain": "SkillBucket", "range": "Platform", "cardinality": "many", "module": "P_product", "description": "公共桶经 link 脚本安装到各平台 ~/.<platform>/skills"},
+    {"id": "discoveredBy", "domain": "Skill", "range": "Platform", "cardinality": "many", "module": "P_product", "description": "平台经递归扫描发现 SKILL.md"},
+    {"id": "routesTo", "domain": "ArchitectureView", "range": "DocPage", "cardinality": "many", "module": "G_governance", "description": "架构视图把读者路由到设计/ADR/能力规格，不重述"},
+    {"id": "references", "domain": "Design", "range": "ADR", "cardinality": "many", "module": "G_governance", "description": "设计引用 ADR 作为历史依据"},
+    {"id": "governs", "domain": "Design", "range": "SkillBucket", "cardinality": "many", "module": "G_governance", "description": "设计约束某桶的行为边界"},
+    {"id": "conformsTo", "domain": "Skill", "range": "Contract", "cardinality": "many", "module": "G_governance", "description": "ui 技能需符合对应契约"},
+    {"id": "validatedBy", "domain": "Contract", "range": "Validator", "cardinality": "many", "module": "P_product"},
+    {"id": "uses", "domain": "Pipeline", "range": "Validator", "cardinality": "many", "module": "P_product"},
+    {"id": "constrains", "domain": "CapabilitySpec", "range": "Pipeline", "cardinality": "many", "module": "G_governance"},
+    {"id": "supersedes", "domain": "ADR", "range": "ADR", "cardinality": "many", "module": "G_governance", "description": "ADR 之间的取代关系；ADR 绝不 supersedes 现行架构/规则"}
+  ],
+  "rules": [
+    {"id": "rule.G1-docmap-binding", "module": "G_governance", "statement": "doc-map 把每个 authority-id 绑定到恰好一页；同一 id 绑多页是机械失败（MAP_AUTHORITY_CONFLICT），命令 exit 非 0。", "checkable": true, "check": "governance_module", "source": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md"},
+    {"id": "rule.G2-doc-kind-authority-declared", "module": "G_governance", "statement": "每篇文档（doc-map 除外）在 frontmatter 声明 doc-kind 与 authority（取 primary/supporting/historical/process/external）。", "checkable": true, "check": "governance_module", "source": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md"},
+    {"id": "rule.G3-map-pointer-unique", "module": "G_governance", "statement": "仓库根仅允许一个 docs-map 指针（AGENTS.md/CLAUDE.md/README.md 中 docs-map: 指向唯一文件）；多指针或缺失为歧义/绿场提案。", "checkable": true, "check": "governance_module", "source": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md"},
+    {"id": "rule.one-owner-per-rule", "module": "P_product", "statement": "一条持久规则恰好拥有一个所有者文档；其他页只链接不重述。", "checkable": true, "check": "one_owner_per_rule", "source": "docs/architecture/README.md#Boundaries"},
+    {"id": "rule.stable-authority-id", "module": "G_governance", "statement": "每一个主视图/设计/协议在发布前必须声明稳定 authority-id；重命名须保留 authority-id 以保证校验器读取稳定。", "checkable": true, "check": "authority_id_present_for_primary", "source": "docs/architecture/README.md#Boundaries"},
+    {"id": "rule.authority-id-unique", "module": "G_governance", "statement": "authority-id 在全部文档中全局唯一（declaration 层由 zj-docs-architecture 强制，此处做全局唯一兜底）。", "checkable": true, "check": "authority_id_unique", "source": "docs/ontology/ONTOLOGY.md"},
+    {"id": "rule.adr-not-authority", "module": "G_governance", "statement": "ADR 是历史权威，绝不取代现行架构或现行规则；ADR 不得拥有 authority-id。", "checkable": true, "check": "adr_not_authority", "source": "docs/architecture/README.md"},
+    {"id": "rule.bucket-reorg-is-adr-bearing", "module": "P_product", "statement": "重组/增删桶是 ADR 承载的变更（必须有对应 ADR）。", "checkable": true, "check": "bucket_reorg_adr_bearing", "source": "docs/architecture/ta-zagentic-overview.md#Boundaries"},
+    {"id": "rule.personal-tree-excluded", "module": "P_product", "statement": "personal/ 树被排除在插件发现、根 README、桶索引之外。", "checkable": true, "check": "personal_tree_excluded", "source": "docs/architecture/ta-zagentic-overview.md"},
+    {"id": "rule.every-skill-discoverable", "module": "P_product", "statement": "每个公共技能必须有满足 skill-frontmatter-schema 的 frontmatter，并在其桶 README 与根 README 注册。", "checkable": true, "check": "skill_discoverable", "source": "docs/designs/zj-skill-frontmatter-schema.md"},
+    {"id": "rule.doc-kind-declared", "module": "G_governance", "statement": "每篇文档在 frontmatter 声明 doc-kind 与 authority（doc-map 除外）。", "checkable": true, "check": "doc_kind_declared", "source": "docs/architecture/ta-*.md"},
+    {"id": "rule.no-dangling-reference", "module": "P_product", "statement": "每条关联的端点都必须解析到存在的实体实例（无悬挂引用）。", "checkable": true, "check": "no_dangling_reference", "source": "docs/ontology/ONTOLOGY.md"},
+    {"id": "rule.bucket-inventory-consistent", "module": "P_product", "statement": "文档声明的桶清单必须与真实 skills/ 代码树一致（保鲜核心校验）。", "checkable": true, "check": "bucket_inventory_consistent", "source": "docs/architecture/ta-zagentic-overview.md vs skills/"},
+    {"id": "rule.contract-before-graduation", "module": "G_governance", "statement": "ui-agent-skills 的契约在毕业闸门之前必须满足。", "checkable": false, "check": null, "source": "docs/designs/ui-agent-skills/DECISIONS-RISKS.md"},
+    {"id": "rule.immutable-fixtures", "module": "G_governance", "statement": "黄金夹具是不可变资产（契约测试钉死），删除即炸 CI。", "checkable": false, "check": null, "source": "docs/designs/ui-agent-skills/ui-agent-skills-golden-fixtures-spec.md"}
+  ]
+}
