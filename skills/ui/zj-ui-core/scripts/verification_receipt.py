@@ -3,7 +3,7 @@
 """
 R-RCP-1 — UI Agent Skills verification receipt 契约与判定（1-5-4 交付物）
 
-职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md，节点 1-5-4 verification receipt）：
+职责（契约见源仓库 docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md，不随 skill 安装）：
   定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine，
   且三者状态可审计。
 
@@ -17,7 +17,7 @@ R-RCP-1 — UI Agent Skills verification receipt 契约与判定（1-5-4 交付�
 - 判定与生成分离：`validate` / `check_freshness` / `validate_quarantine` 都是纯函数，
   不写盘、不重跑，供 1-9 paired run 与 1-10 rollout 复核直接调用。
 
-契约文档：docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md
+契约文档：源仓库 docs/designs/ui-agent-skills/ui-agent-skills-verification-receipt.md（不随 skill 安装）
 
 CLI：
   verification_receipt.py build --lane <baseline|degraded> [--observations DIR]

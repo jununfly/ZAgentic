@@ -4,11 +4,10 @@ description: >-
   S5 FLOW：维护 ui-flow/v1 的六义（screen、component、state、action、intent、acceptance），
   semantic round-trip 必须通过，unknown 四元组必须保留；丢义、双写 owner、unknown 未保留都是
   hard fail。Use when 设计系统已定，需要把界面结构、状态迁移、动作与意图写成可重放的 flow。
-  已实现于 1-6-3（run_flow，确定性实现见 ui_stages.py）。
+  确定性实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_flow`。
 argument-hint: "<UI-DESIGN.md 路径与目标 ui-flow/v1 输出路径>"
 metadata:
   status: implemented
-  implemented_in: 1-6-3
 source: zagentic
 ---
 
@@ -16,7 +15,7 @@ source: zagentic
 
 S5 · FLOW · `write` owner of `ui-flow/v1`
 
-> **状态：已实现（1-6-3）。** capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
+> capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
 > 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_flow`（复用
 > `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
 > `tests/ui-agent-skills/fixtures/skills/FF-FLOW-*` 验收。
@@ -47,7 +46,7 @@ S5 · FLOW · `write` owner of `ui-flow/v1`
   ],
   "dependencies": [
     "S4 revision",
-    "ui-flow/v1 schema lock（1-2-3）",
+    "ui-flow/v1 schema lock",
     "A2UI / M3E 仅作为 B1 adapter 输入"
   ],
   "required_capabilities": ["semantic-round-trip", "offline-replay", "migration-map"],

@@ -4,11 +4,10 @@ description: >-
   S7 REVIEW：用浏览器检查 preview 并产出 review record——问题、决策、理由、期限、审阅者，
   截图必须绑定用户任务与风险等级，环境 fingerprint 必须齐全。截图单独通过不得宣称设计完成，
   无法归因的差异一律 quarantine。Use when preview 已可交互，需要人机共签一次视觉与信息层级复审。
-  已实现于 1-6-3（run_visual_review，确定性实现见 ui_stages.py）。
+  确定性实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_visual_review`。
 argument-hint: "<preview 路径与环境 fingerprint>"
 metadata:
   status: implemented
-  implemented_in: 1-6-3
 source: zagentic
 ---
 
@@ -16,7 +15,7 @@ source: zagentic
 
 S7 · REVIEW · `write` owner of `review record`
 
-> **状态：已实现（1-6-3）。** capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
+> capability manifest、输入输出、禁止事项、停止条件与失败 fixture id
 > 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_visual_review`
 > （复用 `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
 > `tests/ui-agent-skills/fixtures/skills/FF-VR-*` 验收。
@@ -34,7 +33,7 @@ S7 · REVIEW · `write` owner of `review record`
   "input": [
     {"name": "preview / implementation slice", "type": "artifact", "required": "yes", "source": "S6"},
     {"name": "user task and risk class", "type": "object", "required": "yes", "source": "brief"},
-    {"name": "environment fingerprint", "type": "object", "required": "yes", "source": "1-5-2"}
+    {"name": "environment fingerprint", "type": "object", "required": "yes", "source": "contract"}
   ],
   "output": [
     {"name": "review record", "type": "document", "artifact_kind": "review record", "atomic": true},
@@ -48,7 +47,7 @@ S7 · REVIEW · `write` owner of `review record`
   "dependencies": [
     "S6 产物",
     "自有浏览器 runner",
-    "environment fingerprint（1-5-1 / 1-5-2）"
+    "environment fingerprint（contract）"
   ],
   "required_capabilities": ["browser-inspect", "screenshot", "environment-fingerprint"],
   "stop_conditions": [

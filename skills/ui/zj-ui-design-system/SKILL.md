@@ -4,11 +4,10 @@ description: >-
   S4 DESIGN_SYSTEM：把已选方向固化成 tokens 与 component catalog（含状态、禁用组合），
   contrast 必须达标，组件必须有来源与注册记录；未注册组件、token 冲突、contrast 不达标一律阻断。
   Use when 方向已由 Human 选定，需要产出可被 flow / prototype 直接引用的设计系统。
-  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
+  实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py`，失败 fixture 已落地。
 argument-hint: "<UI-DESIGN.md 路径>"
 metadata:
   status: implemented
-  implemented_in: 1-6-2
 source: zagentic
 ---
 
@@ -16,8 +15,8 @@ source: zagentic
 
 S4 · DESIGN_SYSTEM · `write` owner of `UI-DESIGN.md`（tokens 与 catalog）
 
-> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
-> 的 `run_design_system`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_design_system`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联由 resolver 完成，
 > 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
@@ -47,7 +46,7 @@ S4 · DESIGN_SYSTEM · `write` owner of `UI-DESIGN.md`（tokens 与 catalog）
   ],
   "dependencies": [
     "S3 Human 选择",
-    "canonical design schema（1-2-1）",
+    "canonical design schema",
     "字体与图标 license 台账"
   ],
   "required_capabilities": ["contrast-computation", "component-registry"],

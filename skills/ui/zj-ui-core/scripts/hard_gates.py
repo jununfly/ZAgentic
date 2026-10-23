@@ -3,7 +3,7 @@
 """
 R-HAR-2 — UI Agent Skills 硬门禁（1-5-3 交付物）
 
-职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md，节点 1-5-3 硬门禁）：
+职责（契约见源仓库 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md，不随 skill 安装）：
   硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态。
 
 设计原则：
@@ -16,7 +16,7 @@ R-HAR-2 — UI Agent Skills 硬门禁（1-5-3 交付物）
 - 可归因：每条 finding 带 code / severity / node_id / observed / expected，供 1-5-4 receipt
   直接落 observed 字段；无法归因的证据走 QUARANTINED。
 
-契约（R-OBS-1，详见 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md）：
+契约（R-OBS-1，详见源仓库 docs/designs/ui-agent-skills/ui-agent-skills-hard-gates.md，不随 skill 安装）：
   <observations>/<fixture_id>/<viewport>.json  ->  observation bundle
   bundle = {schema, fixture_id, class, viewport, captured_by, captured_at,
             dom, focus, contrast, layout, motion, states, quarantine}

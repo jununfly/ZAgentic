@@ -3,7 +3,7 @@
 """
 R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner（1-5-2 交付物）
 
-职责（契约见 docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md，节点 1-5-2 双 lane 验证）：
+职责（契约见源仓库 docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md，不随 skill 安装）：
   实现 baseline 与 degraded 双 lane、固定 browser/font/network/clock/seed 并可复跑。
 
 设计原则：
@@ -32,7 +32,7 @@ CLI：
   dual_lane_runner.py demo                           # 确定性控制自检（虚拟时钟 + seed）
 
 本会话执行方式：以 --print-only（默认）把计算结果输出到 stdout，由专用工具写回
-docs/designs/ui-agent-skills/*.json，规避工作区写沙箱；runner 自身仍含 write-back 逻辑，未来环境可直接落盘。
+源仓库 docs/designs/ui-agent-skills/*.json（不随 skill 安装），规避工作区写沙箱；runner 自身仍含 write-back 逻辑，未来环境可直接落盘。
 """
 
 from __future__ import annotations
@@ -170,7 +170,7 @@ def _find_repo_root(start: str):
 
 
 def default_plans_dir() -> str:
-    """Locate <repo>/docs/designs/ui-agent-skills.
+    """Locate <repo>/docs/designs/ui-agent-skills（源仓库契约目录，不随 skill 安装）.
 
     Installed skills live outside the project (e.g. ~/.claude/skills/zj-ui-core),
     so this file's location cannot identify the target repository -- the operating
@@ -186,7 +186,7 @@ def default_plans_dir() -> str:
         if root is not None:
             return os.path.join(root, "docs", "designs", "ui-agent-skills")
     raise RuntimeError(
-        "无法定位 ui-agent-skills 计划目录（应为 <repo>/docs/designs/ui-agent-skills）："
+        "无法定位 ui-agent-skills 计划目录（应为源仓库 <repo>/docs/designs/ui-agent-skills，不随 skill 安装）："
         "已从 $PWD(%s) 与脚本位置(%s) 向上查找 .git 均未命中；请显式传入 --plans DIR。"
         % (bases[0], bases[1])
     )
@@ -480,11 +480,11 @@ def main(argv=None) -> int:
     ap.add_argument("cmd",
                     choices=["init", "fingerprint", "plan", "run", "selfcheck", "demo"])
     ap.add_argument("--plans", default=None,
-                    help="docs/designs/ui-agent-skills 目录；缺省时惰性推导（先 $PWD 再脚本位置向上找 .git），"
+                    help="源仓库 docs/designs/ui-agent-skills 目录（不随 skill 安装）；缺省时惰性推导（先 $PWD 再脚本位置向上找 .git），"
                          "定位不到即报错而非返回 / 下的假路径")
     ap.add_argument("--lane", choices=["baseline", "degraded"], default="baseline")
     ap.add_argument("--write", action="store_true",
-                    help="将计算结果写回 docs/designs/ui-agent-skills/*.json（本会话默认 print-only）")
+                    help="将计算结果写回源仓库 docs/designs/ui-agent-skills/*.json（不随 skill 安装，本会话默认 print-only）")
     ap.add_argument("--observations", default=None,
                     help="observation bundle 根目录（<fixture_id>/<viewport>.json）；"
                          "缺省时 baseline 全部 NOT_EXECUTED（fail-closed）")

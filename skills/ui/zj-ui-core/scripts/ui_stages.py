@@ -751,7 +751,7 @@ def run_break(request: dict, store: dict | None = None) -> dict:
 
 VERIFY_CHAIN_FIELDS = ("claim", "threshold", "command", "commit", "fixture_hash", "env_hash", "artifact", "status")
 
-#: 毕业 gate 派生强制门禁（1-9-4 CONDITIONAL_ADOPTION 采纳前提，见 GRADUATION-DECISION.md）。
+#: 毕业 gate 派生强制门禁（采纳前提）。
 #: run_verify 在 request["enforce_gates"]=true 时要求 receipt 的 checks 覆盖全部 4 门禁且每门禁
 #: 至少一个 PASS——缺失即验证矩阵不完整（不生成成功 receipt），未通过即下游冻结。
 #: 默认关闭：通用 Storybook adapter 产出五维通用 checks（不含 gate 标记），门禁是叠加在

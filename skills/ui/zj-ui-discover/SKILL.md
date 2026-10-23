@@ -4,11 +4,10 @@ description: >-
   S2 DISCOVER：在 brief 草案上补齐缺口——输出问题清单、证据等级与 unknown 条目，
   追问预算固定为 2 次，不替用户做审美或业务判断。Use when brief 已成型但目标用户、
   状态、约束或成功标准仍有空白，需要在进入方向选择前把证据与未知显式登记。
-  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
+  实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py`，失败 fixture 已落地。
 argument-hint: "<UI-BRIEF.md 路径>"
 metadata:
   status: implemented
-  implemented_in: 1-6-2
 source: zagentic
 ---
 
@@ -16,8 +15,8 @@ source: zagentic
 
 S2 · DISCOVER · `write` owner of `UI-BRIEF.md`（`unknown[]` 与证据字段）
 
-> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
-> 的 `run_discover`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_discover`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联由 resolver 完成，
 > 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest

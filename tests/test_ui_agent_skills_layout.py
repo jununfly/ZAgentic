@@ -266,7 +266,7 @@ class SkeletonIsNotClaimedAsWorking(unittest.TestCase):
                 frontmatter = frontmatter_of(skill)
                 self.assertIn("status: implemented", frontmatter)
                 body = read(UI_ROOT / skill / "SKILL.md")
-                self.assertIn("状态：已实现（1-6-", body)
+                self.assertIn("确定性实现", body)  # 节点无关的实现声明（原门禁硬编码路线图节点 1-6-，清理后改为节点无关标记）
                 self.assertIn("ui_stages.py", body)
                 self.assertNotIn("契约骨架", body)
 

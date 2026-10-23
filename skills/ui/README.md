@@ -4,7 +4,8 @@
 review → break → verify → handoff。一个 skill 一个阶段，每个 `(stage, artifact)` 恰好一个写
 owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 
-上游契约在 `docs/designs/ui-agent-skills/`：`ui-agent-skills-skill-capability-manifest.md`（16 字段与阶段责任卡）、
+上游契约在源仓库的 `docs/designs/ui-agent-skills/`（由源仓库维护，不随本 skills 目录安装）：
+`ui-agent-skills-skill-capability-manifest.md`（16 字段与阶段责任卡）、
 `ui-agent-skills-canonical-schema.md`（六类 canonical artifact）、
 `ui-agent-skills-ui-flow-v1-contract.md`（六义）。新增 skill 前先读
 `ui-agent-skills-skill-md-template.md`。
@@ -21,7 +22,7 @@ owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 - **[zj-ui-verify](./zj-ui-verify/SKILL.md)** — S9 VERIFY：DOM/ARIA、focus、contrast、reduced-motion 硬门禁与可重放 verification receipt。
 - **[zj-ui-handoff](./zj-ui-handoff/SKILL.md)** — S10 HANDOFF：变更摘要、运行命令、风险、已知限制、fallback 与责任人的 handoff。
 
-S1..S4 已实现（路线图节点 1-6-2）：契约不变，实现集中在 `zj-ui-core/scripts/ui_stages.py`，
-12 条失败 fixture 落在 `tests/ui-agent-skills/fixtures/skills/` 并逐条通过。S5..S10 仍是
-**契约骨架**（1-6-1）：manifest、输入输出、禁止事项、停止条件与失败 fixture id 已冻结，可执行
-实现归 1-6-3 / 1-6-4，端到端串联归 1-6-5 的 resolver。
+S1..S4 的实现与 fixture 跑批集中在 `zj-ui-core/scripts/ui_stages.py`，
+12 条失败 fixture 落在 `tests/ui-agent-skills/fixtures/skills/` 并逐条通过。S5..S10 是
+**契约骨架**：manifest、输入输出、禁止事项、停止条件与失败 fixture id 已冻结，可执行
+实现归 `zj-ui-core/scripts/ui_stages.py` 的各 `run_*` 函数，端到端串联归 resolver。

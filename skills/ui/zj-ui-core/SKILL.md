@@ -8,7 +8,6 @@ description: >-
 argument-hint: "<fixture 目录，或留空查看已实现阶段>"
 metadata:
   status: implemented
-  implemented_in: 1-6-2
 source: zagentic
 ---
 
@@ -16,9 +15,9 @@ source: zagentic
 
 S0 · BASE · `read` owner（不写任何 canonical 字段）
 
-> **状态：已实现（1-6-2）。** 本技能是 `skills/ui/` 的代码载体，不是链上的一个阶段：
+> 本技能是 `skills/ui/` 的代码载体，不是链上的一个阶段：
 > 它没有 `writes`，也不出现在 S1..S10 的顺序里。S1..S4 的确定性实现都在 `scripts/`，
-> S5..S10 于 1-6-3 / 1-6-4 接入同一套原语。
+> S5..S10 接入同一套原语。
 
 ## Capability Manifest
 
@@ -43,8 +42,8 @@ S0 · BASE · `read` owner（不写任何 canonical 字段）
     "让 adapter 扩写 component catalog"
   ],
   "dependencies": [
-    "canonical artifact schema（1-2-1）",
-    "deny-first / unknown 四元组语义（1-2-2）"
+    "canonical artifact schema",
+    "deny-first / unknown 四元组语义"
   ],
   "required_capabilities": [
     "schema-validation",
@@ -115,4 +114,4 @@ fixture 形态（`tests/ui-agent-skills/fixtures/skills/<FF-ID>/`）：
 ## 交接
 
 - 上游：S1..S4 的 SKILL.md 声明契约，本技能提供实现与 fixture 跑批。
-- 下游：1-6-5 的 resolver 用同一批 fixture 串链；1-6-3 / 1-6-4 往 `ui_stages.py` 追加 S5..S10。
+- 下游：resolver 用同一批 fixture 串链；S5..S10 往 `ui_stages.py` 追加。

@@ -1,6 +1,6 @@
 """AdapterBoundary v1 — 薄边界编排层（roadmap 1-7-5, a1）。
 
-契约来源：`docs/designs/ui-agent-skills/adapter-boundary-v1.md`（1-7-2 定义节点）。
+契约来源：源仓库 `docs/designs/ui-agent-skills/adapter-boundary-v1.md`（源仓库维护，不随 skill 安装）。
 配套：`adapter-manifest.schema.json`（字段集）、`invocation-seam.md`（调用 seam 与
 测试主体分层）、`quarantine-disambiguation.md`（术语消歧）。
 

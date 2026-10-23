@@ -5,11 +5,10 @@ description: >-
   收成一份 handoff——变更摘要、运行命令、风险、已知限制、fallback、责任人；
   receipt 非 PASS 或任一项缺失都不产出完整 handoff。Use when 验证已 PASS，
   需要把这条 UI 链路交给下一个人、下一个 Agent 或下一次会话。
-  已实现于 1-6-4（run_handoff，确定性实现见 ui_stages.py）。
+  确定性实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_handoff`。
 argument-hint: "<artifact 目录、receipt 路径与 commit sha>"
 metadata:
   status: implemented
-  implemented_in: 1-6-4
 source: zagentic
 ---
 
@@ -17,7 +16,7 @@ source: zagentic
 
 S10 · HANDOFF · `write` owner of `handoff`
 
-> **状态：已实现（1-6-4）。** capability manifest、输入输出、禁止事项、停止条件与失败
+> capability manifest、输入输出、禁止事项、停止条件与失败
 > fixture id 已冻结；可执行实现落在 `skills/ui/zj-ui-core/scripts/ui_stages.py` 的 `run_handoff`
 > （复用 `ui_skill_core.py` 的 deny-first / unknown 四元组 / 幂等 commit 原语），由
 > `tests/ui-agent-skills/fixtures/skills/FF-HO-*` 验收。

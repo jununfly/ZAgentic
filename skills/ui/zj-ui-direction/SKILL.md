@@ -4,11 +4,10 @@ description: >-
   S3 DIRECTION：基于 brief 生成 2–3 张可比较的方向卡（色彩、字体、密度、动效、适用场景、
   取舍与参考来源），由 Human 选定一个方向后才写入 UI-DESIGN.md。方向选择是不可形式化的
   审美判断，本 skill 不替人选。Use when brief 已齐、需要给出视觉方向候选并让人拍板。
-  实现见 zj-ui-core 的 scripts/ui_stages.py（1-6-2），失败 fixture 已落地。
+  实现见 `skills/ui/zj-ui-core/scripts/ui_stages.py`，失败 fixture 已落地。
 argument-hint: "<UI-BRIEF.md 路径>"
 metadata:
   status: implemented
-  implemented_in: 1-6-2
 source: zagentic
 ---
 
@@ -16,8 +15,8 @@ source: zagentic
 
 S3 · DIRECTION · `write` owner of `UI-DESIGN.md`（方向候选段落）
 
-> **状态：已实现（1-6-2）。** 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
-> 的 `run_direction`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联归 1-6-5，
+> 契约不变；确定性实现在 `skills/ui/zj-ui-core/scripts/ui_stages.py`
+> 的 `run_direction`，三条 fixture 已落地并逐条通过（见 `## 实现与证据`）。链上串联由 resolver 完成，
 > 本 skill 仍不能单独当作端到端流程。
 
 ## Capability Manifest
