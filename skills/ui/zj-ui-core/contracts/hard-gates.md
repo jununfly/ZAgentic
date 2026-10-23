@@ -4,7 +4,7 @@
 - **事实源**：ui-agent-skills 路线图（已收口，carrier 文件已清理）
 - **机器实现**：`skills/ui/zj-ui-core/scripts/hard_gates.py`（R-HAR-2，纯 stdlib）
 - **接线**：`skills/ui/zj-ui-core/scripts/dual_lane_runner.py`（R-HAR-1，`run --lane baseline --observations DIR`）
-- **上游**：`fixture-manifest.json`（fixture 全集）、`env-fingerprint.json`（env 指纹）、`/docs/designs/ui-agent-skills/ui-agent-skills-dual-lane-runner.md`（双 lane）
+- **上游**：`fixture-manifest.json`（fixture 全集）、`env-fingerprint.json`（env 指纹）、`contracts/dual-lane-runner.md`（双 lane）
 - **状态**：门禁逻辑已实现并自检；真实浏览器捕获待 1-7-3，真实 fixture 数据待 1-6/1-7。
 - **退出判据对齐**：1-5-3 退出 = 硬门禁覆盖 DOM/ARIA、focus、contrast、overflow、responsive、motion 和关键状态。
 

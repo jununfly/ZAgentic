@@ -192,7 +192,7 @@
     {"id": "rule.doc-kind-declared", "module": "G_governance", "statement": "每篇文档在 frontmatter 声明 doc-kind 与 authority（doc-map 除外）。", "checkable": true, "check": "doc_kind_declared", "source": "docs/architecture/ta-*.md"},
     {"id": "rule.no-dangling-reference", "module": "P_product", "statement": "每条关联的端点都必须解析到存在的实体实例（无悬挂引用）。", "checkable": true, "check": "no_dangling_reference", "source": "docs/ontology/ONTOLOGY.md"},
     {"id": "rule.bucket-inventory-consistent", "module": "P_product", "statement": "文档声明的桶清单必须与真实 skills/ 代码树一致（保鲜核心校验）。", "checkable": true, "check": "bucket_inventory_consistent", "source": "docs/architecture/ta-zagentic-overview.md vs skills/"},
-    {"id": "rule.contract-before-graduation", "module": "G_governance", "statement": "ui-agent-skills 的契约在毕业闸门之前必须满足。", "checkable": false, "check": null, "source": "docs/designs/ui-agent-skills/DECISIONS-RISKS.md"},
-    {"id": "rule.immutable-fixtures", "module": "G_governance", "statement": "黄金夹具是不可变资产（契约测试钉死），删除即炸 CI。", "checkable": false, "check": null, "source": "docs/designs/ui-agent-skills/ui-agent-skills-golden-fixtures-spec.md"}
+    {"id": "rule.contract-before-graduation", "module": "G_governance", "statement": "ui-agent-skills 的契约在毕业闸门之前必须满足。", "checkable": false, "check": null, "source": "skills/ui/zj-ui-core/contracts/skill-capability-manifest.md"},
+    {"id": "rule.immutable-fixtures", "module": "G_governance", "statement": "黄金夹具是不可变资产（契约测试钉死），删除即炸 CI。", "checkable": false, "check": null, "source": "skills/ui/zj-ui-core/contracts/golden-fixtures-spec.md"}
   ]
 }

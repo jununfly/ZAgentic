@@ -3,7 +3,7 @@
 """
 R-RCP-1 — UI Agent Skills verification receipt 契约与判定
 
-职责（契约见 ui-agent-skills-verification-receipt.md，位于 docs/designs/ui-agent-skills/）：
+职责（契约见 `verification-receipt.md`，位于 `contracts/`）：
   定义 verification receipt、聚合状态、stale/revalidation_required 与无法归因 quarantine，
   且三者状态可审计。
 
@@ -17,7 +17,7 @@ R-RCP-1 — UI Agent Skills verification receipt 契约与判定
 - 判定与生成分离：`validate` / `check_freshness` / `validate_quarantine` 都是纯函数，
   不写盘、不重跑，供 1-9 paired run 与 1-10 rollout 复核直接调用。
 
-契约文档：ui-agent-skills-verification-receipt.md（docs/designs/ui-agent-skills/）
+契约文档：`verification-receipt.md`（位于 `contracts/`）
 
 CLI：
   verification_receipt.py build --lane <baseline|degraded> [--observations DIR]
@@ -796,7 +796,7 @@ def _base_receipt():
     facts["manifest_hash"] = sha256_text(canonical_json(facts["fixtures"]["entries"]))
     receipt = _assemble(
         checks, lane="baseline", run_id="run-selftest",
-        commit="a" * 40, artifacts=[{"path": "docs/designs/ui-agent-skills/x.json", "sha256": "b" * 64}],
+        commit="a" * 40, artifacts=[{"path": "contracts/x.json", "sha256": "b" * 64}],
         command="python x run --lane baseline",
         reviewer={"name": "zj", "signed_at": "2026-10-20T00:00:00+00:00"},
         issued_at=datetime(2026, 10, 20, tzinfo=timezone.utc), ttl_days=DEFAULT_TTL_DAYS,

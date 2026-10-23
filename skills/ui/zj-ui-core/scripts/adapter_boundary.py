@@ -1,8 +1,8 @@
 """AdapterBoundary v1 — 薄边界编排层（, a1）。
 
-契约来源：源仓库 `adapter-boundary-v1.md`。
+契约来源：`contracts/adapter-boundary-v1.md`。
 配套：`skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json`（字段集）；调用 seam 与测试主体分层、
-`quarantine` vs `QUARANTINED` 术语消歧均见本仓库 `adapter-boundary-v1.md`。
+`quarantine` vs `QUARANTINED` 术语消歧均见本仓库 `contracts/adapter-boundary-v1.md`。
 
 Boundary **不实现渲染逻辑**，只做契约仲裁与生命周期编排：
 
@@ -24,7 +24,7 @@ Boundary **不实现渲染逻辑**，只做契约仲裁与生命周期编排：
 （tests → production）。
 
 诚实账本：network_loss / remote_failure 在本仓库无真实运行时观测支撑，见
-`REAL_RUNTIME_BACKED` / `SEAM_CONTRACT_ONLY`（详见 `adapter-boundary-v1.md` §6.2）。
+`REAL_RUNTIME_BACKED` / `SEAM_CONTRACT_ONLY`（详见 `contracts/adapter-boundary-v1.md` §6.2）。
 """
 from __future__ import annotations
 

@@ -58,7 +58,7 @@
 | `ADR` | 已接受的不易逆转决策（历史权威） | `0001`…`0007` | `docs/zj-adr/` |
 | `Agreement` | 方法论单一事实源（SSOT） | `open-source-capability-fit` | `docs/agreements/` |
 | `CapabilitySpec` | 产品/能力边界规格 | `codebase-docs-capability` | `docs/prds/` |
-| `Contract` | ui-agent-skills 内机器可读契约/清单/账本等 | `adapter-boundary-v1` | `docs/designs/ui-agent-skills/` |
+| `Contract` | ui-agent-skills 内机器可读契约/清单/账本等 | `adapter-boundary-v1` | `skills/ui/zj-ui-core/contracts/` |
 | `EvidenceSurface` | 临时证据面（已被治理移除） | `research/`、`skills-outputs/` | `docs/README.md` |
 
 ---

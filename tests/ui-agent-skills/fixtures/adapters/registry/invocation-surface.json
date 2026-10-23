@@ -1,5 +1,5 @@
 {
-  "_comment": "调用面索引（test-side）。刻意不写进 adapter manifest：manifest schema 是 additionalProperties:false，新增字段须 major bump + 存量 adapter 全部补字段并重过 capability-fit（adapter-boundary-v1.md §3）。本索引是测试侧事实源，deny-first：registry 里每个 id 必须在此声明调用面，否则 assert_invocation_surface_declared 报错。",
+  "_comment": "调用面索引（test-side）。刻意不写进 adapter manifest：manifest schema 是 additionalProperties:false，新增字段须 major bump + 存量 adapter 全部补字段并重过 capability-fit（contracts/adapter-boundary-v1.md §3）。本索引是测试侧事实源，deny-first：registry 里每个 id 必须在此声明调用面，否则 assert_invocation_surface_declared 报错。",
   "storybook-local-verify": {
     "invocation_surface": "runtime",
     "seam": "real",

@@ -2,7 +2,7 @@
 
 > 归属路线图节点：1-1-4（建立 Wave 0 资源、许可证、fixture、owner 与风险账本）
 > 事实源：ui-agent-skills 路线图（已收口，carrier 文件已清理）
-> 配套：`ui-agent-skills-scope-manifest.md`（v0.1 冻结）、`ui-agent-skills-ev-form-lock.md`（表单锁定）、`ui-agent-skills-ev-metrics.md`（指标预注册）
+> 配套：`scope-manifest.md`（v0.1 冻结）、`ev-form-lock 规范（已删）`（表单锁定）、`ev-metrics 规范（已删）`（指标预注册）
 > 状态：Wave 0 账本版，可由 Human 复核；任何账本项变更须经 1-10 重评流程。
 > 退出判据：五张账本无 `unknown` 漏洞；真实缺口仅以 `NEEDS_CONTEXT` 退出，不编造。
 
@@ -48,7 +48,7 @@
 
 ## 3. Fixture 账本（Fixtures）
 
-表单六类 fixture 源自 `ui-agent-skills-ev-form-lock.md` §4 与 `ui-agent-skills-ev-metrics.md` §1，均对应指标预注册的 invalid-run 边界用例。
+表单六类 fixture 源自 `ev-form-lock 规范（已删）` §4 与 `ev-metrics 规范（已删）` §1，均对应指标预注册的 invalid-run 边界用例。
 
 | ID | Fixture | 触发路径 | 预期结果 | 落地点 | 状态 | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -77,13 +77,13 @@
 | A-5 | 审批超时 / 升级 | under_review 超时 | fallback 稳定路径 / 显式标记 | `tests/ui-agent-skills/fixtures/approval/A-5` | ready | zjj |
 | A-6 | 越权审批（非 approver 调用审批） | 任意 | deny-first 阻断 + 报路径 | `tests/ui-agent-skills/fixtures/approval/A-6` | ready | zjj |
 
-> 所有 fixture 在 1-5/1-8 落地时须保留原始日志与屏幕/DOM 证据（见 `ev-metrics.md` §4–5），否则该 run 按 invalid 处理。
+> 所有 fixture 在 1-5/1-8 落地时须保留原始日志与屏幕/DOM 证据（见 `ev-metrics 规范（已删）` §4–5），否则该 run 按 invalid 处理。
 
 ---
 
 ## 4. Owner 账本（Responsibilities）
 
-责任分配沿用 `ui-agent-skills-ev-form-lock.md` §5（2026-10-19 由 zj 确认）。
+责任分配沿用 `ev-form-lock 规范（已删）` §5（2026-10-19 由 zj 确认）。
 
 | 领域 | 责任人 | 类型 | 决策/验收方式 |
 | --- | --- | --- | --- |
@@ -112,7 +112,7 @@
 | R-RISK-4 | mock 数据边界模糊 | 与"无真实后端写回"约束冲突 | 明确 mock 仅本地 fixture；远程写回仅演练（form-lock §1） | zjj | mitigated-by-design |
 | R-RISK-5 | adapter 网络依赖 | 断网/远程失败致验证中断 | degraded/disabled/quarantine 回退 + 本地 static preview（1-7-5 / 1-8-5） | zjj | open /  缓解路径已规划 |
 | R-RISK-6 | 实现责任单点（zjj=AI） | 关键实现无人类冗余 | zj 验收 gate 兜底（已知约束，已接受） | zj | accepted |
-| R-RISK-7 | 缺原始日志/证据留存 | 触发 invalid-run，样本作废 | `ev-metrics.md` §4–5 强制留存，复核者提出、zj 批准补跑 | zjj | mitigated-by-design |
+| R-RISK-7 | 缺原始日志/证据留存 | 触发 invalid-run，样本作废 | `ev-metrics 规范（已删）` §4–5 强制留存，复核者提出、zj 批准补跑 | zjj | mitigated-by-design |
 | R-RISK-8 | Chromium 本地再分发合规 | 若打包分发触商标/NOTICE 条款 | 仅本地验证不打包（见 L-CHROME） | zjj | accepted |
 
 ---

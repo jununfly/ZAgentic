@@ -74,9 +74,9 @@ dual_lane_runner.py demo                     # 确定性控制自检（虚拟时
 `--observations DIR`（1-5-3 起）：指向 `<fixture_id>/<viewport>.json` 的 observation bundle 根目录。
 未给该参数时 baseline 全 `NOT_EXECUTED`（与 1-5-2 行为一致，fail-closed）；给了但覆盖不全时
 缺证据的 fixture 记 `HG-EVID-02`，cell 最好只能到 `HUMAN_REVIEW_REQUIRED`。
-门禁判定逻辑本身见 `ui-agent-skills-hard-gates.md`。
+门禁判定逻辑本身见 `hard-gates.md`。
 
-本会话采用 **print-only**（默认不写盘），由专用工具把计算结果写回 `docs/designs/ui-agent-skills/*.json`，
+本会话采用 **print-only**（默认不写盘），由专用工具把计算结果写回 `contracts/*.json`，
 规避工作区写沙箱；runner 自身保留 `--write` 落盘逻辑，未来环境可直接冻结。
 
 ---
@@ -141,10 +141,10 @@ matrix_key    = sha256( manifest_hash + env_hash
   把"冻结过程"转为可执行 runner 与 concrete 值。
 - **向下（1-5-3）**：DOM/ARIA/focus/contrast/overflow/responsive/motion/state 硬门禁在 baseline
   lane 上实现（需 adapter）。→ 已于 1-5-3 落地：`hard_gates.py`（R-HAR-2）+ `--observations` 接线，
-  契约见 `ui-agent-skills-hard-gates.md`。
+  契约见 `hard-gates.md`。
 - **向下（1-5-4）**：本节点 receipt 为结构占位；receipt 完整字段（claim/check/risk/fixture/env/
   oracle/threshold/command/commit/artifact/observed/status/reviewer/expiry）由 1-5-4 定稿，
   须携带 `matrix_key` 与每个 cell 的 `observed/status`，保证可归因、可重算。→ 已于 1-5-4 定稿：
-  `ui-agent-skills-verification-receipt.md` §1（schema v1）+ `verification_receipt.py`
+  `verification-receipt.md` §1（schema v1）+ `verification_receipt.py`
   （`build_receipt` 把本文件的 lane receipt 升格为完整收据，`observed.checked` 由本节点提供）。
 - **向下（1-9）**：每次 paired run 须比对 `env_hash`，失配则 run 无效（invalid-run 规则，scope-manifest §4）。

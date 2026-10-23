@@ -1,7 +1,7 @@
 """Evidence for 1-6-5: the resolver contract and the closed-loop orchestrator.
 
-Two surfaces are asserted, both matching `ui-agent-skills-resolver-contract.md`
-and `ui-agent-skills-stage-engine.md §6/§8`:
+Two surfaces are asserted, both matching `resolver-contract.md`
+and `stage-engine.md §6/§8` (skills/ui/zj-ui-core/contracts/):
 
 * The resolver's hard gates (R4 owner conflict, R5 ambiguity, R3 unsupported
   capability, R6 human gate) actually freeze a plan with `permitted_writes == 0`

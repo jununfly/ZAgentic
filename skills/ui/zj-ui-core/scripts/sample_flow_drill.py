@@ -30,7 +30,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import adapter_boundary as ab  # noqa: E402
 
-# Frozen canonical schemas (ui-agent-skills-canonical-schema.md / scope-manifest).
+# Frozen canonical schemas (canonical-schema.md / scope-manifest).
 CANONICAL_FORM_FIELDS = frozenset({"nickname", "email", "bio"})
 CANONICAL_APPROVAL_REQUEST_FIELDS = frozenset(
     {"amount", "currency", "reason", "attachment_ref"}

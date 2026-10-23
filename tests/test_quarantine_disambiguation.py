@@ -4,7 +4,7 @@ These assert the two near-homonyms are distinct, live in different namespaces, a
 stay independent — so the 1-7-5 boundary orchestration layer can never silently
 treat an adapter's *administrative* isolation as a *receipt* verdict, or vice versa.
 
-See `docs/designs/ui-agent-skills/adapter-boundary-v1.md` §6.1 (quarantine 生命周期) and `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json` for the prose/spec.
+See `contracts/adapter-boundary-v1.md` §6.1 (quarantine 生命周期) and `skills/ui/zj-ui-core/contracts/adapter-manifest.schema.json` for the prose/spec.
 """
 import json
 import pathlib

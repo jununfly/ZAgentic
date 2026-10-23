@@ -3,7 +3,7 @@
 """
 R-HAR-1 — UI Agent Skills 确定性双 lane 验证 runner
 
-职责（契约见 ui-agent-skills-dual-lane-runner.md，位于 docs/designs/ui-agent-skills/）：
+职责（契约见 `dual-lane-runner.md`，位于 `contracts/`）：
   实现 baseline 与 degraded 双 lane、固定 browser/font/network/clock/seed 并可复跑。
 
 设计原则：

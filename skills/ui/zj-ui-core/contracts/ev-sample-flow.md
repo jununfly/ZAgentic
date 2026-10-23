@@ -2,7 +2,7 @@
 
 > **归属节点**：1-8-1（为表单/审批 Experience Version 固化 PRD、角色状态、canonical artifact 与 fixture manifest）
 > **事实源**：ui-agent-skills 路线图（已收口，carrier 文件已清理）
-> **对齐文档**：`ui-agent-skills-scope-manifest.md`（EV-v0.1 冻结）、`ui-agent-skills-ev-form-lock.md`、`ui-agent-skills-ev-metrics.md`、`ui-agent-skills-canonical-schema.md`、`ui-agent-skills-ui-flow-v1-contract.md`、`skills/ui/zj-ui-core/contracts/fixture-manifest.json`、`ui-agent-skills-trust-chain-contract.md`、`ui-agent-skills-deny-fixtures-contract.md`、`ui-agent-skills-skill-capability-manifest.md`
+> **对齐文档**：`scope-manifest.md`（EV-v0.1 冻结）、`ev-form-lock 规范（已删）`、`ev-metrics 规范（已删）`、`canonical-schema.md`、`ui-flow-v1-contract.md`、`skills/ui/zj-ui-core/contracts/fixture-manifest.json`、`trust-chain-contract 规范（已删）`、`deny-fixtures-contract 规范（已删）`、`skill-capability-manifest.md`
 > **状态**：sample flow 冻结版（**双样例：表单 + 审批**）。审批流于 **2026-10-21** 经 zj 决策从 Wave 1 候选提升为 Wave 0 **第二条独立 sample**（见 §0）。
 
 ---
@@ -11,7 +11,7 @@
 
 - **决策**：zj 选择「第二条独立 sample」形态——Wave 0 从「单表单」扩为「**用户资料编辑表单 + 费用报销审批流**」两条并行 experience path，各自有角色 / 状态 / fixture。
 - **与节点 1-8 标签一致**：节点 `1-8` 标签本就是「表单/审批 sample flow」；此前 1-8-1 因冻结 `scope-manifest`「审批归 Wave 1」而收窄为纯表单，属偏离。本次范围扩张使 `1-8` 标签与 scope 重新对齐，**不再需要改 1-8 标签**。
-- **治理落点**：因 `1-9`（paired run）尚未执行，**无 run 作废**（`ev-metrics.md` §5/§6 的「旧三次 run 作废」当前 N/A）。但 scope 变更须留痕：本变更直接修订 `scope-manifest.md` / `ev-form-lock.md` 冻结文档，并**待 `1-10` 重评轨道正式归档**（`e18 = 1-9 → 1-10` 阻塞，1-9 毕业后解锁）。
+- **治理落点**：因 `1-9`（paired run）尚未执行，**无 run 作废**（`ev-metrics 规范（已删）` §5/§6 的「旧三次 run 作废」当前 N/A）。但 scope 变更须留痕：本变更直接修订 `scope-manifest.md` / `ev-form-lock 规范（已删）` 冻结文档，并**待 `1-10` 重评轨道正式归档**（`e18 = 1-9 → 1-10` 阻塞，1-9 毕业后解锁）。
 - **1-8-1 重开**：因 scope 扩张，1-8-1 曾于表单-only 下标记 completed；现重开为 `in_progress`，扩写双样例后重新收口（本文件即扩写结果）。
 
 ---
@@ -25,9 +25,9 @@
 - **goal_task**：在 Next.js 应用中查看并编辑个人资料（昵称、邮箱、简介等受控字段），提交后由本地 mock 持久化，得到成功/错误反馈并可恢复。
 
 #### 1.A.2 约束（constraints）
-- **框架锁**：Next.js 14（App Router）+ React 18 + TypeScript 5.x + 固定 major 的 Chromium（`ev-form-lock.md` §1；与 `env-fingerprint` 对齐）。
+- **框架锁**：Next.js 14（App Router）+ React 18 + TypeScript 5.x + 固定 major 的 Chromium（`ev-form-lock 规范（已删）` §1；与 `env-fingerprint` 对齐）。
 - **数据边界**：本地 mock / 内存态，无真实后端写回；远程写回仅作 `1-8-5` 演练项（`scope-manifest.md` §1）。
-- **安全边界**：危险 action（真实网络写回、删除账号等）deny-first（`trust-chain-contract.md` / `deny-fixtures-contract.md`）。
+- **安全边界**：危险 action（真实网络写回、删除账号等）deny-first（`trust-chain-contract 规范（已删）` / `deny-fixtures-contract 规范（已删）`）。
 - **确定性**：fixture + env fingerprint 固定（`skills/ui/zj-ui-core/contracts/fixture-manifest.json` / `env-fingerprint.md`）。
 
 #### 1.A.3 成功标准（success_criteria）
@@ -64,7 +64,7 @@
 
 ---
 
-## 2. 角色与状态（固化，引用 `ev-form-lock.md` §2/§3）
+## 2. 角色与状态（固化，引用 `ev-form-lock 规范（已删）` §2/§3）
 
 ### 2.1 角色（roles）
 | 角色 | 职责 |
@@ -179,4 +179,4 @@
 ---
 
 ## 6. 引用
-`ui-agent-skills-scope-manifest.md` · `ui-agent-skills-ev-form-lock.md` · `ui-agent-skills-ev-metrics.md` · `ui-agent-skills-canonical-schema.md` · `ui-agent-skills-ui-flow-v1-contract.md` · `skills/ui/zj-ui-core/contracts/fixture-manifest.json` · `skills/ui/zj-ui-core/contracts/env-fingerprint.json` · `ui-agent-skills-trust-chain-contract.md` · `ui-agent-skills-deny-fixtures-contract.md` · `ui-agent-skills-golden-fixtures-spec.md` · `ui-agent-skills-skill-capability-manifest.md`
+`scope-manifest.md` · `ev-form-lock 规范（已删）` · `ev-metrics 规范（已删）` · `canonical-schema.md` · `ui-flow-v1-contract.md` · `skills/ui/zj-ui-core/contracts/fixture-manifest.json` · `skills/ui/zj-ui-core/contracts/env-fingerprint.json` · `trust-chain-contract 规范（已删）` · `deny-fixtures-contract 规范（已删）` · `golden-fixtures-spec.md` · `skill-capability-manifest.md`

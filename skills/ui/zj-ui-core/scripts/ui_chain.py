@@ -1,6 +1,6 @@
 """Local closed-loop orchestrator for the `zj-ui-*` chain.
 
-This is the faithful reification of `ui-agent-skills-stage-engine.md /`:
+This is the faithful reification of `stage-engine.md`:
 the ten stages (S1..S10) are wired into one deterministic pipeline. For every
 step the orchestrator (1) resolves the next action through the frozen resolver
 (`ui_resolver.resolve`) and (2) only when the plan is `PLANNED` executes the

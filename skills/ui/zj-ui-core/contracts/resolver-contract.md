@@ -5,7 +5,7 @@
 > 归属路线图节点 1-3-2（ui-agent-skills 路线图已收口，carrier 文件已清理）。
 > 本文件属于**计划层交付物**：不写可执行 resolver 代码、不跑断言。lease/幂等/失败阶梯归 1-3-3；plan/decision/revision/handoff 持久化归 1-3-4。
 >
-> 依赖：`ui-agent-skills-skill-capability-manifest.md`（1-3-1，manifest 16 字段与 S1–S10 阶段目录）、`ui-agent-skills-canonical-schema.md`（1-2-1）。
+> 依赖：`skill-capability-manifest.md`（1-3-1，manifest 16 字段与 S1–S10 阶段目录）、`canonical-schema.md`（1-2-1）。
 >
 > 权威来源：`sub-02-skill-orchestration.md` L31（planner 纯函数与 20 次一致）、L79（resolver 顺序、plan hash、100% 同 hash）、L85（Human gate 单一出口）、L112（规范化 + `route_fingerprint` + 100 次随机重放）、L181（租约写锁）、L201-207（整合立场）。
 
@@ -107,7 +107,7 @@ resolve(request, artifact_snapshot, registry, gate_state) -> Plan
 
 | 字段 | 类型 | 是否进 hash | 说明 |
 | --- | --- | --- | --- |
-| `plan_id` | string | ❌（由 hash 派生） | `pf-<route_fingerprint[0:12]>-<stage_id>-<attempt>`，**确定性派生，不用 uuid**；`attempt` 从 0 起。**`attempt` 段仅用于审计区分第几次尝试，不参与幂等键**（见 `ui-agent-skills-lease-state-machine.md` §3）——否则重试会拿到新幂等键并造成重复写入 |
+| `plan_id` | string | ❌（由 hash 派生） | `pf-<route_fingerprint[0:12]>-<stage_id>-<attempt>`，**确定性派生，不用 uuid**；`attempt` 从 0 起。**`attempt` 段仅用于审计区分第几次尝试，不参与幂等键**（见 `lease-state-machine 规范（已删）` §3）——否则重试会拿到新幂等键并造成重复写入 |
 | `plan_hash` | sha256 | — | §5.3 |
 | `route_fingerprint` | sha256 | — | §5.2 |
 | `stage` | enum | ✅ | 选定 stage（S1–S10） |

@@ -4,7 +4,7 @@
 review → break → verify → handoff。一个 skill 一个阶段，每个 `(stage, artifact)` 恰好一个写
 owner；冲突时停下问人，不自动改派，不用未知冒充成功。
 
-上游契约定义：运行时直接读取的契约随 skill 安装、由 skill 自包含读取，见 `skills/ui/zj-ui-core/contracts/`（`skill-capability-manifest.md`、`skill-md-template.md` 等）；其余设计规范仍见源仓库 `docs/designs/ui-agent-skills/`（`canonical-schema.md`、`ui-flow-v1-contract.md` 等）。新增 skill 前先读 `skills/ui/zj-ui-core/contracts/skill-md-template.md`。
+上游契约定义：运行时直接读取的契约与配套规范均随 skill 安装、由 skill 自包含读取，统一位于 `skills/ui/zj-ui-core/contracts/`（`skill-capability-manifest.md`、`skill-md-template.md`、`canonical-schema.md`、`ui-flow-v1-contract.md` 等）。新增 skill 前先读 `skills/ui/zj-ui-core/contracts/skill-md-template.md`。
 
 - **[zj-ui-core](./zj-ui-core/SKILL.md)** — **S0 BASE**（不在阶段链上）：契约基座与确定性引擎 —— schema 校验、deny-first、unknown 四元组、原子提交与幂等键、WCAG contrast；S1..S4 的实现与 fixture 跑批都在它的 `scripts/`。
 - **[zj-ui-brief](./zj-ui-brief/SKILL.md)** — S1 INTAKE：把对话或 UI-BRIEF.md 编辑解析成目标、用户、任务、成功标准与 unknown 四元组的 brief 草案。

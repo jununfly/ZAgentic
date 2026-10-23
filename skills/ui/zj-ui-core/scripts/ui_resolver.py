@@ -1,6 +1,6 @@
 """Deterministic resolver for the `zj-ui-*` chain.
 
-This is the faithful reification of `ui-agent-skills-resolver-contract.md`. The
+This is the faithful reification of `resolver-contract.md`. The
 resolver is a pure function: same inputs -> byte-identical `plan_hash`, same
 `next_action`, zero writes, zero hidden state. It never calls a skill, never
 touches a canonical artifact, never reads the clock.

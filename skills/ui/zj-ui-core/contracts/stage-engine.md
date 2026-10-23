@@ -3,9 +3,9 @@
 - **归属节点**：1-6-2（产品实现路线 · `exploit`）
 - **实现落点**：`skills/ui/zj-ui-core/scripts/`（`ui_skill_core.py` / `ui_stages.py` / `run_fixture.py`）
 - **被测对象**：`tests/ui-agent-skills/fixtures/skills/FF-{BRIEF,DISC,DIR,DS}-*/`
-- **上游契约**：`ui-agent-skills-canonical-schema.md`（字段与 unknown policy）、
-  `ui-agent-skills-brief-design-edit-semantics.md`（deny-first / patch / 不执行 effect）、
-  `ui-agent-skills-skill-capability-manifest.md`（16 字段与 §4 fixture 矩阵）
+- **上游契约**：`canonical-schema.md`（字段与 unknown policy）、
+  `brief-design-edit-semantics 规范（已删）`（deny-first / patch / 不执行 effect）、
+  `skill-capability-manifest.md`（16 字段与 §4 fixture 矩阵）
 
 ---
 

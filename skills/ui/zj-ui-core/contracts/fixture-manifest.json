@@ -7,7 +7,7 @@
     {
       "id": "F-1",
       "class": "form",
-      "source": "ui-agent-skills-wave0-ledger.md#F-1",
+      "source": "wave0-ledger.md#F-1",
       "trigger": "idle->validating->submitting->success",
       "expected": "mock 200 + 本地持久化",
       "landed_at": "tests/ui-agent-skills/fixtures/form/F-1",
@@ -16,7 +16,7 @@
     {
       "id": "F-2",
       "class": "form",
-      "source": "ui-agent-skills-wave0-ledger.md#F-2",
+      "source": "wave0-ledger.md#F-2",
       "trigger": "必填校验",
       "expected": "字段级 error，禁止提交",
       "landed_at": "tests/ui-agent-skills/fixtures/form/F-2",
@@ -25,7 +25,7 @@
     {
       "id": "F-3",
       "class": "form",
-      "source": "ui-agent-skills-wave0-ledger.md#F-3",
+      "source": "wave0-ledger.md#F-3",
       "trigger": "实时校验",
       "expected": "字段级 error message",
       "landed_at": "tests/ui-agent-skills/fixtures/form/F-3",
@@ -34,7 +34,7 @@
     {
       "id": "F-4",
       "class": "form",
-      "source": "ui-agent-skills-wave0-ledger.md#F-4",
+      "source": "wave0-ledger.md#F-4",
       "trigger": "submitting 锁输入",
       "expected": "第二次提交被拒/忽略",
       "landed_at": "tests/ui-agent-skills/fixtures/form/F-4",
@@ -43,7 +43,7 @@
     {
       "id": "F-5",
       "class": "form",
-      "source": "ui-agent-skills-wave0-ledger.md#F-5",
+      "source": "wave0-ledger.md#F-5",
       "trigger": "模拟 mock 422",
       "expected": "error 态 + 可恢复回 editable",
       "landed_at": "tests/ui-agent-skills/fixtures/form/F-5",
@@ -52,7 +52,7 @@
     {
       "id": "F-6",
       "class": "form",
-      "source": "ui-agent-skills-wave0-ledger.md#F-6",
+      "source": "wave0-ledger.md#F-6",
       "trigger": "模拟服务端超时",
       "expected": "fallback 到稳定路径 / 显式标记",
       "landed_at": "tests/ui-agent-skills/fixtures/form/F-6",
@@ -61,7 +61,7 @@
     {
       "id": "F-A1",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A1",
+      "source": "wave0-ledger.md#F-A1",
       "trigger": "Storybook stories/a11y/viewport/interaction/docs",
       "expected": "active adapter 本地验证通过",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/FF-SB-01",
@@ -70,7 +70,7 @@
     {
       "id": "F-A2",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "json-render/A2UI/M3E Canvas 投影",
       "expected": "opt-in golden fixtures 通过",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2",
@@ -79,7 +79,7 @@
     {
       "id": "GF-01",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-01",
+      "source": "golden-fixtures-spec.md#GF-01",
       "trigger": "canonical->projection->canonical",
       "expected": "state/action/intent/acceptance 语义集合等价",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-01",
@@ -88,7 +88,7 @@
     {
       "id": "GF-02",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-02",
+      "source": "golden-fixtures-spec.md#GF-02",
       "trigger": "必需字段缺失",
       "expected": "阻断（hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-02",
@@ -97,7 +97,7 @@
     {
       "id": "GF-03",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-03",
+      "source": "golden-fixtures-spec.md#GF-03",
       "trigger": "未知字段",
       "expected": "保留 unknown 四元组 + 声明性 warning",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-03",
@@ -106,7 +106,7 @@
     {
       "id": "GF-04",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-04",
+      "source": "golden-fixtures-spec.md#GF-04",
       "trigger": "adapter 越权改 intent/acceptance",
       "expected": "失败并报字段路径（hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-04",
@@ -115,7 +115,7 @@
     {
       "id": "GF-05",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-05",
+      "source": "golden-fixtures-spec.md#GF-05",
       "trigger": "unknown 被压成空值",
       "expected": "fail",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-05",
@@ -124,7 +124,7 @@
     {
       "id": "GF-06",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-06",
+      "source": "golden-fixtures-spec.md#GF-06",
       "trigger": "重复/冲突 action",
       "expected": "拒绝提交",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-06",
@@ -133,7 +133,7 @@
     {
       "id": "GF-07",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-07",
+      "source": "golden-fixtures-spec.md#GF-07",
       "trigger": "幂等键相同输入并发提交",
       "expected": "无重复/半套结果",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-07",
@@ -142,7 +142,7 @@
     {
       "id": "GF-08",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-08",
+      "source": "golden-fixtures-spec.md#GF-08",
       "trigger": "schema 迁移",
       "expected": "v1 加字段通过；破坏性变更需迁移器",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-08",
@@ -151,7 +151,7 @@
     {
       "id": "GF-09",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-09",
+      "source": "golden-fixtures-spec.md#GF-09",
       "trigger": "schema/adapter 修改后重跑",
       "expected": "失败保留旧 artifact",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-09",
@@ -160,7 +160,7 @@
     {
       "id": "GF-10",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-10",
+      "source": "golden-fixtures-spec.md#GF-10",
       "trigger": "服务关闭",
       "expected": "仅凭本地 canonical 重建/恢复/重放",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-10",
@@ -169,7 +169,7 @@
     {
       "id": "GF-11",
       "class": "contract",
-      "source": "ui-agent-skills-golden-fixtures-spec.md#GF-11",
+      "source": "golden-fixtures-spec.md#GF-11",
       "trigger": "adapter 删除",
       "expected": "从最后完整 canonical revision 恢复",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-11",
@@ -394,7 +394,7 @@
     {
       "id": "FF-JR-PROJ-01",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "canonical→json-render opt-in 投影 (flat element tree + catalog)",
       "expected": "投影语义保真 (screens/components/actions/intents/acceptances 等价) → OK",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/json-render/FF-JR-PROJ-01",
@@ -403,7 +403,7 @@
     {
       "id": "FF-JR-PROTO-01",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "opt-in 协议握手 (钉版本 + canonical schema lock)",
       "expected": "协议接受 + 版本协商 + schema-lock 锚定 → OK",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/json-render/FF-JR-PROTO-01",
@@ -412,7 +412,7 @@
     {
       "id": "FF-JR-IN-01",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "canonical 含 json-render 未知字段",
       "expected": "unknown 四元组保留 + warning，不丢弃/压空 → PASS",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/json-render/FF-JR-IN-01",
@@ -421,7 +421,7 @@
     {
       "id": "FF-A2UI-PROJ-01",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "canonical→A2UI v0.8 投影 (adjacency-list 文档: surfaceUpdate+dataModelUpdate+beginRendering)",
       "expected": "投影语义保真 (surfaces/components/actions/intents/acceptances 等价) → OK",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-PROJ-01",
@@ -430,7 +430,7 @@
     {
       "id": "FF-A2UI-PROTO-01",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "opt-in 协议握手 (钉 v0.8 + catalogId / A2A extension URI 协商)",
       "expected": "协议接受 + 版本协商 + schema-lock 锚定 → OK",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-PROTO-01",
@@ -439,7 +439,7 @@
     {
       "id": "FF-A2UI-IN-01",
       "class": "adapter",
-      "source": "ui-agent-skills-wave0-ledger.md#F-A2",
+      "source": "wave0-ledger.md#F-A2",
       "trigger": "A2UI 文档含标准 catalog 未知组件类型 (经 inline catalog 声明)",
       "expected": "未知组件保留 + inline catalog 依赖记录 + warning，不丢弃 → PASS",
       "landed_at": "tests/ui-agent-skills/fixtures/adapters/F-A2/a2ui/FF-A2UI-IN-01",
@@ -448,7 +448,7 @@
     {
       "id": "A-1",
       "class": "approval",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "source": "ev-sample-flow.md#4.2",
       "trigger": "draft->submitted->under_review->approved",
       "expected": "mock 持久化 + approved",
       "landed_at": "tests/ui-agent-skills/fixtures/approval/A-1",
@@ -457,7 +457,7 @@
     {
       "id": "A-2",
       "class": "approval",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "source": "ev-sample-flow.md#4.2",
       "trigger": "under_review->rejected",
       "expected": "申请人可修改重提交（回 draft）",
       "landed_at": "tests/ui-agent-skills/fixtures/approval/A-2",
@@ -466,7 +466,7 @@
     {
       "id": "A-3",
       "class": "approval",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "source": "ev-sample-flow.md#4.2",
       "trigger": "draft 客户端校验（非法金额/空事由）",
       "expected": "字段级 error，禁止提交",
       "landed_at": "tests/ui-agent-skills/fixtures/approval/A-3",
@@ -475,7 +475,7 @@
     {
       "id": "A-4",
       "class": "approval",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "source": "ev-sample-flow.md#4.2",
       "trigger": "submitted 锁（重复提交）",
       "expected": "第二次被拒/忽略",
       "landed_at": "tests/ui-agent-skills/fixtures/approval/A-4",
@@ -484,7 +484,7 @@
     {
       "id": "A-5",
       "class": "approval",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "source": "ev-sample-flow.md#4.2",
       "trigger": "under_review 超时",
       "expected": "fallback 稳定路径 / 显式标记",
       "landed_at": "tests/ui-agent-skills/fixtures/approval/A-5",
@@ -493,7 +493,7 @@
     {
       "id": "A-6",
       "class": "approval",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.2",
+      "source": "ev-sample-flow.md#4.2",
       "trigger": "任意（非 approver 调用审批）",
       "expected": "deny-first 阻断 + 报路径",
       "landed_at": "tests/ui-agent-skills/fixtures/approval/A-6",
@@ -502,7 +502,7 @@
     {
       "id": "GF-A1",
       "class": "contract",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.4",
+      "source": "ev-sample-flow.md#4.4",
       "trigger": "审批 action 非 role=approver",
       "expected": "deny-first 阻断（role separation，hard fail）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A1",
@@ -511,7 +511,7 @@
     {
       "id": "GF-A2",
       "class": "contract",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.4",
+      "source": "ev-sample-flow.md#4.4",
       "trigger": "APPROVED/REJECTED 系统自动生成",
       "expected": "必须由 Human 实签（不得系统自动）",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A2",
@@ -520,12 +520,12 @@
     {
       "id": "GF-A3",
       "class": "contract",
-      "source": "ui-agent-skills-ev-sample-flow.md#4.4",
+      "source": "ev-sample-flow.md#4.4",
       "trigger": "rejected 后重提交",
       "expected": "生成新 revision，旧 approved 不污染新链路",
       "landed_at": "tests/ui-agent-skills/fixtures/contract/GF-A3",
       "status": "ready"
     }
   ],
-  "manifest_hash": "607207759ad92fbc31f9fc970e1c57bef67722a600171508ddc6a22019acdbfe"
+  "manifest_hash": "ac79c7af837d22e0b0d1af50f14f0cfcb36bd540e60a73680ad0f801823fb9bd"
 }

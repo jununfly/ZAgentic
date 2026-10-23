@@ -62,7 +62,7 @@ built, reviewed, broken, verified, and handed off. The bucket covers:
 | --- | --- |
 | Inbound | Human prompts asking to design, build, review, break, verify, or hand off a UI surface. |
 | Outbound | Canonical UI artifacts and a verification receipt written into the target project's chosen surface. |
-| Cross-bucket | Reads `ZJ-CONTEXT.md` for vocabulary; reads `docs/designs/ui-agent-skills/` and `docs/zj-adr/` for the contracts and decisions it must respect; reads but does not write into other buckets. |
+| Cross-bucket | Reads `ZJ-CONTEXT.md` for vocabulary; reads `skills/ui/zj-ui-core/contracts/` and `docs/zj-adr/` for the contracts and decisions it must respect; reads but does not write into other buckets. |
 | External | Connects to a Storybook active adapter (B1) for verification; relies on `zj-ui-core/scripts/` for the shared primitives. |
 
 ## Failure behavior
