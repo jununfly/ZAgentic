@@ -237,12 +237,18 @@ class BoundaryRegistry:
 # 编排入口：一次 adapter 调用的完整边界决策
 # --------------------------------------------------------------------------
 class BoundaryDecision:
-    """一次调用后 boundary 的决策记录（可审计、可断言）。"""
+    """一次调用后 boundary 的决策记录（可审计、可断言）。
 
-    __slots__ = (
+    FIELDS is the single source of truth for the recorded attributes; both
+    ``__slots__`` and ``as_dict`` derive from it so adding a field only touches
+    one place (the constructor signature).
+    """
+
+    FIELDS = (
         "adapter_id", "lifecycle", "invoked", "outcome_class", "receipt_status",
         "action", "reason", "error", "local_recovery",
     )
+    __slots__ = FIELDS
 
     def __init__(
         self,
@@ -268,17 +274,7 @@ class BoundaryDecision:
         self.local_recovery = local_recovery
 
     def as_dict(self) -> Dict[str, Any]:
-        return {
-            "adapter_id": self.adapter_id,
-            "lifecycle": self.lifecycle,
-            "invoked": self.invoked,
-            "outcome_class": self.outcome_class,
-            "receipt_status": self.receipt_status,
-            "action": self.action,
-            "reason": self.reason,
-            "error": self.error,
-            "local_recovery": self.local_recovery,
-        }
+        return {k: getattr(self, k) for k in self.FIELDS}
 
     def __repr__(self) -> str:  # pragma: no cover - debug aid
         return (

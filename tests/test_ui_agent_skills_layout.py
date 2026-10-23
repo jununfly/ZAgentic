@@ -332,6 +332,12 @@ class Indexes(unittest.TestCase):
             "Human gate",
             "Failure fixture",
             "Contract skeleton",
+            "AdapterBoundary",
+            "Dual Lane Runner",
+            "Resolver",
+            "M3E",
+            "Golden fixture",
+            "Drift harness",
         ):
             self.assertIn(f"**{term}**", glossary, term)
 

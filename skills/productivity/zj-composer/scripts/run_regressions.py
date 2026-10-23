@@ -621,6 +621,7 @@ def run_negative_case(
     case: dict[str, Any],
     temp_root: Path,
     ledger: EffectLedger,
+    root: Path,
 ) -> dict[str, Any]:
     case_dir = temp_root / fixture_id / str(case["id"])
     plan_path = case_dir / "plan.md"
@@ -629,7 +630,7 @@ def run_negative_case(
         if mutated == plan_text:
             raise RegressionError("mutation did not change the Plan")
         ledger.write_temporary(plan_path, mutated)
-        validation = validate_plan(plan_path, ROOT, None)
+        validation = validate_plan(plan_path, root, None)
         categories = diagnostic_categories(validation)
         expected = str(case["expected_category"])
         passed = not validation.get("valid", True) and expected in categories
@@ -658,13 +659,14 @@ def run_rejected_case(
     plan_text: str,
     temp_root: Path,
     ledger: EffectLedger,
+    root: Path,
 ) -> dict[str, Any]:
     case_dir = temp_root / fixture_id / "rejected-plan"
     plan_path = case_dir / "plan.md"
     try:
         rejected_text = mutate_rejection(plan_text)
         ledger.write_temporary(plan_path, rejected_text)
-        validation = validate_plan(plan_path, ROOT, None)
+        validation = validate_plan(plan_path, root, None)
         sections, _ = parse_sections(rejected_text.splitlines(), [])
         identity = sections.get("Identity", {})
         status, _ = field_value(identity, "status")
@@ -727,7 +729,7 @@ def replace_section_body(text: str, section_name: str, body: str) -> str:
     return pattern.sub(lambda match: match.group(1) + "\n" + body.rstrip() + "\n\n", text, count=1)
 
 
-def run_no_match_case(plan_text: str, temp_root: Path, ledger: EffectLedger) -> dict[str, Any]:
+def run_no_match_case(plan_text: str, temp_root: Path, ledger: EffectLedger, root: Path) -> dict[str, Any]:
     gap_line = "required skill：跨工具组合的统一执行能力"
     plan = replace_section_body(
         plan_text,
@@ -745,7 +747,7 @@ def run_no_match_case(plan_text: str, temp_root: Path, ledger: EffectLedger) -> 
     plan = replace_field(plan, "Verification", "plan_acceptance", "`passed`")
     path = temp_root / "no-match" / "plan.md"
     ledger.write_temporary(path, plan)
-    validation = validate_plan(path, ROOT, None)
+    validation = validate_plan(path, root, None)
     sections, _ = parse_sections(plan.splitlines(), [])
     gap_body = [
         value
@@ -1049,7 +1051,6 @@ def run_removal_regression(
 
 
 def run_regressions(root: Path, output: Path) -> dict[str, Any]:
-    global ROOT
     ROOT = root.resolve()
     ledger = EffectLedger()
     fixture_root = ROOT / "skills-outputs" / "zj-composer"
@@ -1101,10 +1102,10 @@ def run_regressions(root: Path, output: Path) -> dict[str, Any]:
                 plan_text = plan_path.read_text(encoding="utf-8")
                 handoff = inspect_handoff(plan_path)
                 negative_cases = [
-                    run_negative_case(fixture_id, plan_text, case, temp_root, ledger)
+                    run_negative_case(fixture_id, plan_text, case, temp_root, ledger, ROOT)
                     for case in case_definitions()
                 ]
-                rejected = run_rejected_case(fixture_id, plan_text, temp_root, ledger)
+                rejected = run_rejected_case(fixture_id, plan_text, temp_root, ledger, ROOT)
                 fixtures_result.append(
                     {
                         "fixture_id": fixture_id,
@@ -1124,6 +1125,7 @@ def run_regressions(root: Path, output: Path) -> dict[str, Any]:
                 (fixture_dirs[1] / "plan.md").read_text(encoding="utf-8"),
                 temp_root,
                 ledger,
+                ROOT,
             )
             recursive_catalog = run_recursive_catalog_regression(temp_root, ledger)
             template_pinning = run_template_pinning_regression(ROOT, temp_root, ledger)
