@@ -16,7 +16,7 @@ answers which question about it?
 This overview describes the ZAgentic repository's current architectural shape:
 the skills collection, its installer and validator pipelines, and the
 documentation governance that makes the collection cohere. It names the
-5 + 1 model (five public skill buckets plus one root-level personal tree) and
+6 + 1 model (six public skill buckets plus one root-level personal tree) and
 points each reader at the right view. It deliberately does not restate the
 individual skill workflows, the bucket-selection rules, or the historical
 decisions behind the bucket layout.
@@ -31,7 +31,7 @@ decisions behind the bucket layout.
   `claude`, `codex`, and `workbuddy`. Beyond those, the recursive plugin
   discovery, the frontmatter contract, and the installer preset all assume
   the platform resolves `SKILL.md` through standard scanning.
-- The 5 + 1 skill model is the deliberate shape of the collection, not a
+- The 6 + 1 skill model is the deliberate shape of the collection, not a
   side effect of file layout. Reorganising buckets is an ADR-bearing change.
 
 ## System boundary
@@ -50,7 +50,7 @@ and each kind has its own authority boundary; this section lists them.
 
 ## Major parts
 
-- **Five public skill buckets** under `skills/`, each with its own
+- **Six public skill buckets** under `skills/`, each with its own
   `README.md` index and a one-line registration in the top-level
   `README.md`:
 
@@ -58,9 +58,10 @@ and each kind has its own authority boundary; this section lists them.
   | --- | --- | --- |
   | `engineering/` | 21 | Daily code work; daily engineering decisions. |
   | `codebase-docs/` | 8 | One-codebase documentation governance; documentation architecture. |
-  | `productivity/` | 8 | Daily non-code workflow skills. |
+  | `productivity/` | 13 | Daily non-code workflow skills. |
   | `misc/` | 6 | Kept around but infrequently used. |
-  | `research/` | 4 | Evidence production and domain-study methods. |
+  | `research/` | 5 | Evidence production and domain-study methods. |
+  | `ui/` | 11 | UI agent-skill chain: contract base (S0) + ten stages (S1..S10) from intake to handoff. |
 
 - **One root-level skill tree** at `personal/`. It contains two skills,
   installs through the same link script, but is explicitly excluded from

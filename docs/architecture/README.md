@@ -46,7 +46,7 @@ maintenance rules for a single skill's frontmatter (owned by
 ### Overview
 
 - [System overview](ta-zagentic-overview.md) — purpose, exterior boundary,
-  the 5 + 1 skill-tree model, and reader entry points; owner:
+  the 6 + 1 skill-tree model, and reader entry points; owner:
   `architecture.overview.zagentic`; authority-id: `architecture.overview.zagentic`.
 
 ### Layers and allowed dependencies
@@ -70,6 +70,9 @@ maintenance rules for a single skill's frontmatter (owned by
 - [Research bucket](ta-skill-bucket-research.md) — evidence-production and
   domain-study skills; authority-id:
   `architecture.subsystem.bucket.research`.
+- [UI bucket](ta-skill-bucket-ui.md) — UI agent-skill chain (S0 contract
+  base + S1..S10 stages); authority-id:
+  `architecture.subsystem.bucket.ui`.
 - [Personal skill tree](ta-zagentic-personal-tree.md) — root-level
   `personal/` tree as its own subsystem with a separate installation path;
   authority-id: `architecture.subsystem.personal-tree`.
