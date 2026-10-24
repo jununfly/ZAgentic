@@ -48,3 +48,11 @@ jobs:
         # NOT a required check: keep it out of the branch-protection contexts so
         # an unrelated PR is never blocked by it (see PR #211).
         run: python3 scripts/check-docs-dangling-refs.py --repo-root .
+      - name: Verify ADR evidence references
+        # ADRs cite skills and commits as decision evidence. A dead commit sha
+        # or a renamed/absent skill name is silent fact drift that the
+        # dangling-refs gate cannot see (it only scans links/paths and
+        # suppresses the retired namespaces ADRs legitimately cite). This makes
+        # the evidence layer mechanically checkable on every push / pull_request.
+        # NOT a required check (see PR #211): WARN findings never block a merge.
+        run: python3 scripts/check-adrs.py --repo-root .

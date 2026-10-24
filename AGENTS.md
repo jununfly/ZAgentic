@@ -37,3 +37,5 @@ new domain term to `ZJ-CONTEXT.md` before merge.
 For a skill-pair workflow, use `zj-steelman` before grilling, `zj-dry-run`
 before commit, and `zj-debrief` after completion (`codebase-docs/`). See
 `docs/designs/zj-cross-stage-skills.md` for their complementarity matrix.
+
+**ADR / docs 事实治理：** ADR（`docs/zj-adr/`）是 docs 治理范围的一部分，不是一次性决策快照。每次 docs 改动需顺带核对 ADR 的事实陈述（技能名、commit、路径、计数断言）；语义性事实（桶归属、数量）由人工在改动时复核。可机械验证的部分由 CI 的 `docs-dangling-refs` job 自动覆盖：`scripts/check-docs-dangling-refs.py`（链接/路径）与 `scripts/check-adrs.py`（commit 与技能名引用）。
