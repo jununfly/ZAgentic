@@ -3,9 +3,7 @@
 - **归属节点**：1-2-3（产品实现路线 · 计划层 · `exploit`）
 - **文档性质**：契约冻结，交付物为 ui-flow/v1 语义与迁移规范，**不含产品代码落地**。
 - **依赖**：1-2-1（六类 schema 冻结 v0.1）、1-2-2（编辑/patch/unknown 语义冻结）。
-- **引用源**：
-  - `discussions/ui-agent-skills-complete-solution/MASTER.md` L45 / L52-56 / L68 / L94-96
-  - `discussions/ui-agent-skills-complete-solution/sub-01-artifact-contract.md` L31/L52/L67/L73/L79/L88/L94/L100/L109/L115/L121/L127-155
+- **同源约束**：保证边界与局限见 `guarantee-boundary.md`；毕业闸门与验收指标见 `graduation-gates.md`。
 - **本文件版本**：v0.1（冻结；后续变更经 1-2-4 golden fixtures 校验）。
 
 ---

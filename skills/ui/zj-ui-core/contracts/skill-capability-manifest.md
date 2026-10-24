@@ -5,7 +5,7 @@
 > 归属路线图节点 1-3-1（ui-agent-skills 路线图已收口，carrier 文件已清理）。
 > 本文件属于**计划层交付物**，仅冻结契约：不创建 skill 目录、不写 resolver 代码、不跑可执行断言（与 1-2 一致）。resolver 算法与 plan hash 归 1-3-2；lease/幂等/失败阶梯归 1-3-3；持久化与重放归 1-3-4；目录与 SKILL.md 落地归 1-6。
 >
-> 权威来源：`discussions/complete-solution/MASTER.md` L17（编排层定义）、L58-75（skill portfolio 与七字段要求）、L133（多 skill 抢占风险）、L146-147（沉淀清单）；`sub-02-skill-orchestration.md` L201-207（整合立场）、L73（owner 数=1 闸门）、L97（四类失败结果）、L181（租约写锁）。
+> 同源约束：保证边界与局限见 `guarantee-boundary.md`；毕业闸门与验收指标见 `graduation-gates.md`。
 
 > **1-6-2 增补（不改上文冻结内容）**：`skills/ui/` 多了一个**第十一个**技能 `zj-ui-core`，它是
 > **S0 base carrier**，不属于本文定义的十个 stage：`stage=S0`、`precedence=5`、`owner_scope=read`、

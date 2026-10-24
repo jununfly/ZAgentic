@@ -3,9 +3,7 @@
 - **归属节点**：1-2-4（产品实现路线 · 计划层 · `exploit`），1-2 子树最后一片叶子。
 - **文档性质**：契约冻结。本节点交付物为 **golden fixture 规范**（清单 / 覆盖矩阵 / 协议 / 闸门阈值），**不含产品代码落地，也不含可执行的 fixture 断言代码**——可执行断言待 Experience Version 把技能实现后再跑（该决策已 `decide` 落盘于 1-2-4 节点）。
 - **依赖**：1-2-1（六类 schema v0.1）、1-2-2（编辑/patch/unknown 语义）、1-2-3（ui-flow/v1 六实体与迁移规则）。
-- **引用源**：
-  - `discussions/ui-agent-skills-complete-solution/MASTER.md` L54 / L56 / L101
-  - `discussions/ui-agent-skills-complete-solution/sub-01-artifact-contract.md` L37 / L58 / L79 / L88 / L94 / L100 / L120 / L121 / L135 / L150
+- **同源约束**：保证边界与局限见 `guarantee-boundary.md`；毕业闸门与验收指标见 `graduation-gates.md`。
 - **本文件版本**：v0.1（冻结）。
 
 ---
