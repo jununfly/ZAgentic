@@ -29,7 +29,7 @@ A 仓处理每个 skill-pair 时, 用统一英文动词声明动作:
 
 ## 决策 2 — A-only PR 标志 3 rule (1-3-3-1)
 
-**1-3-3-1 决策** (用户选 1+5+7 三项)。
+**1-3-3-1 决策**（用户从候选 rule 中选定这三项）。
 
 A 仓任何 skill 改动 PR 必查 3 项:
 
@@ -39,7 +39,7 @@ A 仓任何 skill 改动 PR 必查 3 项:
 
 **为什么是 3 项**: A 仓"自给自足"需要 3 个 hook 守住 — 平台发现 (Rule 1), 工具安全 (Rule 2), 词汇一致 (Rule 3). 漏一项都会让仓变"分叉" (skill 与词汇表不同步 / skill 与 plugin 列表不同步).
 
-落地形式: 写在每个 skill 的 PR review checklist + 仓根 `AGENTS.md` (如未写需补).
+落地形式: 写在每个 skill 的 PR review checklist + 仓根 `AGENTS.md`。三条 rule 均已在 `AGENTS.md` 落盘（平台挂接 / Git 包装 / 术语表），不再是待补项。
 
 ## 决策 3 — 跨阶段 skill 抽象的元规则 (1-6 Q3)
 
@@ -60,7 +60,7 @@ A 仓任何 skill 改动 PR 必查 3 项:
 
 ## 决策 4 — Grilling 节奏: 只问需用户拍板的问题 (1 问)
 
-**1-6 阶段用户指示确立** (`docs/plans/handoff-2026-08-14.md` 101-107 行).
+**1-6 阶段用户指示确立**（grilling 实操中确立；当时的 handoff 载体已随 `docs/plans/` 治理移除，此处只保留决策本身）。
 
 grilling 阶段 (写 SKILL.md 之前) 严格区分两类问题:
 

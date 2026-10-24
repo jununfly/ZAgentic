@@ -26,11 +26,13 @@ authority-id: design.zj-discuss-architecture
 
 ## 1. 组件图
 
+组件路径相对于技能安装根 `skills/productivity/zj-discuss/`（图中省略该前缀）。
+
 ```
                        zj-discuss  (生命周期 owner / 编排器)
-                       ├─ references/master-template.md   MASTER 骨架
-                       ├─ references/subdoc-template.md   子文档骨架(角色数无关)
-                       ├─ references/role-matrix.md       ★ 角色候选池 + 推荐启发式 (SSOT)
+                       ├─ references/master-template.md   MASTER 骨架                  # docs-ref-allow
+                       ├─ references/subdoc-template.md   子文档骨架(角色数无关)        # docs-ref-allow
+                       ├─ references/role-matrix.md       ★ 角色候选池 + 推荐启发式(SSOT) # docs-ref-allow
                        └─ 议程引擎 (固定议程 F1–F5 + 动态议程决策函数)
                               │ 为每个角色生成 briefing
                               ▼

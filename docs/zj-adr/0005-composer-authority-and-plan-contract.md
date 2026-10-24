@@ -44,7 +44,15 @@ The Composer skill owns the Plan template as a versioned resource. Every Plan re
 
 ## Evidence
 
-- [pstack primary findings](../../skills-outputs/zj-research/pstack-claude-capability-fit/primary-findings.md)
-- [pstack capability-fit decision record](../../skills-outputs/zj-open-source-capability-fit/pstack-claude-skill-fit/decision_record.md)
-- [pstack technical research report](../../skills-outputs/zj-tech-research-report/pstack-claude-skill-fit/2026-10-08-pstack-claude-report.md)
+The pstack investigation produced three evidence packages under
+`skills-outputs/` (the agreed home for skill-produced artifacts, per
+`AGENTS.md`): primary findings under `skills-outputs/zj-research/`, the
+capability-fit decision record under
+`skills-outputs/zj-open-source-capability-fit/`, and the technical research
+report under `skills-outputs/zj-tech-research-report/`. Those three trees were
+removed by the 2026-10-22 governance sweep that cleared `skills-outputs/` of
+temporary session content, so the paths above no longer resolve — the supporting
+material survives only in git history. The durable output of that investigation
+is the product-form decision below, which is what this ADR records:
+
 - [Composer and Plan product form](../designs/zj-composer-plan-product-form.md)

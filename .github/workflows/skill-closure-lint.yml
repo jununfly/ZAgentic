@@ -35,6 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # Full history required: check-adrs.py verifies ADR commit-SHA
+        # references with `git cat-file`, and those SHAs are historical
+        # ancestors of main. A default shallow checkout (depth 1) lacks the
+        # objects, so every PR would falsely fail this gate on pre-existing
+        # ADR commit citations. fetch-depth: 0 pulls the whole history.
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -48,3 +55,11 @@ jobs:
         # NOT a required check: keep it out of the branch-protection contexts so
         # an unrelated PR is never blocked by it (see PR #211).
         run: python3 scripts/check-docs-dangling-refs.py --repo-root .
+      - name: Verify ADR evidence references
+        # ADRs cite skills and commits as decision evidence. A dead commit sha
+        # or a renamed/absent skill name is silent fact drift that the
+        # dangling-refs gate cannot see (it only scans links/paths and
+        # suppresses the retired namespaces ADRs legitimately cite). This makes
+        # the evidence layer mechanically checkable on every push / pull_request.
+        # NOT a required check (see PR #211): WARN findings never block a merge.
+        run: python3 scripts/check-adrs.py --repo-root .

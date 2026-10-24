@@ -39,7 +39,7 @@ the same knowledge graph. They are two *concern modules* of one graph.
      `Pipeline` / `Validator`, plus the product rules. Owner: `docs/ontology/`
      (ZAgentic-local extraction + validation).
 2. **Model unified, deployment split.** Module G ships with the portable skill
-   (`scripts/docs_governance.py` + fixtures + tests) and can be installed into any
+   (`skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py` + fixtures + tests) and can be installed into any
    codebase. Module P's extractor/validator live under `docs/ontology/` because they
    are ZAgentic-specific. The governance contract explicitly tolerates skill-local
    copies over cross-skill imports, so this split is intentional, not drift.

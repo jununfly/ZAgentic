@@ -45,7 +45,7 @@ metadata is limited to `disable-model-invocation` (boolean) and `argument-hint`
 non-empty `triggers` string list remain top-level compatibility fields. No
 other skill may introduce them without a new schema decision.
 
-When `agents/openai.yaml` exists, its `policy.allow_implicit_invocation` value
+When `agents/openai.yaml` exists (relative to each skill root), its `policy.allow_implicit_invocation` value <!-- # docs-ref-allow: 泛指每个 skill 根目录内的约定文件 -->
 must be boolean. A sidecar cannot enable implicit invocation when the matching
 frontmatter sets `disable-model-invocation: true`.
 

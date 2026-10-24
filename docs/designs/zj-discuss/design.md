@@ -18,7 +18,7 @@ authority-id: design.zj-discuss-spec
 ## Boundaries
 
 - 本文固定方法和行为合同，不拥有角色定义的逐项内容；角色语义由 skill 内
-  `references/role-matrix.md` 维护。
+  `skills/productivity/zj-discuss/references/role-matrix.md` 维护。
 - 外部范式证据只支持取舍，不授权引入宿主运行时、router 或 suite 状态。
 - 求解期文档不是长期权威，必须经过文档治理后才能沉淀或删除。
 
@@ -26,7 +26,7 @@ authority-id: design.zj-discuss-spec
 > （立项 grill → 共识 → 落 skill → 自举验证 → 合并 → 阶段 2 处置 → 开源范式复盘/决策模型复盘
 > → 本轮 4 项追加改进）。目的是**避免对话进程丢失完整 context**。
 > 产品定义见 `product.md`，组件与生命周期见 `architecture.md`。
-> 角色语义唯一真源：`references/role-matrix.md`。
+> 角色语义唯一真源：`skills/productivity/zj-discuss/references/role-matrix.md`。
 
 ---
 
@@ -82,8 +82,8 @@ authority-id: design.zj-discuss-spec
 | # | 改进 | 对应范式借鉴 | 状态 |
 | --- | --- | --- | --- |
 | R1 | `zj-discuss-view --all`（默认 {B,C,A}）+ 单角色 `--role X`（候选池任一 key 或自定义）；多角色由 `--all` 一次性打印启动包 | 一键触发 vs 手动 | 已回写（`--all` + 单角色 `--role`；见 §3.2 / architecture §1）。**`--role X,Y` 逗号语法已正式关闭**——单会话多角色即违反隔离，理由写入 SKILL.md Phase 2 步骤 2 |
-| R2 | 静态 launch-pack 生成器（替代手工拷贝，不建运行时） | ACP 程序化派生 | 已回写 —— `scripts/launch_pack.py`（读声明必需集 → 每角色一份 `<slug>-launchpack-<role>.md`）；回归守卫 `tests/test_launch_pack.py`，其中 `NoRuntimeInvariant` 机械禁止其退化为运行时 |
-| R3 | subdoc-template 增状态协议字段 + 预演结构性闸门（conclusion 无预演字段）+ 预演可见标签 | Completion Status 协议 | 已回写 —— `subdoc-template.md` 增 `状态协议`（DONE/DONE_WITH_CONCERNS/BLOCKED/NEEDS_CONTEXT）与 `⚠ 非独立` 标签、conclusion 禁引预演；**机械闸门** `scripts/check_subdoc.py`（退出码 0/1/2），守卫 `tests/test_check_subdoc.py` |
+| R2 | 静态 launch-pack 生成器（替代手工拷贝，不建运行时） | ACP 程序化派生 | 已回写 —— `skills/productivity/zj-discuss/scripts/launch_pack.py`（读声明必需集 → 每角色一份 `<slug>-launchpack-<role>.md`）；回归守卫 `skills/productivity/zj-discuss/tests/test_launch_pack.py`，其中 `NoRuntimeInvariant` 机械禁止其退化为运行时 |
+| R3 | subdoc-template 增状态协议字段 + 预演结构性闸门（conclusion 无预演字段）+ 预演可见标签 | Completion Status 协议 | 已回写 —— `subdoc-template.md` 增 `状态协议`（DONE/DONE_WITH_CONCERNS/BLOCKED/NEEDS_CONTEXT）与 `⚠ 非独立` 标签、conclusion 禁引预演；**机械闸门** `skills/productivity/zj-discuss/scripts/check_subdoc.py`（退出码 0/1/2），守卫 `skills/productivity/zj-discuss/tests/test_check_subdoc.py` |
 | R4 | 轻量可重算度量注册表（单一 schema，被 sub-01/02 同构引用） | compression 度量 | 已定义 schema（见 §9，未激活，待 PoC） |
 | R5 | 集成边界文本：跨 provider 评审=组件引用、learnings=薄层复用、digest=voice-only | suite/reuse ladder | 已回写 —— **按处方落点进 `SKILL.md`「外部能力集成边界（选择性复用）」**（此前仅存于 §8 导致 SKILL 侧零命中），完整论证仍见 §8 |
 | R6 | ZJ-CONTEXT.md 领域词注册 | — | 已回写（ZJ-CONTEXT.md `## Discussion methodology`） |
@@ -160,7 +160,7 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 
 - **候选池扩容**：base {B,C,A} 之外，新增 10 个可选角色 T/S/O/D/L/F/U/R/P/E，
   每个带 key / 名称 / 结构立场 / 差异锚点 / 一句话简介 / 推荐触发信号
-  （完整定义见 `references/role-matrix.md`）。
+  （完整定义见 `skills/productivity/zj-discuss/references/role-matrix.md`）。
 - **准备阶段交互**（`zj-discuss` SKILL.md Phase 1 步骤 2）：
   - 向 Human 呈现「**推荐参与角色**」：每个角色带一句话简介 + 推荐理由（命中信号 / 为何 base）。
   - 再呈现「**其他可选角色**」：候选池未推荐者，每个带一句话简介，支持 Human 增删。
@@ -173,7 +173,7 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 - 移除「B/C/A 三块」硬编码：子文档视角区块按**声明必需集**动态生成
   （`subdoc-template.md` 改为模式示例 + 生成说明）。
 - `zj-discuss-view --role X` 的 X 可为候选池任一 key 或 Human 自定义 key
-  （`zj-discuss-view/SKILL.md` argument-hint 与 workflow 已更新）。
+  （`skills/productivity/zj-discuss-view/SKILL.md` argument-hint 与 workflow 已更新）。
 - 硬规则 2/4 改为引用「声明必需集」，不再写死 B/C/A。
 
 ### 3.3 固定议程 + 动态议程（改进 3）
@@ -196,7 +196,7 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 
 ## 4. 角色池完整定义（SSOT 摘要）
 
-> 详见 `references/role-matrix.md`。此处为速查。
+> 详见 `skills/productivity/zj-discuss/references/role-matrix.md`。此处为速查。
 
 **编排者（非独立视角）**：主力AI — 产品实用主义 + 架构整合，主会话编排大脑，低权重（非隔离）。
 
@@ -242,7 +242,7 @@ spawn 不同 provider 的独立会话（届时 R-u1 / R-r1 的 C 复用形态可
 ## 7. 开放项 / Backlog
 
 - [x] R1–R7 七条开源派生修订全部落地：R1/R2/R3/R5/R6/R7 已回写（见 §2 + §8）；
-  **R4 已激活**（`scripts/metrics.py` + `tests/test_metrics.py`，§9）。
+  **R4 已激活**（`skills/productivity/zj-discuss/scripts/metrics.py` + `skills/productivity/zj-discuss/tests/test_metrics.py`，§9）。
 - [x] 语义兼容未知项（**独立于 R4**，§8 关联）：**最小 PoC 已通过**——digest 注入
   不破坏子文档 / MASTER 解析。结论见 §8「digest 注入 PoC」段：闸门与度量对 digest
   区块惰性，且 `split_sections` 已围栏感知（digest 围栏内嵌 `### 视角` 回声也不误判）。
@@ -288,7 +288,7 @@ raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
   代码围栏**，导致 digest 围栏内嵌的 `### 视角：X` 回声会被误判为真实视角
   （视角计数 +1、raw 字符量虚增、闸门报缺来源）。两脚本的 `split_sections` 改为
   **围栏感知**后，围栏内 `#` 标题全部惰性；现有测试无回归。
-- 回归守卫 `tests/test_digest_poc.py`（5 用例）：含 digest 的子文档度量与基线逐字段
+- 回归守卫 `skills/productivity/zj-discuss/tests/test_digest_poc.py`（5 用例）：含 digest 的子文档度量与基线逐字段
   一致、闸门退出 0、MASTER digest 不污染 solution 字符量、且围栏内 `### 视角` 回声
   不计为视角。
 
@@ -316,7 +316,7 @@ raw / solution 字符量、不触发违规、不破坏 conclusion 解析。
 | `compression_ratio` | `raw_volume_chars / solution_volume_chars`（开源式压缩比） |
 | `recomputable` | 恒 `true`——全部字段从磁盘文件随时可重算，无隐藏状态 |
 
-**激活状态**：**已激活**（`scripts/metrics.py` 只读度量计算机 + `tests/test_metrics.py`
+**激活状态**：**已激活**（`skills/productivity/zj-discuss/scripts/metrics.py` 只读度量计算机 + `skills/productivity/zj-discuss/tests/test_metrics.py`
 守卫；MASTER 处置契约增「复盘度量」可选块，见 `master-template.md`）。
 
 > **关于此前「未激活」决议的修正（诚实勘误）：** 原 §9 把 R4 激活挂在「digest /
@@ -405,7 +405,7 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
   - **结论（base 初值建议）**：B/A 维持 **N=3**（安全区间 ≤4）；**C 在 solo/内部工具子问题
     （无真实市场信号）闸门降为 N=2**，触及外部用户/竞品/生态信号的子问题回 N=3。
     采用「方案 A」最小改动（不整体降 N，避免稀释 B/A 饱满视角）。
-  - **落实**：`role-methods/C.md` 增 solo 豁免条款 + `role-matrix.md` L37-38 注记（见 §10.4 执行项）。
+  - **落实**：`skills/productivity/zj-discuss/references/role-methods/C.md` 增 solo 豁免条款 + `role-matrix.md` L37-38 注记（见 §10.4 执行项）。
   - **诚实声明（已闭合）**：被测样本由本 Agent 同会话产出（作者即评审），存在自指偏差，原结论为初值建议。
     该自指偏差风险经 r1-closure roadmap 节点 1-3（盲评一致率 86.7%）与 1-4（fresh-context 独立子 Agent、
     Cohen's κ=0.667 substantial）**跨会话复核确认**：B/A 维持 N=3、C solo N=2 稳健，未触发节点 1-1 决策 D。

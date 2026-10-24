@@ -25,7 +25,7 @@
 
 | 模块 | 内容 | 归属 / 部署 | 源 |
 | --- | --- | --- | --- |
-| **Module G（治理层）** | 文档系统自身的分类/权威/生命周期契约：`doc-kind` 词表、`authority` 层级、`DocMap` 绑定契约、`MAP_*` 机械检查 | **可移植技能** `skills/codebase-docs/zj-docs-ontology`（装到任意代码库） | `references/governance-contract.md` |
+| **Module G（治理层）** | 文档系统自身的分类/权威/生命周期契约：`doc-kind` 词表、`authority` 层级、`DocMap` 绑定契约、`MAP_*` 机械检查 | **可移植技能** `skills/codebase-docs/zj-docs-ontology`（装到任意代码库） | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md` |
 | **Module P（产品域层）** | ZAgentic 作为技能集合产品的领域模型：平台/桶/技能/管道/校验器 | **ZAgentic 本地** `docs/ontology/`（抽取与校验实现） | 本文件 |
 
 - **模型层合一**：`ontology.schema.json` 是所有实体/属性/关联/规则的单一真相源，每个实体与规则都标了 `module`。
@@ -44,7 +44,7 @@
 | --- | --- | --- | --- |
 | `Platform` | ZAgentic 技能发布的 Agent 平台 | `claude` / `codex` / `workbuddy` | `docs/architecture/ta-zagentic-overview.md` |
 | `SkillBucket` | 公共或个人技能分组目录 | `engineering` / `ui` / `personal` | `skills/<bucket>/`、`personal/` |
-| `Skill` | 单个技能（SKILL.md + 辅助） | `zj-guide`、`zj-tdd` | `skills/<bucket>/<skill>/SKILL.md` |
+| `Skill` | 单个技能（SKILL.md + 辅助） | `zj-guide`、`zj-tdd` | `skills/<bucket>/<skill>/SKILL.md` <!-- # docs-ref-allow: `<bucket>`/`<skill>` 为通配占位符，非具体路径 --> |
 | `Pipeline` | 安装/校验/治理流程 | install-and-validate、docs-governance | `docs/architecture/ta-zagentic-pipelines.md` |
 | `Validator` | 检查脚本 | `validate-zagentic-plugin.py`、`docs/ontology/validate.py` | `scripts/` |
 
@@ -142,6 +142,6 @@ python3 docs/ontology/validate.py docs/ontology/graph.json
 - **新增文档**：frontmatter 声明 `doc-kind`/`authority`/`authority-id`；doc-map 除外。若为主视图则 `rule.stable-authority-id` 强制。
 - **改桶结构**：`rule.bucket-reorg-is-adr-bearing` 要求先有 ADR；否则 `rule.bucket-inventory-consistent` 抓出文档与活树不一致。
 - **改 doc-map**：务必遵守 `rule.G1-docmap-binding`——每个 `authority-id` 用独立 bullet 绑定到恰好一页，不要把 id 放在含多个链接的块里（否则 `MAP_AUTHORITY_CONFLICT`）。
-- **人工评审项**（契约/夹具）由 reviewer 依据 `docs/zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已于 2026-10-24 删除，结论迁入该 ADR）与 `golden-fixtures-spec` 核对，不进自动校验。
+- **人工评审项**（契约/夹具）由 reviewer 依据 `docs/zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已删除，2026-10-24，结论迁入该 ADR）与 `golden-fixtures-spec` 核对，不进自动校验。
 
 > 设计原则：**图谱是派生事实，活代码树是真相源**。本体（本文件）只在术语/约束本身演进时才改；日常增删改只动代码树 + 重跑两脚本，即可保持文档系统高新鲜度。Module G 的治理逻辑由可移植技能 `zj-docs-ontology` 单一拥有，本仓库通过组合调用复用，不重复实现（治理契约明确容忍技能间不跨目录 import 的"私有副本"模式）。
