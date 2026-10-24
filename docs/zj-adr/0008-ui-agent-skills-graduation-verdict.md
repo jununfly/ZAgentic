@@ -60,9 +60,16 @@ after items landed later the same day. Deleting the page without writing record
    gates G-19..G-25) stays separately scoped** — it was split out of the 1-9 line
    and is not part of this retirement.
 3. **The governance status page is deleted.** `docs/designs/ui-agent-skills/` is
-   removed; it held only that page. The discussion record
-   `discussions/ui-agent-skills-complete-solution/` is kept — process material is
-   preserved, only the derived conclusion page is retired.
+   removed; it held only that page.
+
+   > **Reversed by [ADR 0009](./0009-ui-agent-skills-discussion-retirement.md)
+   > (2026-10-24).** At the time this ADR was written, the discussion record
+   > `discussions/ui-agent-skills-complete-solution/` was *kept* as process
+   > material. That decision was later reversed: the record was retired and its
+   > two durable content blocks distilled (de-sourced) into
+   > `skills/ui/zj-ui-core/contracts/guarantee-boundary.md` and
+   > `graduation-gates.md`. The remainder of this decision — the
+   > CONDITIONAL_ADOPTION verdict and the 1-10 retirement — is unchanged.
 4. **The cleanup log is not migrated.** The class 1/2/3 migration records are
    recoverable from git history; duplicating them into a long-lived page would
    create a second artefact to keep fresh.
