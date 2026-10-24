@@ -3,7 +3,7 @@
   "ontology": "ZAgentic Unified Codebase Documentation Ontology",
   "version": "2.0.0",
   "generated_for": "docs/ — the codebase documentation system of jununfly/ZAgentic",
-  "description": "统一本体（实体/属性/关联/规则）+ 知识图谱主干，服务于 docs/ 文档化系统。本 schema 是 Module P（产品域层）规则与领域词汇的【单一真相源】；Module G（治理层）的领域词汇在此建模，但其约束规则由可移植技能 zj-docs-ontology 单一拥有与强制（见 governance_module_rules）。校验器 docs/ontology/validate.py 一次性组合执行：本地强制的 P 规则 + 经 check_governance_module 组合的 G 规则。",
+  "description": "统一本体（实体/属性/关联/规则）+ 结构索引图主干，服务于 docs/ 文档化系统。本 schema 是 Module P（产品域层）规则与领域词汇的【单一真相源】；Module G（治理层）的领域词汇在此建模，但其约束规则由可移植技能 zj-docs-ontology 单一拥有与强制（见 governance_module_rules）。校验器 docs/ontology/validate.py 一次性组合执行：本地强制的 P 规则 + 经 check_governance_module 组合的 G 规则。",
   "modules": {
     "G_governance": {
       "name": "治理层 (Documentation Governance)",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract the ZAgentic documentation knowledge graph (A-Box) from the live repo.
+"""Extract the ZAgentic documentation structural index graph (A-Box) from the live repo.
 
 Scans `skills/` (buckets + skills) and `docs/` (doc pages with frontmatter) and
 emits a JSON graph: nodes (entities) + edges (typed relations). The live code
@@ -262,7 +262,7 @@ def build_graph(repo_root=None):
 
 def main():
     import argparse
-    ap = argparse.ArgumentParser(description="Extract the ZAgentic documentation knowledge graph (A-Box).")
+    ap = argparse.ArgumentParser(description="Extract the ZAgentic documentation structural index graph (A-Box).")
     ap.add_argument("repo", nargs="?", default=None, help="repo root (default: parent of docs/ontology/)")
     ap.add_argument("--repo", dest="repo_opt", default=None, help="repo root (explicit flag)")
     args = ap.parse_args()

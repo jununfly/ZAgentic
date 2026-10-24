@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reasoning + constraint validation over the ZAgentic documentation knowledge graph.
+"""Reasoning + constraint validation over the ZAgentic documentation structural index graph (A-Box).
 
 Regenerates the graph from the live repo (via extract.build_graph) so docs stay
 fresh, then runs the checkable rules: the Module P rules owned by this script
@@ -220,7 +220,7 @@ def main():
 
     from collections import Counter
     cnt = Counter(v[0] for v in violations)
-    print(f"知识图谱: {len(graph['nodes'])} 节点 / {len(graph['edges'])} 关联")
+    print(f"结构索引图: {len(graph['nodes'])} 节点 / {len(graph['edges'])} 关联")
     print(f"校验结果: {cnt.get(SEV_ERROR, 0)} 错误, {cnt.get(SEV_WARN, 0)} 警告")
     print("-" * 60)
     for sev, rule, msg in sorted(violations, key=lambda x: (x[0], x[1])):

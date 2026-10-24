@@ -69,6 +69,10 @@ jobs:
     # domain). Keeps the docs<->code drift checks (bucket inventory, bucket-reorg
     # ADR-bearing, skill-discoverable, doc-map binding) exercised on every push /
     # pull_request instead of only when run locally by hand.
+    # graph.json is a PRIVATE, gitignored, regenerable cache (the A-Box): it is
+    # produced by extract.build_graph and consumed only by validate.py / tests
+    # locally. It is never published as an artifact — it is a temporary derived
+    # cache for drift detection, not a deliverable knowledge graph.
     # NOT a required check (see PR #211): a red here must never block an unrelated
     # PR's merge. Defects surface as a non-blocking failure to inspect, not a gate.
     runs-on: ubuntu-latest
@@ -77,19 +81,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Regenerate ontology graph (A-Box) from live tree
-        # extract.py emits JSON to stdout; redirect to the gitignored graph.json
-        # so it can be uploaded as an artifact for inspection. Pure stdlib.
-        run: python3 docs/ontology/extract.py > docs/ontology/graph.json
-      - name: Upload ontology graph artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ontology-graph
-          path: docs/ontology/graph.json
-          if-no-files-found: warn
       - name: Validate unified ontology (Module G + Module P)
         # Single validator: runs native Module P checks and composes the portable
-        # skill's Module G checks via subprocess. Exits non-zero on ERROR.
+        # skill's Module G checks via subprocess. It regenerates the A-Box graph
+        # internally from the live tree (graph.json is a private cache, not an
+        # artifact). Exits non-zero on ERROR.
         run: python3 docs/ontology/validate.py
       - name: Run product-domain integration tests
         run: python3 docs/ontology/tests/test_ontology.py
