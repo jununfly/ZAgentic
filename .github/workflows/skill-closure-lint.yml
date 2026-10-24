@@ -63,3 +63,29 @@ jobs:
         # the evidence layer mechanically checkable on every push / pull_request.
         # NOT a required check (see PR #211): WARN findings never block a merge.
         run: python3 scripts/check-adrs.py --repo-root .
+
+  docs-ontology:
+    # Unified documentation ontology (Module G governance + Module P product
+    # domain). Keeps the docs<->code drift checks (bucket inventory, bucket-reorg
+    # ADR-bearing, skill-discoverable, doc-map binding) exercised on every push /
+    # pull_request instead of only when run locally by hand.
+    # graph.json is a PRIVATE, gitignored, regenerable cache (the A-Box): it is
+    # produced by extract.build_graph and consumed only by validate.py / tests
+    # locally. It is never published as an artifact — it is a temporary derived
+    # cache for drift detection, not a deliverable knowledge graph.
+    # NOT a required check (see PR #211): a red here must never block an unrelated
+    # PR's merge. Defects surface as a non-blocking failure to inspect, not a gate.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate unified ontology (Module G + Module P)
+        # Single validator: runs native Module P checks and composes the portable
+        # skill's Module G checks via subprocess. It regenerates the A-Box graph
+        # internally from the live tree (graph.json is a private cache, not an
+        # artifact). Exits non-zero on ERROR.
+        run: python3 docs/ontology/validate.py
+      - name: Run product-domain integration tests
+        run: python3 docs/ontology/tests/test_ontology.py

@@ -2,7 +2,8 @@
 
 > 本文件是 `docs/` 文档化系统的**概念主干（T-Box）**，与机器可读镜像
 > [`ontology.schema.json`](./ontology.schema.json) 一一对应，并由
-> 知识图谱实例（A-Box，由 [`extract.py`](./extract.py) 生成）与
+> 结构索引图实例（A-Box，由 [`extract.py`](./extract.py) 生成，作为
+> [`validate.py`](./validate.py) 校验用的临时派生缓存）与
 > [`validate.py`](./validate.py)（推理 + 约束校验）落地。
 
 `docs/` 不是一堆零散 Markdown，而是 ZAgentic 代码库（技能集合）的**文档化系统**。
@@ -13,14 +14,14 @@
 | 1 | 语义统一，消除歧义 | 用固定**实体类型**与**属性**定义术语（如 `SkillBucket` vs `Skill` vs `DocPage` 不再混用）；`authority-id` 统一标识权威页，消除"哪篇才是真源"的歧义。**两模块共用一份词汇，不再有"本体"命名撞车**。 |
 | 2 | 支持推理与约束校验 | `relations` 给出带域/范围/基数的 typed edges；`rules` 中 `checkable` 项由 `validate.py` 一次性执行 Module G + Module P 全部约束。 |
 | 3 | 让 Agent/Human 更容易懂业务 | 实体与关联即"业务词汇表 + 关系网"；从 `Skill → SkillBucket → Platform` 与 `ArchitectureView → Design → ADR` 两条主线即可读懂全貌。 |
-| 4 | 可复用、可设计、增删改保持新鲜度 | 图谱由 [`extract.py`](./extract.py) 从**活代码树**（`skills/`、`docs/`）重新生成；改动后重跑 `validate.py` 立即暴露漂移（如文档称"5+1 桶"而活树已 6+1）。 |
+| 4 | 可复用、可设计、增删改保持新鲜度 | 结构索引图由 [`extract.py`](./extract.py) 从**活代码树**（`skills/`、`docs/`）重新生成；改动后重跑 `validate.py` 立即暴露漂移（如文档称"5+1 桶"而活树已 6+1）。 |
 
 ---
 
 ## 0. 本体的两层结构（关键：合二为一，部署二分）
 
 本仓库曾有"两套 ontology"的混淆：通用技能 `zj-docs-ontology` 的"文档治理分类契约"
-与产品领域的"知识本体"被当成两套独立体系。**实际上它们是同一张知识图谱的两个 concern 模块**，
+与产品领域的"知识本体"被当成两套独立体系。**实际上它们是同一份本体的两个 concern 模块**，
 现统一为**一份**本体（单一 `ontology.schema.json` + 一张图 + 一个校验器），只在**部署**上二分：
 
 | 模块 | 内容 | 归属 / 部署 | 源 |
@@ -106,32 +107,25 @@
 
 ## 4. 规则（Rules）
 
-规则是不可破的约束/原则。`checkable` 项由 `validate.py` 一次性执行（Module G 的 `MAP_*` 由组合进来的治理脚本覆盖）；其余为人工评审项。
+规则是不可破的约束/原则。**Module P（产品域）规则由 `validate.py` 原生执行**，下表完整列出；**Module G（治理层）规则由可移植技能 `zj-docs-ontology` 单一拥有**（见 `governance-contract.md`），本仓库通过 `validate.py` 组合调用复用，不在此重述其定义——避免双头漂移，`ontology.schema.json` 也只保留 P 规则 + 一条 G 引用。
 
-| 规则 ID | 模块 | 陈述 | 可校验 | 源 |
-| --- | --- | --- | --- | --- |
-| `rule.G1-docmap-binding` | G | doc-map 把每个 authority-id 绑到恰好一页；同 id 绑多页 = `MAP_AUTHORITY_CONFLICT`，exit 非 0 | ✅ | governance-contract |
-| `rule.G2-doc-kind-authority-declared` | G | 每篇文档（doc-map 除外）声明 doc-kind 与 authority | ✅ | governance-contract |
-| `rule.G3-map-pointer-unique` | G | 仓库根仅一个 docs-map 指针；多指针/缺失为歧义/绿场 | ✅ | governance-contract |
-| `rule.one-owner-per-rule` | P | 一条持久规则恰有一个所有者文档；他页只链接不重述 | ✅ | architecture/README |
-| `rule.stable-authority-id` | G | 主视图/设计/协议发布前须声明稳定 authority-id | ✅ | architecture/README |
-| `rule.authority-id-unique` | G | authority-id 全局唯一（declaration 层由 zj-docs-architecture 强制，此处兜底） | ✅ | ontology |
-| `rule.adr-not-authority` | G | ADR 不取代现行架构/规则，且不得拥有 authority-id | ✅ | architecture/README |
-| `rule.bucket-reorg-is-adr-bearing` | P | 增删/重组桶必须有对应 ADR | ✅ | overview |
-| `rule.personal-tree-excluded` | P | personal/ 排除出插件发现/根 README/桶索引 | ✅ | overview |
-| `rule.every-skill-discoverable` | P | 公共技能须满足 frontmatter-schema 且已注册 | ✅ | skill-frontmatter-schema |
-| `rule.doc-kind-declared` | G | 每篇文档声明 doc-kind 与 authority（doc-map 除外） | ✅ | ta-*.md |
-| `rule.no-dangling-reference` | P | 关联端点必解析到存在的实例 | ✅ | ontology |
-| `rule.bucket-inventory-consistent` | P | 文档桶清单须与真实 skills/ 树一致（保鲜核心） | ✅ | overview vs skills/ |
-| `rule.contract-before-graduation` | G | ui 契约在毕业闸门前必须满足 | ❌ | ADR 0008（ui-agent-skills 毕业裁定 CONDITIONAL_ADOPTION） |
-| `rule.immutable-fixtures` | G | 黄金夹具不可变，删即炸 CI | ❌ | ui golden-fixtures-spec |
+### Module P — 产品域规则（本仓库原生执行）
+
+| 规则 ID | 陈述 | 可校验 | 源 |
+| --- | --- | --- | --- |
+| `rule.one-owner-per-rule` | 一条持久规则恰有一个所有者文档；他页只链接不重述 | ✅ | architecture/README |
+| `rule.bucket-reorg-is-adr-bearing` | 增删/重组桶必须有对应 ADR | ✅ | overview |
+| `rule.personal-tree-excluded` | personal/ 排除出插件发现/根 README/桶索引 | ✅ | overview |
+| `rule.every-skill-discoverable` | 公共技能须满足 frontmatter-schema 且已注册 | ✅ | skill-frontmatter-schema |
+| `rule.no-dangling-reference` | 关联端点必解析到存在的实例 | ✅ | ontology |
+| `rule.bucket-inventory-consistent` | 文档桶清单须与真实 skills/ 树一致（保鲜核心） | ✅ | overview vs skills/ |
 
 ---
 
 ## 5. 如何使用（工作流）
 
 ```bash
-# 1) 从活代码树重新生成知识图谱（增删改技能/文档后第一步）
+# 1) 从活代码树重新生成结构索引图（graph.json，仅作本地/临时派生缓存，gitignored）
 python3 docs/ontology/extract.py > docs/ontology/graph.json
 
 # 2) 推理 + 约束校验（一次覆盖 Module G + Module P；CI / pre-commit 钩子）
@@ -144,4 +138,4 @@ python3 docs/ontology/validate.py docs/ontology/graph.json
 - **改 doc-map**：务必遵守 `rule.G1-docmap-binding`——每个 `authority-id` 用独立 bullet 绑定到恰好一页，不要把 id 放在含多个链接的块里（否则 `MAP_AUTHORITY_CONFLICT`）。
 - **人工评审项**（契约/夹具）由 reviewer 依据 `docs/zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已删除，2026-10-24，结论迁入该 ADR）与 `golden-fixtures-spec` 核对，不进自动校验。
 
-> 设计原则：**图谱是派生事实，活代码树是真相源**。本体（本文件）只在术语/约束本身演进时才改；日常增删改只动代码树 + 重跑两脚本，即可保持文档系统高新鲜度。Module G 的治理逻辑由可移植技能 `zj-docs-ontology` 单一拥有，本仓库通过组合调用复用，不重复实现（治理契约明确容忍技能间不跨目录 import 的"私有副本"模式）。
+> 设计原则：**结构索引图是派生事实，活代码树是真相源**。本体（本文件）只在术语/约束本身演进时才改；日常增删改只动代码树 + 重跑两脚本，即可保持文档系统高新鲜度。Module G 的治理逻辑由可移植技能 `zj-docs-ontology` 单一拥有，本仓库通过组合调用复用，不重复实现（治理契约明确容忍技能间不跨目录 import 的"私有副本"模式）。
