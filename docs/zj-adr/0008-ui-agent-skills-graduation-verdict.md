@@ -106,3 +106,17 @@ nothing fails. Before a derived page's last recorded state is promoted into an
 ADR fact, reconcile it against the source's commit history — `git log -S` plus
 `git merge-base --is-ancestor` settled this case in minutes. Otherwise a stale
 artefact becomes an authority, and the next reader pays for it.
+
+## Amendment (2026-10-24, superseded by ADR 0009)
+
+Decision 3's "the discussion record `discussions/ui-agent-skills-complete-solution/`
+is kept" is **reversed** by [ADR 0009](./0009-ui-agent-skills-discussion-retirement.md).
+With the later decision that tracing "why the solution was decided" is not
+required, the record's only remaining value (provenance for the frozen
+`zj-ui-core` contracts) is no longer needed. Its two durable content blocks
+(Remaining-risks 控制矩阵; Experience Version Wave/graduation 预注册指标) were
+distilled, de-sourced, into `skills/ui/zj-ui-core/contracts/guarantee-boundary.md`
+and `graduation-gates.md`. The three contracts' `引用源`/`权威来源` lines now
+point to those in-repo files, so `zj-ui-core` is fully decoupled from
+`discussions/`. Decision 3 is therefore obsolete; this ADR's other decisions
+(CONDITIONAL_ADOPTION verdict, 1-10 retirement) are unchanged.
