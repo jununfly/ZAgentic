@@ -76,7 +76,7 @@ is a **repo-level protocol**, not one skill's spec.
 
 A naive "flag every `ZAgentic` mention" is wrong — it false-positives on brand
 strings (`User-Agent: ZAgentic-zj-research`), target-repo operations, and
-intentional "run this skill inside the ZAgentic repo" rules (`zj-triage/A-ONLY.md`,
+intentional "run this skill inside the ZAgentic repo" rules (`skills/engineering/zj-triage/A-ONLY.md`,
 `zj-git`). The guardrail uses only these high-signal patterns:
 
 - `(?:\.\./){1,}docs` — relative escape **upward** out of the skill into a repo

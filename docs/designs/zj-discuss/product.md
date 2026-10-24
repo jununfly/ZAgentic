@@ -23,7 +23,7 @@ authority-id: design.zj-discuss-product
 
 > 本文是 `zj-discuss` / `zj-discuss-view` 这组技能的产品定义。它是长期权威页；
 > 行为细节见同目录 `design.md`，组件与生命周期见 `architecture.md`。
-> 角色语义的唯一真源是技能内 `references/role-matrix.md`。
+> 角色语义的唯一真源是技能内 `skills/productivity/zj-discuss/references/role-matrix.md`。
 
 ## 1. 一句话定位
 

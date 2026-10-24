@@ -45,7 +45,7 @@ boundary; everything else is read-only from above.
 | # | Layer | Location | Owner responsibility | May read | Must not write |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Skill index | top-level [README.md](../../README.md) and each [bucket README](../../skills/) | Catalog and entry points | layer 2 (its own bucket) | nothing (index only) |
-| 2 | Skill instructions | `skills/<bucket>/<skill>/SKILL.md` | Workflow description, frontmatter | layer 3 to 6, plus shared scripts when documented | layer 1 (no index edits) |
+| 2 | Skill instructions | `skills/<bucket>/<skill>/SKILL.md` | Workflow description, frontmatter | layer 3 to 6, plus shared scripts when documented | layer 1 (no index edits) <!-- # docs-ref-allow: `<bucket>`/`<skill>` 为通配占位符，非具体路径 --> |
 | 3 | Skill resources | `skills/<bucket>/<skill>/references/`, `agents/` | Load-on-demand detail | local filesystem; shared scripts | layer 2 body |
 | 4 | Skill helpers | `skills/<bucket>/<skill>/scripts/` | Executable helpers owned by one skill | shared scripts; skill resources | anything outside its own directory |
 | 5 | Validator fixtures | `skills/<bucket>/<skill>/tests/` | Self-contained test payloads | shared scripts | anything outside its own directory |
@@ -86,8 +86,8 @@ adoption is auditable.
   skill does not bundle a duplicate. Documented in the skill's
   `source-map` section if the skill has one.
 - **Skill references skill helper**: A skill's `SKILL.md` instructs "run
-  `scripts/<own-skill>/do-thing.py`"; the helper lives at layer 4 within
-  that skill. Cross-skill calls between layer 4 helpers must go through
+   `scripts/<own-skill>/do-thing.py`"; the helper lives at layer 4 within <!-- # docs-ref-allow: `<own-skill>`/`do-thing.py` 为示意占位符 -->
+   that skill. Cross-skill calls between layer 4 helpers must go through
   layer 2 narration; they do not import each other directly.
 - **Skill references design or ADR**: A skill's `SKILL.md` or
   `references/` cites a `docs/designs/` or `docs/zj-adr/` page as its

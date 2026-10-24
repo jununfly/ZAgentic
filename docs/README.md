@@ -58,7 +58,7 @@ doc-kind: doc-map
 
 ### Contract（ui-agent-skills 子系统机器可读契约/清单/账本等）
 机器可读契约：`skills/ui/zj-ui-core/contracts/`（随 skill 安装，closure 合规）。
-决策收敛（毕业裁定 CONDITIONAL_ADOPTION）：ADR 0008 — `zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原枢纽页 `designs/ui-agent-skills/README.md` 已于 2026-10-24 删除）。
+决策收敛（毕业裁定 CONDITIONAL_ADOPTION）：ADR 0008 — `zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原枢纽页 `designs/ui-agent-skills/README.md` 已删除，2026-10-24）。
 子契约（含 `adapter-boundary-v1`、`canonical-schema`、`resolver-contract`、`hard-gates`、`verification-receipt`、`fixture-manifest`、`skill-capability-manifest` 等）详见 `skills/ui/zj-ui-core/contracts/`；完整实例见知识图谱。
 
 ### ADR（已接受的不易逆转决策，authority: historical）
@@ -85,7 +85,7 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 | 哪些跨仓工单已就绪？ | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | 该 roadmap 关闭前为本地执行源 |
 
 ## 证据面（EvidenceSurface）
-`research/` 与 `skills-outputs/` 曾是个人工作区的临时容器，已于 2026-10-22 治理移除，不进入持久文档生命周期。ui-agent-skills 证据包（SYNTHESIS / CROSS-RUN-TABLE 等）未长期保留，结论已纳入 ADR 0008（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已于 2026-10-24 删除；更早的 `DECISIONS-RISKS.md` 已于 2026-10-23 随规范层清理删除）。
+`research/` 与 `skills-outputs/` 曾是个人工作区的临时容器，已于 2026-10-22 治理移除，不进入持久文档生命周期。ui-agent-skills 证据包（SYNTHESIS / CROSS-RUN-TABLE 等）未长期保留，结论已纳入 ADR 0008（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已删除，2026-10-24；更早的 `DECISIONS-RISKS.md` 已于 2026-10-23 随规范层清理删除）。
 
 ## 惰性目录（Lazy categories）
 仅在仓库有对应有界问题的文档时才创建：当前空目录为 `methods/`、`testing/`、`benchmarks/`、`references/`。创建时须在此声明生命周期、有界问题与权威边界。新架构页遵循 `zj-docs-architecture` 视图契约。

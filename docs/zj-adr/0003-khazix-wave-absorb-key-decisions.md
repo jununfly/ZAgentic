@@ -32,15 +32,17 @@ aihot 是第三方品牌 (aihot.virxact.com 匿名只读 API), 仍统一加 `zj-
 
 **Wave 级决策**.
 
-adopt 的附属文件全量随迁, 包括 neat-freak 的 `evals/` (~80 fixture)、aihot 的 `install.sh` / `manifest.sha256` / `agents/openai.yaml`. 保持 skill 完整自含, 不做"看起来用不上"的删减.
+adopt 的附属文件全量随迁, 包括 neat-freak 的 `evals/`（10 个 eval fixture 场景 / 90 个文件）、aihot 的 `install.sh` / `manifest.sha256` / `agents/openai.yaml`. 保持 skill 完整自含, 不做"看起来用不上"的删减. <!-- # docs-ref-allow: 此处列举的是随迁文件类别, 非本仓内具体路径 -->
 
-**为什么不裁剪**: 裁剪判断本身就是预测"哪些用不上", 错判成本 (skill 缺件、eval 不可复跑、manifest 校验失败) 高于多占的目录体积. 已知代价: verbatim 原则下, 源仓的失配引用也随迁 (例: zj-systematic-research 的 description 引用未并入的 khazix-writer / wechat-title, 保留原文不改).
+**为什么不裁剪**: 裁剪判断本身就是预测"哪些用不上", 错判成本 (skill 缺件、eval 不可复跑、manifest 校验失败) 高于多占的目录体积. 已知代价: verbatim 原则下, 源仓的失配引用也随迁 (例: `zj-systematic-research` 的 description 至今仍提及未并入的 khazix-writer, 保留原文不改).
 
 ## 决策 4 — unrelated(source) 配对形式 + 按域分桶
 
 **5 个 skill-pair 一致的配对与归置决策**.
 
 基线无同意图 skill 时, 配对形式记 `unrelated(source)`, 策略直接走 adopt (无冲突可消解). 桶归属按域判断: 方法论/工程治理 (systematic-research, leader, neat-freak) → `engineering/`; 系统工具/资讯查询 (aihot, storage-analyzer) → `misc/`.
+
+**落位已随后续治理变更**: `zj-systematic-research` 现归 `research/`、`zj-neat-freak` 现归 `codebase-docs/`（`zj-leader` 仍在 `engineering/`，`zj-aihot` / `zj-storage-analyzer` 仍在 `misc/`）。上方的"按域判断"是当时的归置依据，仍然成立；具体目录以当前技能树为准。
 
 **为什么 unrelated 也要过配对流程**: 直接 cp 进仓会跳过两道判断 — (1) 与现有 skill 是否真的不同域 (zj-systematic-research 与 zj-research 同域但方法/产物不同, 判定不合并; zj-leader 与 zj-to-spec 意图相近但受众不同), (2) 落在哪个桶. 配对记录 (roadmap decision 数组) 是这两道判断的留痕, 未来"为什么这两个没合并"可查.
 
