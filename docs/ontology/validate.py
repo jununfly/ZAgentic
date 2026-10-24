@@ -2,8 +2,11 @@
 """Reasoning + constraint validation over the ZAgentic documentation knowledge graph.
 
 Regenerates the graph from the live repo (via extract.build_graph) so docs stay
-fresh, then runs the checkable rules from ontology.schema.json. Exits non-zero on
-errors (freshness/consistency violations), zero on success (warnings allowed).
+fresh, then runs the checkable rules: the Module P rules owned by this script
+plus the Module G rules combined from the zj-docs-ontology skill via
+check_governance_module. Exits non-zero on errors (freshness/consistency
+violations), zero on success (warnings allowed). NOTE: the rule definitions in
+ontology.schema.json are documentation only; this validator does NOT read them.
 
 Usage: python3 docs/ontology/validate.py [path-to-graph.json]
 """
