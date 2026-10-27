@@ -21,6 +21,8 @@ SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
 
+from roadmap import _roadmap_isolated_dir  # noqa: E402
+
 CLI = SKILL_DIR / "roadmap_cli.py"
 FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
 
@@ -247,7 +249,11 @@ class Slice05ExpiredLeaseShowsNoOwnerTest(MdOwnerOqContractTest):
             },
             "events": [],
         }
-        sidecar = self.roadmap.with_suffix(self.roadmap.suffix + ".leases.json")
+        # ADR 0010：侧车已迁到项目隔离区，不再紧贴 carrier。
+        sidecar = Path(os.path.join(
+            _roadmap_isolated_dir(str(self.roadmap)),
+            self.roadmap.name + ".leases.json",
+        ))
         sidecar.write_text(json.dumps(store, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def test_expired_lease_is_not_shown_as_owner(self):

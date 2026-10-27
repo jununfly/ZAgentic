@@ -38,7 +38,7 @@ issue: "221"
 
 | Skill | 当前落点 | 处置 | 状态 |
 |-------|----------|------|------|
-| zj-roadmap-driven | carrier 同目录 | md→`docs/plans/`；余物→`<proj>/tmp/skills-outputs/roadmap-driven/`；保留 #169 相对+fail-loud | ⬜ 待实施（仅约定，代码未改） |
+| zj-roadmap-driven | carrier 同目录 | md→`docs/plans/`；余物→`<proj>/tmp/skills-outputs/roadmap-driven/`；保留 #169 相对+fail-loud | ✅ 已完成（2026-10-27） |
 | zj-composer | `skills-outputs/zj-composer/` | 视为项目=ZAgentic，迁 `<ZAgentic>/tmp/skills-outputs/composer/`（或保留，已合规） | ✅ 已合规（无需改） |
 | zj-discuss | subdoc 旁 `briefings/` | → `<proj>/tmp/skills-outputs/discuss/<topic>/` | ✅ 已完成（2026-10-27） |
 | zj-doc-collab | subdoc 旁 `briefings/` | → `<proj>/tmp/skills-outputs/doc-collab/<topic>/` | ✅ 已完成（2026-10-27） |
@@ -53,4 +53,4 @@ issue: "221"
 ## Amendment (2026-10-27)
 
 - **Guard 已升级 ERROR**：第 5 条原计划"WARN-first，待迁移清空后升级 ERROR"——实际在清空全部违例后已执行升级。`scripts/check-skill-runtime-closure.py` 的 `SKILL_ABS_HOME_DEFAULT` 与 `scripts/check-docs-dangling-refs.py` 的 `plan-coupling` 现均为 **ERROR**，且当前 0 违例（两脚本 exit 0，required CI 不红）。`RE_ABS_HOME_DEFAULT` 正则已收窄，仅抓 home **输出目录**，放过 `HOME = expanduser("~")` 这类扫描根/安全边界误报。
-- **迁移清单状态**：上表 4 项代码迁移已完成（zj-discuss / zj-doc-collab / zj-open-source-capability-fit / zj-storage-analyzer），其余 6 项经核查属"已合规"或"调用方指定、无需改"。唯一残留开放项是 `zj-roadmap-driven` 的 md→`docs/plans/` 代码改动，约定已定、代码待实施。
+- **迁移清单状态**：上表 11 项全部收口——5 项代码迁移已完成（zj-roadmap-driven 于 2026-10-27 补齐余物隔离 + `--md-file` 默认 `ROADMAP.md`；zj-discuss / zj-doc-collab / zj-open-source-capability-fit / zj-storage-analyzer 已于 2026-10-27 完成），6 项经核查属"已合规"或"调用方指定、无需改"。无残留开放项。

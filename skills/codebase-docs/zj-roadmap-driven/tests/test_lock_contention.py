@@ -383,7 +383,7 @@ class ConcurrentWriters(unittest.TestCase):
     def test_manual_unlock_still_clears_a_stale_lock(self):
         ids = build_roadmap(self.path, 1)
         lock_dir = roadmap_lock_dir(str(self.path))
-        os.mkdir(lock_dir)
+        os.makedirs(lock_dir, exist_ok=True)
         self.assertTrue(os.path.isdir(lock_dir))
         unlock_roadmap(str(self.path))
         self.assertFalse(os.path.exists(lock_dir))

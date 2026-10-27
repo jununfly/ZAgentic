@@ -306,7 +306,7 @@ def cmd_init(args: dict):
     storage = args.get("storage", "single")
     title = args.get("title", "Untitled")
     description = args.get("description", "")
-    md_file = args.get("md-file", "")
+    md_file = args.get("md-file", "ROADMAP.md")
     if storage not in CARRIERS:
         raise ValueError(f"--storage must be one of {', '.join(CARRIERS)}, got: {storage}")
     if storage == "sqlite":
