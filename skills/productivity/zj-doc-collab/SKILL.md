@@ -120,7 +120,7 @@ def gate_viewpoint(body, role):
 ```sh
 python3 <consumer-skill>/scripts/<consumer-launch>.py <sub-doc> \
     --matrix <consumer-skill>/references/role-matrix.md \
-    --out <讨论文件夹>/briefings
+    --out <项目根>/tmp/skills-outputs/<consumer-skill>/<sub-slug>
 # 消费者脚本内部：
 #   generate(subdoc, roles, out, matrix,
 #            executor_cmd_template="zj-discuss-view --role {key} {subdoc}")

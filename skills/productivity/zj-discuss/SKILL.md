@@ -99,10 +99,12 @@ fixed to three agents):
    instead of hand-writing them:
    ```sh
    python3 <skill-dir>/scripts/launch_pack.py <sub-doc-path> \
-           --out <讨论文件夹>/briefings
+           --out <项目根>/tmp/skills-outputs/zj-discuss/<sub-slug>
    ```
+   （不传 `--out` 时默认落到 `<sub-doc 所在 git 仓库根>/tmp/skills-outputs/zj-discuss/<sub-slug>/`，
+   符合 ADR 0010 的项目隔离区约定；`--out` 可覆盖。）
    It reads the sub-doc's own **declared required role set** and writes
-   `<讨论文件夹>/briefings/<sub-slug>-launchpack-<role>.md` per role, each stamped with
+   `<项目根>/tmp/skills-outputs/zj-discuss/<sub-slug>/<sub-slug>-launchpack-<role>.md` per role, each stamped with
    that role's stance + the **mandatory "Read `<sub-doc-path>` original" order** + the
    exact `zj-discuss-view --role X <sub-doc-path>` command.
    **Refuse if the sub-document is not on disk**; role keys outside the pool are
