@@ -27,11 +27,15 @@ handler.
    the confirmation required for every mutation; do not write while proposing.
 4. **Execute the confirmed scope.** Preserve meaning by default. Moves, rewrites,
    authority merges, and process deletion are separately named actions. Use
-   `git mv` for an approved tracked move.
+   `git mv` for an approved tracked move. A page leaving service retires first
+   and tombstones while inbound links remain; deletion is the last stage, never
+   a default.
 5. **Validate and report.** Run map, link, and authority-binding checks and
    `/zj-docs-architecture` for the architecture layer. One `authority-id` bound
    to two pages is a mechanical failure, not a signal: it exits non-zero and the
-   Human settles it. Compose `/zj-domain-modeling`, `/zj-debrief`, and
+   Human settles it. A green run means these checks were confirmed consistent
+   on this content, not that the content is right — semantic correctness stays
+   with review. Compose `/zj-domain-modeling`, `/zj-debrief`, and
    `/zj-neat-freak` only when the Human's governance request needs their
    specialist work. Report pending durable extraction and deletion proposals.
 
@@ -43,7 +47,11 @@ python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --val
 Read [governance-contract.md](references/governance-contract.md) before a
 proposal or confirmed execution. Read
 [proposal-tool-contract.md](references/proposal-tool-contract.md) before
-interpreting a report, changing the tool, or adding a fixture.
+interpreting a report, changing the tool, or adding a fixture. Read
+[kind-templates.md](references/kind-templates.md) when classifying a page or
+deciding where a fact belongs, and
+[doc-slop-checklist.md](references/doc-slop-checklist.md) when auditing page
+health — both are audit material, neither adds a diagnostic to the tool.
 
 ## Portability boundary
 
