@@ -11,7 +11,7 @@
 | `~/Library/Developer/Xcode/DerivedData`、`CoreSimulator` | Xcode 构建/模拟器 | 🟢 |
 | `~/Library/Containers/<UUID 或 bundleid>` | 沙盒应用数据（聊天记录、离线视频、设置） | 🟡 多为用户数据 |
 | `~/Library/Application Support/*` | 应用数据（Chrome Profile、Claude VM、飞书） | 🟡 |
-| `~/Downloads` 里的 .dmg/.pkg | 安装包残留 | 🟢 |
+| 用户下载目录里的 .dmg/.pkg | 安装包残留 | 🟢 |
 | `/Applications/*.app` | 应用本体 | 🔴 仅当重复/想卸时上灯，否则归蓝色 |
 | 系统文件、APFS 本地快照 | 系统 | 不上灯，归蓝色"系统及其他" |
 

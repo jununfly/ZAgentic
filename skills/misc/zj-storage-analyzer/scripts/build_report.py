@@ -33,8 +33,15 @@ def main():
         print(__doc__)
         sys.exit(1)
     src = sys.argv[1]
-    out = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser(
-        "~/Desktop/storage-report.html")
+    out = sys.argv[2] if len(sys.argv) > 2 else None
+    if not out:
+        # ADR 0010: storage-analyzer 属非项目输出，不得默认写入 ~/ 或 cwd。
+        # 必须由 Human 显式指定落盘路径（静态模式是可选的留存/分享用只读文件）。
+        print("错误：未指定报告输出路径。", file=sys.stderr)
+        print("用法: build_report.py <analysis.json> <output.html>", file=sys.stderr)
+        print("按 ADR 0010（本地落盘约定）：storage-analyzer 属非项目输出，", file=sys.stderr)
+        print("产物不能默认写入 ~/ 或 cwd，必须由 Human 显式指定落盘路径。", file=sys.stderr)
+        sys.exit(2)
 
     with open(src, "r", encoding="utf-8") as f:
         data = json.load(f)

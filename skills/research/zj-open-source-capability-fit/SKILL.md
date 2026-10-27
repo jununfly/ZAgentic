@@ -61,14 +61,18 @@ source: zagentic
 ```sh
 # 把命令中的 <skill-dir> 替换为本 skill 目录的绝对路径，
 # 例如 skills/research/zj-open-source-capability-fit
-python3 <skill-dir>/scripts/capability_fit.py init --out fit_input.json
+# 按 ADR 0010：产物落到项目隔离区，不落 cwd / 仓库根
+export FIT_DIR=<项目根>/tmp/skills-outputs/zj-open-source-capability-fit/<topic>
+python3 <skill-dir>/scripts/capability_fit.py init \
+    --out "$FIT_DIR/capability_fit_input.json"
 
 # 评估 + 产出决策记录
 python3 <skill-dir>/scripts/capability_fit.py assess \
-    --input fit_input.json --record decision_record.md
+    --input "$FIT_DIR/capability_fit_input.json" \
+    --record "$FIT_DIR/decision_record.md"
 
 # 仅查闸门
-python3 <skill-dir>/scripts/capability_fit.py validate --input fit_input.json
+python3 <skill-dir>/scripts/capability_fit.py validate --input "$FIT_DIR/capability_fit_input.json"
 ```
 脚本输出每候选的**推荐分类 + 逐条依据 + 闸门状态**；除 G5 外的任一硬闸门(G1–G4、G6)未过
 退出码为 1，提醒不要盲信。

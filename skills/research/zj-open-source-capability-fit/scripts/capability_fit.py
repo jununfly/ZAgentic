@@ -465,6 +465,14 @@ def _load(path: str) -> dict:
 
 def cmd_init(args: argparse.Namespace) -> int:
     out = args.out
+    if not out:
+        # ADR 0010: 产物属项目输出，不得默认落 cwd；必须由调用方显式指定项目隔离区路径。
+        print("错误：--out 未指定。按 ADR 0010（本地落盘约定），本 skill 产物不得默认写入 cwd。",
+              file=sys.stderr)
+        print("请显式指定项目隔离区路径，例如：", file=sys.stderr)
+        print("  --out <项目根>/tmp/skills-outputs/zj-open-source-capability-fit/"
+              "<topic>/capability_fit_input.json", file=sys.stderr)
+        return 2
     with open(out, "w", encoding="utf-8") as f:
         json.dump(blank_template(), f, ensure_ascii=False, indent=2)
     print(f"已写出空白模板: {out}")
@@ -536,7 +544,13 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     pi = sub.add_parser("init", help="写出空白输入模板")
-    pi.add_argument("--out", default="capability_fit_input.json")
+    pi.add_argument(
+        "--out",
+        default=None,
+        help="输出空白模板路径（必填）。按 ADR 0010 不得默认写入 cwd，"
+        "请显式指定项目隔离区，例如 "
+        "<proj>/tmp/skills-outputs/zj-open-source-capability-fit/<topic>/capability_fit_input.json",
+    )
     pi.set_defaults(func=cmd_init)
 
     pa = sub.add_parser("assess", help="评估并给出推荐分类")

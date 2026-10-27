@@ -273,6 +273,24 @@ def generate(subdoc_path, roles, out_dir, matrix_path,
     return written
 
 
+def _project_root(path: Path) -> Path:
+    """Nearest git-repo ancestor of `path`, else the path's own parent.
+
+    ADR 0010: launch-packs are project output, so they land in
+    <project-root>/tmp/skills-outputs/<consumer-skill>/<topic>/ rather than
+    scattered next to the sub-document.
+    """
+    cur = Path(path).resolve()
+    if cur.is_file():
+        cur = cur.parent
+    while not (cur / ".git").exists():
+        parent = cur.parent
+        if parent == cur:
+            return Path(path).resolve().parent
+        cur = parent
+    return cur
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Static launch-pack / prep-list generator (zj-doc-collab base engine)."
@@ -318,7 +336,12 @@ def main(argv=None):
     if args.roles:
         roles = [r.strip() for r in SPLIT_RE.split(args.roles) if r.strip()]
 
-    out_dir = Path(args.out) if args.out else Path(args.subdoc).resolve().parent / "briefings"
+    # ADR 0010: 项目输出 → 项目隔离区，不散落 subdoc 旁。
+    subdoc_path = Path(args.subdoc).resolve()
+    out_dir = Path(args.out) if args.out else (
+        _project_root(subdoc_path)
+        / "tmp" / "skills-outputs" / "zj-doc-collab" / subdoc_path.stem
+    )
 
     try:
         packs = generate(args.subdoc, roles, out_dir, args.matrix, allow_custom=args.allow_custom)
