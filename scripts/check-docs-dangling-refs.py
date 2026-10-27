@@ -153,6 +153,19 @@ def scan(repo_root: Path) -> tuple[list[str], list[str]]:
             for kind, regex in (("link", LINK_RE), ("path", BARE_PATH_RE)):
                 for raw in regex.findall(line):
                     target = _clean(raw)
+                    # ADR 0010 one-directional coupling: durable docs/code must
+                    # not cite transient plans in docs/plans/ as evidence. A
+                    # citation from outside docs/plans/ into it is a coupling
+                    # violation. Escalated to ERROR after the historical
+                    # designs/* references were cleared (ADR 0010 step 2);
+                    # lines with deletion markers are skipped above.
+                    if "docs/plans/" in target and not str(rel_md).startswith("docs/plans/"):
+                        errors.append(
+                            f"{rel_md}:{lineno}: [plan-coupling] {target} — "
+                            f"plans are transient; cite the ADR/decision, not "
+                            f"docs/plans/ (ADR 0010)"
+                        )
+                        continue
                     if _is_external(target) or _is_retired(target):
                         continue
                     if kind == "path" and "/" not in target:

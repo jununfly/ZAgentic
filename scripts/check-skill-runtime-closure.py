@@ -82,14 +82,30 @@ RE_PLACEHOLDER = re.compile(r"[<>*{}?\[\]]|…")
 TARGET_PROJECT_ROOTS = (
     "docs/", ".claude/", ".codex/", ".workbuddy/", ".zj-out-of-scope/",
     ".zj-retros/", "safe-bin/", "agents/", "discussions/", "skills-outputs/",
+    "tmp/",
     # Layouts belonging to the repo a docs skill maintains, not to the skill:
     "handbook/", "architecture/", "views/", "navigation/", "app/",
 )
 
+# ERROR (ADR 0010): a skill must not default its OUTPUT to a home/cwd path.
+# Escalated from WARN after the known offenders (zj-storage-analyzer ~/Desktop,
+# zj-open-source-capability-fit cwd default) were migrated (ADR 0010 step 1).
+# We match the high-signal *home output directories* (Desktop / Documents /
+# Downloads / cache). We deliberately do NOT match a bare `expanduser("~")` used
+# to derive the HOME / scan-root / safety-boundary — that is legitimate (e.g. a
+# disk scanner reading the user's home to measure usage, or a delete-guard that
+# requires paths to stay under $HOME). Those are inputs, not output defaults.
+RE_ABS_HOME_DEFAULT = re.compile(
+    r'~/(?:Desktop|desktop|Documents|documents|downloads|Downloads|cache|Cache)'
+    r'|expanduser\(\s*["\']~/(?:Desktop|desktop|Documents|documents|downloads|Downloads|cache|Cache)'
+)
 ERROR_PATTERNS = (
     ("SKILL_ESCAPE_DOCS", RE_UP_ESCAPE, "relative escape out of skill into source docs/"),
     ("SKILL_ZAGENTIC_ONTOLOGY", RE_ONTOLOGY, "ZAgentic-specific docs/ontology path"),
+    ("SKILL_ABS_HOME_DEFAULT", RE_ABS_HOME_DEFAULT,
+     "absolute home/cwd default violates ADR 0010 (use <proj>/tmp/skills-outputs/ or ask Human)"),
 )
+# WARN (ADR 0010): absolute source-repo path (advisory review signal only).
 WARN_PATTERNS = (
     ("SKILL_ABS_SOURCE_PATH", RE_ABS_SOURCE, "absolute source-repo path (review)"),
 )

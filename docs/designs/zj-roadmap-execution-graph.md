@@ -24,7 +24,7 @@ Human 主视图边界。它记录 durable 设计，不替代 CLI 参考或运行
   `derives-from` 共同构成无环因果图。
 - 过程 trace 默认不进入 Markdown 主视图，也不成为 plan tree 的父子节点。
 
-> 上游 spec：`docs/plans/zj-roadmap-dag-concurrency.md` §8（方向与边界）；本篇细化 spec：`docs/plans/zj-roadmap-execution-graph.md`（均已抽取至 designs 后于 2026-09-16 从仓库删除，原稿见 git 历史 `929b4ab^`）。本文只提炼权威结论与决策理由。
+> 上游 spec：`zj-roadmap-dag-concurrency` plan §8（方向与边界，已于 2026-09-16 抽取至本 designs 后从仓库删除，原稿见 git 历史 `929b4ab^`）；本篇细化 `zj-roadmap-execution-graph` plan（均已抽取至 designs 后于 2026-09-16 从仓库删除，原稿见 git 历史 `929b4ab^`）。本文只提炼权威结论与决策理由。
 
 ## 要治的病
 

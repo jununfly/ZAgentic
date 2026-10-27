@@ -912,6 +912,56 @@ tells the agent to run `/zj-repo-init` if the per-repo config is missing.
 See ADR `0001` for the rationale.
 _Avoid_: setup hint, setup reminder, bootstrap call
 
+### Local file persistence
+
+**Local file persistence / 落盘**:
+A skill writing a durable artifact to local disk. Governed by ADR `0010`.
+_Avoid_: temp, cache (when ephemeral)
+
+**Durable artifact / 持久化产物**:
+A file a skill writes that survives across sessions and may be referenced later
+(excludes pure `/tmp` ephemeral state and caches). The scope of ADR `0010`.
+_Avoid_: log, scratch
+
+**Project-output scenario / 项目输出场景**:
+A skill run inside a project whose artifact semantically belongs to that project
+(roadmap, briefings, a report about a target codebase). Lands in
+`<project-root>/tmp/skills-outputs/<skill>/<topic>/`.
+_Avoid_: project file (the user-edited deliverable)
+
+**Non-project-output scenario / 非项目输出场景**:
+An artifact that belongs to no specific project (one-off viewing report, cache, a
+skill's own dev artifact). The skill must ask the Human for a path — never default
+to `~/`, `~/Desktop`, `cwd`, or repo root.
+_Avoid_: ad-hoc output
+
+**Project root / 项目根**:
+The nearest ancestor of the carrier/cwd containing `.git`; falls back to cwd.
+_Avoid_: workspace, repo
+
+**Project-isolated zone / 项目隔离区**:
+`<project-root>/tmp/skills-outputs/<skill>/<topic>/` — gitignored generated
+artifacts, never committed.
+_Avoid_: output dir
+
+**Process zone / 过程暂存区 (`docs/plans/`)**:
+The repo's tracked staging area for transient plans/roadmaps/wayfinder maps (defined
+in `docs/prds/codebase-docs-capability.md` as "Process"). Lives while a plan is
+active; considered for deletion after close-out. NOT a citation target for durable
+docs/code (ADR `0010` one-directional coupling).
+_Avoid_: plans dir, drafts
+
+**One-directional coupling / 单向耦合**:
+Plans (`docs/plans/`, roadmaps) are transient; decisions (ADRs) are the durable
+anchor. Dependency direction is only `plan → decision → code`; durable docs/code
+must never cite a plan as evidence.
+_Avoid_: bidirectional reference
+
+**Relative-path baseline / 相对路径基准**:
+The directory a stored relative path is resolved against — the carrier file's
+directory or the skill directory (normpath). Absolute paths are never stored.
+_Avoid_: absolute base
+
 ## Relationships
 
 - A **Skill bucket** holds many **Skills**
