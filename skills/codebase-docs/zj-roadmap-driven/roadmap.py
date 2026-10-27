@@ -1426,8 +1426,34 @@ class RoadmapLockTimeout(TimeoutError):
         )
 
 
+# ── ADR 0010：本地落盘隔离（余物 → 项目隔离区）─────────────
+# 租约侧车（<carrier>.leases.json）与 per-roadmap lock 目录属于"余物"：它们
+# 不该跟 carrier / ROADMAP.md 一起留在 docs/plans/ 或仓库根被 git 跟踪。
+# 统一落进 <proj>/tmp/skills-outputs/roadmap-driven/<stem>/，由 .gitignore 覆盖。
+# <proj> = 含 .git 的最近祖先目录；找不到则回退到 carrier 自身目录。
+# stem 取 carrier 文件名去扩展名，使 single-file 与 sqlite carrier 共享同一隔离
+# 目录 —— 保留 `migrate` 时"锁随 carrier 走"的不变量。
+
+def _project_root(json_path: str) -> str:
+    carrier_dir = os.path.dirname(os.path.abspath(json_path))
+    cur = carrier_dir
+    while True:
+        if os.path.isdir(os.path.join(cur, ".git")):
+            return cur
+        parent = os.path.dirname(cur)
+        if parent == cur:
+            return carrier_dir
+        cur = parent
+
+
+def _roadmap_isolated_dir(json_path: str) -> str:
+    root = _project_root(json_path)
+    stem = os.path.splitext(os.path.basename(json_path))[0]
+    return os.path.join(root, "tmp", "skills-outputs", "roadmap-driven", stem)
+
+
 def roadmap_lock_dir(json_path: str) -> str:
-    return os.path.abspath(json_path) + ".lock"
+    return os.path.join(_roadmap_isolated_dir(json_path), ".lock")
 
 
 # Filesystem failures that must never be mistaken for lock contention. They are
@@ -1520,6 +1546,10 @@ def roadmap_file_lock(json_path: str, timeout_seconds: float = DEFAULT_LOCK_TIME
     acquired = False
     while not acquired:
         try:
+            # 互斥原语仍是 os.mkdir：目录已存在即抛错（FileExistsError / 被 shim 转成的
+            # PermissionError），由 _is_lock_contention 识别为"他人持有锁"。只先 makedirs
+            # 父目录，绝不能对 lock_dir 本身用 exist_ok=True——那会消解互斥、让并发写相互踩踏。
+            os.makedirs(os.path.dirname(lock_dir), exist_ok=True)
             os.mkdir(lock_dir)
             acquired = True
         except OSError as exc:
@@ -2471,13 +2501,18 @@ class Roadmap:
         return result
 
     # ── 节点租约（P2 核心） ──────────────────────────────
-    # 租约状态存在独立侧车文件 <json>.leases.json，不进 roadmap 主 JSON——
+    # 租约状态存在独立侧车文件（ADR 0010：落在 <proj>/tmp/skills-outputs/
+    # roadmap-driven/<stem>/<carrier>.leases.json，不进 roadmap 主 JSON、不被 git 跟踪）——
     # 否则每次心跳都会改写主文件、污染 --if-rev 的 rev。策略（claim/heartbeat/
     # steal/release/fencing）由 lease.py 统一提供，这里只管落盘，保证两个
     # carrier 对"一次 claim 意味着什么"只有一份真相。
 
     def _lease_store_path(self) -> str:
-        return self.json_path + ".leases.json"
+        # ADR 0010：余物落项目隔离区（gitignore 覆盖），不在 docs/plans/ 或仓库根。
+        return os.path.join(
+            _roadmap_isolated_dir(self.json_path),
+            os.path.basename(self.json_path) + ".leases.json",
+        )
 
     def _read_lease_store(self) -> dict:
         try:

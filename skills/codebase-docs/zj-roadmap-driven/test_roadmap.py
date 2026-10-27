@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -10,7 +11,7 @@ SKILL_DIR = Path(__file__).resolve().parent
 CLI = SKILL_DIR / "roadmap_cli.py"
 sys.path.insert(0, str(SKILL_DIR))
 
-from roadmap import Roadmap
+from roadmap import Roadmap, _roadmap_isolated_dir
 
 
 class RoadmapCliTest(unittest.TestCase):
@@ -76,7 +77,9 @@ class RoadmapCliTest(unittest.TestCase):
 
     def test_unlock_removes_stale_lock_so_writes_can_resume(self):
         self.run_cli("init", self.roadmap, "--title", "Unlock roadmap")
-        lock_dir = Path(str(self.roadmap) + ".lock")
+        # ADR 0010：lock 目录已迁到项目隔离区，不再紧贴 carrier。
+        lock_dir = Path(os.path.join(_roadmap_isolated_dir(str(self.roadmap)), ".lock"))
+        os.makedirs(os.path.dirname(lock_dir), exist_ok=True)
         lock_dir.mkdir()
         (lock_dir / "owner.json").write_text(
             '{"pid": 123, "created_at": "2026-06-29 00:00:00"}',

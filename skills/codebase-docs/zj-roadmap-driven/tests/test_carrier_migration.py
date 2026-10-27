@@ -20,6 +20,7 @@ Spec 来源：docs/plans/zj-roadmap-dag-concurrency.md §5 + Story 39/40。
 
 import copy
 import json
+import os
 import re
 import subprocess
 import sys
@@ -39,7 +40,7 @@ from carrier_migration import (  # noqa: E402
     load_carrier,
     write_carrier,
 )
-from roadmap import Roadmap  # noqa: E402
+from roadmap import Roadmap, _roadmap_isolated_dir  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
 CLI = SKILL_DIR / "roadmap_cli.py"
@@ -222,7 +223,11 @@ class MigrationCliTest(unittest.TestCase):
         sqlite = self.migrate_to(self.single, "sqlite")
         back = self.migrate_to(sqlite, "single")
 
-        sidecar = json.loads(Path(f"{back}.leases.json").read_text(encoding="utf-8"))
+        # ADR 0010：侧车已迁到项目隔离区，不再紧贴 carrier。
+        sidecar = json.loads(Path(os.path.join(
+            _roadmap_isolated_dir(str(back)),
+            os.path.basename(str(back)) + ".leases.json",
+        )).read_text(encoding="utf-8"))
         self.assertEqual(["lease-claimed"], [e["operation"] for e in sidecar["events"]])
         self.assertEqual(lease_of(self.single, "1-2")["expires_at"],
                          lease_of(back, "1-2")["expires_at"])

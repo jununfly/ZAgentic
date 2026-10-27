@@ -23,12 +23,17 @@ source: zagentic
 ## Quick start
 
 ```bash
-python "$SKILL_DIR/roadmap_cli.py" init roadmap.json --title "项目名" --md-file "PLAN.md"
-python "$SKILL_DIR/roadmap_cli.py" add roadmap.json 1 "第一步" --status in_progress
-python "$SKILL_DIR/roadmap_cli.py" decide roadmap.json 1 "后端用什么？" "Python + FastAPI"
-python "$SKILL_DIR/roadmap_cli.py" update roadmap.json 1-1 --status completed
-python "$SKILL_DIR/roadmap_cli.py" render roadmap.json   # 每次实质工作后必跑：md 是 Human 唯一窗口
+# carrier 落在 docs/plans/（ADR 0010：过程/计划类产物区）；ROADMAP.md 与之同目录。
+python "$SKILL_DIR/roadmap_cli.py" init docs/plans/roadmap.json --title "项目名" --md-file "ROADMAP.md"
+python "$SKILL_DIR/roadmap_cli.py" add docs/plans/roadmap.json 1 "第一步" --status in_progress
+python "$SKILL_DIR/roadmap_cli.py" decide docs/plans/roadmap.json 1 "后端用什么？" "Python + FastAPI"
+python "$SKILL_DIR/roadmap_cli.py" update docs/plans/roadmap.json 1-1 --status completed
+python "$SKILL_DIR/roadmap_cli.py" render docs/plans/roadmap.json   # 每次实质工作后必跑：md 是 Human 唯一窗口
 ```
+
+> 落盘约定（ADR 0010）：carrier + `ROADMAP.md` 留在 `docs/plans/`（git 跟踪、计划 close-out 后清理）；
+> 租约侧车（`<carrier>.leases.json`）与 per-roadmap lock 目录属"余物"，自动落到
+> `<proj>/tmp/skills-outputs/roadmap-driven/<stem>/`（gitignore 覆盖，不进提交）。`--md-file` 缺省即 `ROADMAP.md`。
 
 `add` 的父节点是根 `1`，子节点按 `1-1`、`1-1-1` 自动编号。完整命令见 [CLI 参考](references/roadmap-cli.md)。
 
