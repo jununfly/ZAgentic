@@ -23,7 +23,7 @@ authority-id: design.roadmap-concurrency-model
 - 当前命令语法和实际错误行为以 skill 内 CLI reference 与实现为准。
 - 历史 spec 只保留在 Git 历史中，不继续作为现役权威。
 
-> 来源 spec：`docs/plans/zj-roadmap-dag-concurrency.md`（已于 2026-09-16 抽取至本 designs 后从仓库删除，原稿见 git 历史 `929b4ab^`）。本文提炼权威结论与决策理由，完整 62 条 user story 与论证以 git 历史中的原 plan 为准。
+> 来源 spec 已抽取至本 designs（原 `zj-roadmap-dag-concurrency` plan 于 2026-09-16 从仓库删除，原稿见 git 历史 `929b4ab^`）。本文提炼权威结论与决策理由，完整 62 条 user story 与论证以 git 历史中的原 plan 为准。
 
 ## 核心不变式（一切阶段的地基）
 

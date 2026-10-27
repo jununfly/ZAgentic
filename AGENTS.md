@@ -10,8 +10,14 @@ Public skills live under `skills/`; private skills live in root-level `personal/
 - `research/` — evidence production and domain-specific research methods
 - `personal/` — installable personal setup, not promoted or plugin-registered
 
-Keep reusable templates with their owning skill (normally `references/`); put
-skill-produced artifacts in `skills-outputs/<skill>/<topic>/`.
+**Local file persistence (ADR 0010):** every skill that writes durable local
+artifacts stores only *relative* paths and lands them in an isolated zone. By
+usage scenario: project-output artifacts go to
+`<project-root>/tmp/skills-outputs/<skill>/<topic>/` (gitignored); process/plan
+artifacts (roadmap, wayfinder map) go to `docs/plans/<skill>/...` (tracked,
+cleaned after close-out); non-project-output artifacts must prompt the Human for a
+path — never default to `~/`, `~/Desktop`, `cwd`, or the repo root. Never store
+absolute paths in git-tracked files. The `closure-lint` gate enforces this.
 
 **Skill runtime closure:** a skill is a self-contained published unit. Skills are
 installed on arbitrary devices, and an install carries ONLY the skill directory —
