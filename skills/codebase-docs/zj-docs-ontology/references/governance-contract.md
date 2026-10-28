@@ -189,6 +189,19 @@ references are different acts and only the second one is safe last.
 4. **Propose and confirm.** Deletion is proposed by name and confirmed by the
    Human, like any other mutation.
 
+The map carries the mechanical surface of this contract. A map entry declares
+retirement with `retired-to: <path-or-URL>` in the same list block as the
+page link and its `authority-id`. With a declaration in place the validator
+reports three diagnostics under `--validate`: `RETIRE_TARGET_MISSING` (the
+declared destination does not exist), `RETIRE_DRAIN_INCOMPLETE` (the page
+still receives inbound markdown links from living pages — evidence and
+process-material surfaces are not living references and are never read for
+this check), and `RETIRE_DECLARATION_INCOMPLETE` (a `retired-to` entry with
+no resolvable page link). The report carries a `retirement` section with the
+inbound count per page; a page with a valid destination and zero inbound
+references is marked `deletion-candidate`, which authorizes a deletion
+proposal but is not itself a deletion.
+
 A page whose subject never existed is not retired — it is process material and
 takes the process-material path.
 

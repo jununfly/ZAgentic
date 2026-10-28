@@ -113,6 +113,71 @@ class AuthorityConflictTest(unittest.TestCase):
         self.assertNotIn("MAP_AUTHORITY_CONFLICT", codes)
 
 
+class RetirementTest(unittest.TestCase):
+    """The retirement contract (governance-contract.md, "Retirement") is only
+    prose until the tool can see it. A map entry declares retirement with
+    `retired-to:`; the mechanical surface is then three-fold: the named
+    destination must exist, the declaration must name a page, and inbound
+    references must drain before the page is a deletion candidate.
+
+    The drain scan skips evidence and process-material surfaces on purpose:
+    frozen records and transient plans are not living references, and reading
+    them would cross the read boundary this tool already asserts.
+    """
+
+    def payload(self, fixture: str, validate: bool = True) -> dict:
+        return TOOL.report(FIXTURES / fixture, validate_links=validate)
+
+    def codes(self, fixture: str) -> set[str]:
+        return {item["code"] for item in self.payload(fixture)["diagnostics"]}
+
+    def test_drain_incomplete_is_reported_with_the_source(self) -> None:
+        codes = self.codes("retired-drain")
+        self.assertIn("RETIRE_DRAIN_INCOMPLETE", codes)
+        item = next(i for i in self.payload("retired-drain")["diagnostics"] if i["code"] == "RETIRE_DRAIN_INCOMPLETE")
+        self.assertIn("docs/prds/referrer.md", item["message"])
+        self.assertIn("docs/prds/old-page.md", item["message"])
+
+    def test_a_drained_page_is_a_deletion_candidate(self) -> None:
+        payload = self.payload("retired-clean")
+        self.assertEqual([], [i for i in payload["diagnostics"] if i["code"].startswith("RETIRE_")])
+        entry = payload["retirement"]["entries"][0]
+        self.assertEqual("deletion-candidate", entry["status"])
+        self.assertEqual(0, entry["inbound_count"])
+
+    def test_a_tombstone_may_not_name_a_missing_destination(self) -> None:
+        self.assertIn("RETIRE_TARGET_MISSING", self.codes("retired-missing-target"))
+
+    def test_the_missing_destination_does_not_block_the_drain_report(self) -> None:
+        entry = self.payload("retired-missing-target")["retirement"]["entries"][0]
+        self.assertFalse(entry["target_exists"])
+
+    def test_retirement_checks_belong_to_validate_mode(self) -> None:
+        codes = self.codes_retirement_proposal = {
+            item["code"] for item in self.payload("retired-drain", validate=False)["diagnostics"]
+        }
+        self.assertNotIn("RETIRE_DRAIN_INCOMPLETE", codes)
+
+    def test_the_drain_scan_never_reads_process_or_evidence_material(self) -> None:
+        """The boundary is behavioral: a process page linking at the retired
+        page must neither fire the diagnostic nor appear as a read path."""
+        root = FIXTURES / "retired-drain"
+        plans = root / "docs" / "plans"
+        plans.mkdir(exist_ok=True)
+        page = plans / "active.md"
+        page.write_text("Plan notes linking [legacy](../prds/old-page.md).\n", encoding="utf-8")
+        try:
+            payload = self.payload("retired-drain")
+            drain = [i for i in payload["diagnostics"] if i["code"] == "RETIRE_DRAIN_INCOMPLETE"]
+            self.assertEqual(1, len(drain))
+            self.assertNotIn("docs/plans/active.md", drain[0]["message"])
+            self.assertNotIn("docs/plans/active.md", payload["read_paths"])
+        finally:
+            import shutil
+
+            shutil.rmtree(plans)
+
+
 class CommandLineTest(unittest.TestCase):
     """Exit codes only exist at the CLI seam; `report()` cannot show them."""
 
@@ -130,6 +195,13 @@ class CommandLineTest(unittest.TestCase):
         for fixture in ("greenfield", "existing-map", "read-boundary"):
             self.assertEqual(0, self.exit_code(str(FIXTURES / fixture), "--validate"), fixture)
         self.assertNotEqual(0, self.exit_code(str(FIXTURES / "broken-map"), "--validate"))
+
+    def test_undrained_retirement_exits_nonzero(self) -> None:
+        self.assertNotEqual(0, self.exit_code(str(FIXTURES / "retired-drain"), "--validate"))
+        self.assertNotEqual(0, self.exit_code(str(FIXTURES / "retired-missing-target"), "--validate"))
+
+    def test_a_drained_retirement_keeps_exit_zero(self) -> None:
+        self.assertEqual(0, self.exit_code(str(FIXTURES / "retired-clean"), "--validate"))
 
 
 if __name__ == "__main__":

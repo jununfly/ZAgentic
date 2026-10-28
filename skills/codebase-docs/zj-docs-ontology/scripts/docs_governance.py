@@ -13,6 +13,7 @@ from pathlib import Path
 POINTER_RE = re.compile(r"(?im)^\s*docs-map:\s*([^\s`]+)\s*$")
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
+RETIRED_RE = re.compile(r"retired-to:\s*`?([^`\s]+)`?", re.I)
 LONG_LIVED = ("methods", "prds", "architecture", "agreements", "designs", "testing", "benchmarks", "references", "zj-adr")
 PROCESS = ("plans", "zj-retros")
 EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "research", "skills-outputs", "test-results"}
@@ -128,6 +129,81 @@ def inventory(root: Path) -> dict[str, object]:
     return {"long_lived": long_lived, "process_material": process, "target_defined_categories": target_defined, "evidence_surfaces": evidence, "root_entries": root_entries}
 
 
+def scan_retirement(root: Path, map_path: Path) -> tuple[dict[str, object] | None, list[dict[str, str]]]:
+    """Mechanical surface of the retirement contract (governance-contract.md,
+    "Retirement").
+
+    A map entry declares retirement with `retired-to:`. Three things are then
+    checkable without reading page front matter: the named destination must
+    exist, the declaration must name a page, and inbound references from
+    living pages must drain before the page is a deletion candidate. Evidence
+    and process-material surfaces are skipped — frozen records and transient
+    plans are not living references, and reading them would cross the read
+    boundary.
+    """
+    text = map_path.read_text(encoding="utf-8")
+    diagnostics: list[dict[str, str]] = []
+    entries: list[dict[str, object]] = []
+    for block in re.split(r"(?m)^(?=-\s+)", text):
+        retired = RETIRED_RE.search(block)
+        if retired is None:
+            continue
+        page: Path | None = None
+        for value in LINK_RE.findall(block):
+            target = resolve(root, value, map_path.parent)
+            if target is not None and target.is_file() and target.suffix == ".md":
+                page = target
+                break
+        if page is None:
+            diagnostics.append({
+                "code": "RETIRE_DECLARATION_INCOMPLETE",
+                "path": relative(root, map_path),
+                "message": "retired-to without a resolvable page link in the same map entry",
+            })
+            continue
+        target_value = retired.group(1)
+        target = resolve(root, target_value, map_path.parent)
+        target_exists = target is not None and target.is_file()
+        if not target_exists and not target_value.startswith(("http://", "https://", "#")):
+            diagnostics.append({
+                "code": "RETIRE_TARGET_MISSING",
+                "path": relative(root, map_path),
+                "message": f"retired-to target does not exist: {target_value}",
+            })
+        entries.append({"page_path": page, "page": relative(root, page), "target": target_value, "target_exists": target_exists})
+    if not entries:
+        return None, diagnostics
+    scanned = 0
+    for md in sorted(root.rglob("*.md")):
+        if md == map_path or md.suffix != ".md":
+            continue
+        rel_parts = relative(root, md).split("/")
+        if any(part in EVIDENCE_NAMES or part in PROCESS for part in rel_parts):
+            continue
+        scanned += 1
+        body = md.read_text(encoding="utf-8")
+        for value in LINK_RE.findall(body):
+            resolved = resolve(root, value, md.parent)
+            if resolved is None:
+                continue
+            for entry in entries:
+                if resolved == entry["page_path"] and md != entry["page_path"]:
+                    entry["inbound_sources"] = sorted(set(entry.get("inbound_sources", [])) | {relative(root, md)})  # type: ignore[union-attr]
+    for entry in entries:
+        sources = entry.pop("page_path")  # type: ignore[arg-type,misc]
+        del sources
+        inbound = len(entry.get("inbound_sources", []))  # type: ignore[arg-type]
+        entry["inbound_count"] = inbound
+        entry["status"] = "deletion-candidate" if (entry["target_exists"] and inbound == 0) else "drain-in-progress"
+        if inbound:
+            diagnostics.append({
+                "code": "RETIRE_DRAIN_INCOMPLETE",
+                "path": entry["page"],  # type: ignore[typeddict-item]
+                "message": f"{entry['page']} still receives {inbound} inbound reference(s) from: {', '.join(entry['inbound_sources'])}",  # type: ignore[index]
+            })
+    return {"entries": entries, "scanned_files": scanned}, diagnostics
+
+
 def report(root: Path, validate_links: bool) -> dict[str, object]:
     selected, origin, diagnostics, reads = discover(root)
     proposal: dict[str, object] = {
@@ -151,6 +227,10 @@ def report(root: Path, validate_links: bool) -> dict[str, object]:
         links, link_diagnostics = map_links(root, selected, reads)
         proposal["map_links"] = links
         proposal["diagnostics"].extend(link_diagnostics)  # type: ignore[index]
+        retirement, retire_diagnostics = scan_retirement(root, selected)
+        if retirement is not None:
+            proposal["retirement"] = retirement
+        proposal["diagnostics"].extend(retire_diagnostics)  # type: ignore[index]
     process_paths = [path for paths in proposal["inventory"]["process_material"].values() for path in paths]  # type: ignore[index,union-attr]
     if process_paths:
         proposal["proposed_actions"] = [{"action": "review-process-material", "targets": process_paths, "confirmation": "Human confirms any durable extraction and each deletion candidate"}]
@@ -165,7 +245,7 @@ def main() -> int:
     args = parser.parse_args()
     payload = report(args.repo.resolve(), validate_links=args.validate)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
-    return 1 if any(item["code"].startswith("MAP_") for item in payload["diagnostics"]) and payload["map_origin"] != "greenfield" else 0
+    return 1 if any(item["code"].startswith(("MAP_", "RETIRE_")) for item in payload["diagnostics"]) and payload["map_origin"] != "greenfield" else 0
 
 
 if __name__ == "__main__":
