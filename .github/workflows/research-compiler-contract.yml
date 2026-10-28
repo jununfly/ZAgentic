@@ -5,18 +5,14 @@ on:
     paths:
       - ".github/workflows/research-compiler-contract.yml"
       - "scripts/update-research-compiler-artifact.py"
-      - "research/evaluation/**"
       - "skills/research/zj-research/**"
       - "skills/research/zj-tech-research-report/**"
-      - "research/multi-device-agent-context/**"
   pull_request:
     paths:
       - ".github/workflows/research-compiler-contract.yml"
       - "scripts/update-research-compiler-artifact.py"
-      - "research/evaluation/**"
       - "skills/research/zj-research/**"
       - "skills/research/zj-tech-research-report/**"
-      - "research/multi-device-agent-context/**"
 
 jobs:
   golden-contract:

@@ -21,7 +21,7 @@ from pathlib import Path
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 INLINE_PATH_RE = re.compile(r"`([^`\n]+)`")
 HEADING_RE = re.compile(r"(?m)^##\s+(.+)$")
-EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "research", "skills-outputs", "test-results"}
+EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "skills-outputs", "test-results"}
 PROCESS = ("plans", "zj-retros")
 
 

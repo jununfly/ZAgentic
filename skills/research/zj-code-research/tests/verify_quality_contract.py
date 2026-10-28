@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAP_SCRIPT = ROOT / "scripts" / "repository_map.py"
 STUDY_SCRIPT = ROOT / "scripts" / "architecture_study.py"
 QUALITY_SCRIPT = ROOT / "scripts" / "code_research_quality.py"
-ASSETS = ROOT.parents[2] / "research" / "evaluation" / "code-research-quality-v1"
+ASSETS = ROOT / "tests" / "golden" / "code-research-quality-v1"
 
 
 def run(command: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
