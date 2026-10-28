@@ -962,6 +962,25 @@ The directory a stored relative path is resolved against — the carrier file's
 directory or the skill directory (normpath). Absolute paths are never stored.
 _Avoid_: absolute base
 
+**Doc health / 文档健康度**:
+A measurement axis, distinct from map correctness (`MAP_*`/`RETIRE_*`) and
+structure correctness (`PAGE_*`/`SOURCE_*`/`ADR_*`). Metered only by
+`zj-doc-health`, only against a committed opt-in config
+(`docs/doc-health.json`): line budgets, Source-map freshness, orphan and
+zero-indegree pages. Report-only; a mechanical health-score gate by default
+is a rejected design (see governance-contract `Rejected defaults`).
+_Avoid_: health-score gate（作为默认门禁）, uninvited metering
+
+**Retired page / 退役页**:
+A page past its service life, declared on the docs map with
+`retired-to: <path-or-URL>`. Lifecycle: retire → tombstone → drain → propose
+and confirm deletion. Mechanically checked by `zj-docs-ontology`
+(`RETIRE_TARGET_MISSING`, `RETIRE_DRAIN_INCOMPLETE`,
+`RETIRE_DECLARATION_INCOMPLETE`); deletion is a candidate only at zero
+inbound references with a valid destination, and still needs Human
+confirmation.
+_Avoid_: silent deletion, deletion as a default
+
 ## Relationships
 
 - A **Skill bucket** holds many **Skills**

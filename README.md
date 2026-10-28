@@ -157,6 +157,7 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 
 - [zj-docs-architecture](./skills/codebase-docs/zj-docs-architecture/SKILL.md) — Maintain and validate complementary architecture handbook views.
 - [zj-docs-ontology](./skills/codebase-docs/zj-docs-ontology/SKILL.md) — Discover, govern, validate, and report on one codebase's documentation system.
+- [zj-doc-health](./skills/codebase-docs/zj-doc-health/SKILL.md) — Opt-in, report-only documentation health metering: budgets, Source-map freshness, orphan and zero-indegree pages.
 - [zj-debrief](./skills/codebase-docs/zj-debrief/SKILL.md) — Close out a task as process material and route durable conclusions for later synthesis.
 - [zj-domain-modeling](./skills/codebase-docs/zj-domain-modeling/SKILL.md) — Maintain a project's domain language and glossary.
 - [zj-grill-with-docs](./skills/codebase-docs/zj-grill-with-docs/SKILL.md) — Conduct repository-aware grilling with documentation updates.
