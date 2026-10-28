@@ -73,6 +73,8 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 - [0007](zj-adr/0007-unified-ontology-module-g-and-p.md) — zj-docs-ontology 扩展为统一本体（Module G + Module P，部署二分）？
 - [0008](zj-adr/0008-ui-agent-skills-graduation-verdict.md) — ui-agent-skills 毕业裁定（CONDITIONAL_ADOPTION）与治理页退役？
 - [0009](zj-adr/0009-ui-agent-skills-discussion-retirement.md) — 退役 `discussions/ui-agent-skills-complete-solution/` 讨论记录，将其风险矩阵与毕业闸门沉淀为 `zj-ui-core` 契约（guarantee-boundary / graduation-gates），使 skill 与 discussions/ 解耦（supersede 0008 Decision 3）
+- [0010](zj-adr/0010-local-file-persistence-convention.md) — 会本地落盘的技能统一用相对路径 + 隔离目录（升华 #169）？
+- [0011](zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md) — 文档质量契约落在治理层而非运行时、被拒默认值显式记录？
 
 ### Agreement（方法论 SSOT，authority: primary）
 - [agreements/open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) — 开源能力契合决策模型; authority-id: `agreement.open-source-capability-fit-decision-model`
