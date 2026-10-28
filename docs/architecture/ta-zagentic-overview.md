@@ -57,7 +57,7 @@ and each kind has its own authority boundary; this section lists them.
   | Bucket | Count | Responsibility (held by the bucket page, restated here for routing) |
   | --- | --- | --- |
   | `engineering/` | 21 | Daily code work; daily engineering decisions. |
-  | `codebase-docs/` | 8 | One-codebase documentation governance; documentation architecture. |
+  | `codebase-docs/` | 9 | One-codebase documentation governance; documentation architecture; opt-in doc health metering. |
   | `productivity/` | 13 | Daily non-code workflow skills. |
   | `misc/` | 6 | Kept around but infrequently used. |
   | `research/` | 5 | Evidence production and domain-study methods. |
