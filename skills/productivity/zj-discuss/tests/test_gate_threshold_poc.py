@@ -5,7 +5,7 @@ import unittest
 Prevents the per-role ``N`` declaration in ``role-methods/*.md`` from silently
 drifting away from the ratified value recorded in ``design.md`` §10.6 R1.
 
-Rationale (see design.md §10.6 R1 + skills-outputs/zj-discuss/n-threshold-poc):
+Rationale (see design.md §10.6 R1; the raw PoC artifacts were transient and not retained):
 - B/A (and the 10 optional roles) keep N=3 (base default).
 - C drops to N=2 for solo/internal sub-problems (no real market signal),
   N=3 when an external market signal is present.
@@ -18,8 +18,6 @@ SKILL_DIR = pathlib.Path(__file__).resolve().parent.parent
 ROLE_METHODS = SKILL_DIR / "references" / "role-methods"
 REPO_ROOT = SKILL_DIR.parent.parent.parent
 DESIGN = REPO_ROOT / "docs" / "designs" / "zj-discuss" / "design.md"
-PROTOCOL = REPO_ROOT / "skills-outputs" / "zj-discuss" / "n-threshold-poc" / "protocol.md"
-PROBE = REPO_ROOT / "skills-outputs" / "zj-discuss" / "n-threshold-poc" / "probe-views.md"
 
 OPTIONAL_KEYS = ["T", "S", "O", "D", "L", "F", "U", "R", "P", "E"]
 ALL_NON_C = ["B", "A"] + OPTIONAL_KEYS  # 12 files
@@ -52,10 +50,6 @@ class TestGateThresholdPoC(unittest.TestCase):
         self.assertIn("N=3", text, "design.md §10.6 R1 missing ratified N=3")
         self.assertIn("N=2", text, "design.md §10.6 R1 missing ratified C solo N=2")
         self.assertIn("solo", text.lower(), "design.md §10.6 R1 missing solo context")
-
-    def test_poc_artifacts_exist(self):
-        self.assertTrue(PROTOCOL.exists(), "PoC protocol.md missing")
-        self.assertTrue(PROBE.exists(), "PoC probe-views.md missing")
 
 
 if __name__ == "__main__":

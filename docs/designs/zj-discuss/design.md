@@ -397,7 +397,7 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
 - **R1 闸门过严导致角色产出萎缩**：阈值需 PoC 校准；先在 base 角色 PoC 一轮。
   **PoC 校准（2026-09-29 完成）**：被测原文 = `docs/agreements/open-source-capability-fit-decision-model.md`
   （真实 SSOT，非本次产物）；base {B,C,A} 按 gated method 各尝试 N=2/3/4/5，逐条标注质量。
-  协议与原始产出见 `skills-outputs/zj-discuss/n-threshold-poc/{protocol,probe-views}.md`。
+  协议与原始产出为一次性 PoC 证据，未长期保留；校准结论已固化于本节（数据/结论见下）。
 
   - **数据**：B 真有效饱和 **4** 条（N≤4 全真，N=5 borderline 注水）；A 同构（N=5 回声 C 注水）；
     **C 真有效饱和仅 2 条**（N=3 已 borderline，N=4/5 注水萎缩）——印证 R1 风险集中于 C
