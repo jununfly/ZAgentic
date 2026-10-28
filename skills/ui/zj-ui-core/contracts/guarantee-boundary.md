@@ -2,7 +2,7 @@
 
 - **归属节点**：1-2-4（golden fixtures 收口）与 1-3-1（skill portfolio 收口）共同约束的「系统保证什么 / 不保证什么」边界。
 - **文档性质**：契约冻结。本文件补全 `golden-fixtures-spec.md` / `ui-flow-v1-contract.md` / `skill-capability-manifest.md` 三份冻结契约未覆盖的**保证边界与局限**，是上述契约的同源约束，非独立可放行项。
-- **来源说明**：内容提炼自 `ui-agent-skills-complete-solution` 讨论过程记录的 Remaining-risks 控制矩阵，已去溯源化（不再引用讨论目录，结论以本文件为权威载体）。
+- **来源说明**：本文件结论沉淀自 ui-agent-skills 早期讨论收敛过程（Remaining-risks 控制矩阵），去溯源化后不再引用任何外部讨论目录，以本文件为权威载体。
 - **本文件版本**：v0.1（冻结）。
 
 ---

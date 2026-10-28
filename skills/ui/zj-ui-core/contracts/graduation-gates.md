@@ -2,7 +2,7 @@
 
 - **归属节点**：1-3-1（skill portfolio 收口）的毕业判定约束；实现侧由 Experience Version 在 Wave 0–3 实测。
 - **文档性质**：契约冻结。本文件定义十个 UI stage skill（及 S0 base `zj-ui-core`）从本地闭环到 Human 毕业的 **Wave 责任卡** 与 **预注册验收指标**，是 `skill-capability-manifest.md` 字段集之上的不可谈判闸门。
-- **来源说明**：内容提炼自 `ui-agent-skills-complete-solution` 讨论过程记录的 Experience Version Wave 与 graduation 预注册指标，已去溯源化（不再引用讨论目录，结论以本文件为权威载体）。
+- **来源说明**：本文件结论沉淀自 ui-agent-skills 早期讨论收敛过程（Experience Version Wave 与 graduation 预注册指标），去溯源化后不再引用任何外部讨论目录，以本文件为权威载体。
 - **本文件版本**：v0.1（冻结）。
 
 ---
