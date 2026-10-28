@@ -6,12 +6,14 @@ on:
       - ".github/workflows/research-compiler-contract.yml"
       - "scripts/update-research-compiler-artifact.py"
       - "skills/research/zj-research/**"
+      - "skills/research/zj-code-research/**"
       - "skills/research/zj-tech-research-report/**"
   pull_request:
     paths:
       - ".github/workflows/research-compiler-contract.yml"
       - "scripts/update-research-compiler-artifact.py"
       - "skills/research/zj-research/**"
+      - "skills/research/zj-code-research/**"
       - "skills/research/zj-tech-research-report/**"
 
 jobs:
@@ -26,4 +28,5 @@ jobs:
         with:
           python-version: "3.12"
       - run: python skills/research/zj-research/tests/verify_golden_contract.py
+      - run: python skills/research/zj-code-research/tests/verify_quality_contract.py
       - run: python skills/research/zj-tech-research-report/tests/verify_technical_report.py
