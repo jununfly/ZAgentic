@@ -36,6 +36,29 @@
 
 ---
 
+## 0.5 文档治理术语表（Governance Glossary）
+
+> 蒸馏自四源 `docs/`（chromium / deepseek-harness / semantica / openai-codex）的最佳实践，于 PR #224 落地进
+> `skills/codebase-docs/zj-docs-ontology` 治理层。下表是统一本体（T-Box）现在承载的 **Module G 词汇**——
+> 它们与 Module P 的产品域词（`Platform` / `SkillBucket` / `Skill` …）共用一份词汇、无命名撞车。
+> 定义性真相源在技能侧 reference，不在本文件：本表只做索引与一行释义。
+
+| 术语 | 一行释义 | 归属层 | 定义真相源 |
+| --- | --- | --- | --- |
+| `one-home` | 一条规则/解释在文档系统中只有一个权威位置；其它提及一律链接过去。复制是契约问题（会漂移），不是风格问题。 | G | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#one-home-per-fact` |
+| `tier` | 每个 `doc-kind` 的放置描述由两半组成：`Job`（装什么）+ `Does NOT belong there`（拒绝什么）；拒绝的那半才是防漂移的关键。 | G | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#one-home-per-fact` + `kind-templates.md` |
+| `kind-template` | 每个 `doc-kind` 的放置契约：`Job` / `Does NOT belong there` / `Must-write sections` / `Page form` / `Focused check`；kinds 表与词汇 1:1 对应。 | G | `skills/codebase-docs/zj-docs-ontology/references/kind-templates.md` |
+| `tutorial-vs-reference` | 页面落笔前声明两种形态之一：tutorial（有序路径、单目标）或 reference（当前行为查表面、完整扁平）；混合会互相掩盖。 | G | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#page-form-tutorial-or-reference` + `kind-templates.md` 的 `Page form` 列 |
+| `retirement` / `tombstone` | 页面分四阶段退役：Retire（降为 historical）→ Tombstone（留短页指新址，避免断链）→ Drain（改指 inbound 链接）→ Propose+confirm 删除；tombstone 是「留破页」与「断全部链接」之间的第三选项。 | G | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#retirement` |
+| `freshness` | 页面是否仍匹配其所映射的源——**声明为 architecture 层 `SOURCE_*` 的关注点**；治理契约只管存在哪些页、各页拥有什么，不实现新鲜度度量。 | G → P 边界 | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#page-content-contract` |
+| `slop` | 9 类肉眼可辨的文档腐化（duplicate-rule / history-leak / status-annotation / hand-copied-restatement / reasoning-aside / rationale-repeat / paragraph-wall / emphasis-inflation / spec-speak），配 Detect/Fix/Scope。**审计清单不是门禁**：不加诊断码、不改退出码、不被 `--validate` 运行。 | G | `skills/codebase-docs/zj-docs-ontology/references/doc-slop-checklist.md` |
+| `generated-region` | 由生成器维护的块（目录列表、API surface、派生索引），在页内标记为 generated、**绝不手改**；修订回到生成器输入或标记区外的散文。 | G | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#generated-regions` |
+| `budget` | （未采用）页面大小预算 / 新鲜度评分 / 孤儿评分等健康度计量——目标仓无 manifest、无统一 source-map 时间戳，分数是编造的；作为能力缺口（E16）挂起，落 `## Rejected defaults`。 | G（缺口） | `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#rejected-defaults` |
+
+> 术语范围守界：deepseek-harness 的「反隐喻」建议（禁 `gate` / `vocabulary` / `surface`）被拒，因这三者是本仓承重词，改名会破坏所有引用它们的契约；见治理契约 `## Rejected defaults`。`budget` 未落为契约项，与 E16（缺引擎 + 触碰 portability boundary）同因，仅作能力缺口追踪。
+
+---
+
 ## 1. 实体（Entities）
 
 实体按其归属模块与性质分列。完整字段表见 [`ontology.schema.json`](./ontology.schema.json#entities)。
