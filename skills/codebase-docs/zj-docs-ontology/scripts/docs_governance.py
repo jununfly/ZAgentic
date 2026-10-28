@@ -16,7 +16,7 @@ AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
 RETIRED_RE = re.compile(r"retired-to:\s*`?([^`\s]+)`?", re.I)
 LONG_LIVED = ("methods", "prds", "architecture", "agreements", "designs", "testing", "benchmarks", "references", "zj-adr")
 PROCESS = ("plans", "zj-retros")
-EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "research", "skills-outputs", "test-results"}
+EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "skills-outputs", "test-results"}
 
 
 def relative(root: Path, path: Path) -> str:

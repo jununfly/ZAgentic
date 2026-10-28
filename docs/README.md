@@ -89,7 +89,9 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 | 哪些跨仓工单已就绪？ | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | 该 roadmap 关闭前为本地执行源 |
 
 ## 证据面（EvidenceSurface）
-`research/` 与 `skills-outputs/` 是 skill 运行产出的临时证据缓存，按 ADR 0010（local-file-persistence-convention）永不入库、不进入持久文档生命周期。裸 `skills-outputs/zj-discuss/n-threshold-poc/`（R1 闸门阈值 PoC 一次性证据，2026-09-29 产出）曾误入库，已于 2026-10-28 治理取消跟踪并删除（产物可由 `zj-discuss` 重跑复现）；现行 skill 输出走 gitignored 的 `tmp/skills-outputs/`。ui-agent-skills 证据包（SYNTHESIS / CROSS-RUN-TABLE 等）未长期保留，结论已纳入 ADR 0008（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已删除，2026-10-24；更早的 `DECISIONS-RISKS.md` 已于 2026-10-23 随规范层清理删除）。
+`skills-outputs/` 是 skill 运行产出的临时证据缓存，按 ADR 0010（local-file-persistence-convention）永不入库（gitignored）；裸 `skills-outputs/zj-discuss/n-threshold-poc/`（R1 闸门阈值 PoC 一次性证据，2026-09-29 产出）曾误入库，已于 2026-10-28 治理取消跟踪并删除（产物可由 `zj-discuss` 重跑复现），现行 skill 输出走 gitignored 的 `tmp/skills-outputs/`。
+
+`research/` 曾是仓库根的 golden 夹具存储，其下三个不可变夹具已**解耦并迁入所属 skill**：`controlled-quality-v1` → `skills/research/zj-research/tests/golden/`、`code-research-quality-v1` → `skills/research/zj-code-research/tests/golden/`、`multi-device-agent-context` → `skills/research/zj-tech-research-report/tests/golden/`（2026-10-28 治理）。它们仍被 `research-compiler-contract.yml` 钉死、由契约测试读取，按 ZJ-CONTEXT.md 须永不静默删除；仓库根 `research/` 已不再存在。ui-agent-skills 证据包（SYNTHESIS / CROSS-RUN-TABLE 等）未长期保留，结论已纳入 ADR 0008（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已删除，2026-10-24；更早的 `DECISIONS-RISKS.md` 已于 2026-10-23 随规范层清理删除）。
 
 ## 惰性目录（Lazy categories）
 仅在仓库有对应有界问题的文档时才创建：当前空目录为 `methods/`、`testing/`、`benchmarks/`、`references/`。创建时须在此声明生命周期、有界问题与权威边界。新架构页遵循 `zj-docs-architecture` 视图契约。

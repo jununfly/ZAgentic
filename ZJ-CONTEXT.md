@@ -656,8 +656,10 @@ _Avoid_: model plugin, embedding step
 **Golden fixture**:
 An immutable observation or receipt fixture that the contract tests pin as the
 expected output of a gate/adapter version. It lives under
-`research/evaluation/{controlled-quality-v1, code-research-quality-v1}` and
-`research/multi-device-agent-context`, is referenced by
+`skills/research/zj-research/tests/golden/controlled-quality-v1`,
+`skills/research/zj-code-research/tests/golden/code-research-quality-v1`, and
+`skills/research/zj-tech-research-report/tests/golden/multi-device-agent-context`
+(refactored out of the repo-root `research/` store on 2026-10-28), is referenced by
 `research-compiler-contract.yml`, and must never be silently deleted.
 _Avoid_: sample, seed data, example
 

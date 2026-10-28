@@ -16,7 +16,7 @@ RUNTIME_CONTRACT = ROOT / "tests" / "verify_runtime_contract.py"
 EVALUATION_ADAPTER = ROOT / "scripts" / "research_eval_cli.py"
 PUBLISHER = ROOT.parent / "zj-tech-research-report" / "scripts" / "publish_report.py"
 FIXTURE = Path(__file__).with_name("golden-contract.json")
-EVALUATION_ASSETS = ROOT.parents[2] / "research" / "evaluation" / "controlled-quality-v1"
+EVALUATION_ASSETS = ROOT / "tests" / "golden" / "controlled-quality-v1"
 
 
 def main() -> int:

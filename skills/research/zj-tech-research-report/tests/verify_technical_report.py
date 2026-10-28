@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PUBLISHER = ROOT / "scripts" / "publish_report.py"
 VALIDATOR = ROOT / "scripts" / "validate_technical_report.py"
-FIXTURE_ROOT = ROOT.parents[2] / "research" / "multi-device-agent-context"
+FIXTURE_ROOT = ROOT / "tests" / "golden" / "multi-device-agent-context"
 REPORT_FIXTURE = FIXTURE_ROOT / "report-ir.json"
 LEDGER_FIXTURE = FIXTURE_ROOT / "ledger-response-v2.json"
 
