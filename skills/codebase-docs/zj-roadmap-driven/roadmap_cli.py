@@ -133,6 +133,7 @@ from roadmap import (
     LAYER_TRACE,
     VALID_INCLUDES,
     roadmap_file_lock,
+    roadmap_lock_dir,
     status_icon,
     unlock_roadmap,
     resolve_md_file,
@@ -878,7 +879,12 @@ def cmd_migrate(args: dict):
     target = Path(output).expanduser().resolve() if output else default_output(source, to)
     # 两端都锁：source 防止读到写一半的状态，target 防止两个 migrate 同时落地。
     with ExitStack() as stack:
+        locked_dirs = set()
         for lock_path in sorted({str(source), str(target)}):
+            lock_dir = roadmap_lock_dir(lock_path)
+            if lock_dir in locked_dirs:
+                continue
+            locked_dirs.add(lock_dir)
             stack.enter_context(roadmap_file_lock(lock_path))
         report = migrate(source, to, target)
     print(f"Migrated: {report['source']} -> {report['target']}")

@@ -125,6 +125,18 @@ class MigrationCliTest(unittest.TestCase):
 
         self.assertEqual(revision_of(self.single), revision_of(target))
 
+    def test_same_stem_source_and_target_do_not_self_deadlock(self):
+        """`roadmap.json` → `roadmap.sqlite` must not acquire one lock twice."""
+        target = self.workdir / "roadmap.sqlite"
+
+        result = self.run_cli(
+            "migrate", self.single, "--to", "sqlite", "--output", target,
+            check=False,
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertTrue(target.exists())
+
     def test_migrate_to_bundle_is_rejected(self):
         """`--to bundle` 不再是合法 carrier（bundle 已在 #140 移除）：非 0 退出且列出可选值。"""
         result = self.run_cli("migrate", self.single, "--to", "bundle", check=False)
