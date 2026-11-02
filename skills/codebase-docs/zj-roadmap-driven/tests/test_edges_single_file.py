@@ -46,6 +46,18 @@ TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 # （节点形状、错误码、字段顺序）。只剥一行能同时保住两边。
 UID_LINE = re.compile(r'^\s*"uid":\s*"[^"]*",?\n', re.MULTILINE)
 
+# Authority metadata is a deliberate cross-cutting addition to every Markdown
+# view. Slice08 still compares the no-edge behavior owned by the edge feature;
+# the envelope itself is guarded at the public CLI seam in
+# test_authority_boundary.py.
+AUTHORITY_ENVELOPE = """<!-- zj-roadmap-authority/v1
+role: process-state
+durable-citation: forbidden
+promote-via: ADR|design|contract|runtime-evidence
+-->
+
+"""
+
 # stats 的 status_counts 由 `set` 推导，键顺序跟着 PYTHONHASHSEED 变。
 # 控制例要在两个**不同进程**之间比对输出，不固定种子就会随机失败。
 FIXED_ENV = {**os.environ, "PYTHONHASHSEED": "0"}
@@ -522,7 +534,12 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             text = f"$ {result.returncode}\n{result.stdout}{result.stderr}".replace(
                 str(workdir), "<W>"
             )
-            output.append(TIMESTAMP.sub("<T>", UID_LINE.sub("", text)))
+            output.append(
+                TIMESTAMP.sub(
+                    "<T>",
+                    UID_LINE.sub("", text).replace(AUTHORITY_ENVELOPE, ""),
+                )
+            )
         return "\n".join(output)
 
     def test_the_cloned_cli_imports_cleanly(self):
@@ -606,7 +623,7 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             )
             if command[0] == "section":
                 md = result.stdout
-        return TIMESTAMP.sub("<T>", md)
+        return TIMESTAMP.sub("<T>", md.replace(AUTHORITY_ENVELOPE, ""))
 
     def test_the_human_view_is_byte_identical_without_edges(self):
         """没有边时，Human 视野（md section）与 P1 之前逐字节一致。

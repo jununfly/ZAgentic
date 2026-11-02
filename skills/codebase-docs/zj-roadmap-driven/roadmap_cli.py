@@ -107,6 +107,8 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   impact  <json_path> <node_id>             # 影响集：改 node_id 会波及的下游节点
                                             # 只读、不拿锁
+
+  authority-check <project_root>             # 拒绝代码/长期文档引用 roadmap 过程产物
 """
 
 import sys
@@ -138,6 +140,11 @@ from roadmap import (
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
 from storage_advisor import recommend_storage
+from authority_boundary import (
+    ProcessAuthorityLeak,
+    find_process_authority_leaks,
+    format_process_authority_leaks,
+)
 from roadmap import LEASE_TTL_SECONDS, is_expired
 import time
 
@@ -911,6 +918,13 @@ def cmd_next(args: dict):
         _print_json(data)
 
 
+def cmd_authority_check(args: dict):
+    leaks = find_process_authority_leaks(args["positional"][0])
+    if leaks:
+        raise ProcessAuthorityLeak(format_process_authority_leaks(leaks))
+    print("Authority boundary: clean.")
+
+
 # ── 命令路由 ──────────────────────────────────────────────
 
 COMMANDS = {
@@ -944,6 +958,7 @@ COMMANDS = {
     "trace": cmd_trace,
     "promote": cmd_promote,
     "next": cmd_next,
+    "authority-check": cmd_authority_check,
 }
 
 
@@ -985,6 +1000,7 @@ COMMAND_POSITIONAL_ARITY = {
     "context": 2,
     "promote": 2,
     "next": 1,
+    "authority-check": 1,
 }
 GROUP_ACTION_ARITY = {
     "edge": {"add": 4, "remove": 3, "list": 2, "migrate": 2},

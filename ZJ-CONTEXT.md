@@ -953,6 +953,13 @@ active; considered for deletion after close-out. NOT a citation target for durab
 docs/code (ADR `0010` one-directional coupling).
 _Avoid_: plans dir, drafts
 
+**Roadmap authority envelope / 路线图权威信封**:
+The machine-readable `zj-roadmap-authority/v1` marker emitted by every Roadmap
+Markdown view. It bounds the carrier and view to `process-state`: they may direct
+current and next work, while durable product behavior, architecture, release and
+correctness claims are promoted to ADR/design/contract/runtime evidence.
+_Avoid_: roadmap disclaimer, progress proof
+
 **One-directional coupling / 单向耦合**:
 Plans (`docs/plans/`, roadmaps) are transient; decisions (ADRs) are the durable
 anchor. Dependency direction is only `plan → decision → code`; durable docs/code

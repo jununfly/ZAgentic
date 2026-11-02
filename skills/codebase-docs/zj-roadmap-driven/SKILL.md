@@ -40,11 +40,25 @@ python "$SKILL_DIR/roadmap_cli.py" render docs/plans/roadmap.json   # 每次实�
 **目标：** 在复杂任务场景中，用路线图（树形节点 + 决策记录）作为 Agent 和 Human 的共享心智模型。避免持续对话导致的目标偏离——每一步都在地图上留下足迹。
 
 **核心原则：**
-1. **存储载体决定事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（节点 / 决策 / 边 / 租约 / history 各归一表，WAL 并发）。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。
+1. **存储载体是过程状态的事实源**——普通路线图使用单文件 JSON；大型路线图使用 SQLite（节点 / 决策 / 边 / 租约 / history 各归一表，WAL 并发）。它权威回答当前计划、进度和下一步，不回答产品行为、架构、发布或正确性。Agent 必须通过 CLI 读写，禁止直接编辑这些文件。
 2. **Markdown 是轻量渐进式视图**——焦点辐射：有焦点时「祖先链必现 + 焦点子树下钻 + 非焦点兄弟折叠计数」，无焦点回退根树 depth=2；completed 子树折叠、in_progress/blocked/open_question 强制展开；尾部含 ready 小节。Human 一眼看清进度与下一步，不占满上下文；Markdown 永远不能反向导入事实源。
 3. **每个节点有编号**（1, 1-1, 1-1-1, …），方便 Human 和 Agent 快速定位
 4. **每个节点有状态 checkbox**（[ ] / [~] / [x] / [!]），一眼识别进度
 5. **决策随节点落盘**（JSON 中），形成可追溯的决策历史。md 只展示焦点节点的决策。
+
+## 权威边界 — process-state only
+
+Roadmap 可以决定接下来执行什么；产品行为、架构、发布状态和正确性必须由代码、测试、运行时结果、契约、design 或 ADR 建立。节点打勾只表示过程状态，不是这些长期事实的证据。
+
+当 roadmap 中的结论需要进入代码或长期文档时，先把结论和独立证据提炼到 ADR、design、contract 或 runtime evidence，再让代码/长期文档引用该持久权威。依赖方向保持 `roadmap → 持久权威 → code/docs`。
+
+`render` 与 `section` 会在所有 Markdown 视图中写入 `zj-roadmap-authority/v1` 权威信封。close-out 和 CI 运行：
+
+```bash
+python "$SKILL_DIR/roadmap_cli.py" authority-check <project-root>
+```
+
+命令以稳定的 `E_PROCESS_AUTHORITY_LEAK path:line` 拒绝代码/长期文档直接引用过程产物，以及把节点完成状态直接写成 proof/evidence。治理文档确需展示反例时，只在该行使用 `roadmap-authority-allow: governance-example`；该例外不跨行生效。
 
 ## 工作流
 

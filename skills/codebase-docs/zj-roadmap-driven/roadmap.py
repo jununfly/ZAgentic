@@ -858,6 +858,12 @@ def render_open_questions_plain(items) -> str:
 # 命令在两个 carrier 上对深树必须给出相同输出——这类差异没有正当理由。
 ALL_NODES_TREE_DEPTH = 50
 
+ROADMAP_AUTHORITY_ENVELOPE = """<!-- zj-roadmap-authority/v1
+role: process-state
+durable-citation: forbidden
+promote-via: ADR|design|contract|runtime-evidence
+-->"""
+
 
 def focus_line(focus_id: Optional[str], label: str = "") -> str:
     """导出视图里那一行"当前施工"；无焦点时返回空串（模板因此与无焦点时逐字节相同）。"""
@@ -925,6 +931,7 @@ def compose_light_section(
     section = (
         "<!-- ROADMAP_SECTION_START -->\n"
         "## ZJ Roadmap\n\n"
+        f"{ROADMAP_AUTHORITY_ENVELOPE}\n\n"
         f"> 数据文件: `{artifact_name}` | 最后更新: {updated}\n\n"
         f"{tree_text}{chain}{open_questions}\n"
     )
@@ -951,6 +958,7 @@ def compose_full_section(
         raise ValueError("max_bytes must be non-negative")
     section = (
         "## ZJ Roadmap\n\n"
+        f"{ROADMAP_AUTHORITY_ENVELOPE}\n\n"
         f"> 数据文件: `{artifact_name}` | 最后更新: {updated}\n"
         f"{focus_head}\n\n"
         "<!-- ROADMAP_TREE_START -->\n"

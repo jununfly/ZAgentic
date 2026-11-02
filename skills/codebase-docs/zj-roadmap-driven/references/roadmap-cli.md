@@ -75,6 +75,9 @@ python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
 python roadmap_cli.py ready <roadmap_path>
 python roadmap_cli.py critical-path <roadmap_path>
 python roadmap_cli.py impact <roadmap_path> <node_id>
+
+# Process-state authority boundary
+python roadmap_cli.py authority-check <project_root>
 ```
 
 Missing positional arguments and unknown command-group actions fail with
@@ -92,6 +95,38 @@ carries the exact command to act on it in `recommendation.command`
 (`migrate <path> --to <carrier>`) — naming the command is not running it.
 `--measure` adds local bounded-tree and full-section timings; timing thresholds
 are advisory and machine-dependent.
+
+## Process-state authority boundary
+
+The carrier is canonical for Roadmap process state only: plan shape, current
+status, process decisions, and next work. Product behavior, architecture, release
+state, and correctness become durable claims only after they are established in
+code/tests/runtime evidence and promoted to the appropriate ADR, design, or
+contract.
+
+Every `render` and `section` Markdown view carries this machine-readable envelope:
+
+```text
+<!-- zj-roadmap-authority/v1
+role: process-state
+durable-citation: forbidden
+promote-via: ADR|design|contract|runtime-evidence
+-->
+```
+
+`authority-check <project_root>` scans durable source and documentation outside
+`docs/plans/`, `node_modules/`, and `tmp/`. It rejects both direct citations of
+actual process artifacts and narrow, high-confidence claims that use a Roadmap
+node's completed status as proof. Copied completion claims remain detectable after
+the process artifact is cleaned up. A finding exits 1 and prints stable diagnostics:
+
+```text
+Error: E_PROCESS_AUTHORITY_LEAK: path/to/file.md:12: cites transient process artifact ...
+```
+
+A governance page may show one forbidden example by placing
+`roadmap-authority-allow: governance-example` on the same line. The allowance is
+line-local so it cannot mask the rest of a file.
 
 ## Carriers and explicit migration
 
@@ -247,8 +282,9 @@ never disagree on what counts as a start or a child.
 | `E_LEASE_HELD` | writing a lease holder's fields on a node someone else holds (or with a stale fencing token) |
 | `E_CONFLICT` | `--if-rev <sha>` no longer matches the current revision |
 | `E_SCOPE` | an `--scope`-bearing write aimed outside that node's subtree |
+| `E_PROCESS_AUTHORITY_LEAK` | durable code/docs cite Roadmap process state or artifacts as evidence |
 
-All six exit 1. `E_CYCLE` may surface through `edge`, `trace add`, or `promote`,
+All listed errors exit 1. `E_CYCLE` may surface through `edge`, `trace add`, or `promote`,
 because all three can add an edge governed by an acyclic contract.
 `E_NODE_NOT_FOUND` is raised by `edge`; pre-existing commands still raise
 `KeyError`/`ValueError` with their original wording, so their output is unchanged.
