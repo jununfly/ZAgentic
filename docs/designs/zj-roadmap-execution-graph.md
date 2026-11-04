@@ -47,7 +47,7 @@ Human 主视图边界。它记录 durable 设计，不替代 CLI 参考或运行
 ## 三条已定输入约束（实施时不得重新论证）
 
 1. **trace 与 plan 共享同一 carrier 与边表**：节点多必填字段 `layer: plan|trace`，边**不加列**（层级由两端节点推出）；uid 规则、`E_CYCLE`、迁移路径、adapter 契约、事件日志全部共用。理由：跨图层 `derives-from` 参照完整性必须在一处维护，两个 carrier 各自完整却无法互验正是 `remove-decision` 那类缺陷。代价：所有遍历谓词带 `layer == 'plan'`，防线是 `layer` 必填 + 每遍历命令一条「trace 存在时输出不变」负向用例。**此约束与 carrier 选型无关**——JSON 上同文件同集合，SQLite 上同表。
-2. **`promote` 默认产出 proposal**：`promote <trace> --under <node>` 默认只写 `promotion.state="proposed"` 并挂 open question；Human `promote --accept` 后才落正式节点并自动写 `derives-from` 边。拒绝「默认生效 + 事后 reject」——Agent 一次误判就永久改图，正是 case 2 要消的不确定性。连带：`max_children` 只计**已 accepted** 子节点，proposal 不占额度。
+2. **`promote` 默认产出 proposal**：`promote <trace> --under <node>` 默认只写 `promotion.state="proposed"` 并挂 open question；Human 先审核 reconciliation proposal，再用带 `--approved-digest` 和 `--idempotency-key` 的 `promote --accept` 兼容入口提交 ChangeSet。accept 不再直接调用 `add_node`/`add_edge`。拒绝「默认生效 + 事后 reject」——Agent 一次误判就永久改图，正是 case 2 要消的不确定性。连带：`max_children` 只计**已 accepted** 子节点，proposal 不占额度。
 3. **存量 `node.decisions` 不迁移进 trace layer**：`decisions` 是结论摘要、trace 是过程明细，并存不是重复。若迁移，md 渲染会失去唯一 decisions 来源而 trace 又不进 md，等于让 Human 净失视野。连带：`promote` 不回写 `decisions`；`context --include decisions` 仍读 `node.decisions`；迁移器不做 `decisions → trace` 批量转换。
 
 ## 共享 carrier 的归口（L1/L2/L3）
@@ -69,7 +69,7 @@ provenance 的本轮范围：trace 节点诞生即带 device/agent/session，但
 
 ## 命令契约（#46）
 
-`trace <action>` 一个 COMMANDS 条目内部按 positional 分派（add/list/get/prune），与上游 `trace add` 写法一致。`trace add` 无需审批（provenance 诞生即写）；`promote` 默认 proposal；`trace prune <roadmap> <trace> --edge <id>` 删边而非删节点（借 thoughtDAG：删一条边即改变上下文）；`context <node> --include …` edge-driven，默认 `layer='plan'`。所有失败输出到 stderr 且必须含 `E_*` code。
+`trace <action>` 一个 COMMANDS 条目内部按 positional 分派（add/list/get/prune），与上游 `trace add` 写法一致。`trace add` 无需审批（provenance 诞生即写）；`promote` 默认 proposal；`promote --accept` 必须带 reviewed reconciliation digest 与幂等 key，并通过 ChangeSet apply；`trace prune <roadmap> <trace> --edge <id>` 删边而非删节点（借 thoughtDAG：删一条边即改变上下文）；`context <node> --include …` edge-driven，默认 `layer='plan'`。所有失败输出到 stderr 且必须含 `E_*` code。
 
 新增错误码（全进 `ERROR_EXIT_CODES`，每码一个 `RoadmapError` 子类，不另起机制）：`E_TRACE_NOT_FOUND` / `E_INVALID_KIND` / `E_INVALID_LAYER` / `E_LAYER_VIOLATION`（塞 trace 进 children）/ `E_PROMOTE_TARGET_INVALID` / `E_REFERENCED`（删被引用者）/ `E_CYCLE`（复用）。**新错误码默认退出码 1**，只有新增「需不同重试语义」的类别才开新退出码。
 

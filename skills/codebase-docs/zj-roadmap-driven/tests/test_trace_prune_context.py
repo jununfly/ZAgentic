@@ -154,13 +154,22 @@ class ContextIncludeTest(unittest.TestCase):
         else:
             run_cli("init", path, "--title", "t", cwd=tmpd)
         run_cli("add", path, "1", "child-A", cwd=tmpd)
-        run_cli("trace", "add", path, "--kind", "finding", "--body", "seed", "--under", "1-1", cwd=tmpd)
+        run_cli(
+            "trace", "add", path, "--kind", "finding", "--body", "seed",
+            "--obligation-key", "promoted", "--evidence", "scan:context", cwd=tmpd,
+        )
         rm = load_carrier(storage, path)
         trace_id = rm.node_ids(layer=LAYER_TRACE)[0]
-        run_cli("promote", path, trace_id, "--under", "1-1", "--label", "Promoted", cwd=tmpd)
-        run_cli("promote", path, trace_id, "--accept", cwd=tmpd)
+        trace_uid = rm.get_node(trace_id)["uid"]
+        proposal = json.loads(run_cli("reconcile", path, trace_uid, cwd=tmpd).stdout)
+        run_cli(
+            "promote", path, trace_uid, "--accept",
+            "--approved-digest", proposal["proposal_digest"],
+            "--idempotency-key", "context-promotion-1", cwd=tmpd,
+        )
         rm2 = load_carrier(storage, path)
-        new_plan = rm2.get_node("1-1")["children"][0]
+        stored_trace = rm2.get_node(trace_id)
+        new_plan = rm2.resolve_node(stored_trace["reconciliation"]["work_uid"])
         return path, trace_id, new_plan
 
     def _include_trace_shows_derives_from(self, storage: str):

@@ -6,6 +6,7 @@ zj-roadmap-driven — 路线图核心数据模型
 """
 
 import errno
+import copy
 import hashlib
 import json
 import os
@@ -322,6 +323,62 @@ class InvalidLayer(RoadmapError):
     exit_code = 1
 
 
+class ReconcileKeyMissing(RoadmapError):
+    """Reconciliation requires an explicit deterministic obligation key."""
+
+    code = "E_RECONCILE_KEY_MISSING"
+    exit_code = 1
+
+
+class NoveltyEvidenceMissing(RoadmapError):
+    """A novel obligation must explain why existing work does not cover it."""
+
+    code = "E_NOVELTY_EVIDENCE_MISSING"
+    exit_code = 1
+
+
+class ProposalNotFound(RoadmapError):
+    """The requested reconciliation proposal cannot be found in this revision."""
+
+    code = "E_PROPOSAL_NOT_FOUND"
+    exit_code = 1
+
+
+class ApprovalMismatch(RoadmapError):
+    """The reviewed digest does not match the proposal being applied."""
+
+    code = "E_APPROVAL_MISMATCH"
+    exit_code = 1
+
+
+class IdempotencyConflict(RoadmapError):
+    """An idempotency key was already used for different proposal material."""
+
+    code = "E_IDEMPOTENCY_CONFLICT"
+    exit_code = 1
+
+
+class ChangeSetInvalid(RoadmapError):
+    """A proposal cannot be applied as a valid ChangeSet."""
+
+    code = "E_CHANGESET_INVALID"
+    exit_code = 1
+
+
+class ReconciliationRequired(RoadmapError):
+    """Direct promotion acceptance is disabled in favor of reviewed reconciliation."""
+
+    code = "E_RECONCILIATION_REQUIRED"
+    exit_code = 1
+
+
+class InjectedFailure(RoadmapError):
+    """Explicit fault-injection seam used by the ChangeSet recovery tests."""
+
+    code = "E_INJECTED_FAILURE"
+    exit_code = 1
+
+
 class PromoteTargetInvalid(RoadmapError):
     """`trace add --under` 的目标不存在，或不是 plan 节点。"""
 
@@ -338,8 +395,8 @@ class PromoteStateInvalid(RoadmapError):
 
 
 class ReferencedError(RoadmapError):
-    """试图删除被引用的节点：已被 `promote --accept` 引用的
-    trace、或被 `compressed_from` 引用的节点。删除会让指向它的边悬空，故拒绝。"""
+    """试图删除被引用的节点：已被 `promote --accept` / reconciliation 引用的
+    trace、或被 `compressed_from` 引用的节点。删除会让 provenance 悬空，故拒绝。"""
 
     code = "E_REFERENCED"
     exit_code = 1
@@ -378,6 +435,14 @@ ERROR_EXIT_CODES = {
     InvalidKind.code: InvalidKind.exit_code,
     TraceNotFound.code: TraceNotFound.exit_code,
     InvalidLayer.code: InvalidLayer.exit_code,
+    ReconcileKeyMissing.code: ReconcileKeyMissing.exit_code,
+    NoveltyEvidenceMissing.code: NoveltyEvidenceMissing.exit_code,
+    ProposalNotFound.code: ProposalNotFound.exit_code,
+    ApprovalMismatch.code: ApprovalMismatch.exit_code,
+    IdempotencyConflict.code: IdempotencyConflict.exit_code,
+    ChangeSetInvalid.code: ChangeSetInvalid.exit_code,
+    ReconciliationRequired.code: ReconciliationRequired.exit_code,
+    InjectedFailure.code: InjectedFailure.exit_code,
     PromoteTargetInvalid.code: PromoteTargetInvalid.exit_code,
     PromoteStateInvalid.code: PromoteStateInvalid.exit_code,
     ReferencedError.code: ReferencedError.exit_code,
@@ -1085,6 +1150,21 @@ def next_child_index(parent: Optional[dict]) -> int:
 # 而不是"trace 泄进调度与 md"（静默泄漏，与视图膨胀头号风险叠加）。
 LAYER_PLAN = "plan"
 LAYER_TRACE = "trace"
+RECONCILIATION_SCHEMA = "zj-reconciliation-proposal/v1"
+RECONCILIATION_BATCH_SCHEMA = "zj-reconciliation-batch/v1"
+RECONCILIATION_COVERED = "covered"
+RECONCILIATION_REFINE = "refine"
+RECONCILIATION_RESHAPE = "reshape"
+RECONCILIATION_NOVEL = "novel"
+RECONCILIATION_DISMISS = "dismiss"
+RECONCILIATION_UNRESOLVED = "unresolved"
+CHANGESET_SCHEMA = "zj-changeset/v1"
+CHANGESET_KINDS = frozenset({
+    "work.create", "work.patch", "work.coalesce", "work.supersede",
+    "placement.put", "placement.move", "placement.reference",
+    "edge.put", "edge.remove", "edge.replace",
+    "decision.append", "trace.disposition",
+})
 TRACE_KINDS = frozenset({"turn", "finding", "doubt", "attempt", "artifact"})
 
 # `promotion` 状态机：trace 节点上的一等状态，取代"挂一个待办"——open
@@ -1615,9 +1695,8 @@ def apply_promotion(
     - propose（默认）：写 `state=proposed` + target/label + proposed_by/at；exit 0，
       不落节点。重复 propose（同 target 同 label）幂等：已 accepted 的不降级、已
       proposed 的不再刷时间戳。
-    - accept（Human）：从 proposal 落正式 plan 节点（调用方据此建节点 + derives-from
-      边）；已 accepted 幂等（不落第二个）。无 proposal（state 为 None 或 rejected）
-      则 E_PROMOTE_STATE_INVALID。
+    - accept 仍保留为旧数据的纯状态解释能力，但新的 `Roadmap.promote` API 会拒绝
+      直接 accept；真实拓扑写入必须经过 reviewed reconciliation + ChangeSet apply。
     - reject（Human）：记 `state=rejected` + reason，保留痕迹不物理删除；已 rejected
       幂等。对已 accepted 的 proposal 拒绝是 E_PROMOTE_STATE_INVALID（节点已进地图）。
     """
@@ -1720,6 +1799,8 @@ class Roadmap:
         self.data["metadata"]["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ensure_uids(self.data.get("nodes", {}))
         ensure_layer(self.data.get("nodes", {}))
+        if getattr(self, "_fault_stage", None) == "during-commit":
+            raise InjectedFailure("fault injected during single-file commit")
         content = json.dumps(self.data, ensure_ascii=False, indent=2)
         atomic_write_text(self.json_path, content)
         return self.json_path
@@ -1784,6 +1865,7 @@ class Roadmap:
         max_children: Any = None,
         max_rounds: Any = None,
         exit_criteria: Optional[list] = None,
+        obligation_key: Optional[str] = None,
     ) -> dict:
         """在父节点下添加子节点。返回新节点。
 
@@ -1798,6 +1880,8 @@ class Roadmap:
         # 硬前提：trace 节点不设 parent。任何把 plan 节点挂到 trace 节点下的写入
         # 路径必须当场被拒，否则 trace 就会混进 children 数组，污染 tree / _sync_parent_status。
         assert_plan_layer(parent)
+        if parent.get("node_type") == "work":
+            raise ChangeSetInvalid("typed work node cannot receive decomposition children")
         check_child_budget(parent)
 
         index = next_child_index(parent)
@@ -1817,12 +1901,19 @@ class Roadmap:
             "notes": "",
             "layer": LAYER_PLAN,
         }
+        if "node_type" in parent:
+            node["node_type"] = "work"
 
         budget = build_budget(max_children, max_rounds)
         if budget:
             node["budget"] = budget
         if exit_criteria:
             node["exit_criteria"] = list(exit_criteria)
+        if obligation_key is not None:
+            key = str(obligation_key).strip()
+            if not key:
+                raise ReconcileKeyMissing("obligation_key 不能是空文本")
+            node["obligation_key"] = key
 
         count_round_start(node, status)
         node["status"] = status
@@ -1861,6 +1952,8 @@ class Roadmap:
         agent_id: Optional[str] = None,
         device_id: Optional[str] = None,
         compressed_from: Optional[list] = None,
+        obligation_key: Optional[str] = None,
+        evidence: Optional[list] = None,
     ) -> dict:
         """追加一条 trace 节点，provenance 诞生即写。返回新节点。
 
@@ -1869,9 +1962,14 @@ class Roadmap:
         - --from 引用的 trace 不存在 → E_TRACE_NOT_FOUND
         - 身份 provenance：agent_id / device_id / session_ref 缺省为 ""，
           compressed_from 缺省不写；CLI 显式给才落。
+        - obligation_key 是 reconcile 的显式、确定性身份键；不从自由文本推断。
         """
         if kind not in TRACE_KINDS:
             raise InvalidKind(kind)
+        if obligation_key is not None:
+            obligation_key = str(obligation_key).strip()
+            if not obligation_key:
+                raise ReconcileKeyMissing("obligation_key 不能是空文本")
         under_id: Optional[str] = None
         if under is not None:
             try:
@@ -1918,6 +2016,10 @@ class Roadmap:
             "device_id": device_id or "",
             "compressed_from": compressed_uids,
         }
+        if obligation_key is not None:
+            node["obligation_key"] = obligation_key
+        if evidence:
+            node["evidence"] = [str(item) for item in evidence if str(item).strip()]
         self.data["nodes"][trace_id] = node
         if under_id is not None:
             # 设计契约：prompted-by 是 plan → trace 的跨层边，context 才能从
@@ -1927,6 +2029,1107 @@ class Roadmap:
             # 端点落盘一律 uid（与 plan 边同纪律）；mainline 参与 trace 因果环检测。
             self.add_edge(trace_id, from_id, EDGE_MAINLINE)
         return node
+
+    def reconcile(self, trace_id: str, answers: Optional[dict] = None) -> dict:
+        """Build a read-only reconciliation proposal for one trace finding.
+
+        The first slice deliberately matches only an explicit ``obligation_key``.
+        Free-text similarity is not an authority: it will be introduced only as a
+        candidate-producing mechanism after deterministic matching has a corpus
+        contract.  Human answers may select ``dismiss``; this method never changes
+        ``self.data`` or persists a proposal.
+        """
+        trace_id = self.resolve_node(trace_id)
+        trace = self.get_node(trace_id)
+        if trace.get("layer", LAYER_PLAN) != LAYER_TRACE:
+            raise InvalidLayer(f"reconcile 只作用于 trace 节点，{trace_id} 是 plan 节点")
+
+        obligation_key = trace.get("obligation_key")
+        if not obligation_key:
+            raise ReconcileKeyMissing(
+                f"trace {trace_id} 缺少 obligation_key；reconcile 不从自由文本推断"
+            )
+
+        matches = [
+            node for node in self.iter_nodes(layer=LAYER_PLAN)
+            if not node.get("archived") and node.get("obligation_key") == obligation_key
+        ]
+        matches.sort(key=lambda node: node["id"])
+        match_views = [
+            {"id": node["id"], "uid": node["uid"], "label": node["label"]}
+            for node in matches
+        ]
+
+        answers = dict(answers or {})
+        requested_disposition = answers.get("disposition")
+        answer_action = answers.get("action")
+        if requested_disposition is None and answer_action == RECONCILIATION_DISMISS:
+            requested_disposition = RECONCILIATION_DISMISS
+        if requested_disposition not in (
+            None, RECONCILIATION_DISMISS, RECONCILIATION_REFINE, RECONCILIATION_RESHAPE,
+        ):
+            raise ChangeSetInvalid(
+                "当前 reconciliation answer 只支持 disposition=dismiss|refine|reshape"
+            )
+        reason = str(answers.get("reason") or "").strip()
+        if requested_disposition in (
+            RECONCILIATION_DISMISS, RECONCILIATION_REFINE, RECONCILIATION_RESHAPE,
+        ) and not reason:
+            raise ChangeSetInvalid("reconciliation answer 必须提供非空 reason")
+        if requested_disposition == RECONCILIATION_REFINE and answer_action not in (
+            "reopen", "supersede", "noop",
+        ):
+            raise ChangeSetInvalid("refine answer 的 action 必须是 reopen|supersede|noop")
+        if requested_disposition == RECONCILIATION_RESHAPE:
+            answer_changes = answers.get("changes")
+            if not isinstance(answer_changes, list) or not answer_changes:
+                raise ChangeSetInvalid("reshape answer 必须提供非空 changes 数组")
+            for change in answer_changes:
+                if not isinstance(change, dict) or change.get("kind") not in CHANGESET_KINDS:
+                    raise ChangeSetInvalid("reshape answer 含未知 ChangeSet kind")
+
+        questions = []
+        if len(matches) == 1:
+            if matches[0].get("status") == STATUS_COMPLETED:
+                disposition = RECONCILIATION_REFINE
+                changes = []
+                questions = [{
+                    "code": "E_COMPLETED_WORK_REFINEMENT",
+                    "text": "完成的 WorkItem 收到同一 obligation 的新证据；Human 必须选择 reopen、supersede 或 evidence-preserving no-op",
+                    "candidate_uids": [matches[0]["uid"]],
+                }]
+            else:
+                disposition = RECONCILIATION_COVERED
+                changes = [{
+                    "kind": "trace.disposition",
+                    "disposition": disposition,
+                    "trace_uid": trace["uid"],
+                    "work_uid": matches[0]["uid"],
+                }]
+        elif len(matches) > 1:
+            disposition = RECONCILIATION_UNRESOLVED
+            changes = []
+            questions = [{
+                "code": "E_OVERLAP_UNRESOLVED",
+                "text": "多个 active WorkItem 共享 obligation_key；Human 必须选择 canonical owner",
+                "candidate_uids": [node["uid"] for node in matches],
+            }]
+        else:
+            if not trace.get("evidence"):
+                raise NoveltyEvidenceMissing(
+                    f"trace {trace_id} 没有 exact match；novel proposal 必须提供 evidence"
+                )
+            disposition = RECONCILIATION_NOVEL
+            changes = [{
+                "kind": "work.create",
+                "label": trace.get("body", "").strip() or f"Finding {trace_id}",
+                "obligation_key": obligation_key,
+                "parent_id": trace.get("prompted_by") or "1",
+                "trace_uid": trace["uid"],
+            }]
+
+        if requested_disposition == RECONCILIATION_RESHAPE:
+            disposition = RECONCILIATION_RESHAPE
+            questions = []
+            changes = [
+                {
+                    "kind": "decision.append",
+                    "node_uid": trace["uid"],
+                    "question": "为什么需要重塑现有 Work Graph？",
+                    "answer": reason,
+                    "note": "reconciliation reshape",
+                },
+                *copy.deepcopy(answers["changes"]),
+                {
+                    "kind": "trace.disposition",
+                    "disposition": RECONCILIATION_RESHAPE,
+                    "trace_uid": trace["uid"],
+                    "work_uid": answers.get("work_uid"),
+                    "reason": reason,
+                },
+            ]
+        elif requested_disposition == RECONCILIATION_REFINE:
+            if len(matches) != 1 or matches[0].get("status") != STATUS_COMPLETED:
+                raise ChangeSetInvalid("refine answer 只适用于一个已完成的 WorkItem")
+            work = matches[0]
+            disposition = RECONCILIATION_REFINE
+            questions = []
+            if answer_action == "reopen":
+                changes = [
+                    {
+                        "kind": "work.patch",
+                        "work_uid": work["uid"],
+                        "patch": {"status": STATUS_IN_PROGRESS},
+                    },
+                    {
+                        "kind": "decision.append",
+                        "node_uid": work["uid"],
+                        "question": "为什么已完成的 WorkItem 需要重新打开？",
+                        "answer": reason,
+                        "note": "reconciliation refine/reopen",
+                    },
+                    {
+                        "kind": "trace.disposition",
+                        "disposition": RECONCILIATION_REFINE,
+                        "trace_uid": trace["uid"],
+                        "work_uid": work["uid"],
+                    },
+                ]
+            elif answer_action == "noop":
+                changes = [
+                    {
+                        "kind": "decision.append",
+                        "node_uid": work["uid"],
+                        "question": "为什么已完成的 WorkItem 不需要重新打开？",
+                        "answer": reason,
+                        "note": "reconciliation refine/noop",
+                    },
+                    {
+                        "kind": "trace.disposition",
+                        "disposition": RECONCILIATION_REFINE,
+                        "trace_uid": trace["uid"],
+                        "work_uid": work["uid"],
+                    },
+                ]
+            else:
+                changes = [
+                    {
+                        "kind": "work.create",
+                        "label": answers.get("label") or trace.get("body", "").strip() or f"Refinement {trace_id}",
+                        "obligation_key": answers.get("obligation_key") or obligation_key,
+                        "parent_id": work.get("parent") or "1",
+                        "supersedes_uid": work["uid"],
+                        "trace_uid": trace["uid"],
+                    },
+                    {
+                        "kind": "decision.append",
+                        "node_uid": work["uid"],
+                        "question": "为什么已完成的 WorkItem 被新的 WorkItem 取代？",
+                        "answer": reason,
+                        "note": "reconciliation refine/supersede",
+                    },
+                    {
+                        "kind": "trace.disposition",
+                        "disposition": RECONCILIATION_REFINE,
+                        "trace_uid": trace["uid"],
+                        "supersedes_uid": work["uid"],
+                    },
+                ]
+        elif requested_disposition == RECONCILIATION_DISMISS:
+            disposition = RECONCILIATION_DISMISS
+            changes = [
+                {
+                    "kind": "decision.append",
+                    "node_uid": trace["uid"],
+                    "question": "为什么该执行发现不进入计划？",
+                    "answer": reason,
+                    "reason": reason,
+                    "note": "reconciliation dismiss",
+                },
+                {
+                    "kind": "trace.disposition",
+                    "disposition": RECONCILIATION_DISMISS,
+                    "trace_uid": trace["uid"],
+                    "reason": reason,
+                },
+            ]
+            questions = []
+
+        proposal = {
+            "schema": RECONCILIATION_SCHEMA,
+            "base_revision": self.current_revision(),
+            "trace_uid": trace["uid"],
+            "obligation_key": obligation_key,
+            "disposition": disposition,
+            "evidence": list(trace.get("evidence") or []),
+            "matches": match_views,
+            "changes": changes,
+            "questions": questions,
+        }
+        if answers:
+            proposal["answer"] = answers
+        semantic = {key: value for key, value in proposal.items() if key != "base_revision"}
+        proposal["proposal_id"] = (
+            "rp-" + proposal["base_revision"] + "-" + sha256(canonical_json(semantic))[:24]
+        )
+        proposal["proposal_digest"] = sha256(canonical_json(proposal))
+        return proposal
+
+    def reconcile_batch(self, trace_refs: list[str]) -> dict:
+        """Build one deterministic preview for a deduplicated trace batch."""
+        resolved = {self.resolve_node(ref) for ref in trace_refs}
+        trace_ids = sorted(
+            (self.get_node(node_id)["uid"] for node_id in resolved),
+        )
+        proposals = [self.reconcile(uid) for uid in trace_ids]
+        summary = {name: 0 for name in (
+            RECONCILIATION_COVERED,
+            RECONCILIATION_NOVEL,
+            RECONCILIATION_UNRESOLVED,
+        )}
+        for proposal in proposals:
+            summary.setdefault(proposal["disposition"], 0)
+            summary[proposal["disposition"]] += 1
+        batch = {
+            "schema": RECONCILIATION_BATCH_SCHEMA,
+            "base_revision": self.current_revision(),
+            "trace_uids": trace_ids,
+            "proposals": proposals,
+            "summary": summary,
+        }
+        duplicate_groups = {}
+        for proposal in proposals:
+            if proposal["disposition"] != RECONCILIATION_NOVEL:
+                continue
+            duplicate_groups.setdefault(proposal["obligation_key"], []).append(proposal["trace_uid"])
+        batch["duplicate_groups"] = [
+            {
+                "obligation_key": key,
+                "canonical_trace_uid": sorted(trace_uids)[0],
+                "trace_uids": sorted(trace_uids),
+            }
+            for key, trace_uids in sorted(duplicate_groups.items())
+            if len(trace_uids) > 1
+        ]
+        batch["batch_digest"] = (
+            "rb-" + batch["base_revision"] + "-" + sha256(canonical_json(batch))[:24]
+        )
+        return batch
+
+    def apply_batch(
+        self,
+        trace_refs: list[str],
+        approved_digest: str,
+        idempotency_key: str,
+    ) -> dict:
+        """Apply a reviewed trace batch as one atomic ChangeSet.
+
+        Novel findings sharing one obligation key intentionally converge on the
+        first deterministic trace's WorkItem. Every source trace still receives
+        its own provenance edge and reconciliation record, so the batch cannot
+        create duplicate active work while losing evidence.
+        """
+        if not idempotency_key or idempotency_key == "true":
+            raise ValueError("idempotency_key 不能为空")
+        if not approved_digest or approved_digest == "true":
+            raise ValueError("approved_digest 不能为空")
+
+        records = self.data.get("metadata", {}).get("changesets", [])
+        for record in records:
+            if record.get("idempotency_key") != idempotency_key:
+                continue
+            if (
+                record.get("approved_digest") != approved_digest
+                or record.get("proposal_id") != approved_digest
+            ):
+                raise IdempotencyConflict(
+                    f"idempotency_key {idempotency_key!r} 已用于另一个 batch proposal"
+                )
+            return record["receipt"]
+
+        digest_parts = approved_digest.split("-", 2)
+        if len(digest_parts) == 3 and digest_parts[0] == "rb":
+            expected_revision = digest_parts[1]
+            current_revision = self.current_revision()
+            if current_revision != expected_revision:
+                raise ConflictError(
+                    f"batch base revision {expected_revision} is stale; current revision is {current_revision}"
+                )
+        batch = self.reconcile_batch(trace_refs)
+        batch_id = batch["batch_digest"]
+        if approved_digest != batch_id:
+            raise ApprovalMismatch(f"approved digest does not match batch {batch_id}")
+        applicable = {RECONCILIATION_COVERED, RECONCILIATION_NOVEL}
+        invalid = sorted({
+            proposal["disposition"]
+            for proposal in batch["proposals"]
+            if proposal["disposition"] not in applicable
+        })
+        if invalid:
+            raise ChangeSetInvalid(
+                "batch 含不能直接 apply 的 proposal disposition: " + ", ".join(invalid)
+            )
+
+        original_data = self.data
+        self.data = copy.deepcopy(original_data)
+        try:
+            work_by_obligation: dict[str, dict] = {}
+            receipt_changes = []
+            for proposal in batch["proposals"]:
+                change = proposal["changes"][0]
+                trace_id = self.resolve_node(change["trace_uid"])
+                trace = self.get_node(trace_id)
+                if proposal["disposition"] == RECONCILIATION_NOVEL:
+                    work = work_by_obligation.get(proposal["obligation_key"])
+                    if work is None:
+                        work = self.add_node(
+                            parent_id=self.resolve_node(change.get("parent_id") or "1"),
+                            label=change["label"],
+                            obligation_key=change["obligation_key"],
+                        )
+                        work_by_obligation[proposal["obligation_key"]] = work
+                        receipt_changes.append({
+                            "kind": "work.create",
+                            "label": work["label"],
+                            "obligation_key": proposal["obligation_key"],
+                            "work_uid": work["uid"],
+                            "trace_uids": [proposal["trace_uid"]],
+                        })
+                    self.add_edge(trace_id, work["id"], EDGE_DERIVES_FROM)
+                    work_uid = work["uid"]
+                else:
+                    work_uid = change["work_uid"]
+                trace["reconciliation"] = {
+                    "disposition": proposal["disposition"],
+                    "work_uid": work_uid,
+                    "proposal_id": batch_id,
+                    "approved_digest": approved_digest,
+                }
+                receipt_changes.append({
+                    "kind": "trace.disposition",
+                    "disposition": proposal["disposition"],
+                    "trace_uid": trace["uid"],
+                    "work_uid": work_uid,
+                })
+
+            receipt = {
+                "schema": "zj-changeset-receipt/v1",
+                "status": "committed",
+                "view_status": "stale",
+                "proposal_id": batch_id,
+                "approved_digest": approved_digest,
+                "idempotency_key": idempotency_key,
+                "base_revision": batch["base_revision"],
+                "revision": self.current_revision(),
+                "changes": receipt_changes,
+            }
+            validation_errors = self.validate()
+            if validation_errors:
+                raise ChangeSetInvalid(
+                    "candidate state failed validation: " + "; ".join(validation_errors)
+                )
+            self.data.setdefault("metadata", {}).setdefault("changesets", []).append({
+                "idempotency_key": idempotency_key,
+                "proposal_id": batch_id,
+                "approved_digest": approved_digest,
+                "receipt": receipt,
+            })
+            return receipt
+        except Exception:
+            self.data = original_data
+            raise
+
+    def preview_changeset(self, changes: list[dict], scope: Optional[str] = None) -> dict:
+        """Return a deterministic, read-only envelope for closed ChangeSet ops."""
+        if not isinstance(changes, list) or not changes:
+            raise ChangeSetInvalid("changeset 必须包含至少一个 change")
+        normalized = []
+        for change in changes:
+            if not isinstance(change, dict):
+                raise ChangeSetInvalid("每个 change 必须是 JSON object")
+            kind = change.get("kind")
+            if kind not in CHANGESET_KINDS:
+                raise ChangeSetInvalid(f"不支持的 ChangeSet kind: {kind!r}")
+            normalized.append(copy.deepcopy(change))
+        scope_root = self._changeset_scope_root(scope)
+        if scope_root is not None:
+            self._validate_changeset_scope(normalized, scope_root)
+        envelope = {
+            "schema": CHANGESET_SCHEMA,
+            "base_revision": self.current_revision(),
+            "changes": normalized,
+            "change_kinds": [change["kind"] for change in normalized],
+        }
+        if scope is not None:
+            envelope["scope"] = str(scope)
+        semantic = canonical_json(envelope)
+        digest = "cs-" + envelope["base_revision"] + "-" + sha256(semantic)[:24]
+        envelope["changeset_id"] = digest
+        envelope["digest"] = digest
+        return envelope
+
+    def _changeset_scope_root(self, scope: Optional[str]) -> Optional[str]:
+        """Resolve a ChangeSet scope to its display id.
+
+        ChangeSet scope uses the same inclusive parent-subtree rule as the CLI
+        ``--scope`` guard.  The resolved display id is only an in-memory
+        traversal anchor; the submitted scope text remains in the digest
+        envelope so preview/apply must use the same reviewed input.
+        """
+        if scope in (None, "", "true"):
+            return None
+        scope_root = self.resolve_node(str(scope))
+        if scope_root not in self.data.get("nodes", {}):
+            raise ScopeError(
+                f"scope {scope} 不存在; allowed scope: an existing roadmap node"
+            )
+        return scope_root
+
+    def _changeset_scope_ref(
+        self,
+        ref: object,
+        scope_root: str,
+        kind: str,
+        field: str,
+    ) -> None:
+        """Require one referenced node to remain inside a ChangeSet scope."""
+        if ref in (None, "", "true"):
+            return
+        display_id = self.resolve_node(str(ref))
+        parent_of = lambda node_id: self.get_node(node_id).get("parent")
+        in_scope = is_within_scope(display_id, scope_root, parent_of)
+        node = self.get_node(display_id)
+        if not in_scope and node.get("layer", LAYER_PLAN) == LAYER_TRACE:
+            # Trace nodes intentionally have no tree parent.  Their
+            # prompted-by plan node is the scope anchor for reconciliation
+            # writes; a trace with no such anchor remains globally scoped and
+            # cannot be written through a bounded ChangeSet.
+            prompted_by = node.get("prompted_by")
+            if prompted_by is not None:
+                prompted_by_id = self.resolve_node(str(prompted_by))
+                in_scope = is_within_scope(prompted_by_id, scope_root, parent_of)
+        if not in_scope:
+            raise ScopeError(
+                f"{kind} reference {field}={ref} is outside scope {scope_root}; "
+                f"allowed scope: {scope_root} and its subtree"
+            )
+
+    def _placement_for_changeset_scope(self, placement_id: str) -> Optional[dict]:
+        """Read one Placement without materializing legacy tree facts."""
+        explicit = self.data.get("placements")
+        if explicit is not None:
+            return next(
+                (item for item in explicit if str(item.get("id")) == placement_id),
+                None,
+            )
+
+        nodes = self.data.get("nodes", {})
+        if "1" not in nodes:
+            return None
+        sequence = 0
+
+        def walk(parent_id: str) -> Optional[dict]:
+            nonlocal sequence
+            parent = nodes.get(parent_id) or {}
+            for rank, child_id in enumerate(parent.get("children", [])):
+                child = nodes.get(child_id)
+                if child is None:
+                    continue
+                sequence += 1
+                candidate = {
+                    "id": f"p{sequence}",
+                    "kind": "primary",
+                    "work_uid": child.get("uid"),
+                    "parent_uid": parent.get("uid"),
+                    "outline_rank": rank,
+                }
+                if candidate["id"] == placement_id:
+                    return candidate
+                found = walk(child_id)
+                if found is not None:
+                    return found
+            return None
+
+        return walk("1")
+
+    def _validate_changeset_scope(self, changes: list[dict], scope_root: str) -> None:
+        """Check every node reference carried by a closed ChangeSet operation.
+
+        Scope is deliberately checked at preview time, not only while applying
+        the candidate snapshot.  A Human must never approve a digest whose
+        closed operations can write outside the assigned subtree.  References
+        to existing Placement/Edge records are expanded to their node
+        endpoints before checking, so an opaque placement or edge id cannot
+        bypass the boundary.
+        """
+        for change in changes:
+            kind = change["kind"]
+            check = lambda ref, field: self._changeset_scope_ref(
+                ref, scope_root, kind, field
+            )
+
+            if kind == "work.create":
+                check(change.get("parent_uid") or change.get("parent_id") or "1", "parent")
+            elif kind == "work.patch":
+                check(change.get("work_uid") or change.get("work_id"), "work")
+            elif kind == "work.coalesce":
+                check(change.get("target_uid"), "target")
+                for index, source_uid in enumerate(change.get("source_uids") or []):
+                    check(source_uid, f"source[{index}]")
+            elif kind == "work.supersede":
+                check(change.get("source_uid"), "source")
+                spec = change.get("new") or change
+                check(spec.get("parent_uid") or spec.get("parent_id") or "1", "new.parent")
+            elif kind in ("placement.put", "placement.reference"):
+                check(change.get("work_uid"), "work")
+                check(change.get("parent_uid"), "parent")
+            elif kind == "placement.move":
+                placement_id = str(change.get("id"))
+                placement = self._placement_for_changeset_scope(placement_id)
+                if placement is not None:
+                    check(placement.get("work_uid"), "placement.work")
+                check(change.get("parent_uid"), "parent")
+            elif kind == "edge.put":
+                check(change.get("from_uid") or change.get("from"), "from")
+                check(change.get("to_uid") or change.get("to"), "to")
+            elif kind == "edge.remove":
+                edge_id = str(change.get("edge_id") or change.get("id"))
+                edge = next(
+                    (item for item in self.data.get("edges", [])
+                     if str(item.get("id")) == edge_id),
+                    None,
+                )
+                if edge is not None:
+                    check(edge.get("from"), "edge.from")
+                    check(edge.get("to"), "edge.to")
+            elif kind == "edge.replace":
+                edge_id = str(change.get("edge_id") or change.get("id"))
+                edge = next(
+                    (item for item in self.data.get("edges", [])
+                     if str(item.get("id")) == edge_id),
+                    None,
+                )
+                if edge is not None:
+                    check(edge.get("from"), "edge.from")
+                    check(edge.get("to"), "edge.to")
+                replacement = change.get("replacement") or change
+                check(
+                    replacement.get("from_uid") or replacement.get("from"),
+                    "replacement.from",
+                )
+                check(
+                    replacement.get("to_uid") or replacement.get("to"),
+                    "replacement.to",
+                )
+            elif kind == "decision.append":
+                check(change.get("node_uid") or change.get("node_id"), "node")
+            elif kind == "trace.disposition":
+                check(change.get("trace_uid") or change.get("trace_id"), "trace")
+                check(change.get("work_uid"), "work")
+
+    def _resolve_uid_ref(self, ref: str) -> str:
+        node = self.get_node(self.resolve_node(str(ref)))
+        if not node.get("uid"):
+            raise ChangeSetInvalid(f"节点缺少 uid: {ref}")
+        return node["uid"]
+
+    def _materialize_primary_placements(self) -> None:
+        """Materialize legacy tree membership before a Placement-only write."""
+        if "placements" in self.data:
+            return
+        nodes = self.data.get("nodes", {})
+        root = nodes.get("1")
+        if root is None:
+            raise ChangeSetInvalid("Placement requires root plan node 1")
+        placements = []
+        visited = set()
+
+        def visit(parent_id: str) -> None:
+            parent = nodes[parent_id]
+            for rank, child_id in enumerate(parent.get("children", [])):
+                child = nodes.get(child_id)
+                if child is None or child.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                    raise ChangeSetInvalid(f"Placement child is not a plan node: {child_id}")
+                if child_id in visited:
+                    raise ChangeSetInvalid(f"duplicate primary placement: {child_id}")
+                visited.add(child_id)
+                placements.append({
+                    "id": f"p{len(placements) + 1}",
+                    "kind": "primary",
+                    "work_uid": child["uid"],
+                    "parent_uid": parent["uid"],
+                    "outline_rank": rank,
+                })
+                visit(child_id)
+
+        visit("1")
+        expected = {
+            node_id for node_id, node in nodes.items()
+            if node_id != "1" and node.get("layer", LAYER_PLAN) == LAYER_PLAN
+        }
+        if visited != expected:
+            missing = sorted(expected - visited)
+            raise ChangeSetInvalid("unplaced plan nodes: " + ", ".join(missing))
+        self.data["placements"] = placements
+
+    def _next_placement_id(self) -> str:
+        used = {str(item.get("id")) for item in self.data.get("placements", [])}
+        number = 1
+        while f"p{number}" in used:
+            number += 1
+        return f"p{number}"
+
+    def _apply_changeset_change(self, change: dict) -> dict:
+        """Apply one closed operation to the current candidate state."""
+        kind = change["kind"]
+        if kind == "work.create":
+            created = self.add_node(
+                parent_id=self.resolve_node(change.get("parent_uid") or change.get("parent_id") or "1"),
+                label=str(change.get("label") or "Untitled work"),
+                status=change.get("status", STATUS_PENDING),
+                mode=change.get("mode", MODE_EXPLORE),
+                obligation_key=change.get("obligation_key"),
+            )
+            if change.get("node_type") is not None:
+                created["node_type"] = change["node_type"]
+            return {**change, "work_uid": created["uid"], "work_id": created["id"]}
+
+        if kind == "work.patch":
+            node_id = self.resolve_node(change.get("work_uid") or change.get("work_id"))
+            patch = change.get("patch")
+            if not isinstance(patch, dict) or not patch:
+                raise ChangeSetInvalid("work.patch 需要非空 patch object")
+            allowed = {"label", "status", "mode", "notes", "obligation_key", "node_type"}
+            unknown = sorted(set(patch) - allowed)
+            if unknown:
+                raise ChangeSetInvalid("work.patch 不允许字段: " + ", ".join(unknown))
+            update_kwargs = {key: patch[key] for key in ("label", "status", "mode", "notes") if key in patch}
+            if update_kwargs:
+                self.update_node(node_id, **update_kwargs)
+            node = self.get_node(node_id)
+            for key in ("obligation_key", "node_type"):
+                if key in patch:
+                    if key == "obligation_key" and not str(patch[key]).strip():
+                        raise ChangeSetInvalid("obligation_key 不能是空文本")
+                    node[key] = patch[key]
+            return change
+
+        if kind == "work.coalesce":
+            target_uid = self._resolve_uid_ref(change.get("target_uid"))
+            source_uids = change.get("source_uids")
+            if not isinstance(source_uids, list) or not source_uids:
+                raise ChangeSetInvalid("work.coalesce 需要非空 source_uids")
+            for source_uid in source_uids:
+                source_uid = self._resolve_uid_ref(source_uid)
+                if source_uid == target_uid:
+                    raise ChangeSetInvalid("work.coalesce source 不能等于 target")
+                self.add_edge(target_uid, source_uid, EDGE_SUPERSEDES)
+            return change
+
+        if kind == "work.supersede":
+            source_uid = self._resolve_uid_ref(change.get("source_uid"))
+            spec = change.get("new") or change
+            created = self.add_node(
+                parent_id=self.resolve_node(spec.get("parent_uid") or spec.get("parent_id") or "1"),
+                label=str(spec.get("label") or "Replacement work"),
+                status=spec.get("status", STATUS_PENDING),
+                mode=spec.get("mode", MODE_EXPLORE),
+                obligation_key=spec.get("obligation_key"),
+            )
+            self.add_edge(created["id"], source_uid, EDGE_SUPERSEDES)
+            return {**change, "new_work_uid": created["uid"], "new_work_id": created["id"]}
+
+        if kind in ("placement.put", "placement.reference"):
+            self._materialize_primary_placements()
+            work_uid = self._resolve_uid_ref(change.get("work_uid"))
+            parent_uid = self._resolve_uid_ref(change.get("parent_uid"))
+            try:
+                rank = int(change.get("outline_rank"))
+            except (TypeError, ValueError) as exc:
+                raise ChangeSetInvalid("Placement outline_rank 必须是整数") from exc
+            if rank < 0:
+                raise ChangeSetInvalid("Placement outline_rank 必须非负")
+            placement_id = str(change.get("id") or self._next_placement_id())
+            if any(item.get("id") == placement_id for item in self.data["placements"]):
+                raise ChangeSetInvalid(f"Placement id 已存在: {placement_id}")
+            self.data["placements"].append({
+                "id": placement_id,
+                "kind": "reference" if kind == "placement.reference" else change.get("kind_name", "primary"),
+                "work_uid": work_uid,
+                "parent_uid": parent_uid,
+                "outline_rank": rank,
+            })
+            return {**change, "id": placement_id}
+
+        if kind == "placement.move":
+            self._materialize_primary_placements()
+            placement_id = str(change.get("id"))
+            placement = next((item for item in self.data["placements"] if item.get("id") == placement_id), None)
+            if placement is None:
+                raise ChangeSetInvalid(f"Placement 不存在: {placement_id}")
+            placement["parent_uid"] = self._resolve_uid_ref(change.get("parent_uid"))
+            placement["outline_rank"] = int(change.get("outline_rank"))
+            if placement["outline_rank"] < 0:
+                raise ChangeSetInvalid("Placement outline_rank 必须非负")
+            return change
+
+        if kind == "edge.put":
+            return {
+                **change,
+                **self.add_edge(change.get("from_uid") or change.get("from"),
+                                change.get("to_uid") or change.get("to"),
+                                change.get("type")),
+            }
+
+        if kind == "edge.remove":
+            self.remove_edge(str(change.get("edge_id") or change.get("id")))
+            return change
+
+        if kind == "edge.replace":
+            self.remove_edge(str(change.get("edge_id") or change.get("id")))
+            replacement = change.get("replacement") or change
+            return {
+                **change,
+                **self.add_edge(
+                    replacement.get("from_uid") or replacement.get("from"),
+                    replacement.get("to_uid") or replacement.get("to"),
+                    replacement.get("type"),
+                ),
+            }
+
+        if kind == "decision.append":
+            node_id = self.resolve_node(change.get("node_uid") or change.get("node_id"))
+            self.add_decision(
+                node_id,
+                str(change.get("question") or ""),
+                str(change.get("answer") or ""),
+                str(change.get("note") or ""),
+            )
+            return change
+
+        if kind == "trace.disposition":
+            trace_id = self.resolve_node(change.get("trace_uid") or change.get("trace_id"))
+            trace = self.get_node(trace_id)
+            if trace.get("layer", LAYER_PLAN) != LAYER_TRACE:
+                raise LayerViolation("trace.disposition 只能作用于 trace 节点")
+            trace["reconciliation"] = {
+                "disposition": change.get("disposition"),
+                "work_uid": change.get("work_uid"),
+                "reason": change.get("reason", ""),
+            }
+            return change
+
+        raise ChangeSetInvalid(f"不支持的 ChangeSet kind: {kind!r}")
+
+    def apply_changeset(
+        self,
+        changes: list[dict],
+        approved_digest: str,
+        idempotency_key: str,
+        scope: Optional[str] = None,
+    ) -> dict:
+        """Apply a closed ChangeSet against a private candidate snapshot."""
+        if not idempotency_key or idempotency_key == "true":
+            raise ValueError("idempotency_key 不能为空")
+        if not approved_digest or approved_digest == "true":
+            raise ValueError("approved_digest 不能为空")
+        records = self.data.get("metadata", {}).get("changesets", [])
+        for record in records:
+            if record.get("idempotency_key") != idempotency_key:
+                continue
+            if record.get("approved_digest") != approved_digest:
+                raise IdempotencyConflict(
+                    f"idempotency_key {idempotency_key!r} 已用于另一个 ChangeSet"
+                )
+            return record["receipt"]
+        digest_parts = approved_digest.split("-", 2)
+        if len(digest_parts) != 3 or digest_parts[0] != "cs":
+            raise ApprovalMismatch("approved digest 不是有效的 ChangeSet digest")
+        if self.current_revision() != digest_parts[1]:
+            raise ConflictError(
+                f"changeset base revision {digest_parts[1]} is stale; current revision is {self.current_revision()}"
+            )
+        preview = self.preview_changeset(changes, scope=scope)
+        if preview["digest"] != approved_digest:
+            raise ApprovalMismatch("approved digest does not match ChangeSet preview")
+
+        original_data = self.data
+        self.data = copy.deepcopy(original_data)
+        try:
+            applied = [self._apply_changeset_change(change) for change in preview["changes"]]
+            validation_errors = self.validate()
+            if validation_errors:
+                raise ChangeSetInvalid(
+                    "candidate state failed validation: " + "; ".join(validation_errors)
+                )
+            receipt = {
+                "schema": "zj-changeset-receipt/v1",
+                "status": "committed",
+                "view_status": "stale",
+                "proposal_id": preview["changeset_id"],
+                "approved_digest": approved_digest,
+                "idempotency_key": idempotency_key,
+                "base_revision": preview["base_revision"],
+                "revision": self.current_revision(),
+                "changes": applied,
+            }
+            self.data.setdefault("metadata", {}).setdefault("changesets", []).append({
+                "idempotency_key": idempotency_key,
+                "proposal_id": preview["changeset_id"],
+                "approved_digest": approved_digest,
+                "receipt": receipt,
+            })
+            return receipt
+        except Exception:
+            self.data = original_data
+            raise
+
+    def _changeset_records(self) -> list:
+        return self.data.setdefault("metadata", {}).setdefault("changesets", [])
+
+    def apply_proposal(
+        self,
+        proposal_id: str,
+        approved_digest: str,
+        idempotency_key: str,
+        answers: Optional[dict] = None,
+    ) -> dict:
+        """Apply one reviewed covered proposal as an atomic ChangeSet.
+
+        Preview material is intentionally not persisted. The proposal id carries
+        its base revision, so apply can reject stale work before looking up the
+        current proposal. Receipts are persisted as operational metadata and are
+        excluded from the semantic revision; the trace disposition is canonical
+        state and does participate in the revision.
+        """
+        if not idempotency_key or idempotency_key == "true":
+            raise ValueError("idempotency_key 不能为空")
+        if not approved_digest or approved_digest == "true":
+            raise ValueError("approved_digest 不能为空")
+
+        records = self.data.get("metadata", {}).get("changesets", [])
+        for record in records:
+            if record.get("idempotency_key") != idempotency_key:
+                continue
+            if (
+                record.get("proposal_id") != proposal_id
+                or record.get("approved_digest") != approved_digest
+            ):
+                raise IdempotencyConflict(
+                    f"idempotency_key {idempotency_key!r} 已用于另一个 proposal"
+                )
+            return record["receipt"]
+
+        if not proposal_id.startswith("rp-"):
+            raise ProposalNotFound(f"proposal 不存在: {proposal_id}")
+        try:
+            expected_revision, _semantic_id = proposal_id[3:].split("-", 1)
+        except ValueError:
+            raise ProposalNotFound(f"proposal id 格式无效: {proposal_id}")
+        current_revision = self.current_revision()
+        if current_revision != expected_revision:
+            raise ConflictError(
+                f"proposal base revision {expected_revision} is stale; current revision is {current_revision}"
+            )
+
+        current_proposal = None
+        for trace in self.iter_nodes(layer=LAYER_TRACE):
+            try:
+                candidate = self.reconcile(trace["uid"], answers=answers)
+            except RoadmapError:
+                continue
+            if candidate["proposal_id"] == proposal_id:
+                current_proposal = candidate
+                break
+        if current_proposal is None:
+            raise ProposalNotFound(f"proposal 不存在或已不适用于当前 revision: {proposal_id}")
+        if current_proposal["proposal_digest"] != approved_digest:
+            raise ApprovalMismatch(
+                f"approved digest does not match proposal {proposal_id}"
+            )
+        if current_proposal["disposition"] not in (
+            RECONCILIATION_COVERED,
+            RECONCILIATION_NOVEL,
+            RECONCILIATION_DISMISS,
+            RECONCILIATION_REFINE,
+            RECONCILIATION_RESHAPE,
+        ):
+            raise ChangeSetInvalid(
+                f"无法 apply {current_proposal['disposition']} proposal"
+            )
+
+        # Apply the closed change list to a private candidate snapshot. If a
+        # later structural or layer check raises, callers retain the original
+        # in-memory state as well as the original carrier bytes.
+        original_data = self.data
+        self.data = copy.deepcopy(original_data)
+        try:
+            change = current_proposal["changes"][0]
+            trace_id = self.resolve_node(current_proposal["trace_uid"])
+            trace = self.get_node(trace_id)
+            if current_proposal["disposition"] == RECONCILIATION_DISMISS:
+                self.add_decision(
+                    trace_id,
+                    change["question"],
+                    change["answer"],
+                    change.get("note", ""),
+                )
+                receipt_changes = list(current_proposal["changes"])
+                trace_disposition = RECONCILIATION_DISMISS
+                work_uid = None
+            elif current_proposal["disposition"] == RECONCILIATION_REFINE:
+                action = (answers or {}).get("action")
+                changes = current_proposal["changes"]
+                if action == "reopen":
+                    work_uid = changes[0]["work_uid"]
+                    self.update_node(
+                        self.resolve_node(work_uid),
+                        status=STATUS_IN_PROGRESS,
+                    )
+                    decision = changes[1]
+                    self.add_decision(
+                        self.resolve_node(decision["node_uid"]),
+                        decision["question"],
+                        decision["answer"],
+                        decision.get("note", ""),
+                    )
+                elif action == "noop":
+                    work_uid = changes[1]["work_uid"]
+                    decision = changes[0]
+                    self.add_decision(
+                        self.resolve_node(decision["node_uid"]),
+                        decision["question"],
+                        decision["answer"],
+                        decision.get("note", ""),
+                    )
+                elif action == "supersede":
+                    create = changes[0]
+                    old_uid = create["supersedes_uid"]
+                    created = self.add_node(
+                        parent_id=self.resolve_node(create.get("parent_id") or "1"),
+                        label=create["label"],
+                        obligation_key=create["obligation_key"],
+                    )
+                    self.add_edge(created["id"], self.resolve_node(old_uid), EDGE_SUPERSEDES)
+                    self.add_edge(trace_id, created["id"], EDGE_DERIVES_FROM)
+                    decision = changes[1]
+                    self.add_decision(
+                        self.resolve_node(decision["node_uid"]),
+                        decision["question"],
+                        decision["answer"],
+                        decision.get("note", ""),
+                    )
+                    work_uid = created["uid"]
+                else:
+                    raise ChangeSetInvalid(f"未知 refine action: {action}")
+                receipt_changes = list(changes)
+                trace_disposition = RECONCILIATION_REFINE
+            elif current_proposal["disposition"] == RECONCILIATION_RESHAPE:
+                receipt_changes = []
+                generated_work_uids = []
+                for reshape_change in current_proposal["changes"]:
+                    applied_change = self._apply_changeset_change(reshape_change)
+                    receipt_changes.append(applied_change)
+                    if applied_change.get("work_uid"):
+                        generated_work_uids.append(applied_change["work_uid"])
+                    if applied_change.get("new_work_uid"):
+                        generated_work_uids.append(applied_change["new_work_uid"])
+                answer_work_uid = (answers or {}).get("work_uid")
+                work_uid = answer_work_uid or (generated_work_uids[-1] if generated_work_uids else None)
+                trace_disposition = RECONCILIATION_RESHAPE
+            elif current_proposal["disposition"] == RECONCILIATION_NOVEL:
+                created = self.add_node(
+                    parent_id=self.resolve_node(change.get("parent_id") or "1"),
+                    label=change["label"],
+                    obligation_key=change["obligation_key"],
+                )
+                self.add_edge(trace_id, created["id"], EDGE_DERIVES_FROM)
+                change = {
+                    **change,
+                    "work_uid": created["uid"],
+                    "parent_id": created["parent"],
+                }
+                work_uid = created["uid"]
+                receipt_changes = [
+                    change,
+                    {
+                        "kind": "trace.disposition",
+                        "disposition": RECONCILIATION_NOVEL,
+                        "trace_uid": trace["uid"],
+                        "work_uid": created["uid"],
+                    },
+                ]
+                trace_disposition = RECONCILIATION_NOVEL
+            else:
+                receipt_changes = [change]
+                trace_disposition = RECONCILIATION_COVERED
+                work_uid = change["work_uid"]
+            trace["reconciliation"] = {
+                "disposition": trace_disposition,
+                "work_uid": work_uid,
+                "proposal_id": proposal_id,
+                "approved_digest": approved_digest,
+            }
+            if current_proposal["disposition"] == RECONCILIATION_DISMISS:
+                trace["reconciliation"]["reason"] = change["answer"]
+            revision = self.current_revision()
+            receipt = {
+                "schema": "zj-changeset-receipt/v1",
+                "status": "committed",
+                "view_status": "stale",
+                "proposal_id": proposal_id,
+                "approved_digest": approved_digest,
+                "idempotency_key": idempotency_key,
+                "base_revision": expected_revision,
+                "revision": revision,
+                "changes": receipt_changes,
+            }
+            validation_errors = self.validate()
+            if validation_errors:
+                raise ChangeSetInvalid(
+                    "candidate state failed validation: " + "; ".join(validation_errors)
+                )
+            self.data.setdefault("metadata", {}).setdefault("changesets", []).append({
+                "idempotency_key": idempotency_key,
+                "proposal_id": proposal_id,
+                "approved_digest": approved_digest,
+                "receipt": receipt,
+            })
+            return receipt
+        except Exception:
+            self.data = original_data
+            raise
+
+    def apply_reviewed_reconciliation(
+        self,
+        trace_id: str,
+        approved_digest: str,
+        idempotency_key: str,
+        answers: Optional[dict] = None,
+    ) -> dict:
+        """Resolve a trace-scoped reviewed proposal, then use the one apply path.
+
+        A retry must be able to find the original proposal after its successful
+        ChangeSet has advanced the semantic revision.  The receipt and the
+        trace reconciliation marker are therefore used only to recover the
+        original proposal id; all validation and mutation remain in
+        :meth:`apply_proposal`.
+        """
+        trace_uid = self.resolve_node(trace_id)
+        trace = self.get_node(trace_uid)
+        if trace.get("layer", LAYER_PLAN) != LAYER_TRACE:
+            raise InvalidLayer(f"reconcile 只作用于 trace 节点，{trace_uid} 是 plan 节点")
+
+        proposal_id = None
+        reconciliation = trace.get("reconciliation") or {}
+        for record in self.data.get("metadata", {}).get("changesets", []):
+            if record.get("idempotency_key") != idempotency_key:
+                continue
+            if (
+                reconciliation.get("proposal_id") == record.get("proposal_id")
+                and reconciliation.get("approved_digest") == record.get("approved_digest")
+            ):
+                proposal_id = record["proposal_id"]
+            break
+
+        if proposal_id is None:
+            proposal = self.reconcile(trace_uid, answers=answers)
+            proposal_id = proposal["proposal_id"]
+
+        return self.apply_proposal(
+            proposal_id,
+            approved_digest,
+            idempotency_key,
+            answers=answers,
+        )
+
+    def set_changeset_view_status(self, idempotency_key: str, status: str) -> dict:
+        """Update only the publication status of an already committed receipt."""
+        for record in self._changeset_records():
+            if record.get("idempotency_key") == idempotency_key:
+                record["receipt"]["view_status"] = status
+                return record["receipt"]
+        raise ProposalNotFound(f"changeset receipt 不存在: {idempotency_key}")
 
     def promote(
         self,
@@ -1939,7 +3142,7 @@ class Roadmap:
         """promote 状态机。
 
         - propose（默认）：写 `promotion.state=proposed`，exit 0，不落节点。
-        - accept（Human）：从 proposal 落正式 plan 节点并写 derives-from 边，返回新节点。
+        - accept（Human）：禁止直接落拓扑；请使用 reviewed reconciliation proposal。
         - reject（Human）：记 rejected，保留痕迹不物理删除。
 
         trace 节点与 plan 节点同处 `data["nodes"]`，靠 `layer` 字段区分。
@@ -1948,6 +3151,10 @@ class Roadmap:
         node = self.get_node(trace_id)
         if node.get("layer", LAYER_PLAN) != LAYER_TRACE:
             raise InvalidLayer(f"promote 只作用于 trace 节点，{trace_id} 是 plan 节点")
+        if action == "accept":
+            raise ReconciliationRequired(
+                "direct promote accept 已禁用；请先 reconcile，再通过 reviewed proposal digest apply"
+            )
         if action == "propose":
             target_id = self.resolve_node(target) if target is not None else None
             if target_id is not None:
@@ -2070,13 +3277,18 @@ class Roadmap:
             raise KeyError(f"节点不存在: {node_id}")
         if node_id == "1":
             raise ValueError("不能删除根节点")
-        # S3 参照完整性：已被 promote --accept 落进地图的 trace 不允许删，否则指向
-        # 它的 derives-from 边会悬空。
+        # S3 参照完整性：已经被 promote --accept 或 reconciliation 接受的 trace
+        # 不允许删，否则 provenance / derives-from 事实会悬空。dismiss 没有
+        # work-graph 归属，仍保留旧的可删除语义。
         node = self.data["nodes"][node_id]
         promo = node.get("promotion") or {}
-        if node.get("layer") == LAYER_TRACE and promo.get("state") == PROMOTE_ACCEPTED:
+        reconciliation = node.get("reconciliation") or {}
+        if node.get("layer") == LAYER_TRACE and (
+            promo.get("state") == PROMOTE_ACCEPTED
+            or reconciliation.get("disposition") not in (None, RECONCILIATION_DISMISS)
+        ):
             raise ReferencedError(
-                f"trace {node_id} 已被 promote --accept 引用，删除会让 derives-from 边悬空"
+                f"trace {node_id} 已被 promote/reconciliation 接受，删除会让 provenance 悬空"
             )
 
         # 递归收集所有子孙节点
@@ -2640,9 +3852,11 @@ class Roadmap:
             "nodes": nodes,
             "edges": self.data.get("edges", []),
             "metadata": {k: v for k, v in self.data.get("metadata", {}).items()
-                         if k not in ("updated", "created")},
+                         if k not in ("updated", "created", "changesets")},
             "version": self.data.get("version"),
         }
+        if "placements" in self.data:
+            rev_data["placements"] = self.data["placements"]
         return sha256(canonical_json(rev_data))
 
     # ── 树遍历 ─────────────────────────────────────────
@@ -2655,6 +3869,9 @@ class Roadmap:
         """
         if root_id not in self.data["nodes"]:
             return f"(节点 {root_id} 不存在)"
+
+        if self.data.get("placements"):
+            return self._get_placement_tree(root_id, max_depth, owners)
 
         blocked = self.blocked_node_ids()
         owners = owners or {}
@@ -2681,6 +3898,49 @@ class Roadmap:
 
         return "\n".join(lines)
 
+    def _get_placement_tree(self, root_id: str, max_depth: int, owners: dict = None) -> str:
+        """Render the Human outline from Placement facts when they exist."""
+        blocked = self.blocked_node_ids()
+        owners = owners or {}
+        nodes = self.data["nodes"]
+        root = nodes[root_id]
+        by_parent: dict[str, list[dict]] = {}
+        for placement in self.data.get("placements", []):
+            by_parent.setdefault(placement.get("parent_uid"), []).append(placement)
+        for placements in by_parent.values():
+            placements.sort(key=lambda item: (int(item.get("outline_rank", 0)), str(item.get("id"))))
+
+        root_uid = root.get("uid")
+        lines = [tree_line(root, "", True, 0, blocked, owners.get(root_id))]
+
+        def render(placement: dict, prefix: str, is_last: bool, depth: int, path: set[str]) -> None:
+            if depth > max_depth:
+                return
+            work_uid = placement.get("work_uid")
+            node = next((item for item in nodes.values() if item.get("uid") == work_uid), None)
+            if node is None:
+                return
+            if work_uid in path:
+                cycle_node = dict(node)
+                cycle_node["label"] = f"↪ reference: {node['label']} [cycle omitted]"
+                lines.append(tree_line(cycle_node, prefix, is_last, depth, blocked, owners.get(node["id"])))
+                return
+            display_node = node
+            if placement.get("kind") == "reference":
+                display_node = dict(node)
+                display_node["label"] = f"↪ reference: {node['label']}"
+            lines.append(tree_line(display_node, prefix, is_last, depth, blocked, owners.get(node["id"])))
+            child_prefix = prefix + ("    " if is_last else "│   ")
+            children = by_parent.get(work_uid, [])
+            next_path = set(path)
+            next_path.add(work_uid)
+            for index, child in enumerate(children):
+                render(child, child_prefix, index == len(children) - 1, depth + 1, next_path)
+
+        for index, placement in enumerate(by_parent.get(root_uid, [])):
+            render(placement, "", index == len(by_parent[root_uid]) - 1, 1, {root_uid})
+        return "\n".join(lines)
+
     def get_tree_radial(self, focus_id: str, owners: dict = None, focus_subtree_depth: int = 2) -> str:
         """焦点辐射视图：祖先链必现 + 焦点子树下钻 + 非焦点兄弟折叠 + completed 子树折叠。
 
@@ -2695,63 +3955,90 @@ class Roadmap:
         path_index = {nid: i for i, nid in enumerate(path)}
         lines: list[str] = []
 
+        def outline_children(nid: str) -> list[tuple[str, str]]:
+            if not self.data.get("placements"):
+                return [(cid, "primary") for cid in self.data["nodes"][nid].get("children", [])]
+            uid = self.data["nodes"][nid].get("uid")
+            by_uid = {node.get("uid"): node["id"] for node in self.data["nodes"].values()}
+            placements = [
+                item for item in self.data.get("placements", [])
+                if item.get("parent_uid") == uid
+            ]
+            placements.sort(key=lambda item: (int(item.get("outline_rank", 0)), str(item.get("id"))))
+            return [
+                (by_uid[item.get("work_uid")], item.get("kind", "primary"))
+                for item in placements if item.get("work_uid") in by_uid
+            ]
+
         def subtree_node_count(nid: str) -> int:
-            n = 1
-            for c in self.data["nodes"][nid].get("children", []):
-                n += subtree_node_count(c)
-            return n
+            return 1 + sum(subtree_node_count(child) for child, _ in outline_children(nid))
 
         def all_completed(nid: str) -> bool:
             node = self.data["nodes"][nid]
-            if node.get("status") != STATUS_COMPLETED:
-                return False
-            for c in node.get("children", []):
-                if not all_completed(c):
-                    return False
-            return True
+            return node.get("status") == STATUS_COMPLETED and all(
+                all_completed(child) for child, _ in outline_children(nid)
+            )
 
-        def render(nid: str, prefix: str, is_last: bool, depth: int, mode: str, sub_depth: int):
+        def render(
+            nid: str,
+            prefix: str,
+            is_last: bool,
+            depth: int,
+            mode: str,
+            sub_depth: int,
+            placement_kind: str = "primary",
+        ):
             node = self.data["nodes"][nid]
-            lines.append(tree_line(node, prefix, is_last, depth, blocked, owners.get(nid)))
-            children = node.get("children", [])
+            display_node = node
+            if placement_kind == "reference":
+                display_node = dict(node)
+                display_node["label"] = f"↪ reference: {node['label']}"
+            lines.append(tree_line(display_node, prefix, is_last, depth, blocked, owners.get(nid)))
+            children = outline_children(nid)
             if not children:
                 return
             child_prefix = prefix + ("    " if is_last else "│   ")
             if mode == "ancestor":
                 idx = path_index[nid]
                 next_child = path[idx + 1] if idx + 1 < len(path) else None
-                for i, c in enumerate(children):
-                    if c == next_child:
-                        child_mode = "focus" if c == focus_id else "ancestor"
-                        render(c, child_prefix, i == len(children) - 1, depth + 1, child_mode, focus_subtree_depth)
-                off_path = [c for c in children if c != next_child]
-                if off_path:
+                for i, (child, child_kind) in enumerate(children):
+                    if child == next_child:
+                        child_mode = "focus" if child == focus_id else "ancestor"
+                        render(child, child_prefix, i == len(children) - 1, depth + 1, child_mode, focus_subtree_depth, child_kind)
+                off_path = [(child, child_kind) for child, child_kind in children if child != next_child]
+                reference_path = [
+                    (child, child_kind) for child, _ in off_path
+                    if any(grandchild == focus_id for grandchild, _ in outline_children(child))
+                ]
+                for i, (child, child_kind) in enumerate(reference_path):
+                    render(child, child_prefix, i == len(reference_path) - 1, depth + 1, "subtree", 1, child_kind)
+                if off_path and not reference_path:
                     ip = sum(
-                        1 for c in off_path
-                        if self.data["nodes"][c].get("status") == STATUS_IN_PROGRESS
+                        1 for child, _ in off_path
+                        if self.data["nodes"][child].get("status") == STATUS_IN_PROGRESS
                     )
                     lines.append(
                         f"{child_prefix}... 该层还有 {len(off_path)} 个兄弟，{ip} 个 in_progress ▸"
                     )
             elif mode == "focus":
-                for i, c in enumerate(children):
-                    render(c, child_prefix, i == len(children) - 1, depth + 1, "subtree", focus_subtree_depth)
+                for i, (child, child_kind) in enumerate(children):
+                    render(child, child_prefix, i == len(children) - 1, depth + 1, "subtree", focus_subtree_depth, child_kind)
             elif mode == "subtree":
                 if sub_depth <= 0:
                     lines.append(
                         f"{child_prefix}... 子树过深，run tree {nid} --depth 2 for full view"
                     )
                     return
-                for i, c in enumerate(children):
+                for i, (child, child_kind) in enumerate(children):
                     connector_last = i == len(children) - 1
-                    if all_completed(c):
-                        cnt = subtree_node_count(c)
+                    if all_completed(child):
+                        cnt = subtree_node_count(child)
                         conn = "└── " if connector_last else "├── "
                         lines.append(
-                            f"{child_prefix}{conn}... {c} 已完成（折叠 {cnt} 项）▸"
+                            f"{child_prefix}{conn}... {child} 已完成（折叠 {cnt} 项）▸"
                         )
                     else:
-                        render(c, child_prefix, connector_last, depth + 1, "subtree", sub_depth - 1)
+                        render(child, child_prefix, connector_last, depth + 1, "subtree", sub_depth - 1, child_kind)
 
         entry_mode = "focus" if path[0] == focus_id else "ancestor"
         render(path[0], "", True, 0, entry_mode, focus_subtree_depth)
@@ -2761,6 +4048,21 @@ class Roadmap:
         """获取从根到目标节点的路径（id 列表）。"""
         path = []
         current = node_id
+        if self.data.get("placements"):
+            uid_to_id = {node.get("uid"): node["id"] for node in self.data["nodes"].values()}
+            primary_parent = {
+                item.get("work_uid"): item.get("parent_uid")
+                for item in self.data.get("placements", [])
+                if item.get("kind") == "primary"
+            }
+            while current:
+                path.insert(0, current)
+                node = self.data["nodes"][current]
+                parent_uid = primary_parent.get(node.get("uid"))
+                if parent_uid is None:
+                    break
+                current = uid_to_id.get(parent_uid)
+            return path
         while current:
             path.insert(0, current)
             current = self.data["nodes"][current]["parent"]
@@ -3095,6 +4397,14 @@ class Roadmap:
             if node.get("status") not in (STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_BLOCKED):
                 errors.append(f"节点 {nid}: 无效状态 '{node.get('status')}'")
 
+            node_type = node.get("node_type")
+            if node_type is not None and node_type not in ("group", "work"):
+                errors.append(f"节点 {nid}: 无效 node_type '{node_type}'")
+            if node_type == "work" and node.get("children"):
+                errors.append(f"节点 {nid}: work 节点不能有 decomposition children")
+            if nid == "1" and node_type is not None and node_type != "group":
+                errors.append("根节点必须是 group")
+
         # 悬空边：端点节点已经不在了。来源只有两种——外部手改文件，或
         # 写入中断留下的半态（节点已删、边还在）。它必须被检出，不能
         # 静默参与调度；修法见 `edge remove`（不需要事务来防，检出即可）。
@@ -3107,6 +4417,34 @@ class Roadmap:
                 endpoint = edge.get(key)
                 if endpoint not in uids and endpoint not in node_ids:
                     errors.append(f"边 {edge.get('id')}: {key} 端点 {endpoint} 不存在（悬空边）")
+
+        placements = self.data.get("placements", [])
+        placement_ids = set()
+        primary_work_uids = set()
+        uid_to_node = {node.get("uid"): node for node in nodes.values() if node.get("uid")}
+        for placement in placements:
+            placement_id = placement.get("id")
+            if placement_id in placement_ids:
+                errors.append(f"Placement {placement_id}: id 重复")
+            placement_ids.add(placement_id)
+            if placement.get("kind") not in ("primary", "reference"):
+                errors.append(f"Placement {placement_id}: kind 无效 '{placement.get('kind')}'")
+            work = uid_to_node.get(placement.get("work_uid"))
+            parent = uid_to_node.get(placement.get("parent_uid"))
+            if work is None or work.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                errors.append(f"Placement {placement_id}: work_uid 不是有效 plan 节点")
+            if parent is None or parent.get("layer", LAYER_PLAN) != LAYER_PLAN:
+                errors.append(f"Placement {placement_id}: parent_uid 不是有效 plan 节点")
+            if placement.get("kind") == "primary":
+                work_uid = placement.get("work_uid")
+                if work_uid in primary_work_uids:
+                    errors.append(f"Placement {placement_id}: WorkItem 已有 primary placement")
+                primary_work_uids.add(work_uid)
+            try:
+                if int(placement.get("outline_rank")) < 0:
+                    raise ValueError
+            except (TypeError, ValueError):
+                errors.append(f"Placement {placement_id}: outline_rank 必须是非负整数")
 
         return errors
 

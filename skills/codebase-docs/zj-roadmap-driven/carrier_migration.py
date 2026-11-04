@@ -17,7 +17,7 @@ pairwise converters.
 Canonical shapes
 ----------------
 `export_roadmap_data` → the single-file JSON layout
-    ``{title, description, version, nodes, edges, metadata, edge_seq?}``
+    ``{title, description, version, nodes, edges, metadata, edge_seq?, placements?}``
     Edges are always in **display-id** form, and both carriers store them the
     same way — so a migration round trip can never silently rewrite the fact
     source's endpoints while changing nothing else visible, which is the worst

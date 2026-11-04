@@ -37,6 +37,35 @@ python "$SKILL_DIR/roadmap_cli.py" render docs/plans/roadmap.json   # 每次实�
 
 `add` 的父节点是根 `1`，子节点按 `1-1`、`1-1-1` 自动编号。完整命令见 [CLI 参考](references/roadmap-cli.md)。
 
+当前 reconciliation preview 只接受显式 `obligation_key`：先用确定性 key
+匹配全图 plan 节点，再输出 `covered`、`refine`、`reshape`、`novel`、
+`dismiss` 或 `unresolved` proposal。`novel` 必须由 trace 的 `evidence`
+支撑；多个 exact match 只提出 Human 问题，不自动创建 WorkItem。Human
+答案通过 inline JSON 传给 `--answer`：`dismiss` 必须有 reason，完成项的
+`refine` 支持 reopen/supersede/noop，`reshape` 携带闭合 ChangeSet changes。
+可以用重复的 `--trace` 一次生成批量 preview；`reconcile` 本身只读，单条
+ChangeSet 经 digest 审批后显式 `apply`，重复 obligation 的 Trace 批次经
+`apply-batch` 合并为一个 WorkItem 并保留所有来源。
+
+Placement 迁移也是显式的：
+`migrate-placements <source> --output <target>` 按目标扩展名选择 JSON 或
+SQLite carrier，把旧的 ordered `parent`/`children` 投影成 primary
+Placement，并保留源文件字节不变。`placement list <roadmap>` 只显示
+Placement 及其 Work/parent 的 display-id 投影；`outline_rank` 只表达展示顺序，
+不表达调度或因果关系。已有 roadmap 可用 `placement add-reference` 添加共享
+Work 的第二个 outline context，用 `placement move` 移动 Placement；这两者不复制
+WorkItem 的状态、决策或租约。
+
+通用拓扑 ChangeSet 可用 `changeset preview/apply` 走同一套候选状态校验，
+支持 `work.create/patch/coalesce/supersede`、Placement put/move/reference、
+Edge put/remove/replace、Decision append 和 Trace disposition。已迁移的
+roadmap 可用 `migrate-types --output` 将带 children 的 plan 节点分类为
+`group`、叶节点分类为 `work`；有 Placements 时 `tree`、`section`、`render`
+从 Placement 事实投影，并以文本 `↪ reference:` 显示引用上下文。
+ChangeSet 也可带 `--scope <node_uid>`；preview 会展开 Edge/Placement 的
+不透明引用并拒绝所有越出该子树的 Work、Decision、Trace 或拓扑端点，scope
+同时进入 approved digest。
+
 **目标：** 在复杂任务场景中，用路线图（树形节点 + 决策记录）作为 Agent 和 Human 的共享心智模型。避免持续对话导致的目标偏离——每一步都在地图上留下足迹。
 
 **核心原则：**

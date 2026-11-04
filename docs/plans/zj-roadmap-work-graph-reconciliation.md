@@ -90,8 +90,9 @@ Observed:
 - `blocks` and other Edges are orthogonal to the tree and scheduling queries are
   derived from `blocks`.
 - The Trace layer keeps execution-emergent findings out of the Human outline.
-- `promote --accept` currently creates a new Node under the proposal target through
-  `add_node`; there is no Roadmap-wide reconcile step.
+- `promote --accept` now acts as a compatibility adapter: it requires a reviewed
+  reconciliation digest and delegates the topology write to the ChangeSet apply
+  path; direct `Roadmap.promote(..., "accept")` is rejected.
 - `add_node` validates parent, status, layer, and structural budget, but does not
   classify semantic overlap or duplicates.
 - Parent Status is synchronized from `children`, so the tree remains both a display
@@ -319,11 +320,11 @@ allowed: it would create two competing fact sources.
 
 | Metric | Baseline | Unit | Method | Target/threshold | Owner |
 |---|---|---|---|---|---|
-| Exact duplicate creation | Unknown; measure before implementation | new active WorkItems per 100 duplicate findings | Replay a labeled corpus on both carriers | 0 | Roadmap core owner |
-| False automatic merge | Current system does not auto-merge | wrongly coalesced WorkItems per corpus | Adversarial near-duplicate fixtures | 0 | Roadmap core owner |
-| Atomic replan integrity | No multi-change transaction baseline | partial commits per 100 injected failures | Fault injection at every ChangeSet stage | 0 | Carrier Adapter owner |
-| Cross-carrier semantic drift | Existing contract expects parity | mismatched outputs per fixture | Run identical corpus against JSON and SQLite | 0 | Carrier contract reviewer |
-| Reconcile latency at 5,000 plan Nodes | Unknown; measure before rollout | p95 milliseconds per proposal | Fixed local benchmark fixture, 30 runs | <= 1,000 ms | Roadmap core owner |
+| Exact duplicate creation | 0 in the labeled synthetic corpus | new active WorkItems per 100 duplicate findings | Replay a labeled corpus on both carriers | 0 | Roadmap core owner |
+| False automatic merge | 0 in the near-duplicate fixtures | wrongly coalesced WorkItems per corpus | Adversarial near-duplicate fixtures | 0 | Roadmap core owner |
+| Atomic replan integrity | 0 partial states in injected-failure fixtures | partial commits per 100 injected failures | Fault injection at every ChangeSet stage | 0 | Carrier Adapter owner |
+| Cross-carrier semantic drift | 0 mismatches across 30 scenarios | mismatched outputs per fixture | Run identical corpus against JSON and SQLite | 0 | Carrier contract reviewer |
+| Reconcile latency at 5,000 plan Nodes | JSON p95 10.19 ms; SQLite p95 7.26 ms | p95 milliseconds per proposal | Fixed local benchmark fixture, 30 runs | <= 1,000 ms | Roadmap core owner |
 | Human outline growth from Trace-only writes | Existing design target is byte-stable | changed Markdown bytes | Add Trace records without plan acceptance | 0 bytes | Projection owner |
 | Routine Human decisions | Unknown | questions per accepted finding batch | Replay labeled corpus and count unresolved outcomes | p95 <= 1 | Human workflow reviewer |
 
@@ -331,6 +332,26 @@ Experiment acceptance requires at least 30 labeled scenarios containing exact
 duplicates, near-duplicates, cross-subtree overlap, completed-Node refinement,
 dependency reversal, split, merge, cycle rejection, stale revision, and renderer
 failure. Results must include raw fixture ids and both carrier outputs.
+
+### Implementation evidence (2026-11-03)
+
+The first implementation slices are now exercised through the public CLI for both
+carriers. The evidence is reproducible from the repository (the JSON reports are
+process artifacts under `tmp/skills-outputs/` and remain out of Git):
+
+| Slice | Result | Reproduction / evidence |
+|---|---|---|
+| S0 deterministic reconciliation contract | 30/30 labeled scenarios; raw per-carrier outputs; `semantic_parity: true` | `skills/codebase-docs/zj-roadmap-driven/tests/reconciliation_corpus.py`; `tmp/skills-outputs/zj-roadmap-driven/reconciliation-corpus/report.json` |
+| S1 preview and Human decisions | `covered`, `refine` (`reopen`/`supersede`/`noop`), `reshape`, `dismiss`, `novel`, `unresolved` covered by tests | `skills/codebase-docs/zj-roadmap-driven/tests/test_reconcile.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_reconciliation_corpus.py` |
+| S2 atomic ChangeSet apply | topology, Placement, Decision and Trace operations; cycle/stale/fault paths leave no partial state | `skills/codebase-docs/zj-roadmap-driven/tests/test_changeset.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_reconcile.py` |
+| Scoped ChangeSet writes | all operation reference classes rejected outside the inclusive subtree; legacy Placement ids and prompted-by Trace checked | `skills/codebase-docs/zj-roadmap-driven/tests/test_changeset.py::test_preview_scope_rejects_every_out_of_scope_topology_reference` |
+| 5,000-node reconciliation capacity | 30 runs/carrier; JSON p95 10.19 ms; SQLite p95 7.26 ms; both under 1,000 ms | `skills/codebase-docs/zj-roadmap-driven/tests/benchmark_reconcile.py`; `tmp/skills-outputs/zj-roadmap-driven/reconciliation-benchmark/report.json` |
+| Placement projection and typed migration | source-preserving primary/reference projection, radial Markdown coverage, group/work classification | `skills/codebase-docs/zj-roadmap-driven/tests/test_placement_projection.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_type_migration.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_placement_migration.py` |
+| S3-1 default `promote --accept` routing | reviewed digest/idempotency adapter; JSON/SQLite receipts; stale/digest/legacy-override rejection; direct API bypass rejected | `skills/codebase-docs/zj-roadmap-driven/tests/test_promote.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_trace_prune_context.py`, `skills/codebase-docs/zj-roadmap-driven/roadmap.py`, `skills/codebase-docs/zj-roadmap-driven/roadmap_cli.py` |
+
+This closes the synthetic S0–S2 implementation gate and implements S3-1. The
+S3 rollout close-out, replay against three real Roadmaps, and Human review of the
+reference notation remain open before the plan can be declared complete.
 
 ## Rollout, recovery, and lifecycle
 
@@ -343,7 +364,8 @@ failure. Results must include raw fixture ids and both carrier outputs.
 3. **S2 — opt-in ChangeSet apply:** selected fixtures and internal Roadmaps use the
    new path; old topology commands remain a compatibility Adapter.
 4. **S3 — default reconciliation:** `promote --accept` routes through an accepted
-   proposal digest; direct bypass emits a deprecation error.
+   proposal digest; direct bypass emits a deprecation error. S3-1 implements this
+   route; S3-2 still owns rollout parity, fault, governance, and review evidence.
 5. **S4 — Placement migration:** only after real-corpus replay proves the projection
    and display-id migration.
 
@@ -421,6 +443,7 @@ Required test matrix:
 | Markdown publication failure | Commit receipt reports stale view; retry only repairs view | 100% idempotent repair | Projection owner |
 | Trace-only additions | Plan hashes/views unchanged | 0 changed bytes | Projection owner |
 | Legacy corpus migration | Uids, Decisions, Edges, Status meaning preserved | 100% labeled corpus | Migration owner |
+| Scoped ChangeSet references | Every operation reference remains in the approved subtree | 100% rejection of out-of-scope fixtures | Roadmap core owner |
 | Authority boundary | Envelope present on both views; durable source scan clean | 0 `E_PROCESS_AUTHORITY_LEAK` findings | Documentation owner |
 
 Reproducible validation scenario:
@@ -467,3 +490,34 @@ A reviewer should identify within a short read:
 - Threshold: zero false automatic merges, zero partial commits, and zero
   cross-carrier semantic mismatches.
 - Owner: Roadmap core owner with carrier-contract and Human workflow reviewers.
+
+## Remaining work and Issue mapping (2026-11-03)
+
+S3-1 is implemented, but the plan remains open until the following four mapped
+execution items are either completed or explicitly reviewed. These remain
+separate so implementation, rollout evidence, carrier replay, and Human judgment
+do not get reported as one indistinguishable task.
+
+| Status | ID | Remaining item | Issue | Depends on | Completion evidence |
+|---|---|---|---|---|---|
+| [x] | S3-1 | Make `promote --accept` route through reviewed reconciliation and ChangeSet apply; remove the direct `add_node` bypass. | [#233](https://github.com/jununfly/ZAgentic/issues/233) | Current reconciliation/apply APIs | Single/SQLite accept receipts, stale/digest/idempotency rejection tests, legacy override rejection, and direct API bypass rejection. |
+| [ ] | S3-2 | Close the S3 rollout: compatibility error, CLI/reference updates, parity/fault tests, governance gates, and Review record. | [#234](https://github.com/jununfly/ZAgentic/issues/234) | S3-1 | Explicit `reconcile + apply` and default accept produce the same semantic state; all gates pass. |
+| [ ] | S4-1 | Replay migration and reconciliation against three supplied, read-only real Roadmap copies. | [#235](https://github.com/jununfly/ZAgentic/issues/235) | S2 implementation; three redacted Roadmap inputs | Source hashes unchanged; UIDs, Status, Decisions, Edges and leases preserved; JSON/SQLite parity and replay report pass. |
+| [ ] | S4-2 | Human-review reference Placement notation in plain text and screen-reader-oriented Markdown views, then fix the final notation in tests/docs. | [#236](https://github.com/jununfly/ZAgentic/issues/236) | Placement projection fixture; Human reviewer | Dated review record with chosen notation, rationale, unresolved risks and synchronized tests/docs. |
+
+Execution order and close-out gate:
+
+```text
+S3-1 (#233) → S3-2 (#234) ─┐
+                            ├→ final plan close-out
+S4-1 (#235) ────────────────┤
+S4-2 (#236) ────────────────┘
+```
+
+The actual work must use the `zj-roadmap-driven` workflow. Real Roadmap
+sources stay read-only; migration targets and replay reports go under
+`tmp/skills-outputs/`. The plan may be closed only after all four Issues are
+closed, the S3/S4 evidence is added above or in the linked review record, and
+the final tests plus documentation/ADR/runtime/authority gates pass. Until
+then, S3 rollout closure and S4 real-corpus/Human validation are explicitly
+unfinished.

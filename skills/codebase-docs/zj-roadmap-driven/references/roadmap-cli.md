@@ -12,8 +12,16 @@ python roadmap_cli.py init <roadmap_path> --title "项目名称" [--description 
 python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
     [--output <path>]
 
+# Add explicit outline Placement facts; target carrier follows its extension
+python roadmap_cli.py migrate-placements <roadmap_path> --output <path>
+python roadmap_cli.py migrate-types <roadmap_path> --output <path>
+python roadmap_cli.py placement list <roadmap_path>
+python roadmap_cli.py placement add-reference <roadmap_path> <work> <parent> [--rank N]
+python roadmap_cli.py placement move <roadmap_path> <placement_id> <parent> [--rank N]
+
 # Node CRUD
 python roadmap_cli.py add <json_path> <parent_id> "<label>" [--status pending] [--mode explore]
+    [--obligation-key <key>]
 python roadmap_cli.py add <json_path> <parent_id> "<label>" --max-children 3 --max-rounds 2
 python roadmap_cli.py update <json_path> <node_id> --status completed
 python roadmap_cli.py update <json_path> <node_id> --label "新标签" --notes "备注内容"
@@ -45,11 +53,35 @@ python roadmap_cli.py edge remove <roadmap_path> <edge_id>
 
 # Execution trace. `prompted-by` is written as plan -> trace when --under is present.
 python roadmap_cli.py trace add <roadmap_path> --kind <kind> --body "..." [--under <plan_id>] [--from <trace_id>]
+    [--obligation-key <key>] [--evidence "..."]...
 python roadmap_cli.py trace list <roadmap_path>
 python roadmap_cli.py trace get <roadmap_path> <trace_uid>
 python roadmap_cli.py trace prune <roadmap_path> <trace_uid> [--edge <edge_id>]
 python roadmap_cli.py context <roadmap_path> <node_id> [--include trace]
 python roadmap_cli.py promote <roadmap_path> <trace_uid> --under <plan_id> [--label "..."]
+python roadmap_cli.py promote <roadmap_path> <trace_uid> --accept \
+    --approved-digest <digest> --idempotency-key <key> [--answer '<json object>']
+
+# Deterministic reconciliation preview (read-only; no ChangeSet is applied)
+python roadmap_cli.py reconcile <roadmap_path> <trace_uid>
+python roadmap_cli.py reconcile <roadmap_path> --trace <trace_uid> --trace <trace_uid>
+python roadmap_cli.py reconcile <roadmap_path> <trace_uid> --answer '<json object>'
+
+# Reviewed ChangeSet apply; retries with the same key are idempotent
+python roadmap_cli.py apply <roadmap_path> <proposal_id> \
+    --approved-digest <digest> --idempotency-key <key> \
+    [--fault-stage before-commit|during-commit|after-commit-before-view]
+
+# Reviewed batch ChangeSet; duplicate novel findings share one WorkItem
+python roadmap_cli.py apply-batch <roadmap_path> \
+    --trace <trace_uid> [--trace <trace_uid> ...] \
+    --approved-digest <batch_digest> --idempotency-key <key>
+
+# Generic closed topology ChangeSet
+python roadmap_cli.py changeset preview <roadmap_path> --changes '<json array>' \
+    [--scope <node_uid>]
+python roadmap_cli.py changeset apply <roadmap_path> --changes '<json array>' \
+    --approved-digest <digest> --idempotency-key <key> [--scope <node_uid>]
 
 # Lease inputs accept display ids for Human convenience; the sidecar/database
 # key and every emitted node_uid use the node's immutable uid.
@@ -82,6 +114,76 @@ python roadmap_cli.py authority-check <project_root>
 
 Missing positional arguments and unknown command-group actions fail with
 `E_USAGE` instead of a Python traceback.
+
+`reconcile` requires an explicit `obligation_key` on the trace. It compares that
+key with plan nodes across the whole carrier, without inferring identity from
+free text. One active exact match yields `covered`; a completed exact match
+yields `refine` with a Human question; no match requires at least one trace
+`evidence` item and yields `novel`; multiple exact matches yield `unresolved`
+with a Human question and no `work.create` change. The command is a preview
+only: it does not mutate the carrier or Markdown view. Proposal output uses
+immutable UIDs for durable references and includes `base_revision` plus a
+deterministic `proposal_id`.
+
+`--answer '<json object>'` records an explicit Human decision. `dismiss` requires
+`reason`; completed exact matches support `refine` actions `reopen`, `supersede`,
+and `noop`; `reshape` accepts a closed `changes` list and applies it through the
+same candidate-state validator as generic ChangeSets.
+
+`promote --accept` is a compatibility adapter for the reviewed reconciliation
+path. It recomputes the trace-scoped proposal (or recovers the original proposal
+on an idempotent retry), verifies `--approved-digest`, and then delegates the
+topology write to the same ChangeSet apply path as `apply`. It requires an
+idempotency key and rejects legacy `--under`, `--label`, and `--reason` overrides;
+Human decisions belong in `reconcile --answer`. Direct `Roadmap.promote(...,
+"accept")` calls return `E_RECONCILIATION_REQUIRED`, and old `promotion` fields
+are compatibility state rather than a second canonical write path.
+
+Repeated `--trace` values produce one deterministic
+`zj-reconciliation-batch/v1` response: duplicate trace references are removed,
+UIDs are sorted, and the response includes per-trace proposals, disposition
+counts, and a `batch_digest`. This remains a preview; it does not apply any
+proposal.
+
+`apply` accepts a reviewed proposal digest and applies covered or novel changes
+as one ChangeSet. `apply-batch` accepts the batch digest and the same trace set;
+novel findings sharing an obligation key converge on one WorkItem while every
+Trace receives its own reconciliation record and provenance edge. Both return
+`zj-changeset-receipt/v1`; the same idempotency key
+returns the original receipt, while a stale base revision returns `E_CONFLICT`
+and a digest mismatch returns `E_APPROVAL_MISMATCH`. A batch containing
+`refine`, `reshape`, `dismiss`, or `unresolved` proposals is rejected with
+`E_CHANGESET_INVALID` until a Human supplies the corresponding topology or
+disposition decision. `--fault-stage` is a
+deterministic validation seam: before-commit and during-commit leave canonical
+state unchanged, while after-commit-before-view proves that a committed state
+can be retried to repair its Markdown view without duplicating the mutation.
+
+`migrate-placements` creates a new target artifact and never rewrites its source.
+It projects every non-root plan node from ordered `children` into a
+`kind: primary` Placement with immutable `work_uid`, `parent_uid`, and
+zero-based `outline_rank`. `placement list` adds derived `work_id` and
+`parent_id` fields for Human convenience. Existing target artifacts are refused.
+`placement add-reference` and `placement move` change only outline placement;
+they never copy or mutate the referenced WorkItem state.
+
+`changeset preview/apply` accepts a JSON array of closed operations and emits a
+`zj-changeset/v1` digest. Supported kinds are `work.create`, `work.patch`,
+`work.coalesce`, `work.supersede`, `placement.put/move/reference`,
+`edge.put/remove/replace`, `decision.append`, and `trace.disposition`. The apply
+path evaluates the complete candidate state before committing; cycle, layer,
+Placement, and structural errors leave the carrier unchanged.
+When `--scope` is supplied, preview rejects every referenced WorkItem, Edge
+endpoint, Placement endpoint, Decision target, or prompted-by Trace outside the
+inclusive scope subtree. The scope is part of the reviewed digest, so apply
+cannot silently widen or drop it; legacy tree-backed Placement ids are checked
+against their derived primary facts before any materialization.
+
+`migrate-types` creates a new artifact, classifies the root and nodes with
+children as `group` and leaves as `work`, and preserves UIDs, decisions, status,
+edges, leases, and source bytes. Once Placements exist, `tree`, `section`, and
+`render` read them as the outline source; reference entries render with the
+text marker `↪ reference:`.
 
 `render` writes the lightweight Markdown view: when there is a current focus it renders a radial view (ancestor chain always visible + focus subtree drilled down + non-focus siblings collapsed to a count), and falls back to a root tree at depth=2 when there is no focus; completed subtrees collapse, in_progress/blocked/open_question nodes force-expand; the tail carries a `ready` preview. `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
 
@@ -282,6 +384,14 @@ never disagree on what counts as a start or a child.
 | `E_LEASE_HELD` | writing a lease holder's fields on a node someone else holds (or with a stale fencing token) |
 | `E_CONFLICT` | `--if-rev <sha>` no longer matches the current revision |
 | `E_SCOPE` | an `--scope`-bearing write aimed outside that node's subtree |
+| `E_RECONCILE_KEY_MISSING` | reconciliation input has no explicit deterministic `obligation_key` |
+| `E_NOVELTY_EVIDENCE_MISSING` | no exact match exists but the finding has no novelty evidence |
+| `E_PROPOSAL_NOT_FOUND` | the proposal id is absent or no longer valid for the current revision |
+| `E_APPROVAL_MISMATCH` | the reviewed digest differs from the current proposal |
+| `E_IDEMPOTENCY_CONFLICT` | an idempotency key was already used for different proposal material |
+| `E_CHANGESET_INVALID` | the proposal disposition or final candidate state cannot be applied |
+| `E_RECONCILIATION_REQUIRED` | direct promotion acceptance is disabled; use reviewed reconciliation + ChangeSet apply |
+| `E_INJECTED_FAILURE` | the explicit fault-injection validation seam was triggered |
 | `E_PROCESS_AUTHORITY_LEAK` | durable code/docs cite Roadmap process state or artifacts as evidence |
 
 All listed errors exit 1. `E_CYCLE` may surface through `edge`, `trace add`, or `promote`,

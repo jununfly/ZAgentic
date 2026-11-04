@@ -17,6 +17,128 @@ Use this reference when creating, inspecting, renaming, or updating roadmap node
 | `budget` | dict | Structural cap `{max_children, max_rounds}`; absent or missing sub-key = unlimited |
 | `exit_criteria` | list | Checkable completion conditions (strings) |
 | `rounds` | int | How many times the node has been started (entered `in_progress`) |
+| `obligation_key` | string|absent | Explicit deterministic identity key used by reconciliation preview |
+| `node_type` | `group`\|`work`\|absent | Typed plan node after explicit type migration; groups own decomposition, works are atomic leaves |
+
+Trace nodes may also carry `obligation_key` and an optional `evidence` list.
+The key is never inferred from `label` or `body`; it is the exact-match input
+for `reconcile`, while evidence is required when a finding has no exact plan
+match and is proposed as `novel`.
+
+## Reconciliation preview
+
+```bash
+python roadmap_cli.py reconcile <roadmap_path> <trace_uid>
+```
+
+The read-only preview scans the whole plan layer using the trace's explicit
+`obligation_key`. One exact match produces `covered`; no match requires trace
+evidence and produces `novel`; multiple exact matches produce `unresolved` with
+a Human question and no `work.create` change. The proposal contains the
+immutable candidate UIDs, `base_revision`, and a deterministic `proposal_id`.
+It does not apply a ChangeSet or update Markdown.
+
+## Batch reconciliation and ChangeSet apply
+
+Repeated `--trace` flags create one deterministic batch envelope:
+
+```bash
+python roadmap_cli.py reconcile roadmap.json \
+  --trace <trace_uid> --trace <trace_uid>
+```
+
+Repeated trace UIDs are deduplicated and the remaining UIDs are sorted. The
+batch contains one proposal per trace, a `covered`/`novel`/`unresolved`
+summary, duplicate groups, and a `batch_digest`; it is still a read-only
+preview. The digest carries the batch base revision, so applying it after a
+concurrent write returns `E_CONFLICT`. Applying a valid batch coalesces novel
+findings with the same obligation key into one WorkItem and links every Trace.
+
+After Human review, apply one proposal with its exact digest and a retry key:
+
+```bash
+python roadmap_cli.py apply roadmap.json <proposal_id> \
+  --approved-digest <proposal_digest> --idempotency-key <key>
+```
+
+The receipt is persisted as operational metadata while the trace disposition
+and any novel WorkItem are canonical state. Reusing the same key returns the
+same receipt; a changed proposal or digest with that key is rejected.
+
+## Placement
+
+Placement separates Human outline position from WorkItem identity and
+scheduling. A canonical placement has this shape:
+
+```json
+{
+  "id": "p1",
+  "kind": "primary",
+  "work_uid": "<immutable work uid>",
+  "parent_uid": "<immutable outline parent uid>",
+  "outline_rank": 0
+}
+```
+
+`outline_rank` is zero-based sibling order only; it never implies a `blocks`
+edge, priority, or execution sequence. The migration command creates a new
+artifact, projects each non-root plan node from ordered `children`, preserves
+all Work UIDs and edges, and leaves the source byte-identical:
+
+```bash
+python roadmap_cli.py migrate-placements source.json --output target.sqlite
+python roadmap_cli.py placement list target.sqlite
+```
+
+The list command derives `work_id` and `parent_id` for display. Those IDs are
+convenience addresses, not durable Placement or Work identity.
+
+```bash
+python roadmap_cli.py placement add-reference roadmap.json <work_uid> <parent_uid>
+python roadmap_cli.py placement move roadmap.json <placement_id> <parent_uid> --rank 1
+```
+
+Reference and move operations only change Placement facts. They do not copy the
+WorkItem or duplicate its status, decisions, leases, or completion state.
+
+## Typed group/work migration
+
+```bash
+python roadmap_cli.py migrate-types source.json --output typed.json
+```
+
+The explicit migration classifies the root and every plan node with children as
+`node_type: group`; plan leaves become `node_type: work`. It copies the source
+to a new JSON or SQLite artifact, preserves UIDs, Decisions, Status, Edges,
+leases and source bytes, and refuses an existing target. A migrated work node
+cannot receive decomposition children; adding a child to a migrated group
+continues to use the existing tree API.
+
+## Generic ChangeSet
+
+The closed ChangeSet seam accepts an inline JSON array:
+
+```bash
+python roadmap_cli.py changeset preview roadmap.json --changes '[
+  {"kind":"work.patch","work_uid":"<uid>","patch":{"label":"Renamed"}},
+  {"kind":"edge.put","from_uid":"<uid>","to_uid":"<uid>","type":"blocks"}
+]'
+```
+
+`changeset apply` requires the exact preview digest and an idempotency key. The
+candidate state is copied, all operations are applied, and final validation is
+performed before either carrier commits. Supported operation kinds are
+`work.create`, `work.patch`, `work.coalesce`, `work.supersede`,
+`placement.put/move/reference`, `edge.put/remove/replace`, `decision.append`,
+and `trace.disposition`. An optional `scope` is an inclusive plan subtree: the
+preview expands opaque Edge and Placement references and rejects any operation
+whose WorkItem, endpoint, Decision target, or prompted-by Trace escapes that
+subtree. The scope is included in the digest and is therefore part of Human
+approval. Omitting it preserves the existing unrestricted behavior.
+
+When a Placement array exists, `tree`, `section`, and `render` use it as the
+Human outline source. Primary placements retain the old tree shape; reference
+placements are text-marked `↪ reference:` and never duplicate WorkItem state.
 
 ## Budget and exit criteria
 

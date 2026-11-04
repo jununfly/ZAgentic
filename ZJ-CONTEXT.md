@@ -868,6 +868,157 @@ _Avoid_: E_LAYER
 S2 error (exit 1) raised when deletion would break provenance that cannot be repaired by the normal edge cascade: an accepted promotion still depends on its source trace, or a surviving trace's `compressed_from` list cites a node in the deletion subtree.
 _Avoid_: E_IN_USE
 
+**Obligation key**:
+An explicit, deterministic identity key carried by a plan node or trace finding
+for reconciliation. The current preview compares this key exactly across the
+whole plan layer and never infers identity from free-text labels or bodies.
+It is a matching input, not a display id and not a semantic-similarity score.
+_Avoid_: label identity, fuzzy key, display id
+
+**Reconciliation proposal**:
+The read-only `reconcile <roadmap> <trace_uid>` result (`zj-reconciliation-proposal/v1`)
+that records the base revision, trace UID, obligation key, candidate matches,
+disposition, evidence and intended changes. It is a preview artifact: it does
+not mutate the carrier or Markdown view, and it is not a ChangeSet commit.
+_Avoid_: accepted ChangeSet, promotion result, execution record
+
+**Novelty evidence**:
+The explicit evidence attached to a trace finding that has no exact
+`obligation_key` match in the active plan layer. A `novel` reconciliation
+proposal is rejected with `E_NOVELTY_EVIDENCE_MISSING` when this evidence is
+absent; evidence supports Human review but does not authorize automatic apply.
+_Avoid_: similarity score, free-text rationale, automatic novelty proof
+
+**Unresolved reconciliation**:
+The `unresolved` proposal disposition produced when one obligation key matches
+multiple plan nodes. It carries candidate UIDs and a Human question, with no
+`work.create` change, so ambiguity cannot silently create or merge work.
+_Avoid_: novel duplicate, automatic coalesce, covered-by-many
+
+**Batch reconciliation**:
+The deterministic `reconcile <roadmap> --trace <uid> ...` preview that
+deduplicates repeated trace references, sorts trace UIDs, and returns one
+`zj-reconciliation-batch/v1` envelope with per-trace proposals, disposition
+counts, and a batch digest. It is still read-only; applying changes remains an
+explicit reviewed ChangeSet operation.
+_Avoid_: bulk auto-apply, unordered trace scan, batch mutation
+
+**ChangeSet apply**:
+The reviewed `apply <roadmap> <proposal_id> --approved-digest <digest>
+--idempotency-key <key>` operation that commits a covered or novel
+reconciliation proposal and records a stable receipt. A stale base revision or
+digest mismatch fails before canonical mutation; retrying the same idempotency
+key returns the original receipt.
+_Avoid_: preview, direct promotion, best-effort partial commit
+
+**Reviewed promotion adapter**:
+The compatibility behavior of `promote --accept`: it requires an approved
+reconciliation digest and idempotency key, resolves the trace-scoped proposal,
+and delegates the topology write and Markdown publication to the ChangeSet apply
+path. Legacy `--under`, `--label`, and `--reason` overrides are rejected during
+accept; Human choices belong in `reconcile --answer`.
+_Avoid_: direct add-node acceptance, promotion as a second canonical fact source
+
+**E_RECONCILIATION_REQUIRED**:
+The stable exit-1 error returned by the `Roadmap.promote(..., "accept")` API when
+a caller attempts to bypass reviewed reconciliation and write topology directly.
+The CLI compatibility adapter remains the supported accept surface.
+_Avoid_: E_PROMOTE_STATE_INVALID for direct-path deprecation
+
+**Scoped ChangeSet**:
+A closed generic ChangeSet preview/apply carrying an inclusive plan-subtree
+scope. Preview expands opaque Edge and Placement references, checks WorkItems,
+Decision targets, and prompted-by Traces against that scope, and includes the
+scope in the approved digest so apply cannot widen it or silently remove it.
+_Avoid_: advisory scope label, target-only guard, post-commit permission check
+
+**Batch ChangeSet**:
+The reviewed `apply-batch` operation for one deterministic trace batch. It
+coalesces novel traces with the same obligation key into one WorkItem, records
+each Trace disposition and provenance edge, and uses one batch digest and one
+idempotency receipt for the whole commit.
+_Avoid_: loop of unrelated single applies, partial batch commit, unordered merge
+
+**Refinement reconciliation**:
+The `refine` disposition emitted when an exact obligation match is already
+completed. It preserves the Human decision boundary by requiring an explicit
+reopen, supersede, or evidence-preserving no-op choice; it is not directly
+applicable as a covered or novel ChangeSet.
+_Avoid_: silent reopen, completed-item overwrite, automatic supersede
+
+**Reshape reconciliation**:
+The Human-approved `reshape` disposition whose answer carries a closed list of
+ChangeSet operations. It can patch WorkItems, split/coalesce/supersede them,
+move or reference Placements, replace Edges, append Decisions, and record Trace
+disposition in one candidate-state validation and atomic commit.
+_Avoid_: direct CRUD sequence, hidden topology mutation, automatic merge
+
+**Dismiss reconciliation**:
+The Human-approved `dismiss` disposition for evidence that should remain in the
+Trace layer without becoming scheduled work. It requires a non-empty reason,
+appends an audit Decision to the Trace, and records the disposition during the
+same ChangeSet commit.
+_Avoid_: silent discard, deleted Trace, unrecorded no-op
+
+**Placement**:
+An explicit outline-position fact separate from WorkItem identity, dependency,
+and execution state. A Placement points at a Work UID and an outline parent;
+moving or referencing it changes presentation/decomposition context without
+duplicating status, decisions, leases, or completion.
+_Avoid_: display id identity, scheduling edge, copied work item
+
+**Primary placement**:
+The `kind: primary` Placement produced by migration from one ordered
+`parent`/`children` tree membership. Each non-root plan WorkItem receives one
+primary placement, preserving its immutable Work UID and the old child order as
+`outline_rank`.
+_Avoid_: reference placement, blocks edge, execution owner
+
+**Reference Placement**:
+The `kind: reference` outline fact that points at an existing WorkItem from an
+additional Human context. It carries its own parent and outline rank but shares
+the WorkItem's status, decisions, leases, completion, and immutable UID.
+_Avoid_: copied WorkItem, second execution owner, scheduling edge
+
+**Outline rank**:
+The zero-based sibling order stored on a Placement for the Human outline. It
+has display meaning only and never implies scheduling or causal precedence.
+_Avoid_: priority, precedes edge, execution order
+
+**Group node**:
+A typed plan node (`node_type: group`) that owns decomposition members and is
+not an atomic executable WorkItem. The type migration classifies the root and
+nodes with children as groups while preserving UID, Status, Decisions and Edges.
+_Avoid_: executable group, milestone status copied from a child
+
+**Work node**:
+A typed leaf plan node (`node_type: work`) representing one atomic executable
+obligation. A migrated Work node cannot receive decomposition children; shared
+outline contexts are represented by Placements rather than copied nodes.
+_Avoid_: leaf identity from display id, work with children, copied reference
+
+**Placement projection**:
+The Markdown/tree rendering path that reads explicit Placement facts when a
+roadmap has migrated Placements. Primary entries retain the legacy tree shape;
+reference entries render with the text marker `↪ reference:` so the extra
+context is visible without changing WorkItem status or scheduling semantics.
+_Avoid_: rendering parent/children after migration, color-only reference marker
+
+**Reconciliation corpus**:
+The 30 labeled, replayable scenarios in
+`tests/reconciliation_corpus.py`, executed through the public CLI against both
+carriers. Each scenario emits raw per-carrier output and a semantic-parity flag;
+the corpus includes duplicate, refinement, reshape, cycle, stale-revision,
+renderer-failure, migration and projection cases.
+_Avoid_: unlabeled smoke tests, Markdown import, single-carrier evidence
+
+**Reconciliation benchmark**:
+The deterministic local benchmark in `tests/benchmark_reconcile.py` that builds
+5,000 plan nodes, runs 30 previews per carrier, reports samples and p95, and
+checks the initial `<= 1,000 ms` proposal threshold. It is evidence for this
+machine/configuration, not a universal capacity guarantee.
+_Avoid_: synthetic number without command/output, wall-clock claim without p95
+
 ### Issue / Triage
 
 **Issue tracker**:

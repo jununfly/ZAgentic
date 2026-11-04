@@ -14,7 +14,8 @@ deliberate: the spec's hard rule is "判定只写一处，两个 carrier 只 dif
 can never drift the way two independently-written classes would.
 
 Storage layout (history / decisions / edges / leases 各归一表)
-  meta         key/value  — title, description, version, edge_seq, metadata(JSON)
+  meta         key/value  — title, description, version, edge_seq, metadata(JSON),
+                             placements(JSON) when Placement migration is present
   nodes        uid PK, display_id, body(JSON)  — one row per node (decisions live
               inside the node body, exactly as in `self.data`)
   edges        id PK, type, from_uid, to_uid, body(JSON)
@@ -36,7 +37,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-from roadmap import Roadmap, ensure_uids, ensure_layer
+from roadmap import InjectedFailure, Roadmap, ensure_uids, ensure_layer
 
 SQLITE_SUFFIXES = (".sqlite", ".sqlite3", ".db")
 
@@ -111,6 +112,8 @@ class RoadmapSqlite(Roadmap):
                 "nodes": {},
                 "metadata": json.loads(meta_rows["metadata"]) if meta_rows.get("metadata") else {},
             }
+            if "placements" in meta_rows:
+                data["placements"] = json.loads(meta_rows["placements"])
             if "edge_seq" in meta_rows:
                 data["edge_seq"] = int(meta_rows["edge_seq"])
 
@@ -143,6 +146,8 @@ class RoadmapSqlite(Roadmap):
                 "version": self.data.get("version", 1),
                 "metadata": json.dumps(self.data.get("metadata", {}), ensure_ascii=False),
             }
+            if "placements" in self.data:
+                meta["placements"] = json.dumps(self.data["placements"], ensure_ascii=False)
             if "edge_seq" in self.data:
                 meta["edge_seq"] = self.data["edge_seq"]
             conn.executemany(
@@ -168,6 +173,8 @@ class RoadmapSqlite(Roadmap):
                 "INSERT OR REPLACE INTO edges(id, type, from_uid, to_uid, body) VALUES(?, ?, ?, ?, ?)",
                 edge_rows,
             )
+            if getattr(self, "_fault_stage", None) == "during-commit":
+                raise InjectedFailure("fault injected during sqlite commit")
             conn.execute("COMMIT")
         except Exception:
             conn.execute("ROLLBACK")

@@ -34,9 +34,24 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   edge    migrate <json_path>                # 存量显示 id 边一次性转成 uid
 
   trace   add <roadmap_path> --kind <kind> --body "..." [--under <plan>] [--from <trace>]
+              [--obligation-key <key>] [--evidence "..."]...
   trace   list <roadmap_path>
   trace   get <roadmap_path> <trace_uid>
   trace   prune <roadmap_path> <trace_uid> [--edge <id>]
+
+  reconcile <roadmap_path> <trace_uid>   # read-only deterministic preview
+  reconcile <roadmap_path> --trace <uid> [--trace <uid> ...]
+                                          # deterministic batch preview
+  apply <roadmap_path> <proposal_id> --approved-digest <digest>
+        --idempotency-key <key> [--fault-stage before-commit|during-commit|after-commit-before-view]
+
+  apply-batch <roadmap_path> --trace <uid> [--trace <uid> ...]
+        --approved-digest <batch_digest> --idempotency-key <key>
+        [--fault-stage before-commit|during-commit|after-commit-before-view]
+
+  changeset preview <roadmap_path> --changes '<json array>' [--scope <node>]
+  changeset apply <roadmap_path> --changes '<json array>'
+        --approved-digest <digest> --idempotency-key <key> [--scope <node>]
 
   lease   claim  <json_path> <node_uid> --agent <id> [--ttl 300] [--device <id>]
                                             # 拿节点租约（默认 TTL 300s，fencing=1）
@@ -96,6 +111,17 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   migrate <roadmap_path> --to single|sqlite [--output <path>]
               # 显式把事实源换到另一种 carrier；源文件不改写，目标已存在则拒绝
 
+  migrate-placements <roadmap_path> --output <path>
+              # 把 ordered parent/children 投影为 primary Placements；源文件不改写
+
+  migrate-types <roadmap_path> --output <path>
+              # 把 plan 节点显式分类为 group/work；源文件不改写
+
+  placement  list <roadmap_path>
+              # 列出 Placement 及其 work/parent display-id 投影
+  placement  add-reference <roadmap_path> <work> <parent> [--rank N]
+  placement  move <roadmap_path> <placement_id> <parent> [--rank N]
+
   path    <json_path> <node_id>              # 获取从根到节点的路径
 
   siblings <json_path> <node_id>             # 获取兄弟节点
@@ -116,6 +142,7 @@ import json
 import os
 from contextlib import ExitStack
 from pathlib import Path
+from typing import Optional
 
 # 将自身所在目录加入 path，确保能 import roadmap
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -127,6 +154,7 @@ from roadmap import (
     ConflictError,
     ScopeError,
     InvalidLayer,
+    InjectedFailure,
     exit_code_for,
     is_within_scope,
     write_requires_lease,
@@ -140,6 +168,13 @@ from roadmap import (
 )
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
+from placement_migration import (
+    add_reference_placement,
+    migrate_placements,
+    move_placement,
+    placement_views,
+)
+from type_migration import migrate_types
 from storage_advisor import recommend_storage
 from authority_boundary import (
     ProcessAuthorityLeak,
@@ -151,7 +186,7 @@ import time
 
 
 # 可以重复出现、每次追加一条值的参数（`--exit-criteria` 可给多条判据）。
-MULTI_VALUE_FLAGS = frozenset({"exit-criteria", "include"})
+MULTI_VALUE_FLAGS = frozenset({"exit-criteria", "include", "evidence", "trace"})
 
 
 class CliUsageError(RoadmapError):
@@ -211,6 +246,18 @@ def _split_ids(raw: object) -> list | None:
     return parts or None
 
 
+def _multi_text_arg(args: dict, key: str) -> list | None:
+    """Return repeated text flags without inferring structure from their content."""
+    raw = args.get(key)
+    if raw is None:
+        return None
+    values = raw if isinstance(raw, list) else [raw]
+    if any(value == "true" for value in values):
+        raise ValueError(f"--{key} 需要给出文本")
+    values = [str(value) for value in values if str(value).strip()]
+    return values or None
+
+
 def _exit_criteria_arg(args: dict) -> list | None:
     """取出 --exit-criteria；无值标志（`--exit-criteria` 不带文本）视为参数错误。"""
     raw = args.get("exit-criteria")
@@ -224,6 +271,35 @@ def _exit_criteria_arg(args: dict) -> list | None:
 
 def _print_json(data):
     print(json.dumps(data, ensure_ascii=False, indent=2))
+
+
+def _json_object_arg(args: dict, key: str) -> dict | None:
+    """Parse an optional inline JSON object without reading an external file."""
+    raw = args.get(key)
+    if raw is None:
+        return None
+    if raw == "true":
+        raise CliUsageError(f"--{key} requires a JSON object")
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise CliUsageError(f"--{key} must be valid JSON: {exc.msg}") from exc
+    if not isinstance(value, dict):
+        raise CliUsageError(f"--{key} must be a JSON object")
+    return value
+
+
+def _json_array_arg(args: dict, key: str) -> list:
+    raw = args.get(key)
+    if raw in (None, "true"):
+        raise CliUsageError(f"--{key} requires a JSON array")
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise CliUsageError(f"--{key} must be valid JSON: {exc.msg}") from exc
+    if not isinstance(value, list):
+        raise CliUsageError(f"--{key} must be a JSON array")
+    return value
 
 
 def _fmt_args(args: dict):
@@ -345,6 +421,7 @@ def cmd_add(args: dict):
         max_children=args.get("max-children"),
         max_rounds=args.get("max-rounds"),
         exit_criteria=_exit_criteria_arg(args),
+        obligation_key=args.get("obligation-key"),
     )
     r.save()
     _print_json(node)
@@ -474,6 +551,8 @@ def cmd_trace(args: dict):
             agent_id=args.get("agent-id"),
             device_id=args.get("device-id"),
             compressed_from=_split_ids(args.get("compressed-from")),
+            obligation_key=args.get("obligation-key"),
+            evidence=_multi_text_arg(args, "evidence"),
         )
         r.save()
         _print_json(node)
@@ -504,13 +583,46 @@ def cmd_promote(args: dict):
     """`promote <roadmap_path> <trace_uid> ...` —— 提案状态机。
 
     默认（无 --accept/--reject）= 提案：写 `promotion.state=proposed`，exit 0，不落节点。
-    `--accept`（Human）= 落正式 plan 节点 + derives-from 边。
+    `--accept`（Human）= 通过 reviewed reconciliation proposal digest 原子应用 ChangeSet；
+    需要 `--approved-digest` 与 `--idempotency-key`。
     `--reject`（Human）= 记 rejected，保留痕迹。
     """
     r = _load_roadmap(args["positional"][0])
     trace_uid = args["positional"][1]
     if args.get("accept") == "true":
-        action = "accept"
+        approved_digest = args.get("approved-digest")
+        idempotency_key = args.get("idempotency-key")
+        if approved_digest in (None, "true"):
+            raise CliUsageError(
+                "promote --accept requires --approved-digest <digest>"
+            )
+        if idempotency_key in (None, "true"):
+            raise CliUsageError(
+                "promote --accept requires --idempotency-key <key>"
+            )
+        legacy_overrides = [
+            flag for flag in ("under", "label", "reason")
+            if args.get(flag) is not None
+        ]
+        if legacy_overrides:
+            raise CliUsageError(
+                "promote --accept 不接受旧拓扑参数 "
+                f"{', '.join('--' + flag for flag in legacy_overrides)}；"
+                "请把 Human 决策放入 reconcile --answer"
+            )
+        answer = _json_object_arg(args, "answer")
+        fault_stage = _fault_stage_arg(args, "promote --accept")
+        receipt = r.apply_reviewed_reconciliation(
+            trace_uid,
+            approved_digest,
+            idempotency_key,
+            answers=answer,
+        )
+        receipt = _finish_reviewed_apply(
+            r, receipt, idempotency_key, fault_stage,
+        )
+        _print_json(receipt)
+        return
     elif args.get("reject") == "true":
         action = "reject"
     else:
@@ -524,6 +636,172 @@ def cmd_promote(args: dict):
     )
     _print_json(node)
     return
+
+
+def cmd_reconcile(args: dict):
+    """Build a deterministic, read-only reconciliation proposal or batch."""
+    r = _load_roadmap(args["positional"][0])
+    answer = _json_object_arg(args, "answer")
+    trace_refs = args.get("trace")
+    if trace_refs is not None:
+        if answer is not None:
+            raise CliUsageError("reconcile --answer currently requires a single trace uid")
+        refs = trace_refs if isinstance(trace_refs, list) else [trace_refs]
+        if any(ref == "true" for ref in refs):
+            raise CliUsageError("reconcile --trace requires a trace uid")
+        _print_json(r.reconcile_batch(refs))
+        return
+    if len(args["positional"]) < 2:
+        raise CliUsageError("reconcile requires a trace uid or repeated --trace")
+    _print_json(r.reconcile(args["positional"][1], answers=answer))
+
+
+def _fault_stage_arg(args: dict, command: str) -> Optional[str]:
+    fault_stage = args.get("fault-stage")
+    valid_fault_stages = {
+        None,
+        "before-commit",
+        "during-commit",
+        "after-commit-before-view",
+    }
+    if fault_stage not in valid_fault_stages:
+        raise CliUsageError(f"{command} got unknown --fault-stage: {fault_stage}")
+    return fault_stage
+
+
+def _finish_reviewed_apply(
+    roadmap,
+    receipt: dict,
+    idempotency_key: str,
+    fault_stage: Optional[str],
+) -> dict:
+    """Commit a reviewed receipt and publish its view using one shared path."""
+    if fault_stage == "before-commit":
+        raise InjectedFailure(f"fault injected at {fault_stage}")
+    if fault_stage == "during-commit":
+        roadmap._fault_stage = fault_stage
+    roadmap.save()
+    if fault_stage == "after-commit-before-view":
+        return receipt
+    view_status = "published"
+    try:
+        if roadmap.write_markdown_section() is None:
+            view_status = "unlinked"
+    except (OSError, RoadmapError):
+        view_status = "stale"
+    receipt = roadmap.set_changeset_view_status(idempotency_key, view_status)
+    roadmap.save()
+    return receipt
+
+
+def cmd_apply(args: dict):
+    """Apply one reviewed reconciliation proposal as an atomic ChangeSet."""
+    approved_digest = args.get("approved-digest")
+    idempotency_key = args.get("idempotency-key")
+    if approved_digest in (None, "true"):
+        raise CliUsageError("apply requires --approved-digest <digest>")
+    if idempotency_key in (None, "true"):
+        raise CliUsageError("apply requires --idempotency-key <key>")
+    fault_stage = _fault_stage_arg(args, "apply")
+    r = _load_roadmap(args["positional"][0])
+    answer = _json_object_arg(args, "answer")
+    receipt = r.apply_proposal(
+        args["positional"][1],
+        approved_digest,
+        idempotency_key,
+        answers=answer,
+    )
+    receipt = _finish_reviewed_apply(r, receipt, idempotency_key, fault_stage)
+    _print_json(receipt)
+
+
+def cmd_apply_batch(args: dict):
+    """Apply a reviewed trace batch as one idempotent ChangeSet."""
+    approved_digest = args.get("approved-digest")
+    idempotency_key = args.get("idempotency-key")
+    if approved_digest in (None, "true"):
+        raise CliUsageError("apply-batch requires --approved-digest <batch_digest>")
+    if idempotency_key in (None, "true"):
+        raise CliUsageError("apply-batch requires --idempotency-key <key>")
+    trace_refs = args.get("trace")
+    if trace_refs is None:
+        raise CliUsageError("apply-batch requires at least one --trace <uid>")
+    refs = trace_refs if isinstance(trace_refs, list) else [trace_refs]
+    if any(ref == "true" for ref in refs):
+        raise CliUsageError("apply-batch --trace requires a trace uid")
+    fault_stage = args.get("fault-stage")
+    valid_fault_stages = {
+        None,
+        "before-commit",
+        "during-commit",
+        "after-commit-before-view",
+    }
+    if fault_stage not in valid_fault_stages:
+        raise CliUsageError(f"unknown --fault-stage: {fault_stage}")
+    r = _load_roadmap(args["positional"][0])
+    receipt = r.apply_batch(refs, approved_digest, idempotency_key)
+    if fault_stage == "before-commit":
+        raise InjectedFailure(f"fault injected at {fault_stage}")
+    if fault_stage == "during-commit":
+        r._fault_stage = fault_stage
+    r.save()
+    if fault_stage == "after-commit-before-view":
+        _print_json(receipt)
+        return
+    view_status = "published"
+    try:
+        if r.write_markdown_section() is None:
+            view_status = "unlinked"
+    except (OSError, RoadmapError):
+        view_status = "stale"
+    receipt = r.set_changeset_view_status(idempotency_key, view_status)
+    r.save()
+    _print_json(receipt)
+
+
+def cmd_changeset(args: dict):
+    """Preview or apply a closed generic ChangeSet from an inline JSON array."""
+    action = args["positional"][0]
+    roadmap_path = args["positional"][1]
+    changes = _json_array_arg(args, "changes")
+    r = _load_roadmap(roadmap_path)
+    if action == "preview":
+        _print_json(r.preview_changeset(changes, scope=args.get("scope")))
+        return
+
+    approved_digest = args.get("approved-digest")
+    idempotency_key = args.get("idempotency-key")
+    if approved_digest in (None, "true"):
+        raise CliUsageError("changeset apply requires --approved-digest <digest>")
+    if idempotency_key in (None, "true"):
+        raise CliUsageError("changeset apply requires --idempotency-key <key>")
+    fault_stage = args.get("fault-stage")
+    valid_fault_stages = {None, "before-commit", "during-commit", "after-commit-before-view"}
+    if fault_stage not in valid_fault_stages:
+        raise CliUsageError(f"unknown --fault-stage: {fault_stage}")
+    receipt = r.apply_changeset(
+        changes,
+        approved_digest,
+        idempotency_key,
+        scope=args.get("scope"),
+    )
+    if fault_stage == "before-commit":
+        raise InjectedFailure(f"fault injected at {fault_stage}")
+    if fault_stage == "during-commit":
+        r._fault_stage = fault_stage
+    r.save()
+    if fault_stage == "after-commit-before-view":
+        _print_json(receipt)
+        return
+    view_status = "published"
+    try:
+        if r.write_markdown_section() is None:
+            view_status = "unlinked"
+    except (OSError, RoadmapError):
+        view_status = "stale"
+    receipt = r.set_changeset_view_status(idempotency_key, view_status)
+    r.save()
+    _print_json(receipt)
 
 
 def _enforce_scope(r, node_id: str, args: dict) -> None:
@@ -890,6 +1168,77 @@ def cmd_migrate(args: dict):
     print(f"Migrated: {report['source']} -> {report['target']}")
 
 
+def cmd_migrate_placements(args: dict):
+    source = Path(args["positional"][0]).expanduser().resolve()
+    output = args.get("output")
+    if output in (None, "true"):
+        raise CliUsageError("migrate-placements requires --output <path>")
+    target = Path(output).expanduser().resolve()
+    with ExitStack() as stack:
+        locked_dirs = set()
+        for lock_path in sorted({str(source), str(target)}):
+            lock_dir = roadmap_lock_dir(lock_path)
+            if lock_dir in locked_dirs:
+                continue
+            locked_dirs.add(lock_dir)
+            stack.enter_context(roadmap_file_lock(lock_path))
+        report = migrate_placements(source, target)
+    _print_json(report)
+
+
+def cmd_migrate_types(args: dict):
+    source = Path(args["positional"][0]).expanduser().resolve()
+    output = args.get("output")
+    if output in (None, "true"):
+        raise CliUsageError("migrate-types requires --output <path>")
+    target = Path(output).expanduser().resolve()
+    with ExitStack() as stack:
+        locked_dirs = set()
+        for lock_path in sorted({str(source), str(target)}):
+            lock_dir = roadmap_lock_dir(lock_path)
+            if lock_dir in locked_dirs:
+                continue
+            locked_dirs.add(lock_dir)
+            stack.enter_context(roadmap_file_lock(lock_path))
+        report = migrate_types(source, target)
+    _print_json(report)
+
+
+def cmd_placement(args: dict):
+    action = args["positional"][0]
+    r = _load_roadmap(args["positional"][1])
+    if action == "list":
+        _print_json({"placements": placement_views(r.data)})
+        return
+    if action == "add-reference":
+        rank = args.get("rank")
+        if rank == "true":
+            raise CliUsageError("placement add-reference --rank requires an integer")
+        placement = add_reference_placement(
+            r.data,
+            args["positional"][2],
+            args["positional"][3],
+            int(rank) if rank is not None else None,
+        )
+        r.save()
+        _print_json(placement)
+        return
+    if action == "move":
+        rank = args.get("rank")
+        if rank == "true":
+            raise CliUsageError("placement move --rank requires an integer")
+        placement = move_placement(
+            r.data,
+            args["positional"][2],
+            args["positional"][3],
+            int(rank) if rank is not None else None,
+        )
+        r.save()
+        _print_json(placement)
+        return
+    raise CliUsageError(f"unknown placement action {action!r}; expected: list, add-reference, move")
+
+
 def cmd_context(args: dict):
     """来龙去脉 + edge-driven `--include`。
 
@@ -960,9 +1309,16 @@ COMMANDS = {
     "siblings": cmd_siblings,
     "focus": cmd_focus,
     "migrate": cmd_migrate,
+    "migrate-placements": cmd_migrate_placements,
+    "migrate-types": cmd_migrate_types,
+    "placement": cmd_placement,
     "context": cmd_context,
     "trace": cmd_trace,
     "promote": cmd_promote,
+    "reconcile": cmd_reconcile,
+    "apply": cmd_apply,
+    "apply-batch": cmd_apply_batch,
+    "changeset": cmd_changeset,
     "next": cmd_next,
     "authority-check": cmd_authority_check,
 }
@@ -971,7 +1327,7 @@ COMMANDS = {
 # 写命令走整图锁；`edge` 按子动作区分，因为 `edge list` 是只读。
 LOCK_COMMANDS = frozenset(
     {"init", "add", "update", "delete", "decide", "remove-decision", "render", "link", "lease", "fail",
-     "promote"}
+     "promote", "apply", "apply-batch", "changeset"}
 )
 EDGE_WRITE_ACTIONS = frozenset({"add", "remove", "migrate"})
 TRACE_WRITE_ACTIONS = frozenset({"add", "prune"})
@@ -1003,8 +1359,13 @@ COMMAND_POSITIONAL_ARITY = {
     "siblings": 2,
     "focus": 1,
     "migrate": 1,
+    "migrate-placements": 1,
+    "migrate-types": 1,
     "context": 2,
     "promote": 2,
+    "reconcile": 1,
+    "apply": 2,
+    "apply-batch": 1,
     "next": 1,
     "authority-check": 1,
 }
@@ -1012,6 +1373,8 @@ GROUP_ACTION_ARITY = {
     "edge": {"add": 4, "remove": 3, "list": 2, "migrate": 2},
     "lease": {"claim": 3, "heartbeat": 3, "steal": 3, "release": 3},
     "trace": {"add": 2, "list": 2, "get": 3, "prune": 3},
+    "placement": {"list": 2, "add-reference": 4, "move": 4},
+    "changeset": {"preview": 2, "apply": 2},
 }
 
 
@@ -1050,6 +1413,10 @@ def _needs_lock(cmd: str, args: dict) -> bool:
         return args["positional"][0] in EDGE_WRITE_ACTIONS
     if cmd == "trace":
         return args["positional"][0] in TRACE_WRITE_ACTIONS
+    if cmd == "placement":
+        return args["positional"][0] != "list"
+    if cmd == "changeset":
+        return args["positional"][0] == "apply"
     return cmd in LOCK_COMMANDS
 
 
@@ -1061,7 +1428,9 @@ def _lock_path(cmd: str, args: dict) -> str:
     （生成 `<roadmap>.lock/`），不能落在动作名上，否则所有 roadmap 的
     `lease claim` 会抢同一个 `claim.lock` 而互相阻塞。
     """
-    if cmd in ("lease", "edge", "trace"):
+    if cmd in ("lease", "edge", "trace", "placement"):
+        return args["positional"][1]
+    if cmd == "changeset":
         return args["positional"][1]
     return args["positional"][0]
 
