@@ -15,6 +15,7 @@ import secrets
 import shutil
 import tempfile
 import time
+from collections import Counter
 from datetime import datetime
 from contextlib import contextmanager
 from typing import Optional, Any
@@ -3708,6 +3709,29 @@ class Roadmap:
                 "retracts": sha256(canonical_json(decision)),
             })
         return len(selected)
+
+    def effective_decisions(self, node_id: str) -> list:
+        """返回节点当前生效的决策，保留原始数组的 append-only 审计轨迹。
+
+        每条撤回墓碑按 `retracts` 哈希消费一个原记录；使用计数而不是集合，
+        避免撤回一条决策时误伤内容完全相同的其他记录。
+        """
+        decisions = self.get_node(node_id)["decisions"]
+        retracted_hashes = Counter(
+            decision["retracts"]
+            for decision in decisions
+            if decision.get("retracted") and decision.get("retracts")
+        )
+        effective = []
+        for decision in decisions:
+            if decision.get("retracted"):
+                continue
+            decision_hash = sha256(canonical_json(decision))
+            if retracted_hashes[decision_hash]:
+                retracted_hashes[decision_hash] -= 1
+                continue
+            effective.append(decision)
+        return effective
 
     def get_decisions(self, node_id: Optional[str] = None) -> list:
         """获取决策记录。无 node_id 则返回全部（按 id 排序，确定性）。"""

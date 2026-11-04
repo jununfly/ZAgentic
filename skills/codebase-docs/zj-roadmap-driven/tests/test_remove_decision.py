@@ -138,6 +138,30 @@ class RemoveDecisionContractTest:
         self.assertEqual(twin["retracts"], sha256(canonical_json(original)))
         self.assertEqual(twin["retracts"], sha256(canonical_json(original)))
 
+    def test_effective_decisions_excludes_retracted_original(self):
+        carrier = self._carrier()
+        self._add(carrier, "误记", "错误")
+        carrier.save()
+
+        self._remove(carrier, index=0)
+        self._add(carrier, "正确", "答案")
+
+        self.assertEqual(
+            carrier.effective_decisions(NODE),
+            [{"q": "正确", "answer": "答案", "note": ""}],
+        )
+
+    def test_effective_decisions_retracts_only_one_identical_record(self):
+        carrier = self._carrier()
+        duplicate = {"q": "同题", "answer": "同答", "note": "同注"}
+        self._add(carrier, "同题", "同答", "同注")
+        self._add(carrier, "同题", "同答", "同注")
+        carrier.save()
+
+        self._remove(carrier, index=0)
+
+        self.assertEqual(carrier.effective_decisions(NODE), [duplicate])
+
     def test_reremove_is_idempotent(self):
         carrier = self._carrier()
         self._add(carrier, "为什么", "因为", "note-x")
