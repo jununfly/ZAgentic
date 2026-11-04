@@ -148,6 +148,7 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-tdd](./skills/engineering/zj-tdd/SKILL.md) — Build a feature or fix test-first with red-green-refactor.
 - [zj-wizard](./skills/engineering/zj-wizard/SKILL.md) — Generate a guided Bash workflow for steps only a Human can perform.
 - [zj-code-review](./skills/engineering/zj-code-review/SKILL.md) — Review a change against repository standards and its originating spec.
+- [zj-review-findings](./skills/engineering/zj-review-findings/SKILL.md) — Triage and respond to review findings: confirm the ref, verify before accepting or refuting, prove coverage with a mutation test, and draw the machine-check vs review boundary.
 - [zj-tech-design-review](./skills/engineering/zj-tech-design-review/SKILL.md) — Review a technical design from framing through rollout and validation.
 - [zj-to-tickets](./skills/engineering/zj-to-tickets/SKILL.md) — Slice a plan or spec into blocking-aware tracer-bullet tickets.
 - [zj-to-spec](./skills/engineering/zj-to-spec/SKILL.md) — Turn the current conversation into a spec and issue.
