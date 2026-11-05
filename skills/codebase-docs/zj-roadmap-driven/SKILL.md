@@ -84,10 +84,12 @@ Roadmap 可以决定接下来执行什么；产品行为、架构、发布状态
 `render` 与 `section` 会在所有 Markdown 视图中写入 `zj-roadmap-authority/v1` 权威信封。close-out 和 CI 运行：
 
 ```bash
-python "$SKILL_DIR/roadmap_cli.py" authority-check <project-root>
+python "$SKILL_DIR/roadmap_cli.py" authority-check <project-root> [--exclude <path>]...
 ```
 
 命令以稳定的 `E_PROCESS_AUTHORITY_LEAK path:line` 拒绝代码/长期文档直接引用过程产物，以及把节点完成状态直接写成 proof/evidence。治理文档确需展示反例时，只在该行使用 `roadmap-authority-allow: governance-example`；该例外不跨行生效。
+
+扫描对象只限**可能承载长期事实的文件**。过程态自身不是泄漏：默认跳过 `docs/plans/`、`.git/`、`.workbuddy/`（append-only 记忆日志）、`node_modules/`、`tmp/`，以及 Roadmap carrier 事实源自身和带 `zj-roadmap-authority/v1` 信封的 Markdown 视图。项目若还有自己的过程态目录，用可重复的 `--exclude <path>` 声明（相对 project-root，可指向本次 checkout 尚不存在的路径）；它只覆盖声明的文件/目录，不能指向项目根或根之外，其余路径照常报错。**排除只改扫描范围，判定语义不放宽。**
 
 ## 工作流
 

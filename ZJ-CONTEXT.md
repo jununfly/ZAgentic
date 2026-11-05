@@ -1111,6 +1111,16 @@ current and next work, while durable product behavior, architecture, release and
 correctness claims are promoted to ADR/design/contract/runtime evidence.
 _Avoid_: roadmap disclaimer, progress proof
 
+**Process-state scan scope / 过程态扫描范围**:
+The set of files `authority-check` refuses to treat as durable sources:
+`docs/plans/`, `.git/`, `.workbuddy/` (append-only agent memory), `node_modules/`,
+`tmp/`, the Roadmap carrier itself, and Markdown views declaring
+`zj-roadmap-authority/v1`. Repeatable `--exclude <path>` adds project-specific
+process-state paths; it can never name the project root. Only the scan scope
+changes — the process-artifact / Markdown-link / completion-claim judgements stay
+identical, so a real leak still fails the gate.
+_Avoid_: allowlist, false-positive suppression, citation exemption
+
 **One-directional coupling / 单向耦合**:
 Plans (`docs/plans/`, roadmaps) are transient; decisions (ADRs) are the durable
 anchor. Dependency direction is only `plan → decision → code`; durable docs/code
