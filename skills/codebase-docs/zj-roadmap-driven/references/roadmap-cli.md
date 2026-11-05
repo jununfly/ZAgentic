@@ -109,7 +109,7 @@ python roadmap_cli.py critical-path <roadmap_path>
 python roadmap_cli.py impact <roadmap_path> <node_id>
 
 # Process-state authority boundary
-python roadmap_cli.py authority-check <project_root>
+python roadmap_cli.py authority-check <project_root> [--exclude <path>]...
 ```
 
 Missing positional arguments and unknown command-group actions fail with
@@ -216,11 +216,18 @@ promote-via: ADR|design|contract|runtime-evidence
 -->
 ```
 
-`authority-check <project_root>` scans durable source and documentation outside
-`docs/plans/`, `node_modules/`, and `tmp/`. It rejects both direct citations of
-actual process artifacts and narrow, high-confidence claims that use a Roadmap
-node's completed status as proof. Copied completion claims remain detectable after
-the process artifact is cleaned up. A finding exits 1 and prints stable diagnostics:
+`authority-check <project_root> [--exclude <path>]...` scans only files that could
+carry durable facts. Process-state trees are out of scope: `docs/plans/`, `.git/`,
+`.workbuddy/` (append-only agent memory), `node_modules/`, `tmp/`, the Roadmap
+carrier itself, and any Markdown view carrying the `zj-roadmap-authority/v1`
+envelope. `--exclude` is repeatable and project-relative; it declares one extra
+file or directory (which need not exist in this checkout). It refuses the project
+root and any path outside it, and every other path keeps being checked.
+Exclusions change only the scan scope, never the judgement. It rejects both
+direct citations of actual process artifacts and narrow, high-confidence claims
+that use a Roadmap node's completed status as proof. Copied completion claims
+remain detectable after the process artifact is cleaned up. A finding exits 1
+and prints stable diagnostics:
 
 ```text
 Error: E_PROCESS_AUTHORITY_LEAK: path/to/file.md:12: cites transient process artifact ...

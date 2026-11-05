@@ -134,14 +134,16 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
   impact  <json_path> <node_id>             # 影响集：改 node_id 会波及的下游节点
                                             # 只读、不拿锁
 
-  authority-check <project_root>             # 拒绝代码/长期文档引用 roadmap 过程产物
+  authority-check <project_root> [--exclude <path>]...
+                                            # 拒绝代码/长期文档引用 roadmap 过程产物
+                                            # --exclude 可重复，声明项目自身的过程态路径
 """
 
 import sys
 import json
 import os
 from contextlib import ExitStack
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Optional
 
 # 将自身所在目录加入 path，确保能 import roadmap
@@ -186,7 +188,9 @@ import time
 
 
 # 可以重复出现、每次追加一条值的参数（`--exit-criteria` 可给多条判据）。
-MULTI_VALUE_FLAGS = frozenset({"exit-criteria", "include", "evidence", "trace"})
+MULTI_VALUE_FLAGS = frozenset(
+    {"exit-criteria", "include", "evidence", "trace", "exclude"}
+)
 
 
 class CliUsageError(RoadmapError):
@@ -1273,8 +1277,45 @@ def cmd_next(args: dict):
         _print_json(data)
 
 
+def _authority_excludes_arg(args: dict, root: Path) -> list[str]:
+    """`--exclude` is repeatable, project-relative and prefix-scoped.
+
+    A declaration may name a path that does not exist yet (CI checkouts differ
+    from local trees), but it can never cover the project root itself or escape
+    it — otherwise a single flag would silently turn the gate off.
+    """
+    values = _multi_text_arg(args, "exclude") or []
+    excludes: list[str] = []
+    for value in values:
+        raw = Path(value)
+        if raw.is_absolute():
+            try:
+                relative = raw.resolve().relative_to(root)
+            except ValueError:
+                raise CliUsageError(
+                    f"--exclude must stay inside the project root: {value}"
+                ) from None
+        else:
+            parts = tuple(
+                part
+                for part in PurePosixPath(value.replace(os.sep, "/")).parts
+                if part not in ("", ".")
+            )
+            if ".." in parts:
+                raise CliUsageError(
+                    f"--exclude must stay inside the project root: {value}"
+                )
+            relative = Path(*parts) if parts else Path(".")
+        if relative == Path("."):
+            raise CliUsageError("--exclude cannot name the project root itself")
+        excludes.append(relative.as_posix())
+    return excludes
+
+
 def cmd_authority_check(args: dict):
-    leaks = find_process_authority_leaks(args["positional"][0])
+    root = Path(args["positional"][0]).resolve()
+    excludes = _authority_excludes_arg(args, root)
+    leaks = find_process_authority_leaks(root, exclude=excludes)
     if leaks:
         raise ProcessAuthorityLeak(format_process_authority_leaks(leaks))
     print("Authority boundary: clean.")

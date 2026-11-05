@@ -32,6 +32,39 @@ def run_cli(*args: object, cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+def run_authority_check(
+    root: Path, *extra: object
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(CLI),
+            "authority-check",
+            str(root),
+            *(str(arg) for arg in extra),
+        ],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def seed_process_plan(root: Path) -> str:
+    """Create one transient plan artifact and return its project-relative path."""
+    process = root / "docs" / "plans" / "release" / "roadmap.json"
+    process.parent.mkdir(parents=True, exist_ok=True)
+    process.write_text("{}\n", encoding="utf-8")
+    return process.relative_to(root).as_posix()
+
+
+def write_file(root: Path, relative: str, text: str) -> Path:
+    path = root / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
 class RoadmapAuthorityEnvelopeCliTest(unittest.TestCase):
     def test_all_public_markdown_views_declare_process_authority(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -274,6 +307,199 @@ class RoadmapAuthorityCheckCliTest(unittest.TestCase):
             self.assertEqual(1, result.returncode)
             self.assertIn("E_PROCESS_AUTHORITY_LEAK", result.stderr)
             self.assertIn("docs/architecture/release.md:1", result.stderr)
+
+
+class AuthorityCheckScopeCliTest(unittest.TestCase):
+    """Issue #239: the gate must scan durable sources, not process state itself.
+
+    Judgement semantics stay untouched; these contracts only bound *what* is
+    scanned, so a project with memory logs / a roadmap carrier can still use
+    `authority-check` as a CI gate.
+    """
+
+    def test_append_only_memory_logs_and_git_metadata_are_out_of_scope(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            for relative in (
+                ".workbuddy/memory/2026-11-04.md",
+                ".git/notes.md",
+            ):
+                write_file(root, relative, f"- Evidence: {target}\n")
+
+            result = run_authority_check(root)
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("Authority boundary: clean.", result.stdout)
+
+    def test_roadmap_carrier_and_render_view_are_out_of_scope(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            carrier = root / "docs" / "roadmap" / "roadmap.json"
+            carrier.parent.mkdir(parents=True)
+            run_cli(
+                "init",
+                carrier,
+                "--title",
+                "Scope",
+                "--description",
+                f"编排自 {target}",
+                "--md-file",
+                "ROADMAP.md",
+                cwd=carrier.parent,
+            )
+            run_cli("render", carrier, cwd=carrier.parent)
+            view = carrier.parent / "ROADMAP.md"
+            self.assertIn(AUTHORITY_ENVELOPE, view.read_text(encoding="utf-8"))
+            with view.open("a", encoding="utf-8") as handle:
+                handle.write(f"\nEvidence: {target}\n")
+
+            result = run_authority_check(root)
+
+            self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_a_generic_nodes_json_is_still_a_durable_source(self):
+        """The carrier signature must be narrow, not a blanket `.json` bypass."""
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            write_file(
+                root,
+                "docs/architecture/graph.json",
+                '{"nodes": {}, "title": "Graph"}\n'
+                f'{{"evidence": "{target}"}}\n',
+            )
+
+            result = run_authority_check(root)
+
+            self.assertEqual(1, result.returncode)
+            self.assertIn("docs/architecture/graph.json:2", result.stderr)
+
+    def test_process_state_files_do_not_mask_a_real_durable_leak(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            write_file(root, ".workbuddy/memory/2026-11-05.md", f"- Evidence: {target}\n")
+            carrier = root / "docs" / "roadmap" / "roadmap.json"
+            carrier.parent.mkdir(parents=True)
+            run_cli(
+                "init",
+                carrier,
+                "--title",
+                "Scope",
+                "--description",
+                f"编排自 {target}",
+                "--md-file",
+                "ROADMAP.md",
+                cwd=root,
+            )
+            write_file(root, "docs/architecture/release.md", f"Evidence: {target}\n")
+
+            result = run_authority_check(root)
+
+            self.assertEqual(1, result.returncode)
+            self.assertIn("E_PROCESS_AUTHORITY_LEAK", result.stderr)
+            self.assertIn("docs/architecture/release.md:1", result.stderr)
+            self.assertNotIn("docs/roadmap/roadmap.json", result.stderr)
+            self.assertNotIn(".workbuddy/memory", result.stderr)
+
+    def test_exclude_covers_only_declared_paths(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            write_file(root, "docs/architecture/release.md", f"Evidence: {target}\n")
+            write_file(root, "docs/generated/notes.md", f"Evidence: {target}\n")
+
+            excluded = run_authority_check(root, "--exclude", "docs/generated")
+
+            self.assertEqual(1, excluded.returncode, excluded.stderr)
+            self.assertIn("docs/architecture/release.md:1", excluded.stderr)
+            self.assertNotIn("docs/generated/notes.md", excluded.stderr)
+
+            unexcluded = run_authority_check(root)
+
+            self.assertEqual(1, unexcluded.returncode)
+            self.assertIn("docs/generated/notes.md:1", unexcluded.stderr)
+
+    def test_exclude_is_repeatable_for_files_and_directories(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            write_file(root, "docs/generated/notes.md", f"Evidence: {target}\n")
+            write_file(root, "vendor/cache/notes.md", f"Evidence: {target}\n")
+
+            result = run_authority_check(
+                root,
+                "--exclude",
+                "docs/generated/notes.md",
+                "--exclude",
+                "vendor/cache",
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_exclude_cannot_disable_the_entire_gate(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            for candidate in (".", "..", "/"):
+                with self.subTest(exclude=candidate):
+                    result = run_authority_check(root, "--exclude", candidate)
+                    self.assertEqual(1, result.returncode, result.stdout)
+                    self.assertIn("E_USAGE", result.stderr)
+
+    def test_single_and_sqlite_carriers_stay_out_of_scope(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            for name, init_args in (
+                ("single.json", ()),
+                ("sqlite.db", ("--storage", "sqlite")),
+            ):
+                carrier_dir = root / name.replace(".", "-")
+                carrier_dir.mkdir()
+                carrier = carrier_dir / name
+                run_cli(
+                    "init",
+                    carrier,
+                    "--title",
+                    "Scope",
+                    "--description",
+                    f"编排自 {target}",
+                    "--md-file",
+                    "ROADMAP.md",
+                    *init_args,
+                    cwd=carrier_dir,
+                )
+                run_cli("render", carrier, cwd=carrier_dir)
+                with self.subTest(carrier=name):
+                    self.assertIn(
+                        AUTHORITY_ENVELOPE,
+                        (carrier_dir / "ROADMAP.md").read_text(encoding="utf-8"),
+                    )
+
+            result = run_authority_check(root)
+
+            self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_governance_allowance_still_line_local_with_process_state_present(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            target = seed_process_plan(root)
+            write_file(
+                root,
+                "docs/architecture/layers.md",
+                f"Forbidden example: {target}. "
+                "<!-- roadmap-authority-allow: governance-example -->\n"
+                f"Real leak: {target}\n",
+            )
+            write_file(root, ".workbuddy/memory/2026-11-05.md", f"- {target}\n")
+
+            result = run_authority_check(root)
+
+            self.assertEqual(1, result.returncode)
+            self.assertIn("docs/architecture/layers.md:2", result.stderr)
+            self.assertNotIn("docs/architecture/layers.md:1", result.stderr)
 
 
 if __name__ == "__main__":
