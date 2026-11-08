@@ -113,6 +113,7 @@ Not feature work — upkeep.
 - **`/zj-code-research`** — build a Repository Map, then perform a bounded Architecture Study of selected repository modules or flows.
 - **`/zj-tech-research-report`** — turn technical findings into a technical-solution research report. Use it after `/zj-research` or `/zj-code-research`; technical comparisons use the sealed ledger and Report IR.
 - **`/zj-open-source-capability-fit`** — apply the open-source capability-fit decision model to an external OSS candidate: produce a reviewable R×O evidence matrix and an A/B/C/D classification with mechanical gates (not a thin prompt). It outputs only the fit verdict and decision record; `/zj-tech-research-report` wraps it into the full selection narrative.
+- **`/zj-graphical-cross-comparison`** — compare several product projects against a Human-given fixed scene set: build one independent graph per project, then emit per-scene difference entries with CHK-01..10 mechanical gates. It describes structural differences only; adoption verdicts stay with `/zj-open-source-capability-fit`.
 - **`/zj-tech-design-review`** — review a proposed technical design from problem framing through architecture, metrics, risk, rollout, testing, and follow-up.
 
 Keep the distinction sharp: systematic research explains an object; research

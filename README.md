@@ -214,3 +214,4 @@ stop-and-ask default whenever ownership or semantics is ambiguous.
 - [zj-tech-research-report](./skills/research/zj-tech-research-report/SKILL.md) — Turn findings and sealed ledgers into a technical-solution research report.
 - [zj-systematic-research](./skills/research/zj-systematic-research/SKILL.md) — Systematically study a product, company, concept, technology, or person.
 - [zj-open-source-capability-fit](./skills/research/zj-open-source-capability-fit/SKILL.md) — Apply the ZAgentic open-source capability-fit decision model to an external OSS candidate (R×O matrix → A/B/C/D, with mechanical gates).
+- [zj-graphical-cross-comparison](./skills/research/zj-graphical-cross-comparison/SKILL.md) — Compare multiple product projects against a Human-given fixed scene set, emitting traceable difference entries with CHK-01..10 mechanical gates.

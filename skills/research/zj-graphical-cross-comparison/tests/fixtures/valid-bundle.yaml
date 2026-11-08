@@ -1,0 +1,144 @@
+schema: zj-graphical-cross-comparison/bundle/v1
+scene-set:
+  id: SCENE-SET::v1
+  version-pin: scene-set-2026-11-08
+  source: 产品域一手材料（Human 独立给定）
+  derived-from-graphs: false
+  scenes:
+  - id: SC::goal-to-result
+    start: 用户写下目标
+    end: 结果可见
+    observable: 结果页出现并标注来源
+  context-entries:
+  - id: CTX::data-residency
+    scope: domain
+    kind: constraint
+    statement: 摄入过程数据不出域
+    evidence-ref: domain/PRD.md#data-boundary
+graphs:
+- project: P1
+  version-pin: commit-abc123
+  nodes:
+  - id: F::personal-shared-scope
+    kind: feature
+    statement: 个人空间与共享空间并存
+    acceptance: 同一目标可在两种空间分别创建并互不串数据
+    evidence-ref: P1/docs/product.md#scopes
+  - id: T::scoped-memory
+    kind: capability
+    statement: 按空间隔离的长期记忆
+    acceptance: 跨空间查询返回空集
+    evidence-ref: P1/src/memory.py#L20-L48
+  slice-edges:
+  - id: S::goal-to-result
+    members:
+    - F::personal-shared-scope
+    - T::scoped-memory
+    scenario:
+      start: 用户写下目标
+      end: 结果可见
+      observable: 结果页出现并标注来源
+    evidence-ref: P1/docs/walkthrough.md#1
+  cross-cutting-paths:
+  - id: X::approval-and-recovery
+    statement: 审批与恢复在多段体验中重复出现
+    appears_in:
+    - S::goal-to-result
+    evidence-ref: P1/docs/walkthrough.md#2
+  dependency-edges:
+  - id: D::scope-requires-memory
+    from: F::personal-shared-scope
+    to: T::scoped-memory
+    relation: requires
+    evidence-ref: P1/src/scopes.py#L12
+  relation-constraints: []
+  context-entries:
+  - id: CTX::p1-llm-provider
+    scope: project
+    kind: external-dep
+    statement: 依赖第三方 LLM API
+    evidence-ref: P1/docs/architecture.md#llm
+  undeclared-relations:
+  - id: UR::memory-to-audit
+    elements:
+    - T::scoped-memory
+    - F::personal-shared-scope
+    description: 疑似存在审计依赖，但一手材料未声明
+    candidate-interpretations:
+    - 补依赖边
+    - 判定为不构成关系
+    impact: DE::0001 的支撑节点集
+    ruling-result: unknown
+    ruling-by: zj
+    effective-version: scene-set-2026-11-08
+  orphan-nodes: []
+scene-mapping:
+- slice: P1::S::goal-to-result
+  scene: SC::goal-to-result
+  ruling-ref: RULING::001
+  ruling-by: zj
+equivalence-rulings: []
+optional-scene-pool-review:
+  pool-size: 1
+  covered: 1
+  project-specific: 0
+  notes: Human 核对：池中 1 条已被固定场景集覆盖，无项目特有场景误入
+difference-entries:
+- id: DE::0001
+  scene: SC::goal-to-result
+  project: P1
+  verdict: native
+  supporting-slices:
+  - P1::S::goal-to-result
+  node-set:
+  - F::personal-shared-scope
+  - T::scoped-memory
+  evidence-refs:
+  - P1/docs/walkthrough.md#1
+  mapping-ruling-ref: RULING::001
+  context-refs:
+  - CTX::data-residency
+  - CTX::p1-llm-provider
+  context-verdicts:
+  - ref: CTX::data-residency
+    verdict: satisfied
+  - ref: CTX::p1-llm-provider
+    verdict: satisfied
+report-sections:
+- n: 1
+  title: 图清单与版本 pin
+  sources:
+  - evidence
+- n: 2
+  title: 场景映射表与映射裁决记录
+  sources:
+  - evidence
+  - human-ruling
+- n: 3
+  title: 差异条目清单
+  sources:
+  - evidence
+  - human-ruling
+  - assumption
+- n: 4
+  title: 可选场景集核对留痕
+  sources:
+  - human-ruling
+- n: 5
+  title: 场景内语义等价裁决记录
+  sources:
+  - human-ruling
+- n: 6
+  title: 摘要指标（标注不参与结论）
+  sources:
+  - evidence
+- n: 7
+  title: 与母模型的可选回灌素材
+  sources:
+  - evidence
+- n: 8
+  title: 完成标准自检
+  sources:
+  - evidence
+  - human-ruling
+summary-metrics-usage: display-only
