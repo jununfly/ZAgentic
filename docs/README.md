@@ -107,3 +107,15 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 - `DocMap —docMapBinds(authority-id)→ DocPage`（每 id 恰绑一页，否则 `MAP_AUTHORITY_CONFLICT`）
 
 完整关联与实例由 [`ontology/extract.py`](ontology/extract.py) 从活树生成，由 [`ontology/validate.py`](ontology/validate.py) 校验（一次覆盖 Module G + Module P）。
+
+## 审计例外（doc-slop）
+
+页面健康度审计的命中是提议项，不是待删清单。以下三类命中经 2026-11-08 治理 pass
+裁定为合法例外，内容不得静默改写；回归守卫见 `tests/test_docs_residual_slop.py`。
+`doc-slop-checklist` 仍是审计清单，不因本登记变成运行时门禁。
+
+| 命中类别 | 对象 | 理由 |
+| --- | --- | --- |
+| spec-speak | agreement 的规范性模态句（`docs/agreements/` 内的「不得 / 必须 / 一律」） | 规范性契约：模态词承载权责与后果，降级为建议语气会改变 primary SSOT 语义 |
+| status-annotation | ADR 历史台账（`docs/zj-adr/` 内的 ✅ 迁移记录） | 史据：记录当时落地项，是 ADR 的证据价值，不是实现进度标注 |
+| status-annotation | PRD 验收清单（`docs/prds/` 内的 `- [ ]`） | 验收标准：未勾选项是可复核的接受条件，不是待办进度 |
