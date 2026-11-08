@@ -60,7 +60,7 @@ and each kind has its own authority boundary; this section lists them.
   | `codebase-docs/` | 9 | One-codebase documentation governance; documentation architecture; opt-in doc health metering. |
   | `productivity/` | 13 | Daily non-code workflow skills. |
   | `misc/` | 6 | Kept around but infrequently used. |
-  | `research/` | 5 | Evidence production and domain-study methods. |
+  | `research/` | 6 | Evidence production and domain-study methods. |
   | `ui/` | 11 | UI agent-skill chain: contract base (S0) + ten stages (S1..S10) from intake to handoff. |
 
 - **One root-level skill tree** at `personal/`. It contains two skills,
