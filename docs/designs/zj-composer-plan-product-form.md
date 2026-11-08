@@ -53,7 +53,7 @@ Composer owns the artifact statuses `planned`, `approved`, `rejected`, `supersed
 
 ## Reversible validation slice
 
-The first PoC covers two task fixtures: external repository research and tool-combination design. It writes versioned Markdown Plans under `skills-outputs/`, does not edit skill definitions, and does not execute irreversible actions automatically. Human review is required before the Plan enters an existing execution chain.
+The first PoC covered two task fixtures: external repository research and tool-combination design. It wrote versioned Markdown Plans into an isolated project-output zone (ADR 0010), did not edit skill definitions, and did not execute irreversible actions automatically. Human review is required before a Plan enters an existing execution chain.
 
 Mechanical checks are:
 

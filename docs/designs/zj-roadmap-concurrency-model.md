@@ -59,7 +59,7 @@ authority-id: design.roadmap-concurrency-model
 
 ## P2 — 并发：节点租约取代整图锁
 
-**归因修正（重要）**：并发失败模式**不是 lost update**。整条写命令在整图锁内串行，读-改-写不交错，父状态派生而非快照，物理上不存在「后写覆盖前写」。真实失败是**拿不到锁的进程直接崩溃退出 1**（运行时 shim 把 `os.mkdir` 的 `FileExistsError` 换成 `PermissionError(errno is None)`，旧代码只认 `FileExistsError` 导致锁等待循环从不执行）。因此 **P3（SQLite）不能用「解决 lost update」当动机**——那个动机已被锁层修复推翻，P3 只剩四条独立正当性（见下）。
+并发失败模式不是 lost update。整条写命令在整图锁内串行，读-改-写不交错，父状态派生而非快照，物理上不存在「后写覆盖前写」。真实失败是拿不到锁的进程直接崩溃退出 1（运行时 shim 把 `os.mkdir` 的 `FileExistsError` 换成 `PermissionError(errno is None)`，旧代码只认 `FileExistsError` 导致锁等待循环从不执行）。因此 **P3（SQLite）不能用「解决 lost update」当动机**——那个动机已被锁层修复推翻，P3 只剩四条独立正当性（见下）。
 
 租约设计（已决策参数）：
 - `claim` / `heartbeat` / `release` / `steal`；**默认 TTL 300s + 心跳周期 60s，二者必须同批次交付**（TTL 300s 单独存在会在 5 分钟回收正常任务；只实现 TTL 不实现心跳 = 长任务每 5 分钟被回收）。

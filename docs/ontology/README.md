@@ -1,9 +1,8 @@
 # ZAgentic 文档化系统 · 统一本体 + 结构索引图
 
-`docs/` 是 ZAgentic 代码库（技能集合）的**文档化系统**。本目录是这套系统的
-**统一本体（实体/属性/关联/规则）+ 结构索引图** 的家——注意：这里不再是
-"两套 ontology"，而是**一份**本体的两个 concern 模块（详见 [`ONTOLOGY.md`](./ONTOLOGY.md)
-第 0 节）：
+`docs/` 是 ZAgentic 代码库（技能集合）的文档化系统。本目录是统一本体
+（实体/属性/关联/规则）与结构索引图的家：一份本体，分 Module G 与 Module P
+两个 concern 模块（详见 [`ONTOLOGY.md`](./ONTOLOGY.md) 第 0 节）：
 
 - **Module G（治理层）**：文档系统自身的分类/权威/生命周期契约
   （`doc-kind` 词表、`authority` 层级、`docMapBinds` 1:1 绑定、`MAP_*` 检查）。
@@ -29,7 +28,7 @@
 | `extract.py` | P | 从 `skills/`、`personal/`、`docs/` 生成结构索引图（A-Box），支持 `--repo` | 无需手改；随活树自动产出 |
 | `validate.py` | G+P | 推理 + 约束校验（组合治理脚本覆盖 Module G），支持 `--repo` | 无需手改 |
 | `tests/test_ontology.py` | P | 产品域集成测试（结构索引图规模 + Module P 规则） | 改动抽取/校验时 |
-| `graph.json` | — | 生成的**结构索引图实例（临时派生缓存；不提交，按需再生）** | 运行 extract 时产出 |
+| `graph.json` | — | 生成的结构索引图实例；临时派生缓存，**不提交**，按需再生 | 运行 extract 时产出 |
 
 ## 工作流（保鲜核心）
 

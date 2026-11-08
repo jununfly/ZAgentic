@@ -22,9 +22,8 @@ authority-id: design.zj-discuss-spec
 - 外部范式证据只支持取舍，不授权引入宿主运行时、router 或 suite 状态。
 - 求解期文档不是长期权威，必须经过文档治理后才能沉淀或删除。
 
-> 本文件是 `zj-discuss` / `zj-discuss-view` 的**权威详细规格**，沉淀自一段长对话
-> （立项 grill → 共识 → 落 skill → 自举验证 → 合并 → 阶段 2 处置 → 开源范式复盘/决策模型复盘
-> → 本轮 4 项追加改进）。目的是**避免对话进程丢失完整 context**。
+> 本文件是 `zj-discuss` / `zj-discuss-view` 的权威详细规格，用于保留完整 context，
+> 避免讨论依据随对话进程丢失。
 > 产品定义见 `product.md`，组件与生命周期见 `architecture.md`。
 > 角色语义唯一真源：`skills/productivity/zj-discuss/references/role-matrix.md`。
 

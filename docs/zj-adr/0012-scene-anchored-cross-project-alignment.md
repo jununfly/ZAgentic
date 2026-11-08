@@ -7,7 +7,7 @@ status: accepted
 
 # 跨项目对齐单位改为固定场景集（场景锚定）
 
-2026-11-08。产品项目图式横比模型原先试图用「节点语义等价」把多张项目图对齐后再比较；本 ADR 把对齐单位换成由 Human 独立给定的固定场景集，各图仍按自己的语义独立建成，只在 Stage 3 经场景映射发生对齐。判决来自一次 `zj-grill-with-docs` 会话，SSOT 落在 `docs/agreements/product-project-graphical-cross-comparison-model.md`。
+2026-11-08。产品项目图式横比模型原先试图用「节点语义等价」把多张项目图对齐后再比较；本 ADR 把对齐单位换成由 Human 独立给定的固定场景集，各图仍按自己的语义独立建成，只在 Stage 3 经场景映射发生对齐。判决来自一次 `zj-grill-with-docs` 会话，SSOT 是 [产品项目图式横比模型](../agreements/product-project-graphical-cross-comparison-model.md)；本页只保留判决与被否方案，理由以该 SSOT 为准。
 
 ## Context
 
@@ -56,9 +56,9 @@ status: accepted
 
 ### Context
 
-原 agreement 把 `V_i` 定义为 `F_i ∪ T_i`，两类都是「可独立陈述与验收的能力单元」。仓库里存在大量既非 F 也非 T 的一手描述：数据不出域与本地索引跨次复用、第三方 API 的许可与用途约束、响应 < 200ms 的合规门槛、长期记忆数据对象、以及场景中承担编辑 / 审批 / 执行的角色。若它们无处安放，两个都 `native` 支撑同一场景的项目会显得结构相同——而产品定位的核心差异恰恰在「一个数据不出域、一个依赖第三方模型服务」。
+原 agreement 把 `V_i` 定义为 `F_i ∪ T_i`，两类都是可独立验收的能力单元；一手材料中另有既非 F 也非 T 的四类事实（非功能约束、数据契约、外部依赖、参与主体）。若它们无处安放，两个都 `native` 支撑同一场景的项目会显得结构相同，产品定位差异不可见。四类事实的定义、例子与「为什么不扩 `V`」的完整论证见 [产品项目图式横比模型](../agreements/product-project-graphical-cross-comparison-model.md) 的「上下文条目」节；本 ADR 不复述理由。
 
-母模型已给出同构先例：`docs/agreements/open-source-capability-fit-decision-model.md`（`C = Compose(...)` 定义见 L42 / L164）把「接口、语义、数据模型、生命周期、许可和运行方式」当作 `C = Compose(...)` 的兼容性验证项与 `E` 的成本分量，**不是 `O` 能力、也不是独立节点**。仓库也已有 `constraints` 字段、`数据边界`、`Non-goals`、保证边界与风险控制矩阵等旁挂清单惯例。
+母模型先例见 `docs/agreements/open-source-capability-fit-decision-model.md`（`C = Compose(...)` 定义见 L42 / L164）；其同构分工的完整表述见 [横比模型](../agreements/product-project-graphical-cross-comparison-model.md) 的「与母模型的关系」表。仓库另已有 `constraints`、`数据边界`、`Non-goals` 等旁挂清单惯例。
 
 ### Decision
 
@@ -71,7 +71,7 @@ status: accepted
 
 | 方案 | 拒绝理由 |
 | --- | --- |
-| 扩 `V` 为多类型节点 | 原子化判据（可独立验收 / 不共用验收条件）对约束、数据、主体失效；`S.members ⊆ V` 会把合规约束当成场景成员；SCC、依赖闭包与扇入在异构图上语义崩坏（依赖边要不要连一条合规约束？）；与母模型 L55 的分工相反 |
+| 扩 `V` 为多类型节点 | 原子化判据与 `S.members ⊆ V` 对约束、数据、主体失效，SCC / 依赖闭包 / 扇入在异构图上语义崩坏；完整论证见 [横比模型](../agreements/product-project-graphical-cross-comparison-model.md) 的「为什么不扩 `V`」 |
 | 塞进 `T` 当子类 | 把「数据不出域」写成「能力」是范畴错误，直接违反「技术栈名或框架名不算技术能力」的精神 |
 | 明确 out of scope，全交母模型 | 极简且分工清晰，但横比清单会漏掉最关键的产品定位差异；且母模型处理的是单候选采用，不负责多项目结构对比 |
 | 只加自由文本 `notes` | 无法逐条追溯、无法判定满足 / 违反，等于把未决策项伪装成已处理 |
