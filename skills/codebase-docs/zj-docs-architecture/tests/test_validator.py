@@ -257,6 +257,39 @@ class LinkBaseTest(unittest.TestCase):
             self.assertIn("MAP_LINK_BROKEN", self.codes_in(repo))
 
 
+class ArchitectureMapTest(unittest.TestCase):
+    """An architecture-map is navigation, not a view; the exemption is by kind."""
+
+    def map_repo(self):
+        return mutated_fixture("valid-minimal")
+
+    def add_page(self, repo: Path, kind: str, body: str) -> None:
+        arch = repo / "docs" / "architecture"
+        (arch / "README.md").write_text(
+            f"---\ndoc-kind: {kind}\nauthority: primary\n"
+            "authority-id: architecture.map.test\n---\n\n" + body,
+            encoding="utf-8",
+        )
+        map_path = repo / "docs" / "README.md"
+        map_path.write_text(
+            map_path.read_text(encoding="utf-8")
+            + "- [Architecture map](architecture/README.md) — authority-id: architecture.map.test\n",
+            encoding="utf-8",
+        )
+
+    def test_navigation_map_is_exempt_from_view_contracts(self) -> None:
+        with self.map_repo() as repo:
+            self.add_page(repo, "architecture-map", "# Map\n\n## Categories\n\n- x\n")
+            codes = {item.code for item in VALIDATOR.validate(repo)[0]}
+            self.assertEqual(set(), codes)
+
+    def test_a_view_declaring_readme_name_is_still_checked(self) -> None:
+        with self.map_repo() as repo:
+            self.add_page(repo, "architecture-overview", "# Overview\n")
+            codes = {item.code for item in VALIDATOR.validate(repo)[0]}
+            self.assertIn("PAGE_NAME_PREFIX", codes)
+
+
 def handbook_repo() -> Path | None:
     """The nearest ancestor that is both a repo and carries a `docs/` tree.
 

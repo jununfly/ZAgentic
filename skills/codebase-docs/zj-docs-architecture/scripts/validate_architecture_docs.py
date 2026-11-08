@@ -24,6 +24,11 @@ ARCHITECTURE_KINDS = {
     "architecture-flow",
     "architecture-cross-cutting",
 }
+# A navigation map is a legitimate architecture page but not a view: it owns
+# bound authorities, categories and pointer rules, not one bounded question.
+# Exemption is keyed on the declared kind, never on the filename.
+MAP_KINDS = {"architecture-map"}
+VALID_ARCHITECTURE_KINDS = ARCHITECTURE_KINDS | MAP_KINDS
 COMMON_HEADINGS = {"question", "scope", "boundaries", "source map", "related authority"}
 VIEW_HEADINGS = {
     "architecture-overview": {"system boundary", "major parts"},
@@ -263,12 +268,14 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
         meta = frontmatter(page_text)
         kind = meta.get("doc-kind")
         authority = meta.get("authority")
-        if kind not in ARCHITECTURE_KINDS:
-            diagnostics.append(Diagnostic("PAGE_KIND_INVALID", relative, "doc-kind must be an architecture view"))
+        is_navigation = kind in MAP_KINDS
+        if kind not in VALID_ARCHITECTURE_KINDS:
+            diagnostics.append(Diagnostic("PAGE_KIND_INVALID", relative, "doc-kind must be an architecture view or map"))
         if authority not in {"primary", "supporting", "historical", "process", "external"}:
             diagnostics.append(Diagnostic("PAGE_AUTHORITY_INVALID", relative, "authority is missing or invalid"))
-        for code, message in naming_diagnostics(entry.target.stem):
-            diagnostics.append(Diagnostic(code, relative, message))
+        if not is_navigation:
+            for code, message in naming_diagnostics(entry.target.stem):
+                diagnostics.append(Diagnostic(code, relative, message))
         page_headings = headings(page_text)
         if authority == "primary":
             authority_id = meta.get("authority-id")
@@ -282,14 +289,15 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
                 bindings = [item for item in entries if item.target == entry.target and item.authority_id == authority_id]
                 if len(bindings) != 1:
                     diagnostics.append(Diagnostic("AUTHORITY_MAP_BINDING", relative, "map must bind this primary path and authority-id exactly once"))
-            for heading in sorted(COMMON_HEADINGS):
-                if heading not in page_headings:
-                    diagnostics.append(Diagnostic("PAGE_CONTRACT_MISSING", relative, f"missing required section: {heading}"))
-            for heading in sorted(VIEW_HEADINGS.get(kind or "", set())):
-                if heading not in page_headings:
-                    diagnostics.append(Diagnostic("PAGE_VIEW_CONTRACT_MISSING", relative, f"missing {kind} section: {heading}"))
-            for heading in sorted(PROCESS_HEADINGS & page_headings):
-                diagnostics.append(Diagnostic("PAGE_PROCESS_HEADING", relative, f"process heading is not valid on a primary architecture page: {heading}"))
+            if not is_navigation:
+                for heading in sorted(COMMON_HEADINGS):
+                    if heading not in page_headings:
+                        diagnostics.append(Diagnostic("PAGE_CONTRACT_MISSING", relative, f"missing required section: {heading}"))
+                for heading in sorted(VIEW_HEADINGS.get(kind or "", set())):
+                    if heading not in page_headings:
+                        diagnostics.append(Diagnostic("PAGE_VIEW_CONTRACT_MISSING", relative, f"missing {kind} section: {heading}"))
+                for heading in sorted(PROCESS_HEADINGS & page_headings):
+                    diagnostics.append(Diagnostic("PAGE_PROCESS_HEADING", relative, f"process heading is not valid on a primary architecture page: {heading}"))
 
             for raw, source in source_paths(root, entry.target, page_text):
                 if source is None:

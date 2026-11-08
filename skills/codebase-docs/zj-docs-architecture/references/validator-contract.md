@@ -95,6 +95,18 @@ map may cite a stable external reference, so those are skipped rather than
 reported. Only a path that tries to name a repository file and misses is a
 defect.
 
+### Navigation maps are not views
+
+A page declaring `doc-kind: architecture-map` is the handbook navigation layer:
+it owns bound authorities, categories and pointer rules, not one bounded
+question about the system. It remains a valid architecture page, so authority,
+primary `authority-id` binding and source-map checks still apply; it is exempt
+from view naming (`PAGE_NAME_*`), common sections, view sections and
+process-heading checks, because those contracts describe a view. The exemption
+is keyed on the declared kind, not on the filename: a page named `README.md`
+that declares a view kind still receives naming diagnostics.
+`docs/architecture/README.md` is the canonical example.
+
 ### Overlap with `zj-docs-ontology`
 
 `zj-docs-ontology` governs a repository's whole document map; this validator
