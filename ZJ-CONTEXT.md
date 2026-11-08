@@ -1294,6 +1294,89 @@ _Avoid_: 用 hash 未变当没过期, 把 STALE 当 FAIL, 拿"曾经通过"放�
 quarantine 的一个子类：证据无法映射到 fixture × dimension × viewport，或缺 evidence / release_condition。与 attributed 分开计数，两者都判 `QUARANTINED`；不得转成 `FAIL`（"不知道"不等于"已验证失败"），也不进通过率分母。解除须新 run_id + 复核人签署。
 _Avoid_: 把"不知道"写成失败, 把 quarantine 计入分母, 原地把 quarantine 改成 PASS
 
+### Graphical cross-comparison (product-project)
+
+Vocabulary for the multi-project structural comparison agreement (SSOT:
+`docs/agreements/product-project-graphical-cross-comparison-model.md`). It answers
+"what differs between several product projects", not "should we adopt one candidate"
+(that is the open-source capability-fit decision model above).
+
+**产品项目图式横比模型 (product-project graphical cross-comparison model)**:
+以固定场景集为公共坐标系，把多个产品项目各自独立的图对齐成**逐条可追溯的差异清单**；摘要指标只作展示、不参与结论。本文是方法论约定，纸面契约不等于已有实现体。
+_Avoid_: 横比矩阵, 评分卡, 架构裁决, 采用结论
+
+**固定场景集 (fixed scene set)**:
+由 Human 独立给定、不来自任何 `Graph_i`、带版本 pin 与产品域一手材料证据的跨项目公共坐标系；只描述可观察场景（起点 / 终点 / 可观察结果），不规定节点、模块或实现划分。
+_Avoid_: 从项目切片归纳, 项目划分模板, 架构蓝图, 候选池采纳
+
+**可选场景集 (observed scene candidates)**:
+Stage 2 逐项目原样摘录 `(project, slice, 场景原文, evidence-ref)` 得到的**过程材料**，仅供 Human 做盲区检查（核对遗漏、识别把项目特有场景误当通用），不得直接采纳为固定场景集；Agent 对它零语义操作。
+_Avoid_: 场景归纳, 候选场景池(暗示可采纳), 自动去重, 语义等价提示
+
+**场景锚定 (scene anchoring)**:
+以固定场景集而非节点语义等价作为跨项目对齐单位；各 `Graph_i` 按自己的语义独立建成，只在 Stage 3 经场景映射发生对齐。这是 ADR 0012 的判决。
+_Avoid_: 节点等价映射, 全局同义词表, 预先对齐, 同名即同义
+
+**差异条目 (difference entry)**:
+唯一的结论载体；一条 = `场景 × 项目 × 供给四态 × 支撑切片 / 节点集 × 证据 × 映射裁决`，`unknown` 另附最小验证计划。
+_Avoid_: 差异分数, 项目排名, 汇总评分, 以摘要代替清单
+
+**供给四态 (supply verdict)**:
+`native / adapted / unsupported / unknown`，参照系是场景（不是我方架构）；复用母模型 `R × O` 的四态。`unsupported` 必须绑定一手材料中的显式否定陈述，`unknown` 是既无覆盖证据也无否定陈述。
+_Avoid_: 三态(漏 unsupported), absent, 元素级 status, 把 unknown 写成不支持
+
+**竖切片 (vertical slice)**:
+一条超边 = 一个端到端可观察用户场景；`members` 列表是 SoT，Mermaid 中间节点只是投影。
+_Avoid_: UI 页面, 模块, 横切路径, 从投影反推成员集
+
+**横切路径 (cross-cutting path)**:
+在 ≥2 条竖切片中重复出现的体验路径，带结构化 `appears_in`；不与竖切片并列、不参与成员下界检查、不计入共享度分子。
+_Avoid_: 横切片超边, 共享节点计数来源, 并列 kind 枚举
+
+**依赖边 (dependency edge)**:
+语义恒为 `requires` 的有向边，是唯一可进入强连通分量 / 依赖闭包 / 扇入计算的关系；选择约束与时序约束另放 `relation-constraints`（记号 `RC`）。
+_Avoid_: 耦合边(混类型), co-varies(需跨版本证据), 无向连通分量
+
+**强连通分量 (strongly connected component, SCC)**:
+本模型中只用于刻画「互相依赖、不可单独交付」，仅在环上非空；属摘要指标。忽略 `requires` 方向的无向连通分量会把可独立交付的依赖方与共享底座绑成一团。
+_Avoid_: 无向连通分量, 把 SCC 当工作量估算, 把共享底座算进同一团
+
+**传递依赖闭包 (transitive dependency closure)**:
+按起点定义、可重叠的集合族，刻画单次交付的最小成本；不是划分。`closure(v) ∪ {v}` 是交付 `v` 的最小单元。
+_Avoid_: 连通分量, 「耦合团」清单, 工作量估算值
+
+**缩点 DAG (condensation DAG)**:
+把每个 SCC 压成超节点后必然无环的依赖顺序结构；本模型分析实现顺序的落点。
+_Avoid_: 按无向连通分量排实现顺序, 把扇入当拓扑序
+
+**扇入 (fan-in)**:
+依赖图上节点的入度，刻画变更波及面与共享底座的复用价值；是节点级标量，与共享度（超边成员计数）不是同一件事。
+_Avoid_: 共享度, 场景出现次数, 出度 fan-out 混用
+
+**共享度 (slice-sharing ratio)**:
+出现在 ≥2 条竖切片中的节点数 / 全部节点数；只按 `S` 计数，横切路径 `X` 不计入，否则指标会被建模方式系统性抬高。
+_Avoid_: 把横切路径计入分子, 当成扇入, 当成复用价值结论
+
+**摘要指标 (summary metrics)**:
+证据绑定覆盖率 / 竖切片覆盖率 / 共享度 / SCC 规模分布 / 最大依赖闭包 / 扇入分布 / 未决存量；只作差异清单的摘要展示。
+_Avoid_: 判定量(暗示可裁决), 机械闸门, BLOCKED, 用于排序 / 回灌 / 优先级
+
+**证据 / Human 裁决 / 假设 (evidence / ruling / assumption)**:
+报告必须标注的三类来源；Human 裁决不得写成证据，假设不得写成裁决，「区分证据 vs 假设」的二分类不足以覆盖它们。
+_Avoid_: 只分证据与假设两类, 把 Human 裁决伪装成客观数字
+
+**上下文条目 (context entry)**:
+非能力事实的**旁挂清单**，不进 `V`、不进 `S.members`、不进有向依赖图，也不计入任何摘要指标的分母；不给图记号、不属于 `Graph_i` 元组。`scope: domain` 归固定场景集所有（Human 给定，仍不规定实现划分），`scope: project` 归各自 `Graph_i`（Stage 2 登记）。母模型把同类事实放在 `C` 的兼容性验证项与 `E` 的成本分量里，本模型沿用这一分工。
+_Avoid_: 节点类型, NFR 节点, 塞进 `T`, 扩 `V` 为多类型, 自由文本 notes
+
+**上下文条目种类 (context entry kinds)**:
+四类 `kind`：`constraint`（非功能约束，如数据不出域 / 响应门槛 / 许可合规，只有满足与违反、没有独立验收条件）、`data-contract`（数据契约，长期记忆对象 / 页级元数据 / schema 与生命周期，是被操作的事实载体）、`external-dep`（外部依赖，第三方 API / 模型服务 / provider 条款，供给来自外部）、`actor`（参与主体，Human operator / 审批人 / 执行 Agent，是场景角色不是交付单元）。节点上的 `semantic-owner` 与 `data-contract` 互补：前者答「谁拥有 durable facts」。
+_Avoid_: 把约束写成能力, 把数据对象写成技术节点, 把角色当成可验收单元
+
+**上下文判定三态 (context verdict)**:
+`satisfied / violated / unknown`，由差异条目的 `context-verdicts` 逐条给出；`violated` 须绑定显式否定证据，`unknown` 须附最小验证计划。**与供给四态是两套枚举，不得混用**；它不改变差异条目的 `verdict`，只补「能力结构相同但上下文条件不同」这类差异（如两个项目都 `native`，一个数据不出域、一个依赖第三方模型服务）。
+_Avoid_: 与 native/adapted/unsupported/unknown 混用, 压成单一标量, 一次裁决批量套用多个项目
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:
@@ -1307,6 +1390,31 @@ _Avoid_: 把"不知道"写成失败, 把 quarantine 计入分母, 原地把 quar
 - A↔B relationship (this repo vs. any source skills collection) is
   intentionally **not defined** as a domain term here. It is a property of
   individual merge waves, not of the glossary.
+- `orphan` — resolved by scope: in doc-health / `zj-doc-health` it means an
+  **orphan page** (zero-indegree in the documentation map); in the graphical
+  cross-comparison agreement it means an **orphan node** (a `V` member no
+  `S` connects). Never use the bare word across these two contexts.
+- `composability` / 可组合性 — resolved by scope: in the capability-fit model
+  it is a **multiplier of 有效拟合度** (and a `matrix[O][R]` column in the
+  skill-layer application guide), not a field the cross-comparison agreement
+  can claim to write into. The agreement now only offers difference entries as
+  optional input material and declares the mother-model interface undefined.
+- `unknown` — three distinct enums, not one term: `Study record kind`
+  (`observed / inferred / unknown / decision`), the capability-fit `R × O`
+  matrix state, and the cross-comparison **supply verdict** four-state. Always
+  name the enum when the context is not locally obvious.
+- `G` — resolved by symbol avoidance: in the capability-fit model `G = R − C` is the
+  **capability gap**. The cross-comparison graph is written `Graph_i`, never
+  `G_i`, so the two never share a symbol domain.
+- `constraint` / `C` — resolved by renaming (2026-11-08): the cross-comparison
+  agreement's in-graph relation constraint was renamed to `RC` (field
+  `relation-constraints`, ID `RC::`) and its review conditions to `CHK-01`…
+  `CHK-10`, so the bare single-letter `C` now refers only to the capability-fit
+  model's `C = Compose(...)`. `kind: constraint` on a **context entry** keeps
+  its name (non-functional condition: data residency, latency, license) because
+  `constraints` is an established field name in UI contracts. The ontology's
+  `constrains` relation and `Contract.gate` attribute remain doc-artifact-layer
+  senses; no scope-based disambiguation is needed inside the agreement anymore.
 
 ## Retros
 
