@@ -4,6 +4,7 @@ authority: historical
 status: accepted
 supersedes: 0008 (Decision 3, "discussion record is kept")
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-24；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # UI Agent Skills discussion record retirement (decoupling zj-ui-core from discussions/)
 

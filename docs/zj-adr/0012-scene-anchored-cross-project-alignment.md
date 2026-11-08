@@ -1,7 +1,9 @@
 ---
 doc-kind: adr
+authority: historical
 status: accepted
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-11-08；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # 跨项目对齐单位改为固定场景集（场景锚定）
 
@@ -56,7 +58,7 @@ status: accepted
 
 原 agreement 把 `V_i` 定义为 `F_i ∪ T_i`，两类都是「可独立陈述与验收的能力单元」。仓库里存在大量既非 F 也非 T 的一手描述：数据不出域与本地索引跨次复用、第三方 API 的许可与用途约束、响应 < 200ms 的合规门槛、长期记忆数据对象、以及场景中承担编辑 / 审批 / 执行的角色。若它们无处安放，两个都 `native` 支撑同一场景的项目会显得结构相同——而产品定位的核心差异恰恰在「一个数据不出域、一个依赖第三方模型服务」。
 
-母模型已给出同构先例：`docs/agreements/open-source-capability-fit-decision-model.md:55` 把「接口、语义、数据模型、生命周期、许可和运行方式」当作 `C = Compose(...)` 的兼容性验证项与 `E` 的成本分量，**不是 `O` 能力、也不是独立节点**。仓库也已有 `constraints` 字段、`数据边界`、`Non-goals`、保证边界与风险控制矩阵等旁挂清单惯例。
+母模型已给出同构先例：`docs/agreements/open-source-capability-fit-decision-model.md`（`C = Compose(...)` 定义见 L42 / L164）把「接口、语义、数据模型、生命周期、许可和运行方式」当作 `C = Compose(...)` 的兼容性验证项与 `E` 的成本分量，**不是 `O` 能力、也不是独立节点**。仓库也已有 `constraints` 字段、`数据边界`、`Non-goals`、保证边界与风险控制矩阵等旁挂清单惯例。
 
 ### Decision
 

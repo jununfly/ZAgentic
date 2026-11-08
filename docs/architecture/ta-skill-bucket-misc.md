@@ -43,7 +43,7 @@ without promoting them to a daily-work bucket. The bucket covers:
 
 ## Owned state
 
-- The skill folders under `skills/misc/` (6 entries) plus their per-skill
+- The skill folders under `skills/misc/` (enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their per-skill
   `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
 - No state outside the bucket; no bucket-owned skill writes into another

@@ -47,7 +47,7 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
 
 ## Owned state
 
-- The skill folders under `skills/codebase-docs/` (8 entries) plus their
+- The skill folders under `skills/codebase-docs/` (enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
 - The architecture handbook under `docs/architecture/` (owned by

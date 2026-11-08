@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-23；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # UI public bucket addition
 
@@ -33,7 +34,7 @@ stable `authority-id` in the architecture map before shipping.
 ## Consequences
 
 - The system overview's "5 + 1" model becomes "6 + 1"; its bucket table gains a `ui`
-  row (11 skills: S0 + S1..S10) and the `productivity` (13) and `research` (5) counts
+  row (11 skills: S0 + S1..S10) and, as of 2026-10-23, the `productivity` (13) and `research` (5) counts
   are refreshed to match the live tree.
 - A per-bucket subsystem page `ta-skill-bucket-ui.md` is added to the architecture map
   so the `ui` bucket has the same routing surface as the other five public buckets.

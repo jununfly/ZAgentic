@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-09-09；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # Explicit `/zj-repo-init` pointer only for hard dependencies
 

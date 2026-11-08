@@ -61,7 +61,7 @@ Responsibilities the tree explicitly declines:
 
 ## Owned state
 
-- The skill folders under `personal/` (currently 2 entries) plus their
+- The skill folders under `personal/` (enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their
   per-skill `references/` and `scripts/` directories.
 - The `personal/README.md` local index.
 - No state outside `personal/`: a personal skill does not modify public
@@ -122,7 +122,7 @@ recursive public walk.
 ## Related authority
 
 - [Architecture map](README.md) — primary routing surface.
-- [System overview](ta-zagentic-overview.md) — the 5 + 1 model this
+- [System overview](ta-zagentic-overview.md) — the 6 + 1 model this
   subsystem completes.
 - [Bucket discipline](ta-skill-bucket-boundary.md) — the cross-cutting
   rule that establishes "parallel path, not duplicate path".

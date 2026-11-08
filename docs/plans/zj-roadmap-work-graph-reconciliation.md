@@ -1,3 +1,7 @@
+---
+doc-kind: plan
+---
+
 # Roadmap reconciliation and work-graph design review
 
 ## One-page overview

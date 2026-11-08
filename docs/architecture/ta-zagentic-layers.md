@@ -129,7 +129,7 @@ adoption is auditable.
 
 ## Related authority
 
-- [System overview](ta-zagentic-overview.md) — the 5 + 1 model this page
+- [System overview](ta-zagentic-overview.md) — the 6 + 1 model this page
   rests on.
 - [Bucket discipline](ta-skill-bucket-boundary.md) — the single shared
   rule that enforces the public vs personal-tree separation.

@@ -65,7 +65,7 @@ authority elsewhere (both are mechanical failures the validator surfaces).
 
 | Consumer view | What it consumes |
 | --- | --- |
-| [Overview](ta-zagentic-overview.md) | 5 + 1 enumeration, the parallel-path note, the reader routing that links (not copies) into `docs/`. |
+| [Overview](ta-zagentic-overview.md) | 6 + 1 enumeration, the parallel-path note, the reader routing that links (not copies) into `docs/`. |
 | [Layers](ta-zagentic-layers.md) | Layer 1 (index) write boundary, layer 7 (authority) write confirmation, layer 2 (skill) read scope including the personal-tree specialisation. |
 | [Pipelines](ta-zagentic-pipelines.md) | Flow 1 step 2 iterates public buckets and `personal/` separately; Flow 2 stages 3 and 4 require explicit Human confirmation before any cross-bucket or cross-tree move. |
 | Each bucket subsystem page | Owns its skill set, points to this page for the discovery and installation boundary. |
@@ -100,7 +100,7 @@ amended it.
 ## Related authority
 
 - [Architecture map](README.md) — where this page is routed from.
-- [System overview](ta-zagentic-overview.md) — restates the 5 + 1 model
+- [System overview](ta-zagentic-overview.md) — restates the 6 + 1 model
   derived from this rule.
 - [Layers](ta-zagentic-layers.md) — restates the boundary as a write
   boundary in the layer table.

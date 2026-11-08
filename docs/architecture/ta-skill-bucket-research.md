@@ -47,7 +47,7 @@ pass under `zj-docs-ontology`.
 
 ## Owned state
 
-- The skill folders under `skills/research/` (6 entries) plus their
+- The skill folders under `skills/research/` (enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
 - Research packages and decision records written to the target's declared

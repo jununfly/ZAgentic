@@ -48,7 +48,7 @@ built, reviewed, broken, verified, and handed off. The bucket covers:
 
 ## Owned state
 
-- The skill folders under `skills/ui/` (11 entries: S0 + S1..S10) plus their
+- The skill folders under `skills/ui/` (S0 plus S1..S10; enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their
   per-skill `scripts/`, `references/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
 - The canonical artifacts (`UI-BRIEF.md`, `UI-DESIGN.md`, `ui-flow/v1`,

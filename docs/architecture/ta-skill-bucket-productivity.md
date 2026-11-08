@@ -49,7 +49,7 @@ The bucket covers:
 
 ## Owned state
 
-- The skill folders under `skills/productivity/` (12 entries) plus their
+- The skill folders under `skills/productivity/` (enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket.
 - Workflow-owned process and evidence artifacts such as Composer Plans under

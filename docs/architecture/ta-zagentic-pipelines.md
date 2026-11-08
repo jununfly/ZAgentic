@@ -163,7 +163,7 @@ forbidden by the Codebase Docs capability spec.
 
 ## Related authority
 
-- [System overview](ta-zagentic-overview.md) — names the 5 + 1 model and
+- [System overview](ta-zagentic-overview.md) — names the 6 + 1 model and
   the installable platform set Flow 1 crosses.
 - [Layers](ta-zagentic-layers.md) — Flow 1's and Flow 2's layer rules
   (read-down, write-only-on-confirmation).

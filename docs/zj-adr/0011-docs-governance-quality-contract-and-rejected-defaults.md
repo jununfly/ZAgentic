@@ -1,9 +1,10 @@
 ---
 doc-kind: adr
-authority: zj-composer
+authority: historical
 status: accepted
 issue: "224"
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-28；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # 文档质量契约落在治理层而非运行时；被拒默认值显式记录
 

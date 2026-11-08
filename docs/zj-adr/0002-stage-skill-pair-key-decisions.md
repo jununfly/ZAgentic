@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-24；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # 1 阶段 A↔B skill-pair 处理: 4 个可重用决策
 
@@ -33,13 +34,13 @@ A 仓处理每个 skill-pair 时, 用统一英文动词声明动作:
 
 A 仓任何 skill 改动 PR 必查 3 项:
 
-- **Rule 1**: `skills/` 改动必查 `.codex-plugin/plugin.json` 挂接 (新 skill 必须挂上, 否则不被 Claude/Codex 平台发现)
+- **Rule 1（已撤销）**: 当时要求 `skills/` 改动必查 `.codex-plugin/plugin.json` 挂接；现行 `AGENTS.md` 已声明该清单为 legacy、不再要求，改由递归 `./skills/` 发现与桶/顶层 README 登记。
 - **Rule 2**: git 操作必走 `./scripts/zj-git` 包装 (WorkBuddy shim 在 Windows Git Bash 上把 `rm -rf` 真删, 见 `skills/engineering/zj-git-bypass-safe-delete/`)
 - **Rule 3**: 新术语必先更新 `ZJ-CONTEXT.md` 才合并 (术语是仓的共享语言, 改了 skill 但没改词汇表, 下游 skill 会"猜"或"编")
 
 **为什么是 3 项**: A 仓"自给自足"需要 3 个 hook 守住 — 平台发现 (Rule 1), 工具安全 (Rule 2), 词汇一致 (Rule 3). 漏一项都会让仓变"分叉" (skill 与词汇表不同步 / skill 与 plugin 列表不同步).
 
-落地形式: 写在每个 skill 的 PR review checklist + 仓根 `AGENTS.md`。三条 rule 均已在 `AGENTS.md` 落盘（平台挂接 / Git 包装 / 术语表），不再是待补项。
+落地形式: 写在每个 skill 的 PR review checklist + 仓根 `AGENTS.md`。当时三条 rule 已落盘；其中平台挂接一条其后由 `AGENTS.md` 撤销，Git 包装与术语表两条仍有效。
 
 ## 决策 3 — 跨阶段 skill 抽象的元规则 (1-6 Q3)
 

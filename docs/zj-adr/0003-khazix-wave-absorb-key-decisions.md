@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-24；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # khazix-skills 吸收 wave: 4 个可重用元决策
 

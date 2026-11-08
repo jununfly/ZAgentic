@@ -1,9 +1,10 @@
 ---
 doc-kind: adr
-authority: zj-grill-with-docs
+authority: historical
 status: accepted
 issue: "221"
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-28；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # 会本地落盘的 skills 统一用相对路径 + 隔离目录（升华 #169）
 

@@ -1151,6 +1151,10 @@ inbound references with a valid destination, and still needs Human
 confirmation.
 _Avoid_: silent deletion, deletion as a default
 
+**Bucket inventory source of truth / 桶计数真相源**:
+The live skill tree is the only fact source for how many skills a public bucket holds; a document either links to that count or has a deterministic check verify it, and never restates the number in a second place. A copied count drifts the moment a skill is added or removed.
+_Avoid_: 桶页自报 entries 数, 多处手写计数表, 以文档数字反推活树, generated region 之外的手工清单
+
 ## Relationships
 
 - A **Skill bucket** holds many **Skills**

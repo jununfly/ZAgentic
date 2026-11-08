@@ -41,7 +41,7 @@ that no other bucket may depend on for its core safety.
 
 ## Owned state
 
-- The skill folders under `skills/engineering/` (22 entries) plus their
+- The skill folders under `skills/engineering/` (enumerated in [the architecture overview](ta-zagentic-overview.md)) plus their
   per-skill `references/`, `scripts/`, and `tests/` directories.
 - The local `README.md` index for the bucket and the matching registration
   entries in the top-level `README.md`.

@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 ---
+> 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-24；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 
 # UI agent-skills graduation verdict (CONDITIONAL_ADOPTION) and governance-page retirement
 
@@ -49,7 +50,7 @@ after items landed later the same day. Deleting the page without writing record
    | 1-10-1 | authoritative-page migration (index hub plus decision/risk summary; both pages since removed) | **completed** 2026-10-22 | `1176412` |
    | 1-10-2 | recursive discovery / index sync — the eight registration points, verified by `scripts/validate-zagentic-plugin.py` (66 skills, exit 0) | **completed** 2026-10-22 | `fbc5521` |
    | 1-10-3 | ownership, maintenance budget, RTO/RPO, re-evaluation cadence, WIP policy | **completed** 2026-10-22 | `8c9bbdb` |
-   | 1-10-4 | rollout / pilot / kill-switch / adapter removal / revalidation decisions | **never started**; released to *ready* by 1-10-3 | no commit exists |
+   | 1-10-4 | rollout / pilot / kill-switch / adapter removal / revalidation decisions | **never started**; released to *ready* by 1-10-3 | `58c3b0d` / `2f493e6` 收口治理触发条件；rollout 判决仍未完成 |
 
    Retirement therefore covers exactly one unfinished item — 1-10-4 — plus the
    ongoing maintenance of what 1-10-1 to 1-10-3 already produced. The reason to
