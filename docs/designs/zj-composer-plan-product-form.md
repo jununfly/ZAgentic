@@ -78,12 +78,8 @@ Wall-clock time, interaction steps, manual edits, rejects, retries, recovery, an
 - [Composer skill](../../skills/productivity/zj-composer/SKILL.md)
 - [Composer Plan contract](../../skills/productivity/zj-composer/references/plan-contract.md)
 - [Composer validator contract](../../skills/productivity/zj-composer/references/validator-contract.md)
-- [Composer regression evidence](../../skills-outputs/zj-composer/regression/regression-result.json)
 - [Cross-stage checkpoints](zj-cross-stage-skills.md)
 - [Open-source capability-fit decision model](../agreements/open-source-capability-fit-decision-model.md)
-- [pstack primary findings](../../skills-outputs/zj-research/pstack-claude-capability-fit/primary-findings.md)
-- [pstack capability-fit decision record](../../skills-outputs/zj-open-source-capability-fit/pstack-claude-skill-fit/decision_record.md)
-- [pstack technical research report](../../skills-outputs/zj-tech-research-report/pstack-claude-skill-fit/2026-10-08-pstack-claude-report.md)
 
 ## Related authority
 
