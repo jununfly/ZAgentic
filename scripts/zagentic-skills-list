@@ -12,6 +12,7 @@ zj-merge-skills-wave
 zj-prototype
 zj-repo-init
 zj-resolving-merge-conflicts
+zj-review-findings
 zj-steelman
 zj-tdd
 zj-tech-design-review
@@ -20,6 +21,7 @@ zj-to-tickets
 zj-triage
 zj-wizard
 zj-debrief
+zj-doc-health
 zj-docs-architecture
 zj-docs-ontology
 zj-domain-modeling
