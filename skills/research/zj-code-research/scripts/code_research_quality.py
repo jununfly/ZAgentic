@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Mechanical gates and calibrated quality checks for code-research bundles.
 
-The shared ZHarness evaluator owns technical-report families. This module owns
-the separate ``landscape/v1`` and ``deep-read/v1`` contract: it validates the
+Technical-report families are evaluated by the caller-supplied research
+compiler. This module owns the separate ``landscape/v1`` and ``deep-read/v1``
+contract: it validates the
 immutable Repository Map / Architecture Study bundles, scores controlled
 fixtures against human annotations, and reports calibrated Judge agreement.
 """

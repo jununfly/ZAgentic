@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
-"""Verify the ZAgentic adapter against a configured ZHarness research CLI."""
+"""Golden contract tests for the zj-research protocol adapters.
 
-import importlib.util
+zj-research is a protocol adapter and supplies no compiler. These tests
+exercise the adapters against a compiler the caller injects through
+ZJ_RESEARCH_CLI / ZJ_RESEARCH_EVAL_CLI. A missing pointer is a setup failure:
+the runner fails with injection instructions and never resolves any fallback,
+including a retired bundled-artifact cache.
+"""
+
 import json
 import os
 import shutil
@@ -19,10 +25,31 @@ FIXTURE = Path(__file__).with_name("golden-contract.json")
 EVALUATION_ASSETS = ROOT / "tests" / "golden" / "controlled-quality-v1"
 
 
+def compiler_env() -> dict[str, str]:
+    """Return the caller-owned compiler environment, with no fallback of any kind.
+
+    zj-research bundles no compiler and owns no compiler cache. Silently
+    resolving a compiler from a local directory would reintroduce exactly the
+    hidden coupling this skill was refactored to remove.
+    """
+
+    env = dict(os.environ)
+    missing = [name for name in ("ZJ_RESEARCH_CLI", "ZJ_RESEARCH_EVAL_CLI") if not env.get(name)]
+    if missing:
+        raise RuntimeError(
+            "No external compiler injected: " + ", ".join(missing) + ". "
+            'Export ZJ_RESEARCH_CLI="node /path/to/compiler/lib/bin.js" and '
+            'ZJ_RESEARCH_EVAL_CLI="node /path/to/compiler/lib/eval.js" before running '
+            "the golden contract. zj-research supplies no compiler and has no cache fallback."
+        )
+    return env
+
+
 def main() -> int:
-    run([sys.executable, str(RUNTIME_CONTRACT)])
-    run([sys.executable, str(ADAPTER), "--check"])
-    run([sys.executable, str(EVALUATION_ADAPTER), "--check"])
+    env = compiler_env()
+    run([sys.executable, str(RUNTIME_CONTRACT)], env=env)
+    run([sys.executable, str(ADAPTER), "--check"], env=env)
+    run([sys.executable, str(EVALUATION_ADAPTER), "--check"], env=env)
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory(prefix="zj-research-contract-") as directory:
         root = Path(directory)
@@ -30,7 +57,7 @@ def main() -> int:
             request = root / f"request-{index}.json"
             output = root / f"response-{index}.json"
             request.write_text(json.dumps(case["request"], ensure_ascii=False), encoding="utf-8")
-            run([sys.executable, str(ADAPTER), str(request), "--output", str(output)])
+            run([sys.executable, str(ADAPTER), str(request), "--output", str(output)], env=env)
             actual = json.loads(output.read_text(encoding="utf-8"))
             if actual != case["expected"]:
                 raise AssertionError(f"golden contract case {index} diverged:\n{json.dumps(actual, ensure_ascii=False, indent=2)}")
@@ -41,7 +68,7 @@ def main() -> int:
         receipt = root / "receipt.json"
         report_ir.write_text(json.dumps(compiled_request["report"], ensure_ascii=False), encoding="utf-8")
         ledger.write_text(json.dumps(compiled_request["ledger"], ensure_ascii=False), encoding="utf-8")
-        run([sys.executable, str(PUBLISHER), str(report_ir), str(ledger), str(markdown), "--receipt", str(receipt)])
+        run([sys.executable, str(PUBLISHER), str(report_ir), str(ledger), str(markdown), "--receipt", str(receipt)], env=env)
         publication = json.loads(receipt.read_text(encoding="utf-8"))
         if publication["evaluation"]["healthy"] is not True or not markdown.exists() or not markdown.with_suffix(".html").exists():
             raise AssertionError("compiler-backed publication did not produce a healthy Markdown/HTML pair")
@@ -62,6 +89,7 @@ def main() -> int:
         rejected_receipt = root / "rejected-receipt.json"
         rejected = subprocess.run(
             [sys.executable, str(PUBLISHER), str(report_ir), str(unhealthy), str(rejected_markdown), "--receipt", str(rejected_receipt)],
+            env=env,
             text=True,
             capture_output=True,
             check=False,
@@ -70,8 +98,8 @@ def main() -> int:
             raise AssertionError("publisher accepted an unhealthy evaluation")
         if rejected_markdown.exists() or rejected_markdown.with_suffix(".html").exists() or rejected_receipt.exists():
             raise AssertionError("unhealthy publication created an artifact")
-        verify_independent_report_runtime(root, report_ir, ledger)
-        invalid_timeout = dict(os.environ)
+        verify_independent_report_runtime(root, report_ir, ledger, env)
+        invalid_timeout = dict(env)
         invalid_timeout["ZJ_RESEARCH_CLI_TIMEOUT_SECONDS"] = "0"
         bounded = subprocess.run(
             [sys.executable, str(ADAPTER), "--check"],
@@ -82,53 +110,21 @@ def main() -> int:
         )
         if bounded.returncode == 0 or "must be a positive number" not in bounded.stderr:
             raise AssertionError("adapter accepted a non-positive timeout")
-        verify_artifact_failures(root)
-        verify_evaluation_assets(root)
-    print("zj-research golden contract: runtime contract, 7 compiler cases, and 10 evaluation cases passed")
+        verify_evaluation_assets(root, env)
+    print(
+        "zj-research golden contract: runtime contract, "
+        f"{len(fixture['cases'])} golden compiler cases, publisher path, and 10 evaluation cases passed"
+    )
     return 0
 
 
-def verify_artifact_failures(root: Path) -> None:
-    spec = importlib.util.spec_from_file_location("research_cli_contract", ADAPTER)
-    if spec is None or spec.loader is None:
-        raise RuntimeError("could not load research adapter")
-    adapter = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(adapter)
-    source = ROOT / "artifacts"
-    copied = root / "artifacts"
-    shutil.copytree(source, copied)
-    adapter.ARTIFACTS = copied
-    lock = json.loads((copied / "compiler-lock.json").read_text(encoding="utf-8"))
-    lock["schema"] = adapter.LOCK_SCHEMA
-    lock["protocols"] = {"research": adapter.PROTOCOL, "evaluation": "zj-research-eval-cli/v1"}
-    lock["executables"] = {"research": "lib/bin.js", "evaluation": "lib/eval.js"}
-    (copied / "compiler-lock.json").write_text(json.dumps(lock), encoding="utf-8")
-    artifact = copied / lock["artifact"]
-    artifact.write_bytes(artifact.read_bytes() + b"tampered")
-    try:
-        adapter.artifact_command("research", adapter.PROTOCOL)
-    except RuntimeError as error:
-        if "SHA-256 mismatch" not in str(error):
-            raise
-    else:
-        raise AssertionError("adapter accepted a tampered compiler artifact")
-    artifact.unlink()
-    try:
-        adapter.artifact_command("research", adapter.PROTOCOL)
-    except RuntimeError as error:
-        if "artifact is unavailable" not in str(error):
-            raise
-    else:
-        raise AssertionError("adapter accepted a missing compiler artifact")
-
-
-def verify_independent_report_runtime(root: Path, report_ir: Path, ledger: Path) -> None:
-    """The renamed report skill must work without a bundled sibling runtime."""
+def verify_independent_report_runtime(root: Path, report_ir: Path, ledger: Path, env: dict[str, str]) -> None:
+    """The renamed report skill must work through an external compiler runtime."""
 
     independent_publisher = root / "independent-report-skill" / "scripts" / "publish_report.py"
     independent_publisher.parent.mkdir(parents=True)
     shutil.copy2(PUBLISHER, independent_publisher)
-    missing_env = dict(os.environ)
+    missing_env = dict(env)
     missing_env.pop("ZJ_RESEARCH_RUNTIME", None)
     missing = subprocess.run(
         [
@@ -168,7 +164,7 @@ def verify_independent_report_runtime(root: Path, report_ir: Path, ledger: Path)
         raise AssertionError("explicit research runtime did not enable independent report publication")
 
 
-def verify_evaluation_assets(root: Path) -> None:
+def verify_evaluation_assets(root: Path, env: dict[str, str]) -> None:
     validation = root / "asset-validation.json"
     run([
         sys.executable,
@@ -180,7 +176,7 @@ def verify_evaluation_assets(root: Path) -> None:
         str(EVALUATION_ASSETS / "calibration.json"),
         "--output",
         str(validation),
-    ])
+    ], env=env)
     result = json.loads(validation.read_text(encoding="utf-8"))["result"]
     expected = {
         "qualityCaseCount": 10,
@@ -204,7 +200,7 @@ def verify_evaluation_assets(root: Path) -> None:
         str(EVALUATION_ASSETS / "calibration.json"),
         "--output",
         str(calibration),
-    ])
+    ], env=env)
     if json.loads(calibration.read_text(encoding="utf-8"))["result"] != expected["calibration"]:
         raise AssertionError("standalone Judge calibration diverged from asset validation")
 

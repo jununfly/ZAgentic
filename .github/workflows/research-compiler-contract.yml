@@ -1,24 +1,92 @@
 name: Research compiler contract
 
+# Issue #243: zj-research is a protocol adapter, not a compiler carrier. It
+# bundles no compiler, so CI must not assume one is present on the runner.
+#
+# Two deliberately separated jobs:
+#   * protocol-contract runs on every triggering push / PR. It verifies the
+#     independence guard, the adapter runtime seam, the code-research quality
+#     gate, the publisher quality-gate contract, and the loud-failure seam. The
+#     publisher test injects a protocol double from the repository test layer
+#     at the compiler system boundary; that double is a fixture, not a compiler
+#     and not part of any installable skill.
+#   * compiler-integration asserts the *exact output of a specific compiler*
+#     (golden Markdown/hash, evaluation assets). Only a caller-supplied compiler
+#     can satisfy those assertions, so the job runs when an admin configures
+#     both pointers. Otherwise GitHub reports "skipped", never a silent pass.
+#
+# Full integration run locally / on the consumer side:
+#   export ZJ_RESEARCH_CLI="node /path/to/compiler/lib/bin.js"
+#   export ZJ_RESEARCH_EVAL_CLI="node /path/to/compiler/lib/eval.js"
+#   python skills/research/zj-research/tests/verify_golden_contract.py
+#   python skills/research/zj-tech-research-report/tests/verify_technical_report.py
+
 on:
   push:
     paths:
       - ".github/workflows/research-compiler-contract.yml"
-      - "scripts/update-research-compiler-artifact.py"
       - "skills/research/zj-research/**"
       - "skills/research/zj-code-research/**"
       - "skills/research/zj-tech-research-report/**"
   pull_request:
     paths:
       - ".github/workflows/research-compiler-contract.yml"
-      - "scripts/update-research-compiler-artifact.py"
       - "skills/research/zj-research/**"
       - "skills/research/zj-code-research/**"
       - "skills/research/zj-tech-research-report/**"
+  workflow_dispatch:
 
 jobs:
-  golden-contract:
+  protocol-contract:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install gate dependencies
+        run: python -m pip install -r requirements.txt
+      - name: CI coverage regression guard (S1 governance seam)
+        run: python -m unittest discover -s tests -p 'test_research_protocol_gate.py' -t .
+      - name: Independence guard (no bundled compiler, no vendor tie)
+        run: python skills/research/zj-research/tests/verify_independent_runtime.py
+      - name: Adapter runtime contract
+        run: python skills/research/zj-research/tests/verify_runtime_contract.py
+      - name: Code-research quality contract
+        run: python skills/research/zj-code-research/tests/verify_quality_contract.py
+      - name: Publisher and adapter contracts (injected protocol double)
+        env:
+          ZJ_RESEARCH_CLI: "python3 tests/fixtures/zj_research_protocol_double.py"
+          ZJ_RESEARCH_EVAL_CLI: "python3 tests/fixtures/zj_research_protocol_double.py"
+        run: |
+          python skills/research/zj-research/scripts/research_cli.py --check
+          python skills/research/zj-research/scripts/research_eval_cli.py --check
+          python skills/research/zj-tech-research-report/tests/verify_technical_report.py
+      - name: Adapters fail loudly without a compiler pointer
+        env:
+          ZJ_RESEARCH_CLI: ""
+          ZJ_RESEARCH_EVAL_CLI: ""
+        run: |
+          set -eu
+          for adapter in research_cli research_eval_cli; do
+            output=$(python "skills/research/zj-research/scripts/${adapter}.py" --check 2>&1) && status=0 || status=$?
+            if [ "$status" -eq 0 ]; then
+              echo "::error::${adapter} ran without a compiler pointer"
+              exit 1
+            fi
+            case "$output" in
+              *"ZJ_RESEARCH_CLI is not set"*|*"ZJ_RESEARCH_EVAL_CLI is not set"*) ;;
+              *) echo "$output"; echo "::error::${adapter} failed without a setup pointer"; exit 1 ;;
+            esac
+          done
+
+  compiler-integration:
+    # Opt-in: only a caller-provided compiler can satisfy these assertions.
+    if: ${{ vars.ZJ_RESEARCH_CLI != '' && vars.ZJ_RESEARCH_EVAL_CLI != '' }}
+    runs-on: ubuntu-latest
+    env:
+      ZJ_RESEARCH_CLI: ${{ vars.ZJ_RESEARCH_CLI }}
+      ZJ_RESEARCH_EVAL_CLI: ${{ vars.ZJ_RESEARCH_EVAL_CLI }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,5 +96,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: python skills/research/zj-research/tests/verify_golden_contract.py
-      - run: python skills/research/zj-code-research/tests/verify_quality_contract.py
       - run: python skills/research/zj-tech-research-report/tests/verify_technical_report.py

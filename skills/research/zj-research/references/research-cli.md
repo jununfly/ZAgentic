@@ -1,39 +1,64 @@
 # Shared research compiler
 
-Use the commit-pinned ZHarness artifact for technical GitHub evidence, Report IR compilation, and research evaluation. The research adapter accepts only `zj-research-cli/v1`; the evaluation adapter accepts only `zj-research-eval-cli/v1`. Both fail loudly when the artifact is missing, modified, or incompatible. This skill remains an independent workflow entry alongside the hosted Research Agent; both consume the same compiler and evaluation facts.
+`zj-research` is a **protocol adapter**, not a compiler carrier. It defines the
+protocols (`zj-research-cli/v1`, `zj-research-eval-cli/v1`), the request/response
+schemas, and the Python adapter that invokes an **external** research compiler.
+It bundles no compiler and carries no upstream vendor tie, so the skill runs on
+any agent that points at its own compiler implementation.
 
-`zj-research` owns the adapters and the artifact lock. `zj-tech-research-report`
-does not copy them: its publisher first looks for a sibling `zj-research`
-skill, then accepts an explicit skill-root pointer in
-`ZJ_RESEARCH_RUNTIME`. The pointed directory must contain
-`scripts/research_cli.py` and, for evaluation workflows,
+The research adapter accepts only `zj-research-cli/v1`; the evaluation adapter
+accepts only `zj-research-eval-cli/v1`. Both fail loudly when the external
+compiler is missing, incompatible, or returns invalid output. This skill remains
+an independent workflow entry alongside the hosted Research Agent; both consume
+the same protocol and evaluation facts.
+
+`zj-research` owns the adapters. `zj-tech-research-report` does not copy them:
+its publisher first looks for a sibling `zj-research` skill, then accepts an
+explicit skill-root pointer in `ZJ_RESEARCH_RUNTIME`. The pointed directory must
+contain `scripts/research_cli.py` and, for evaluation workflows,
 `scripts/research_eval_cli.py`. If neither location is available, publication
 stops with the setup pointer instead of falling back to uncited Markdown.
 
-Resolve the executable in this order:
+## Supplying the compiler
 
-1. `ZJ_RESEARCH_CLI`, for a local ZHarness build during development.
-2. `artifacts/compiler-lock.json`, whose SHA-256 pins the bundled compiler to one ZHarness commit.
+The adapters resolve the executable **only** from an environment variable. There
+is no bundled fallback.
 
-When a consumer is installed independently, set the pointer to the
-`zj-research` skill directory, for example:
+1. `ZJ_RESEARCH_CLI` — the research compiler (speaks `zj-research-cli/v1`).
+2. `ZJ_RESEARCH_EVAL_CLI` — the evaluation compiler (speaks `zj-research-eval-cli/v1`);
+
+   set this only when running evaluation workflows.
+
+The value is split with shell semantics and executed directly, e.g.:
+
+```sh
+export ZJ_RESEARCH_CLI="node /path/to/compiler/lib/bin.js"
+export ZJ_RESEARCH_EVAL_CLI="node /path/to/compiler/lib/eval.js"
+```
+
+`/path/to/compiler` is whatever compiler implementation the host provides — the
+skill makes no assumption about its origin. When the variable is unset, the
+adapter raises a clear setup error naming the missing variable instead of
+silently falling back.
+
+When a consumer is installed independently, set the pointer to the `zj-research`
+skill directory so the publisher can find the adapters:
 
 ```sh
 export ZJ_RESEARCH_RUNTIME=/path/to/skills/zj-research
 ```
 
-The lock records separate `research` and `evaluation` executables inside one artifact. Set `ZJ_RESEARCH_EVAL_CLI` only when testing a local ZHarness evaluation build.
+Note: `ZJ_RESEARCH_RUNTIME` only locates the adapter scripts. The adapter itself
+still requires `ZJ_RESEARCH_CLI` (and `ZJ_RESEARCH_EVAL_CLI` for evaluation) to
+be set in the runtime environment.
 
-The adapter verifies the artifact hash before use and extracts it to the user cache under a hash-named directory. `ZJ_RESEARCH_COMPILER_CACHE` changes that cache root. Build ZHarness normally, then update the pinned artifact mechanically from a clean `packages/` tree:
+Each adapter invocation is bounded to 300 seconds. Set
+`ZJ_RESEARCH_CLI_TIMEOUT_SECONDS` to a positive number when a collection brief
+deliberately has a longer deadline.
 
-```sh
-pnpm install && pnpm run build
-python scripts/update-research-compiler-artifact.py /path/to/ZHarness
-```
-
-Each adapter invocation is bounded to 300 seconds. Set `ZJ_RESEARCH_CLI_TIMEOUT_SECONDS` to a positive number when a collection brief deliberately has a longer deadline.
-
-Run `python scripts/research_cli.py --check` before creating reports. Its failure message identifies the invalid lock, missing artifact, hash mismatch, or protocol incompatibility; the skill has no Markdown-only compatibility path.
+Run `python scripts/research_cli.py --check` before creating reports. Its failure
+message identifies the missing `ZJ_RESEARCH_CLI`, an incompatibility, or a
+protocol mismatch; the skill has no Markdown-only compatibility path.
 
 For every fresh `collect`, pass `--status-output collection-status.json` and keep
 that sidecar beside the request and ledger:
@@ -68,13 +93,6 @@ diagnostics with stable codes such as `GITHUB_AUTHENTICATION_FAILED`,
 `GITHUB_FORBIDDEN`, `GITHUB_RATE_LIMITED`, `GITHUB_NETWORK_FAILED`, and
 `COMPILER_OUTPUT_INVALID`; the original compiler message remains in diagnostic
 details without being mistaken for a fresh ledger.
-
-Run `python scripts/research_eval_cli.py --check` before validating the corpus. The immutable assets under `research/evaluation/controlled-quality-v1/` must pass both operations before a Judge configuration contributes to a quality baseline:
-
-```sh
-python scripts/research_eval_cli.py validate-assets manifest.json rubrics.json annotations.json calibration.json
-python scripts/research_eval_cli.py calibrate-judge rubrics.json calibration.json
-```
 
 ## Operations
 
@@ -116,4 +134,4 @@ The family-specific validator rejects missing or reordered sections before retur
 {"protocol":"zj-research-cli/v1","operation":"evaluate","report":{"schema":"zj-research-report-ir/v1","family":"zj-draft/v1"},"ledger":{"schema":"zj-verified-evidence-ledger/v1"},"publication":{"reportHash":"<sha256>","markdownPath":"/absolute/report.md","htmlPath":"/absolute/report.html","publishCount":1}}
 ```
 
-The result carries six hard correctness facts, collection cost, coverage, degradation count, report family, and compiler version. Treat `healthy: false` as a failed run. The standalone compiler persists validated sealed ledgers under `$DSH_HOME/cache/research/v1` (or `~/.dsh/cache/research/v1`) and fails loudly on a corrupt entry.
+The result carries six hard correctness facts, collection cost, coverage, degradation count, report family, and compiler version. Treat `healthy: false` as a failed run.
