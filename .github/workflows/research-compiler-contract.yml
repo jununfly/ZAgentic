@@ -46,8 +46,11 @@ jobs:
           python-version: "3.12"
       - name: Install gate dependencies
         run: python -m pip install -r requirements.txt
-      - name: CI coverage regression guard (S1 governance seam)
-        run: python -m unittest discover -s tests -p 'test_research_protocol_gate.py' -t .
+      # No `-t .` here: tests/ has no __init__.py, so declaring a top-level
+      # directory makes unittest reject the start dir as non-importable
+      # (first CI run of PR #244). The pattern covers both regression guards.
+      - name: Research CI coverage and vendor-neutral regression guards
+        run: python -m unittest discover -s tests -p 'test_research_*.py'
       - name: Independence guard (no bundled compiler, no vendor tie)
         run: python skills/research/zj-research/tests/verify_independent_runtime.py
       - name: Adapter runtime contract
