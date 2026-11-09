@@ -48,12 +48,15 @@ Completion criterion: every selected repository is pinned to a commit, stars and
 
 ## Shared compiler runtime
 
-The compiler and evaluation adapters under `scripts/` are the canonical shared
-runtime for the research bucket. Keep their protocol and artifact-lock logic
-here so independently installed consumers can point at this skill rather than
-copying an adapter. Read [the runtime reference](references/research-cli.md)
-when a downstream skill needs collection, compilation, rendering, or evaluation.
+The research and evaluation adapters under `scripts/` are the canonical shared
+runtime for the research bucket. They are protocol adapters: they own the
+`zj-research-cli/v1` / `zj-research-eval-cli/v1` protocol and adapter logic, but
+they bundle no compiler and carry no vendor tie. They require an external
+compiler supplied via `ZJ_RESEARCH_CLI` / `ZJ_RESEARCH_EVAL_CLI` so
+independently installed consumers can point at this skill rather than copying an
+adapter. Read [the runtime reference](references/research-cli.md) when a
+downstream skill needs collection, compilation, rendering, or evaluation.
 
 Completion criterion: the saved evidence names its source or sealed ledger,
 its unknowns remain explicit, and any compiler-backed operation was run through
-this canonical runtime.
+this canonical runtime with an externally supplied compiler.

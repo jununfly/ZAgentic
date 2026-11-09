@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Validated adapter for the versioned ZHarness research CLI protocol."""
+"""Validated adapter for the zj-research-cli/v1 protocol.
+
+zj-research is a protocol adapter, not a compiler carrier. It requires an
+external research compiler (any implementation that speaks zj-research-cli/v1)
+supplied via the ZJ_RESEARCH_CLI environment variable. It bundles no compiler
+and is vendor-neutral, so it runs on any agent that points at its own
+compiler implementation.
+"""
 
 import argparse
 import hashlib
@@ -9,15 +16,12 @@ import re
 import shlex
 import subprocess
 import sys
-import tarfile
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 PROTOCOL = "zj-research-cli/v1"
-LOCK_SCHEMA = "zj-research-compiler-lock/v2"
 REQUIRED_OPERATIONS = {"collect", "compile-report", "render-html", "evaluate"}
 DEFAULT_TIMEOUT_SECONDS = 300.0
 DEFAULT_GITHUB_API_URL = "https://api.github.com"
@@ -25,7 +29,6 @@ DEFAULT_GITHUB_PREFLIGHT_TIMEOUT_SECONDS = 10.0
 ERROR_SCHEMA = "zj-research-cli-error/v1"
 PREFLIGHT_SCHEMA = "zj-research-github-preflight/v1"
 COLLECTION_STATUS_SCHEMA = "zj-research-collection-status/v1"
-ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts"
 
 
 class ResearchCliError(RuntimeError):
@@ -131,7 +134,7 @@ def classify_compiler_failure(stderr: str, operation: str, returncode: int | Non
             phase="compiler",
             details=details,
             recovery=[
-                "verify the pinned compiler artifact",
+                "verify the compiler supplied via ZJ_RESEARCH_CLI",
                 "do not treat the failed run as a sealed ledger",
                 "rerun after the runtime is repaired",
             ],
@@ -251,7 +254,7 @@ def github_preflight(
         headers={
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "ZAgentic-zj-research",
+            "User-Agent": "zj-research-adapter",
             **({"Authorization": f"Bearer {configured_token}"} if configured_token else {}),
         },
     )
@@ -551,108 +554,22 @@ def execute_request(
     return response, collection_run_status(request, "fresh-collection", preflight=preflight_result)
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as content:
-        for chunk in iter(lambda: content.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def compiler_cache() -> Path:
-    configured = os.environ.get("ZJ_RESEARCH_COMPILER_CACHE")
-    if configured:
-        return Path(configured).expanduser()
-    if os.name == "nt" and os.environ.get("LOCALAPPDATA"):
-        return Path(os.environ["LOCALAPPDATA"]) / "zj-research" / "compiler"
-    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "zj-research" / "compiler"
-
-
-def artifact_command(kind: str, protocol: str) -> list[str]:
-    lock_path = ARTIFACTS / "compiler-lock.json"
-    if not lock_path.is_file():
-        raise RuntimeError(f"bundled compiler lock is unavailable: {lock_path}")
-    lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    protocols = lock.get("protocols")
-    executables = lock.get("executables")
-    if (
-        lock.get("schema") != LOCK_SCHEMA
-        or not isinstance(protocols, dict)
-        or protocols.get(kind) != protocol
-        or not isinstance(executables, dict)
-    ):
-        raise RuntimeError("bundled compiler lock is incompatible")
-    executable_path = executables.get(kind)
-    if not isinstance(executable_path, str) or Path(executable_path).as_posix() != executable_path:
-        raise RuntimeError("bundled compiler lock has an invalid executable")
-    executable_relative = Path(executable_path)
-    if executable_relative.is_absolute() or ".." in executable_relative.parts:
-        raise RuntimeError("bundled compiler lock has an invalid executable")
-    artifact_name = lock.get("artifact")
-    expected_hash = lock.get("sha256")
-    if not isinstance(artifact_name, str) or Path(artifact_name).name != artifact_name:
-        raise RuntimeError("bundled compiler lock has an invalid artifact name")
-    if not isinstance(expected_hash, str) or len(expected_hash) != 64:
-        raise RuntimeError("bundled compiler lock has an invalid SHA-256")
-    try:
-        int(expected_hash, 16)
-    except ValueError as error:
-        raise RuntimeError("bundled compiler lock has an invalid SHA-256") from error
-    minimum_node_major = lock.get("minimumNodeMajor")
-    if not isinstance(minimum_node_major, int) or minimum_node_major < 1:
-        raise RuntimeError("bundled compiler lock has an invalid Node.js requirement")
-    try:
-        node_version = subprocess.run(["node", "--version"], text=True, capture_output=True, check=False)
-    except FileNotFoundError as error:
-        raise RuntimeError("Node.js is unavailable for the bundled compiler") from error
-    if node_version.returncode != 0:
-        raise RuntimeError("Node.js is unavailable for the bundled compiler")
-    try:
-        version = node_version.stdout.strip()
-        node_major = int((version[1:] if version.startswith("v") else version).split(".", 1)[0])
-    except ValueError as error:
-        raise RuntimeError("Node.js returned an invalid version") from error
-    if node_major < minimum_node_major:
-        raise RuntimeError(f"bundled compiler requires Node.js {minimum_node_major} or newer")
-    artifact = ARTIFACTS / artifact_name
-    if not artifact.is_file():
-        raise RuntimeError(f"bundled compiler artifact is unavailable: {artifact}")
-    actual_hash = file_sha256(artifact)
-    if actual_hash != expected_hash:
-        raise RuntimeError(f"bundled compiler artifact SHA-256 mismatch: expected {expected_hash}, got {actual_hash}")
-    target = compiler_cache() / expected_hash
-    executable = target / executable_relative
-    if not executable.is_file():
-        target.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix=f"{expected_hash}.tmp-", dir=target.parent) as directory:
-            temporary = Path(directory)
-            with tarfile.open(artifact, "r:gz") as archive:
-                for member in archive.getmembers():
-                    path = Path(member.name)
-                    invalid_kind = not member.isfile() and not member.isdir()
-                    if path.is_absolute() or ".." in path.parts or member.issym() or member.islnk() or invalid_kind:
-                        raise RuntimeError("bundled compiler artifact contains an unsafe path")
-                if hasattr(tarfile, "data_filter"):
-                    archive.extractall(temporary, filter="data")
-                else:
-                    archive.extractall(temporary)
-            for required in executables.values():
-                required_path = Path(required) if isinstance(required, str) else Path("..")
-                if required_path.is_absolute() or ".." in required_path.parts or not (temporary / required_path).is_file():
-                    raise RuntimeError("bundled compiler artifact has no required executable")
-            try:
-                os.replace(temporary, target)
-            except OSError:
-                if not executable.is_file():
-                    raise
-    return ["node", str(executable)]
-
-
 def command() -> list[str]:
+    """Resolve the research compiler command.
+
+    zj-research is a protocol adapter. It does not bundle a compiler and carries
+    no vendor tie; the caller must supply a zj-research-cli/v1 compatible
+    compiler through ZJ_RESEARCH_CLI. Failing that, fail loudly with the setup
+    pointer rather than silently falling back to a vendored artifact.
+    """
     configured = os.environ.get("ZJ_RESEARCH_CLI")
-    if configured:
-        return shlex.split(configured)
-    return artifact_command("research", PROTOCOL)
+    if not configured:
+        raise RuntimeError(
+            "ZJ_RESEARCH_CLI is not set. zj-research is a protocol adapter and requires an "
+            "external research compiler that speaks zj-research-cli/v1. Provide it, for example: "
+            'export ZJ_RESEARCH_CLI="node /path/to/compiler/lib/bin.js"'
+        )
+    return shlex.split(configured)
 
 
 def main() -> int:
@@ -752,7 +669,7 @@ def invoke(executable: list[str], request: dict[str, object]) -> dict[str, objec
             operation=operation,
             phase="adapter",
             details={"executable": executable[0] if executable else None},
-            recovery=["run the adapter check", "repair the pinned compiler installation"],
+            recovery=["run the adapter check", "repair the compiler supplied via ZJ_RESEARCH_CLI"],
         ) from error
     except OSError as error:
         raise ResearchCliError(
@@ -761,7 +678,7 @@ def invoke(executable: list[str], request: dict[str, object]) -> dict[str, objec
             operation=operation,
             phase="adapter",
             details={"reason": str(error)},
-            recovery=["run the adapter check", "repair the pinned compiler installation"],
+            recovery=["run the adapter check", "repair the compiler supplied via ZJ_RESEARCH_CLI"],
         ) from error
     if completed.returncode != 0:
         raise classify_compiler_failure(completed.stderr, operation, completed.returncode)
@@ -774,7 +691,7 @@ def invoke(executable: list[str], request: dict[str, object]) -> dict[str, objec
             operation=operation,
             phase="compiler",
             details={"stdoutPrefix": completed.stdout[:500]},
-            recovery=["verify the pinned compiler artifact", "rerun the operation"],
+            recovery=["verify the compiler supplied via ZJ_RESEARCH_CLI", "rerun the operation"],
         ) from error
     if not isinstance(response, dict):
         raise ResearchCliError(
@@ -783,7 +700,7 @@ def invoke(executable: list[str], request: dict[str, object]) -> dict[str, objec
             operation=operation,
             phase="compiler",
             details={"responseType": type(response).__name__},
-            recovery=["verify the pinned compiler artifact", "rerun the operation"],
+            recovery=["verify the compiler supplied via ZJ_RESEARCH_CLI", "rerun the operation"],
         )
     expected_protocol = request.get("protocol")
     if response.get("protocol") != expected_protocol:
@@ -809,7 +726,7 @@ def invoke(executable: list[str], request: dict[str, object]) -> dict[str, objec
             operation=operation,
             phase="compiler",
             details={"responseKeys": sorted(response.keys())},
-            recovery=["verify the pinned compiler artifact", "rerun the operation"],
+            recovery=["verify the compiler supplied via ZJ_RESEARCH_CLI", "rerun the operation"],
         )
     return response
 

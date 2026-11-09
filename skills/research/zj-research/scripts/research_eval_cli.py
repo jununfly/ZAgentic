@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Validated adapter for the versioned ZHarness research evaluation CLI."""
+"""Validated adapter for the zj-research-eval-cli/v1 protocol.
+
+Like the research adapter, this is a protocol adapter: it requires an external
+evaluation compiler (a zj-research-eval-cli/v1 implementation) supplied via the
+ZJ_RESEARCH_EVAL_CLI environment variable. It bundles no compiler and is
+vendor-neutral.
+"""
 
 import argparse
 import json
@@ -8,17 +14,25 @@ import shlex
 import sys
 from pathlib import Path
 
-from research_cli import artifact_command, invoke
+from research_cli import invoke
 
 PROTOCOL = "zj-research-eval-cli/v1"
 REQUIRED_OPERATIONS = {"validate-assets", "calibrate-judge"}
 
 
 def command() -> list[str]:
+    """Resolve the evaluation compiler command.
+
+    Requires ZJ_RESEARCH_EVAL_CLI; no bundled fallback.
+    """
     configured = os.environ.get("ZJ_RESEARCH_EVAL_CLI")
-    if configured:
-        return shlex.split(configured)
-    return artifact_command("evaluation", PROTOCOL)
+    if not configured:
+        raise RuntimeError(
+            "ZJ_RESEARCH_EVAL_CLI is not set. The evaluation adapter is a protocol adapter and "
+            "requires an external evaluation compiler that speaks zj-research-eval-cli/v1. Provide it, "
+            'for example: export ZJ_RESEARCH_EVAL_CLI="node /path/to/compiler/lib/eval.js"'
+        )
+    return shlex.split(configured)
 
 
 def read_json(path: Path) -> object:

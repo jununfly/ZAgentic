@@ -222,11 +222,12 @@ The versioned research component that accepts one shared comparison brief, fixes
 _Avoid_: research agent, GitHub scraper, report generator
 
 **Shared research runtime seam**:
-The canonical `zj-research/scripts/` adapters and compiler artifact lock used
-by research consumers. A sibling `zj-research` skill is the default runtime;
-an independently installed consumer resolves the same implementation through
-`ZJ_RESEARCH_RUNTIME` rather than copying adapters.
-_Avoid_: duplicated adapter, report-local compiler, prompt-only fallback
+The canonical `zj-research/scripts/` adapters used by research consumers. They
+own the protocols and validation, but carry no compiler: the executable comes
+from the caller's **External compiler pointer**. A sibling `zj-research` skill is
+the default adapter runtime; an independently installed consumer resolves the
+same implementation through `ZJ_RESEARCH_RUNTIME` rather than copying adapters.
+_Avoid_: duplicated adapter, report-local compiler, prompt-only fallback, bundled compiler
 
 **Sealed ledger**:
 An immutable `zj-verified-evidence-ledger/v1` result containing **Canonical evidence**, uncovered repository/criterion pairs, navigation diagnostics, and the normalized brief fingerprint. Reports may cite it but cannot add evidence to it.
@@ -268,7 +269,7 @@ content only, so punctuation, spacing, and case cannot buy a pass. Placeholders
 such as `TBD` or `待定` in any field are also rejected. Paraphrase that names no
 mechanism escapes the gate and is a review responsibility, not a gate check.
 This is KEP-753 step 4, kept separate from the validation plan so residual
-ownership stays explicit. The pinned ZHarness compiler does not render it — see
+ownership stays explicit. The externally supplied compiler does not render it — see
 **Risk-register coverage**.
 _Avoid_: risk prose, risk section, recommendation follow-up, risk table
 
@@ -276,9 +277,9 @@ _Avoid_: risk prose, risk section, recommendation follow-up, risk table
 The `riskRegisterCoverage` check inside the Technical Research Quality Gate. It
 passes only when the Report IR carries a fully populated Risk Register, and
 reports the entry count as `counts.riskRegister`. It is a contract check, not a
-render: the compiler that produces Markdown is the ZHarness artifact pinned by
-`zj-research/artifacts/compiler-lock.json`, a different repository, and it does
-not render `riskRegister`. Passing the check therefore does not make the
+render: the compiler that produces Markdown is supplied by the caller through
+`ZJ_RESEARCH_CLI`, outside this repository, and it does not render
+`riskRegister`. Passing the check therefore does not make the
 register visible to a reader; the rendered surface is `recommendations`.
 _Avoid_: risk review, human risk sign-off, rendered risk table
 
@@ -337,7 +338,7 @@ source of truth.
 _Avoid_: framework-core adoption, embedded platform
 
 **Research CLI protocol**:
-The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and the versioned standalone ZHarness compiler. Missing or incompatible executables fail loudly; there is no prompt-only fallback for technical comparisons.
+The `zj-research-cli/v1` stdin/stdout JSON protocol between ZAgentic skills and any externally supplied compiler implementation. A missing or incompatible executable fails loudly; there is no bundled fallback or prompt-only path for technical comparisons.
 _Avoid_: shell wrapper, internal API, compatibility mode
 
 **GitHub quota preflight**:
@@ -353,9 +354,9 @@ fresh collection, an explicitly reused matching sealed ledger, or a blocked
 collection, and keeps the current brief separate from any older ledger.
 _Avoid_: ledger, compiler result, fallback result
 
-**Compiler artifact lock**:
-The `zj-research-compiler-lock/v2` record that fixes the bundled research and evaluation executables to one ZHarness commit and artifact SHA-256. ZAgentic verifies it before extracting both executables into a hash-named user cache; `ZJ_RESEARCH_CLI` and `ZJ_RESEARCH_EVAL_CLI` are explicit local-development overrides.
-_Avoid_: latest compiler, PATH fallback, vendored source
+**External compiler pointer**:
+The `ZJ_RESEARCH_CLI` / `ZJ_RESEARCH_EVAL_CLI` environment variables through which the caller supplies a `zj-research-cli/v1` / `zj-research-eval-cli/v1` implementation. `zj-research` bundles no compiler, pins no upstream version, and refuses to run when a pointer is unset; choosing and upgrading the compiler belongs to the caller.
+_Avoid_: compiler artifact lock, bundled tarball, PATH fallback, vendored source
 
 **Research evaluation assets**:
 The immutable rubric set, per-case human annotation set, and blind-Judge calibration set resolved by one versioned keyless corpus. Every quality case resolves to human truth, and only a calibrated Judge configuration contributes results to a quality baseline.
