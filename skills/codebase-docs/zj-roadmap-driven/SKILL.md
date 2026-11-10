@@ -61,7 +61,7 @@ WorkItem 的状态、决策或租约。
 Edge put/remove/replace、Decision append 和 Trace disposition。已迁移的
 roadmap 可用 `migrate-types --output` 将带 children 的 plan 节点分类为
 `group`、叶节点分类为 `work`；有 Placements 时 `tree`、`section`、`render`
-从 Placement 事实投影，并以文本 `↪ reference:` 显示引用上下文。
+从 Placement 事实投影，并以文本 `↪ reference (same WorkItem, not a copy):` 显示引用上下文（`↪` 仅为冗余视觉提示，语义由文字承载）。
 ChangeSet 也可带 `--scope <node_uid>`；preview 会展开 Edge/Placement 的
 不透明引用并拒绝所有越出该子树的 Work、Decision、Trace 或拓扑端点，scope
 同时进入 approved digest。
