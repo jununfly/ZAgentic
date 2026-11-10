@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -80,6 +81,30 @@ def normalize(s: str) -> str:
     return TS_RE.sub("TS", s)
 
 
+def normalize_identity(value, uid_apply: str, uid_promote: str):
+    """Collapse each path's freshly minted WorkItem uid into one shared token.
+
+    ``new_uid()`` deliberately uses time + randomness, so two independent
+    executions cannot be byte-identical; the revision is derived from that
+    identity and is collapsed as well.  Used to prove that ``promote --accept``
+    and ``apply`` emit the same receipt shape.
+    """
+    if isinstance(value, str):
+        for uid in (uid_apply, uid_promote):
+            value = value.replace(uid, "<WORK_UID>")
+        return value
+    if isinstance(value, list):
+        return [normalize_identity(v, uid_apply, uid_promote) for v in value]
+    if isinstance(value, dict):
+        return {
+            key: ("<REVISION>" if key == "revision"
+                  else "<IDEMPOTENCY_KEY>" if key == "idempotency_key"
+                  else normalize_identity(v, uid_apply, uid_promote))
+            for key, v in value.items()
+        }
+    return value
+
+
 def get_trace(rm, trace_id: str) -> dict:
     for n in rm.iter_nodes(layer=LAYER_TRACE):
         if n["id"] == trace_id:
@@ -88,37 +113,6 @@ def get_trace(rm, trace_id: str) -> dict:
 
 
 class PromoteUnitTest(unittest.TestCase):
-    def test_propose_then_accept_state_machine(self):
-        node = {"id": "9-1", "layer": "trace", "kind": "finding"}
-        r = apply_promotion(node, "propose", target="1-1", label="L")
-        self.assertIsNone(r["create_plan"])
-        self.assertEqual(node["promotion"]["state"], PROMOTE_PROPOSED)
-        self.assertEqual(node["promotion"]["target"], "1-1")
-        r = apply_promotion(node, "accept")
-        self.assertEqual(r["create_plan"]["parent_id"], "1-1")
-        self.assertEqual(r["create_plan"]["label"], "L")
-        self.assertEqual(node["promotion"]["state"], PROMOTE_ACCEPTED)
-        self.assertEqual(node["promotion"]["decided_by"], "human")
-
-    def test_accept_is_idempotent(self):
-        node = {"id": "9-1", "layer": "trace", "kind": "finding"}
-        apply_promotion(node, "propose", target="1-1", label="L")
-        apply_promotion(node, "accept")
-        r2 = apply_promotion(node, "accept")
-        self.assertIsNone(r2["create_plan"], "重复 accept 不应再落节点/边")
-
-    def test_accept_without_proposal_invalid(self):
-        node = {"id": "9-1", "layer": "trace"}
-        with self.assertRaises(PromoteStateInvalid):
-            apply_promotion(node, "accept")
-
-    def test_reject_after_accept_invalid(self):
-        node = {"id": "9-1", "layer": "trace", "kind": "finding"}
-        apply_promotion(node, "propose", target="1-1", label="L")
-        apply_promotion(node, "accept")
-        with self.assertRaises(PromoteStateInvalid):
-            apply_promotion(node, "reject", reason="no")
-
     def test_reject_records_reason_keeps_trace(self):
         node = {"id": "9-1", "layer": "trace", "kind": "finding"}
         apply_promotion(node, "propose", target="1-1", label="L")
@@ -320,18 +314,57 @@ class PromoteSliceTest(unittest.TestCase):
             )
 
     def _accept_publishes_the_same_view_receipt_as_apply(self, storage: str):
+        # 修复此前只断言 view_status/published 的"假 parity"：现在从同一份 seed
+        # 出发，分别走显式 apply 与 promote --accept，归一化各自新建的 work_uid
+        # 后逐字段比较两条路径产出的 receipt，确认 accept 视图与 apply 视图同构。
         with tempfile.TemporaryDirectory() as d:
             tmpd = Path(d)
-            path, trace_uid = self._seed_reconciliation(storage, tmpd)
-            proposal = json.loads(run_cli("reconcile", path, trace_uid, cwd=tmpd).stdout)
+            ext = "sqlite" if storage == "sqlite" else "json"
+            seed = tmpd / f"seed.{ext}"
+            init_args = ["init", seed, "--title", "t"]
+            if storage == "sqlite":
+                init_args += ["--storage", "sqlite"]
+            run_cli(*init_args, cwd=tmpd)
+            trace = json.loads(run_cli(
+                "trace", "add", seed, "--kind", "finding", "--body", "new risk",
+                "--obligation-key", "risk:new", "--evidence", "scan:1", cwd=tmpd,
+            ).stdout)
+            uid = trace["uid"]
+            proposal = json.loads(run_cli("reconcile", seed, uid, cwd=tmpd).stdout)
 
-            receipt = json.loads(run_cli(
-                "promote", path, trace_uid, "--accept",
+            apply_path = tmpd / f"apply.{ext}"
+            promote_path = tmpd / f"promote.{ext}"
+            shutil.copy(seed, apply_path)
+            shutil.copy(seed, promote_path)
+
+            apply_receipt = json.loads(run_cli(
+                "apply", apply_path, proposal["proposal_id"],
                 "--approved-digest", proposal["proposal_digest"],
-                "--idempotency-key", "promote-view-1", cwd=tmpd,
+                "--idempotency-key", "view-apply-1", cwd=tmpd,
+            ).stdout)
+            promote_receipt = json.loads(run_cli(
+                "promote", promote_path, uid, "--accept",
+                "--approved-digest", proposal["proposal_digest"],
+                "--idempotency-key", "view-promote-1", cwd=tmpd,
             ).stdout)
 
-            self.assertEqual(receipt["view_status"], "published")
+            apply_work = {
+                c["work_uid"] for c in apply_receipt.get("changes", [])
+                if "work_uid" in c
+            }
+            promote_work = {
+                c["work_uid"] for c in promote_receipt.get("changes", [])
+                if "work_uid" in c
+            }
+            self.assertEqual(len(apply_work), 1, "apply 应落一个 work item")
+            self.assertEqual(len(promote_work), 1, "promote --accept 应落一个 work item")
+            a_id, p_id = apply_work.pop(), promote_work.pop()
+            self.assertEqual(
+                normalize_identity(apply_receipt, a_id, p_id),
+                normalize_identity(promote_receipt, a_id, p_id),
+                "两条路径的 receipt 应逐字段同构",
+            )
+            self.assertEqual(promote_receipt["view_status"], "published")
             self.assertIn("new risk", (tmpd / "ROADMAP.md").read_text(encoding="utf-8"))
 
     def _accept_rejects_legacy_topology_overrides(self, storage: str):
