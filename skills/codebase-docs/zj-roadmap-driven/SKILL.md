@@ -151,6 +151,12 @@ Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status 
 决策仍用 `decide` 落盘、结构变更仍走 `changeset preview/apply`。
 无信号时两个 Markdown 视图逐字节不变。命令细节见 [CLI 参考](references/roadmap-cli.md)。
 
+**信号 → 候选 ChangeSet（#245 切片 2）：** `signals --as-changeset` 把信号转成**候选**
+ChangeSet（仍是只读输出，不落盘）：每条信号先落一条 `decision.append`，`cleared_exit_criteria`
+信号在显式给出 `--criterion <文本>` 时再补 `work.patch(exit_criteria)`。Human 拿到候选后
+按需编辑（尤其判据内容，绝不替人猜），再走 `changeset preview/apply` 一次确认——复用既有
+digest / `--idempotency-key` / `--scope`，不开第二套写入命令。该 flag 不增命令数。
+
 ## Scope gate — before any node write or project edit
 
 先判断当前 roadmap 的角色，再把节点置为 `in_progress` 或修改项目文件：

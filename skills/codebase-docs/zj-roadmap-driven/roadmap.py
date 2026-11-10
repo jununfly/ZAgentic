@@ -1000,6 +1000,42 @@ def orchestration_signals(nodes) -> dict:
     }
 
 
+def signal_to_changeset(signal: dict, resolve_uid, criterion: Optional[str] = None) -> list:
+    """把一条只读信号转成*候选* ChangeSet（list of change dicts）。
+
+    只读、不落盘。Human/Agent 拿到候选后按需编辑——尤其判据内容**绝不替人猜**——
+    再走 `changeset preview` + `changeset apply` 完成那一次确认。这就是 #245 切片 2
+    的「信号 → 候选 ChangeSet → 一次 Human 确认」路径；它复用了既有的 digest /
+    `--idempotency-key` / `--scope`，不开第二套 canonical 写入命令。
+
+    `resolve_uid` 把信号里的显示 id 翻成节点的 uid（与 `changeset` 其余 kind 引用
+    同一套 uid 约定）。
+
+    - `cleared_exit_criteria`：给出 criterion 时产出 `work.patch(exit_criteria)`
+      + `decision.append`；否则只产出 `decision.append`（由 Human 决定补判据还是弃判据）。
+    - 其余信号：只产出 `decision.append` 记录这次编排决策，具体结构改动仍由
+      Human 显式决定（不自动改拓扑、不猜产品事实）。
+    """
+    kind = signal["kind"]
+    uid = str(resolve_uid(str(signal["node"])))
+    decision = {
+        "kind": "decision.append",
+        "node_uid": uid,
+        "question": signal["detail"],
+        "answer": signal.get("suggested_action", ""),
+    }
+    if kind == "cleared_exit_criteria" and criterion:
+        return [
+            {
+                "kind": "work.patch",
+                "work_uid": uid,
+                "patch": {"exit_criteria": [str(criterion)]},
+            },
+            decision,
+        ]
+    return [decision]
+
+
 def format_orchestration_signal_entry(sig: dict) -> str:
     """一条可确认的 next-action：谁、什么状态、建议怎么做（只写命令，不替人跑）。"""
     return (f"- {sig['node']}. {sig['label']} [{sig['kind']}] — {sig['detail']}"
@@ -2789,10 +2825,22 @@ class Roadmap:
             patch = change.get("patch")
             if not isinstance(patch, dict) or not patch:
                 raise ChangeSetInvalid("work.patch 需要非空 patch object")
-            allowed = {"label", "status", "mode", "notes", "obligation_key", "node_type"}
+            # exit_criteria 与 clear_exit_criteria 显式区分：append 与 clear 互斥，
+            # 绝不替人猜默认意图（见 #245 切片 2）。
+            allowed = {
+                "label", "status", "mode", "notes", "obligation_key", "node_type",
+                "exit_criteria", "clear_exit_criteria",
+            }
             unknown = sorted(set(patch) - allowed)
             if unknown:
                 raise ChangeSetInvalid("work.patch 不允许字段: " + ", ".join(unknown))
+            clear = patch.get("clear_exit_criteria")
+            if clear not in (None, False):
+                if "exit_criteria" in patch and patch["exit_criteria"]:
+                    raise ChangeSetInvalid(
+                        "work.patch 同时带 clear_exit_criteria 与非空 exit_criteria："
+                        "clear 与 append 互斥，请拆成两次 work.patch 或只保留一个意图"
+                    )
             update_kwargs = {key: patch[key] for key in ("label", "status", "mode", "notes") if key in patch}
             if update_kwargs:
                 self.update_node(node_id, **update_kwargs)
@@ -2802,6 +2850,14 @@ class Roadmap:
                     if key == "obligation_key" and not str(patch[key]).strip():
                         raise ChangeSetInvalid("obligation_key 不能是空文本")
                     node[key] = patch[key]
+            # exit_criteria：clear（清空）先于 append（追加），语义显式、不猜默认。
+            if clear not in (None, False):
+                node["exit_criteria"] = []
+            if "exit_criteria" in patch:
+                value = patch["exit_criteria"]
+                if not isinstance(value, list):
+                    raise ChangeSetInvalid("work.patch.exit_criteria 必须是 list")
+                node.setdefault("exit_criteria", []).extend(value)
             return change
 
         if kind == "work.coalesce":

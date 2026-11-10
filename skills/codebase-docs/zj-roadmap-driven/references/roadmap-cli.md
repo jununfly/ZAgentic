@@ -346,6 +346,14 @@ process-state 权威边界之外（见 `SKILL.md` 的权威边界小节）。
 `suggested_action` 只是文本，**把命令写出来 ≠ 替人跑**。编排结果仍由 Human 用
 `decide` + `changeset preview/apply`（preview + approved digest）显式落盘。
 
+`signals --as-changeset` 把信号转成**候选** ChangeSet（仍是只读输出，不落盘）：每条
+信号先落一条 `decision.append` 记录决策，`cleared_exit_criteria` 信号在显式给出
+`--criterion <文本>` 时再补一个 `work.patch(exit_criteria)`。Human 拿到候选后按需
+编辑（尤其判据内容，**绝不替人猜**），再走 `changeset preview/apply` 完成一次确认——
+这就是 #245 切片 2 的「信号 → 候选 ChangeSet → 一次 Human 确认」收敛路径：复用既有
+digest / `--idempotency-key` / `--scope`，不开第二套 canonical 写入命令。该 flag 不
+增加命令总数，也不把 `signals` 变成写命令（`signals` 仍在 LOCK_COMMANDS 之外）。
+
 `render` 的轻量视图把信号折成 `<details>` 摘要，`section` 平铺成 `### 编排信号`
 供 grep；两个视图共用同一份条目模板与 5 条上限。**无信号时两者输出逐字节不变**，
 由 `test_orchestration_signals.py` 的 `compose_*` 字节断言与无信号图 CLI 控制例、
