@@ -603,7 +603,10 @@ def cmd_promote(args: dict):
         idempotency_key = args.get("idempotency-key")
         if approved_digest in (None, "true"):
             raise CliUsageError(
-                "promote --accept requires --approved-digest <digest>"
+                "promote --accept requires --approved-digest <digest>；"
+                "迁移路径：reconcile <roadmap> <trace_uid> 取得 proposal_digest，"
+                "再执行 promote <roadmap> <trace_uid> --accept "
+                "--approved-digest <digest> --idempotency-key <key>"
             )
         if idempotency_key in (None, "true"):
             raise CliUsageError(

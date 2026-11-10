@@ -1823,16 +1823,16 @@ def apply_promotion(
     """把一次 promote 动作应用到 trace 节点的 `promotion` 字段。
 
     两 carrier 共用这一份语义——`promotion` 状态机若各写一遍就是 `remove-decision`
-    那类漂移。函数只改传入的 `node` dict（trace 节点的物理落盘由调用方负责），返回
-    一个副作用描述，告诉 carrier 要不要去落一个 plan 节点：
-
-        {"create_plan": {"parent_id": <显示 id>, "label": <str>} | None}
+    那类漂移。函数只原地修改传入的 `node` dict（trace 节点的物理落盘由调用方负责），
+    不再返回任何副作用描述：真实拓扑写入（create_plan / add_node / add_edge）已被
+    彻底移除，统一走 reviewed reconciliation + ChangeSet apply。
 
     - propose（默认）：写 `state=proposed` + target/label + proposed_by/at；exit 0，
       不落节点。重复 propose（同 target 同 label）幂等：已 accepted 的不降级、已
       proposed 的不再刷时间戳。
-    - accept 仍保留为旧数据的纯状态解释能力，但新的 `Roadmap.promote` API 会拒绝
-      直接 accept；真实拓扑写入必须经过 reviewed reconciliation + ChangeSet apply。
+    - accept 已彻底移除：直接落拓扑不再被支持，调用会落到末尾的 `ValueError`。
+      真实写入必须经过 reviewed reconciliation + ChangeSet apply（见 `Roadmap.promote`
+      对 accept 抛出的 `E_RECONCILIATION_REQUIRED` 与 `apply_reviewed_reconciliation`）。
     - reject（Human）：记 `state=rejected` + reason，保留痕迹不物理删除；已 rejected
       幂等。对已 accepted 的 proposal 拒绝是 E_PROMOTE_STATE_INVALID（节点已进地图）。
     """
@@ -1843,7 +1843,7 @@ def apply_promotion(
     if action == "propose":
         if state == PROMOTE_ACCEPTED:
             # 已落地的 proposal 不再接受改动（避免无声降级）。
-            return {"create_plan": None}
+            return
         node["promotion"] = {
             "state": PROMOTE_PROPOSED,
             "target": target,
@@ -1854,37 +1854,11 @@ def apply_promotion(
             "decided_at": None,
             "reason": None,
         }
-        return {"create_plan": None}
-
-    if action == "accept":
-        if state == PROMOTE_ACCEPTED:
-            return {"create_plan": None}  # 幂等：不落第二个节点 / 不写第二条边。
-        # None（从未 proposal）或 rejected 都算"无有效 proposal"，应报状态机错误，
-        # 而不是掉到下面的 target 检查去报 E_PROMOTE_TARGET_INVALID。
-        if state != PROMOTE_PROPOSED:
-            raise PromoteStateInvalid(
-                f"无法 accept 一个处于 {state} 状态的 proposal（trace={node.get('id')}），"
-                f"先 promote --under 给出 proposal"
-            )
-        parent_id = target or promo.get("target")
-        if not parent_id:
-            raise PromoteTargetInvalid("accept 缺少 proposal target（先 promote --under）")
-        lbl = label or promo.get("label") or f"promoted:{node.get('kind')}"
-        node["promotion"] = {
-            "state": PROMOTE_ACCEPTED,
-            "target": parent_id,
-            "label": lbl,
-            "proposed_by": promo.get("proposed_by"),
-            "proposed_at": promo.get("proposed_at"),
-            "decided_by": DECIDER_HUMAN,
-            "decided_at": now,
-            "reason": None,
-        }
-        return {"create_plan": {"parent_id": parent_id, "label": lbl}}
+        return
 
     if action == "reject":
         if state == PROMOTE_REJECTED:
-            return {"create_plan": None}  # 幂等：不追加痕迹条目。
+            return  # 幂等：不追加痕迹条目。
         if state == PROMOTE_ACCEPTED:
             raise PromoteStateInvalid(
                 f"无法 reject 已 accepted 的 proposal（trace={node.get('id')}），节点已进地图"
@@ -1899,7 +1873,7 @@ def apply_promotion(
             "decided_at": now,
             "reason": reason,
         }
-        return {"create_plan": None}
+        return
 
     raise ValueError(f"未知 promote 动作: {action}")
 
@@ -3289,7 +3263,10 @@ class Roadmap:
             raise InvalidLayer(f"promote 只作用于 trace 节点，{trace_id} 是 plan 节点")
         if action == "accept":
             raise ReconciliationRequired(
-                "direct promote accept 已禁用；请先 reconcile，再通过 reviewed proposal digest apply"
+                "direct promote accept 已禁用；请先 reconcile，再通过 reviewed proposal digest apply。"
+                "迁移路径：reconcile <roadmap> <trace_uid> 取得 proposal_id 与 proposal_digest，"
+                "然后 apply <roadmap> <proposal_id> --approved-digest <digest> "
+                "--idempotency-key <key>"
             )
         if action == "propose":
             target_id = self.resolve_node(target) if target is not None else None
@@ -3297,16 +3274,9 @@ class Roadmap:
                 tnode = self.get_node(target_id)
                 if tnode.get("layer", LAYER_PLAN) != LAYER_PLAN:
                     raise PromoteTargetInvalid(f"--under 目标 {target_id} 不是 plan 节点")
-            result = apply_promotion(node, action, target=target_id, label=label, reason=reason)
+            apply_promotion(node, action, target=target_id, label=label, reason=reason)
         else:
-            result = apply_promotion(node, action, target=target, label=label, reason=reason)
-        if result.get("create_plan"):
-            spec = result["create_plan"]
-            new_node = self.add_node(spec["parent_id"], spec["label"])
-            # derives-from：定义是 trace → plan（端点落盘 uid，与既有边同纪律）。
-            self.add_edge(trace_id, new_node["id"], EDGE_DERIVES_FROM)
-            self.save()
-            return new_node
+            apply_promotion(node, action, target=target, label=label, reason=reason)
         self.save()
         return node
 
