@@ -403,6 +403,18 @@ def validate_sealed_ledger(
             details={"missing": missing},
             recovery=["provide a complete sealed ledger", "rerun fresh collection"],
         )
+    # 机器可检的形状不变量：repositories 须为对象数组，不得被标量估计替换
+    # （「字段不得被模型估计替换」的语义校验属 review 层职责，见 research-cli.md 边界注记）。
+    for index, repo in enumerate(ledger.get("repositories", [])):
+        if not isinstance(repo, dict):
+            raise ResearchCliError(
+                "sealed ledger repositories must be objects owned by the ledger, not scalar estimates",
+                code=failure_code,
+                operation="collect",
+                phase=failure_phase,
+                details={"repositoryIndex": index},
+                recovery=["provide repository objects sourced from the verified evidence ledger", "rerun fresh collection"],
+            )
     if brief is not None:
         expected = brief_fingerprint(brief)
         actual = ledger["briefFingerprint"]
