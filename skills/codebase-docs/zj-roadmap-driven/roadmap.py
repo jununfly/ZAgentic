@@ -911,6 +911,134 @@ def render_open_questions_plain(items) -> str:
     return _chain_block(lines, "\n### 待决问题\n\n", "\n")
 
 
+# ── 编排信号（只读 advisory，#245 切片 1） ────────────────────
+#
+# 信号只回答「这张 roadmap 自身的结构里，有没有值得 Human 确认的编排点」，
+# 不回答「产品事实 / 判据是否成立」——后者要代码、测试或 runtime evidence，
+# 属于 process-state 权威边界之外（SKILL.md:78-82）。三条规则都是纯字段判定：
+# 没有文本比对、没有 LLM 推断，也没有「大概需要」的启发式。
+#
+# 与阻塞链 / 待决问题同一条纪律：无信号时渲染函数返回空串，md 逐字节不变。
+
+ORCHESTRATION_SIGNAL_SCHEMA = "zj-orchestration-signals/v1"
+ORCHESTRATION_SIGNAL_LIMIT = 5
+"""md 信号条目的上限；与 BLOCKED_CHAIN_LIMIT 同一条「不膨胀」验收。"""
+
+
+def orchestration_signal_items(nodes) -> list:
+    """确定性编排信号。nodes 是 (display_id, node_dict) 的可迭代。
+
+    两个 carrier 只负责喂自己的 plan 节点；排序、文案、上限全在这里，
+    所以不存在「两个出口各写一份然后漂移」的位置。
+    """
+    items = []
+    for nid, node in nodes:
+        status = node.get("status")
+        label = node.get("label", "")
+
+        # 1) 声称完成，但仍挂着待人工决策的问题。
+        if status == STATUS_COMPLETED and node.get("open_question"):
+            items.append({
+                "node": nid,
+                "label": label,
+                "kind": "completed_with_open_question",
+                "detail": "节点已标记 completed，但仍挂着待人工决策的 open_question",
+                "suggested_action": "复核是否要拆 sibling 或重开；结论先用 decide 记录，再按需走 changeset preview/apply",
+            })
+
+        # 2) 探索预算触顶：下一步 add / 重开会被 E_BUDGET_EXCEEDED 挡下。
+        budget = node.get("budget") or {}
+        reasons = []
+        max_children = budget.get("max_children")
+        if max_children is not None:
+            used = len(node.get("children") or [])
+            if used >= int(max_children):
+                reasons.append(f"子节点 {used}/{max_children}")
+        max_rounds = budget.get("max_rounds")
+        if max_rounds is not None:
+            rounds = int(node.get("rounds") or 0)
+            if rounds >= int(max_rounds):
+                reasons.append(f"开工轮次 {rounds}/{max_rounds}")
+        if reasons:
+            items.append({
+                "node": nid,
+                "label": label,
+                "kind": "budget_exhausted",
+                "detail": f"探索预算已触顶（{'、'.join(reasons)}），再 add 或重开会被 E_BUDGET_EXCEEDED 拒绝",
+                "suggested_action": "决定提高 --max-children/--max-rounds、收敛现有子节点，或拆出 sibling；决定先落 decide",
+            })
+
+        # 3) 只报「被显式清空」的判据（--clear-exit-criteria 会写 []），
+        #    不报「从未设置」——后者在新建的图上遍地都是，会把信号节变成噪声。
+        if ("exit_criteria" in node and not node.get("exit_criteria")
+                and status != STATUS_COMPLETED):
+            items.append({
+                "node": nid,
+                "label": label,
+                "kind": "cleared_exit_criteria",
+                "detail": "完成判据被清空（exit_criteria=[]），但节点尚未 completed",
+                "suggested_action": "补回可执行判据（update --exit-criteria），或用 decide 明确记录放弃判据的理由",
+            })
+
+    # 同一节点的多条信号聚在一起；kind 作次级键保证输出与输入顺序无关。
+    items.sort(key=lambda s: (str(s["node"]), s["kind"]))
+    return items
+
+
+def orchestration_signals(nodes) -> dict:
+    """只读 payload。checked 必须随输出一起给：0 条信号 ≠ 没检查过。"""
+    pairs = list(nodes)
+    items = orchestration_signal_items(pairs)
+    return {
+        "schema": ORCHESTRATION_SIGNAL_SCHEMA,
+        "checked": len(pairs),
+        "signal_count": len(items),
+        "signals": items,
+        "read_only": True,
+        "authority": "process-state",
+        "note": "只读建议：信号只来自 roadmap 自身结构，不推断产品事实；不会自动改写拓扑。",
+    }
+
+
+def format_orchestration_signal_entry(sig: dict) -> str:
+    """一条可确认的 next-action：谁、什么状态、建议怎么做（只写命令，不替人跑）。"""
+    return (f"- {sig['node']}. {sig['label']} [{sig['kind']}] — {sig['detail']}"
+            f" → 建议：{sig['suggested_action']}")
+
+
+def cap_signals(lines: list) -> list:
+    if len(lines) <= ORCHESTRATION_SIGNAL_LIMIT:
+        return lines
+    omitted = len(lines) - ORCHESTRATION_SIGNAL_LIMIT
+    return [*lines[:ORCHESTRATION_SIGNAL_LIMIT], f"- ... 另有 {omitted} 条信号未列出"]
+
+
+def _signal_block(lines: list, opening: str, closing: str) -> str:
+    """空信号一律不成块：这是「无信号时 md 逐字节不变」的唯一实现位置。"""
+    if not lines:
+        return ""
+    return opening + "\n".join(cap_signals(lines)) + closing
+
+
+def render_orchestration_signals_collapsed(items) -> str:
+    """Human 主视图：折叠成一行摘要，展开才看条目。"""
+    if not items:
+        return ""
+    lines = [format_orchestration_signal_entry(s) for s in items]
+    summary = f"编排信号：{len(items)} 条待确认"
+    return _signal_block(
+        lines, f"\n<details><summary>{summary}</summary>\n\n", "\n\n</details>\n"
+    )
+
+
+def render_orchestration_signals_plain(items) -> str:
+    """导出视图：平铺，能一路 grep 到底。"""
+    if not items:
+        return ""
+    lines = [format_orchestration_signal_entry(s) for s in items]
+    return _signal_block(lines, "\n### 编排信号\n\n", "\n")
+
+
 # ── Markdown section 模板（两个 carrier 共用） ────────────
 #
 # 模板从 carrier 里搬到这里，是因为它**被抄成过两份**：两个 carrier 各一份。
@@ -992,6 +1120,7 @@ def compose_light_section(
     open_questions: str,
     focus_detail: str,
     ready_preview: str = "",
+    signals: str = "",
 ) -> str:
     """轻量视图：`render` 写进关联 md 文件的那一块。"""
     section = (
@@ -1005,6 +1134,9 @@ def compose_light_section(
         section += focus_detail
     if ready_preview:
         section += ready_preview
+    # 编排信号放最后：无信号时 signals 是空串，下面这行一个字节都不加。
+    if signals:
+        section += signals
     return section + "<!-- ROADMAP_SECTION_END -->\n"
 
 
@@ -1018,6 +1150,7 @@ def compose_full_section(
     decision_table: str = "",
     focus_detail: str = "",
     max_bytes: Optional[int] = None,
+    signals: str = "",
 ) -> str:
     """导出视图：`section` 打给 stdout 的那一块。"""
     if max_bytes is not None and max_bytes < 0:
@@ -1038,6 +1171,8 @@ def compose_full_section(
         section += f"\n### 决策历史\n\n{decision_table}\n"
     if focus_detail:
         section += focus_detail
+    # 与轻量视图同源：无信号时空串，导出视图逐字节不变。
+    section += signals
     if max_bytes is not None and len(section.encode("utf-8")) > max_bytes:
         encoded = section.encode("utf-8")[:max_bytes]
         section = encoded.decode("utf-8", errors="ignore")
@@ -3629,6 +3764,16 @@ class Roadmap:
             ((node["id"], node) for node in self.iter_nodes())
         )
 
+    def signal_items(self) -> list:
+        """编排信号（只读派生）：plan 层节点喂给模块级规则。
+
+        两个 carrier 继承同一个方法，规则与排序只在模块级写一份——
+        与 blocked / open_question 同一条「读时派生、永不落盘」纪律。
+        """
+        return orchestration_signal_items(
+            ((node["id"], node) for node in self.iter_nodes())
+        )
+
     def get_node_view(self, node_id: str) -> dict:
         """读视图：节点本体 + 派生的 blocked / blocked_reason。"""
         return blocked_view(self.get_node(node_id), self.blocking_edges(node_id))
@@ -4210,6 +4355,7 @@ class Roadmap:
                 focus_node.get("notes", "") if focus_node else "",
             ),
             max_bytes=max_bytes,
+            signals=render_orchestration_signals_plain(self.signal_items()),
         )
 
     def render_light_section(self, focus_subtree_depth: int = 2) -> str:
@@ -4245,6 +4391,7 @@ class Roadmap:
                 self.get_focus_subtree(focus_id, max_depth=1, owners=owners) if focus_id else "",
             ),
             ready_preview=render_ready_preview(self.ready_nodes()[:3]),
+            signals=render_orchestration_signals_collapsed(self.signal_items()),
         )
 
     def get_focus_subtree(self, root_id: str, max_depth: int = 1, owners: dict = None) -> str:

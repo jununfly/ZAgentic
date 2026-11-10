@@ -102,6 +102,8 @@ python roadmap_cli.py focus <json_path>
 python roadmap_cli.py validate <json_path>
 python roadmap_cli.py stats <json_path>
 python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
+python roadmap_cli.py next <roadmap_path>
+python roadmap_cli.py signals <roadmap_path>
 
 # Scheduling query (read-only, derived) — see "## Scheduling query" below
 python roadmap_cli.py ready <roadmap_path>
@@ -306,6 +308,44 @@ finished from unfinished in the impact set at a glance.
 **`ready` ignores leases.** Readiness is decided by status and `blocks` edges
 only: whether another agent holds a lease on a node does not remove it from the
 set. A lease claims work; it does not hide it.
+
+## Orchestration signals (read-only)
+
+`signals` 是**只读** advisory：把「初始 roadmap 就绪后，现在可能需要编排」变成
+一个可发现的确定性输出，不必等 Agent 先意识到要编排、也不必让 Human 先补一轮
+CLI 认知。`next` 是另一个早已存在、此前未登记的只读建议（关键路径优先的就绪节点）。
+
+```bash
+python roadmap_cli.py next <roadmap_path>
+python roadmap_cli.py signals <roadmap_path>
+```
+
+`signals` 输出 `zj-orchestration-signals/v1`：`checked` 是实际检查过的 plan 节点数
+（0 条信号 ≠ 没检查过）、`signal_count`、以及按 `(node, kind)` 排序的 `signals[]`。
+每条带 `node` / `label` / `kind` / `detail` / `suggested_action`。规则只覆盖 roadmap
+**自身可机械判定的结构状态**：
+
+| kind | 触发条件 | 为什么值得 Human 确认 |
+| --- | --- | --- |
+| `completed_with_open_question` | 节点 `completed` 但仍挂 `open_question` | 待决问题可能被「已完成」盖住，需要拆 sibling 或重开 |
+| `budget_exhausted` | `max_children` / `max_rounds` 已用尽 | 再 `add` 或重开会被 `E_BUDGET_EXCEEDED` 挡下，要收敛 / 提高预算 / 拆分 |
+| `cleared_exit_criteria` | 判据被显式清空（`exit_criteria=[]`）且节点未 `completed` | 正在推进却没有完成判据，要补回或显式记录放弃理由 |
+
+刻意不报「从未设置判据」的节点：那在新图上遍地都是，会把信号节变成噪声。也
+不判断「判据与事实是否相符」——那需要代码、测试或 runtime evidence，属于
+process-state 权威边界之外（见 `SKILL.md` 的权威边界小节）。
+
+**边界**：命令不拿整图锁、不改 carrier、不改 Markdown、不产出 ChangeSet；
+`suggested_action` 只是文本，**把命令写出来 ≠ 替人跑**。编排结果仍由 Human 用
+`decide` + `changeset preview/apply`（preview + approved digest）显式落盘。
+
+`render` 的轻量视图把信号折成 `<details>` 摘要，`section` 平铺成 `### 编排信号`
+供 grep；两个视图共用同一份条目模板与 5 条上限。**无信号时两者输出逐字节不变**，
+由 `test_orchestration_signals.py` 的 `compose_*` 字节断言与无信号图 CLI 控制例、
+`test_blocked_chain_single_file.py::Slice06` 的无阻塞三态归一化控制例，以及
+`test_cross_carrier_render.py` 的双 carrier 逐字节断言共同钉住。
+（Slice06 里那条对历史 commit `c2e5a64` 的基线比对因 radial render 有意改变
+有焦点视图而被 skip，不作为本结论的依据。）
 
 ## Edges
 

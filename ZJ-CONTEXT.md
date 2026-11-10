@@ -713,6 +713,20 @@ evaluate natural-language criteria — checking a criterion against reality stay
 a Human/Agent act, and an unmet criterion never blocks `update --status completed`.
 _Avoid_: definition of done (as a separate artifact), acceptance test
 
+**Orchestration signal / 编排信号**:
+A deterministic, read-only advisory emitted by `signals`
+(`zj-orchestration-signals/v1`) that names a structurally checkable
+inconsistency inside the roadmap itself — e.g. a `completed` node still
+carrying an `open_question`, an exhausted node budget, or explicitly cleared
+`exit_criteria` on unfinished work. It answers "is there something worth
+re-planning here?", never "is the plan correct?": product facts still require
+code, tests or runtime evidence under the process-state authority boundary.
+Each signal carries a `suggested_action` text only — naming a command is not
+running it; topology changes still require `decide` plus a reviewed ChangeSet.
+It is not a gate and never mutates the carrier or the Markdown view.
+_Avoid_: storage signal (advisory metrics from `recommend-storage`), validation
+error, health gate, automatic re-planning, LLM inference
+
 **Decision**:
 A recorded choice at a node, structured as `{q, answer, note}`. Stored on the
 node's `decisions` array. "Decision not in JSON = did not happen" is the
