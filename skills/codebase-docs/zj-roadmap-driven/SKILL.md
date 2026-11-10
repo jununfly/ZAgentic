@@ -108,6 +108,8 @@ Agent 需要选择载体 → 调 `recommend-storage`（只读建议，只给出�
 Agent 需要换载体 → 调 `migrate --to single|sqlite`（显式；源文件不动，目标已存在则拒）
 Agent 需要表达依赖 → 调 `edge add --type blocks|informs|supersedes|derives-from`
 Agent 需要取活/看最长未完工链/看改动波及 → 调 `ready` / `critical-path` / `impact`（只读，不拿锁）
+Agent 需要建议接下来开工哪个 → 调 `next`（只读；关键路径优先的就绪建议）
+Agent 需要判断「现在要不要编排」 → 调 `signals`（只读编排信号；render 视图尾部也会折成摘要）
 
 依赖是树之外的一层正交边：`blocks` 是硬依赖，`supersedes` 表示取代关系，
 两者各自不许成环并会返 `E_CYCLE`。plan→plan 的 `informs` / `derives-from`
@@ -139,6 +141,15 @@ Human 视图与 Agent 视图不会对同一事实给出两个答案。`--status 
 两个载体的两个 Markdown 视图（`render` 写进 md 的轻量视图与 `section` 的导出视图）
 共用同一份模板，逐字节相同——模板曾各抄一份并漂移，抄两份本身就是缺陷。
 ```
+
+**编排信号（只读，#245 切片 1）：** 初始 roadmap 就绪后，`signals` 与 md 尾部的
+折叠小节负责让「现在可能需要编排」成为可发现、可确认的信号，而不是靠 Human
+记得去触发。它只报 roadmap 自身可机械判定的结构状态（`completed` 仍挂
+`open_question`、探索预算触顶、判据被显式清空），**不推断产品事实或外部证据**——
+后者属于 process-state 权威边界之外。`signals` 不写入、不产出 ChangeSet；
+`suggested_action` 只给可确认的 next-action 文本，**把命令写出来 ≠ 替人跑**，
+决策仍用 `decide` 落盘、结构变更仍走 `changeset preview/apply`。
+无信号时两个 Markdown 视图逐字节不变。命令细节见 [CLI 参考](references/roadmap-cli.md)。
 
 ## Scope gate — before any node write or project edit
 

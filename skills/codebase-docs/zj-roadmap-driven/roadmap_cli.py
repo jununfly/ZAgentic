@@ -92,6 +92,10 @@ zj-roadmap-driven CLI — 路线图确定性操作入口
 
   decisions <json_path> [node_id]            # 列出决策
 
+  next    <roadmap_path>                    # 只读：关键路径优先的就绪建议
+  signals <roadmap_path>                    # 只读编排信号（确定性 JSON，见 references/roadmap-cli.md）
+                                            # 不拿锁、不写入、不产出 ChangeSet；建议动作只给文本
+
   render  <json_path>                        # 渲染 Markdown section 到关联 md 文件
 
   section <roadmap_path> [--all] [--max-depth N] [--max-bytes N]
@@ -167,6 +171,7 @@ from roadmap import (
     status_icon,
     unlock_roadmap,
     resolve_md_file,
+    orchestration_signals,
 )
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
@@ -1277,6 +1282,19 @@ def cmd_next(args: dict):
         _print_json(data)
 
 
+def cmd_signals(args: dict):
+    """只读编排信号：把「现在可能需要编排」变成可发现的确定性输出。
+
+    与 `ready` / `recommend-storage` 同款：不拿整图锁、不写 carrier、不写 md、
+    不产出 ChangeSet。每条信号附一条 `suggested_action` 文本——把命令写出来
+    ≠ 替人跑；编排决策仍由 Human 用 decide / changeset 显式落盘。
+    """
+    r = _load_roadmap(args["positional"][0])
+    _print_json(orchestration_signals(
+        (node["id"], node) for node in r.iter_nodes()
+    ))
+
+
 def _authority_excludes_arg(args: dict, root: Path) -> list[str]:
     """`--exclude` is repeatable, project-relative and prefix-scoped.
 
@@ -1361,6 +1379,7 @@ COMMANDS = {
     "apply-batch": cmd_apply_batch,
     "changeset": cmd_changeset,
     "next": cmd_next,
+    "signals": cmd_signals,
     "authority-check": cmd_authority_check,
 }
 
@@ -1408,6 +1427,7 @@ COMMAND_POSITIONAL_ARITY = {
     "apply": 2,
     "apply-batch": 1,
     "next": 1,
+    "signals": 1,
     "authority-check": 1,
 }
 GROUP_ACTION_ARITY = {
