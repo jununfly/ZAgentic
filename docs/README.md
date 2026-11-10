@@ -50,6 +50,7 @@ doc-kind: doc-map
 - [designs/zj-wayfinder-roadmap-dual-mode.md](designs/zj-wayfinder-roadmap-dual-mode.md) — wayfinder/roadmap carrier seam; authority-id: `design.wayfinder-roadmap-carrier-seam`
 - [designs/zj-roadmap-concurrency-model.md](designs/zj-roadmap-concurrency-model.md) — roadmap 并发模型; authority-id: `design.roadmap-concurrency-model`
 - [designs/zj-roadmap-execution-graph.md](designs/zj-roadmap-execution-graph.md) — roadmap 执行图; authority-id: `design.roadmap-execution-graph`
+- [designs/zj-roadmap-reconciliation.md](designs/zj-roadmap-reconciliation.md) — roadmap reconciliation 与原子 ChangeSet 层（设计决策/替代方案/不变式/记号决策）; authority-id: `design.roadmap-reconciliation`
 - [designs/zj-discuss/product.md](designs/zj-discuss/product.md) — zj-discuss 产品模型; authority-id: `design.zj-discuss-product`
 - [designs/zj-discuss/architecture.md](designs/zj-discuss/architecture.md) — zj-discuss 架构; authority-id: `design.zj-discuss-architecture`
 - [designs/zj-discuss/design.md](designs/zj-discuss/design.md) — zj-discuss 设计; authority-id: `design.zj-discuss-spec`

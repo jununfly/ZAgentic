@@ -3,7 +3,7 @@
 
 Why this file exists
 --------------------
-`docs/plans/zj-roadmap-dag-concurrency.md` Problem #1 originally reported a
+`docs/designs/zj-roadmap-concurrency-model.md` (原 dag-concurrency plan，已抽取至 designs；完整 story 见 git 历史) Problem #1 originally reported a
 lost update when two writers mutate the same carrier. A probe (see the PR that
 introduced this file) reproduced it, and the cause turned out to be neither
 "no leases" nor "no transactions": the roadmap already serialises every write

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """P5-S2 `trace add` + provenance —— TDD 套件（§3.3 / §4.4）。
 
-验收（来自 `docs/plans/zj-roadmap-execution-graph.md`）：
+验收（来自 `docs/designs/zj-roadmap-execution-graph.md`）：
 - trace 可自由追加；plan 侧输出字节不变；trace 不进 `children`（§2.4）。
 - 每个新错误码一条用例，断言 code 字符串（不是文案）。
 - 红绿双向：抽掉实现会红。

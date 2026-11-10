@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Contract tests for the P2 node-lease core (issue #111).
 
-Scope (reconstructed from docs/plans/zj-roadmap-dag-concurrency.md §4 + Story 25-31,
+Scope (reconstructed from docs/designs/zj-roadmap-concurrency-model.md P2 + Story 25-31,
 "01 P2 租约核心"): claim / heartbeat / steal / release (+ --force) + fencing token
 + `--if-rev` optimistic concurrency. Two carriers (single-file + sqlite)
 must agree on what a lease means — the policy lives in `lease.py` and is the one

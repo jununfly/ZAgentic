@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """#117 P3 — 显式迁移与 recommend-storage 建议（Story 39 / 40）。
 
-Spec 来源：docs/plans/zj-roadmap-dag-concurrency.md §5 + Story 39/40。
+Spec 来源：docs/designs/zj-roadmap-concurrency-model.md P3 + Story 39/40。
   Story 39  `recommend-storage` 保持只读建议，任何命令都不许悄悄换掉我的事实源。
   Story 40  换 carrier 只能走一条显式命令，迁移前后我永远知道哪个产物是事实源。
 

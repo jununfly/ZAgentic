@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """SQLite carrier is the second Roadmap carrier, behavior-identical to single-file.
 
-Scope (reconstructed from docs/plans/zj-roadmap-dag-concurrency.md §5 + §测试缝):
+Scope (reconstructed from docs/designs/zj-roadmap-concurrency-model.md P3 + 测试缝 section):
 implement `RoadmapSqlite` (stdlib `sqlite3`, zero new deps) that satisfies the
 *same adapter contract* as `Roadmap` (single-file) — so the
 existing contract tests can run a third time against it.

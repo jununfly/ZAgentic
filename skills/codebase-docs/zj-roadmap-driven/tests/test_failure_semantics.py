@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Contract tests for P2 failure semantics and escalation (issue #114).
 
-Spec (docs/plans/zj-roadmap-dag-concurrency.md §4 + Story 33/34):
+Spec (docs/designs/zj-roadmap-concurrency-model.md P2 + Story 33/34):
 
   * Story 33: a failed node records `attempts` / `last_error` / `retry_backoff`,
     so retries are bounded and inspectable.

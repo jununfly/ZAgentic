@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """P5-S3 promote compatibility adapter and legacy state semantics.
 
-验收（来自 `docs/plans/zj-roadmap-execution-graph.md`）：
+验收（来自 `docs/designs/zj-roadmap-execution-graph.md`）：
 - promote 默认只写 `promotion.state=proposed`，不落 plan 节点、md 字节不变。
 - promote --accept requires a reviewed reconciliation digest and applies one
   atomic ChangeSet, with the same receipt/view semantics on both carriers.

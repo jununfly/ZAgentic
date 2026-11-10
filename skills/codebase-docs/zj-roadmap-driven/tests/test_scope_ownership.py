@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Contract tests for P2 scope tokens and field-level ownership (issue #113).
 
-Scope (docs/plans/zj-roadmap-dag-concurrency.md §4 + Story 29/30/32):
+Scope (docs/designs/zj-roadmap-concurrency-model.md P2 + Story 29/30/32):
 
   * `--as-agent <id> --scope <node>` — a subagent physically cannot write
     outside its assigned subtree; an out-of-scope write fails with `E_SCOPE`
