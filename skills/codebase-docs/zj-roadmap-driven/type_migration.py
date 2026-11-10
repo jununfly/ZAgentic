@@ -16,6 +16,23 @@ NODE_TYPE_WORK = "work"
 NODE_TYPES = frozenset({NODE_TYPE_GROUP, NODE_TYPE_WORK})
 
 
+def _is_group(node_id: str, node: dict, nodes: dict) -> bool:
+    """A node is a ``group`` when it is the root, has a non-empty ``children``
+    array, or any node lists it as ``parent``.
+
+    ``ensure_layer`` only fills ``layer`` and never normalizes ``children``, so a
+    legacy carrier that stores decomposition only via parent pointers would
+    otherwise be misclassified as ``work``. Detection is classification-time
+    only and never mutates the carrier.
+    """
+
+    if node_id == "1":
+        return True
+    if node.get("children"):
+        return True
+    return any(n.get("parent") == node_id for n in nodes.values())
+
+
 def migrate_types(source: str | Path, output: str | Path) -> dict[str, Any]:
     """Copy a roadmap to a new artifact and classify every plan node.
 
@@ -38,9 +55,7 @@ def migrate_types(source: str | Path, output: str | Path) -> dict[str, Any]:
         if node.get("layer", LAYER_PLAN) != LAYER_PLAN:
             continue
         node["node_type"] = (
-            NODE_TYPE_GROUP
-            if node_id == "1" or node.get("children")
-            else NODE_TYPE_WORK
+            NODE_TYPE_GROUP if _is_group(node_id, node, data.get("nodes", {})) else NODE_TYPE_WORK
         )
         typed += 1
 

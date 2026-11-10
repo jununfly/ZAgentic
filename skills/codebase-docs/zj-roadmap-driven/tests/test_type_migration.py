@@ -76,6 +76,27 @@ class TypeMigrationTest(unittest.TestCase):
             self.assertEqual(report["source"], "source.json")
             self.assertEqual(report["target"], "target.json")
 
+    def test_migrate_types_classifies_group_without_children_array(self):
+        # Legacy carriers may store decomposition only via parent pointers and
+        # omit the `children` array. The classifier must still recognize such a
+        # node as a group (its child lists it as `parent`).
+        with tempfile.TemporaryDirectory() as directory:
+            tmpdir = Path(directory)
+            source = tmpdir / "source.json"
+            target = tmpdir / "target.json"
+            run_cli("init", source, "--title", "Roadmap", cwd=tmpdir)
+            group = json.loads(run_cli("add", source, "1", "Group", cwd=tmpdir).stdout)
+            leaf = json.loads(run_cli("add", source, group["id"], "Leaf", cwd=tmpdir).stdout)
+            raw = json.loads(source.read_text(encoding="utf-8"))
+            raw["nodes"][group["id"]].pop("children", None)
+            source.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+
+            run_cli("migrate-types", source, "--output", target, cwd=tmpdir)
+            stored_group = json.loads(run_cli("get", target, group["uid"], cwd=tmpdir).stdout)
+            stored_leaf = json.loads(run_cli("get", target, leaf["uid"], cwd=tmpdir).stdout)
+            self.assertEqual(stored_group["node_type"], "group")
+            self.assertEqual(stored_leaf["node_type"], "work")
+
 
 if __name__ == "__main__":
     unittest.main()
