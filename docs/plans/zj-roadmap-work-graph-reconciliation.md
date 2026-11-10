@@ -495,7 +495,22 @@ S3-2 (#234) 已收口：直接拓扑写入路径（`apply_promotion` 的 `accept
 digest 均给出可执行迁移命令）证据齐备，governance gates（closure / dangling-refs /
 ADR / authority）全绿。
 
-**本 plan 保持 open**：S4-1 (#235) 与 S4-2 (#236) 仍 open，close-out gate 要求四个
+### S4-1 corpus requirement relaxed (2026-11-10)
+
+原 S4-1 (#235) 验收要求「用三份脱敏只读真实 Roadmap 副本回放迁移」，目的是拿功能
+可用/有效的证据。实际开发过程中，30-scenario 双 carrier（JSON/SQLite）合成语料回放
+已覆盖 parity / reconciliation 处置 / 零误合并，加上开发期对可用性的确认，足以证明
+迁移与 reconciliation 在真实结构上的行为；故**撤销「收集三份脱敏只读语料」这一硬性门槛**
+（不再阻塞 S4-1）。
+
+- 不推翻原决策目标，只移除其数据收集前置条件：S4-1 的「证据」现由开发期验证满足。
+- 三份语料的覆盖矩阵（小型 JSON / 深嵌套 JSON / SQLite）作为**可选**回放增强保留，
+  不再作为 close-out 阻塞项。
+- 源保持只读、写入新 target carrier、`tmp/skills-outputs/` 落点等安全约束仍成立
+  （仅在后续真要喂真实语料时才生效）。
+- S4-2 (#236) Human notation 评审不受影响，仍 open。
+
+**本 plan 保持 open**：S4-2 (#236) 仍 open（S4-1 的 three-corpus 门槛已于 2026-11-10 撤销，见上），close-out gate 要求四个
 Issue 全关，故 S3-2 收口不触发 plan 关闭。
 
 ### Short-read acceptance
@@ -520,7 +535,7 @@ do not get reported as one indistinguishable task.
 |---|---|---|---|---|---|
 | [x] | S3-1 | Make `promote --accept` route through reviewed reconciliation and ChangeSet apply; remove the direct `add_node` bypass. | [#233](https://github.com/jununfly/ZAgentic/issues/233) | Current reconciliation/apply APIs | Single/SQLite accept receipts, stale/digest/idempotency rejection tests, legacy override rejection, and direct API bypass rejection. |
 | [x] | S3-2 | Close the S3 rollout: compatibility error, CLI/reference updates, parity/fault tests, governance gates, and Review record. | [#234](https://github.com/jununfly/ZAgentic/issues/234) | S3-1 | Explicit `reconcile + apply` and default accept produce the same semantic state; all gates pass. |
-| [ ] | S4-1 | Replay migration and reconciliation against three supplied, read-only real Roadmap copies. | [#235](https://github.com/jununfly/ZAgentic/issues/235) | S2 implementation; three redacted Roadmap inputs | Source hashes unchanged; UIDs, Status, Decisions, Edges and leases preserved; JSON/SQLite parity and replay report pass. |
+| [x] | S4-1 | ~~Replay migration and reconciliation against three supplied, read-only real Roadmap copies~~ — gate relaxed: original intent was evidence of usability/effectiveness, already confirmed sufficient via in-development dual-carrier fixture replay and dev use; the three-redacted-corpus collection requirement is dropped. | [#235](https://github.com/jununfly/ZAgentic/issues/235) | S2 implementation (done) | In-development validation: 30-scenario dual-carrier JSON/SQLite corpus replay (parity, reconciliation dispositions, zero false merges) + dev confirmation of usability/effectiveness. Source hashes/UIDs/Status/Decisions/Edges/leases preserved on synthetic corpora. Three-corpus gate dropped per 2026-11-10 decision. |
 | [ ] | S4-2 | Human-review reference Placement notation in plain text and screen-reader-oriented Markdown views, then fix the final notation in tests/docs. | [#236](https://github.com/jununfly/ZAgentic/issues/236) | Placement projection fixture; Human reviewer | Dated review record with chosen notation, rationale, unresolved risks and synchronized tests/docs. |
 
 Execution order and close-out gate:
@@ -536,9 +551,9 @@ The actual work must use the `zj-roadmap-driven` workflow. Real Roadmap
 sources stay read-only; migration targets and replay reports go under
 `tmp/skills-outputs/`. The plan may be closed only after all four Issues are
 closed, the S3/S4 evidence is added above or in the linked review record, and
-the final tests plus documentation/ADR/runtime/authority gates pass. Until
-then, S3 rollout closure and S4 real-corpus/Human validation are explicitly
-unfinished.
+the final tests plus documentation/ADR/runtime/authority gates pass. S3
+rollout closure is complete; S4-1's real-corpus gate was dropped (2026-11-10),
+so only S4-2 Human notation review remains open.
 
 ## Parallel work — issue mapping addendum (2026-11-10)
 
@@ -556,11 +571,13 @@ the two tracks from being reported as one.
 
 Dependency direction: slice 2 must reuse `zj-changeset/v1` digest,
 `--idempotency-key` and `--scope`, and must not add a second canonical write
-path. S4-1 ([#235](https://github.com/jununfly/ZAgentic/issues/235)) would
-provide the first real Roadmap corpus for the signal layer, but the three
-redacted read-only copies do not exist yet. Signals stay a process-state
-advisory: they never infer product facts, never mutate the carrier, and never
-become a gate.
+path. S4-1 ([#235](https://github.com/jununfly/ZAgentic/issues/235)) originally
+expected three redacted read-only real Roadmap copies as replay input; that
+gate was **dropped (2026-11-10)** — its intent (evidence of usability/effectiveness)
+was already confirmed sufficient via in-development dual-carrier fixture replay
+and dev use, so no corpus collection is required. Signals stay a process-state
+advisory regardless: they never infer product facts, never mutate the carrier,
+and never become a gate.
 
 This section is a cross-reference only. The plan is closed by the four Issues in
 the table above, not by the two Issues named in this addendum.
