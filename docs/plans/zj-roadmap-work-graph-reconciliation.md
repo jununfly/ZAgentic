@@ -608,7 +608,7 @@ the two tracks from being reported as one.
 | Status | Scope | Issue / PR | Evidence | Remaining |
 | --- | --- | --- | --- | --- |
 | [x] | Slice 1 — read-only `signals` advisory plus registering the already-existing `next` command | [#245](https://github.com/jununfly/ZAgentic/issues/245), [#246](https://github.com/jununfly/ZAgentic/pull/246) | main `8d1e794`; 29 new contract tests; skill tests 603 and repo tests 243 green; closure / dangling-refs / ADR / frontmatter / authority gates clean; three install roots byte-identical (528 files each) | — |
-| [ ] | Slice 2 — `work.patch` gains `exit_criteria`, and a one-confirm "signal → candidate ChangeSet → Human decision" path | [#245](https://github.com/jununfly/ZAgentic/issues/245) | not started | Blocked on S3-2 ([#234](https://github.com/jununfly/ZAgentic/issues/234)): a second canonical write path would undercut the direct-bypass close-out |
+| [x] | Slice 2 — `work.patch` gains `exit_criteria`, and a one-confirm "signal → candidate ChangeSet → Human decision" path | [#245](https://github.com/jununfly/ZAgentic/issues/245), `c4dbf72` | main `c4dbf72`; 17 new contract tests; affected-suite regression 109 passed; closure / dangling-refs / ADR / authority gates clean; command inventory unchanged (no new write command); signals remain read-only | — (S3-2 [#234](https://github.com/jununfly/ZAgentic/issues/234) closed 2026-11-10; second canonical write path avoided by reusing `zj-changeset/v1` digest / `--idempotency-key` / `--scope`) |
 
 Dependency direction: slice 2 must reuse `zj-changeset/v1` digest,
 `--idempotency-key` and `--scope`, and must not add a second canonical write
