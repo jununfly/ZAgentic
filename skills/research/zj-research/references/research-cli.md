@@ -112,6 +112,8 @@ For topic-driven candidate discovery, keep `repositories` as an empty or seed li
 
 The sealed ledger owns each selected repository's `stars`, `topicMatch`, and immutable revision. Do not replace those fields with model estimates.
 
+边界（机器检查 vs review 层）：本适配器只验 ledger 形状——`repositories` 必须是对象数组，不得被标量或字符串「估计」整体替换。字段「不得被模型估计替换」的语义校验属 review 层职责：严格侧误拒风险高（合法的一手数据也可能长得像估计），不在适配器内机械判定（对应 zj-review-findings Step 4 的机器检查边界）。
+
 `compile-report` input:
 
 ```json
