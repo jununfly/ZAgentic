@@ -2,7 +2,7 @@
 name: zj-graphical-cross-comparison
 description: >-
   把《产品项目图式横比模型》操作化为带机械闸门的对比仪器：以 Human 独立给定的固定场景集为公共坐标系，
-  校验多张项目图 SoT、供给四态与上下文三态、CHK-01..11 复核条件，产出逐条可追溯的差异条目清单。
+  校验多张项目图 SoT、供给四态与上下文三态、CHK-01..12 复核条件，产出逐条可追溯的差异条目清单。
   Use when 需要在多个产品项目之间做场景锚定的结构横比、核对项目图与差异条目形状、
   或在签发横比报告前跑机械自检；不产出采用或拒绝裁决，不重做母模型 R 乘 O 矩阵。
 argument-hint: "<横比 bundle YAML/JSON 路径，或 init 的输出路径>"
@@ -60,6 +60,8 @@ source: zagentic
 | CHK-08 孤儿节点 | 计算值与登记值一致，WARN 不阻塞 | 缺口清单的验证计划 |
 | CHK-09 报告结构 | 八节齐全、三类来源标注、摘要只用 display-only | 第三方 Agent 能否复核每条差异 |
 | CHK-10 上下文条目 | scope / kind / 证据、旁挂不进图 | 条件本身的成立与违反判定 |
+| CHK-11 场景映射裁决 | ruling-ref / ruling-by 留痕、slice/scene 引用合法 | 映射裁决内容 |
+| CHK-12 差异条目基数 | scene/project 引用合法、恰好场景×项目一条 | 每条 DE 的裁决内容 |
 
 ## 快速开始
 

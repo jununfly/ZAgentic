@@ -45,9 +45,9 @@ def run_cli(*args: str) -> subprocess.CompletedProcess:
 
 
 class GateTests(unittest.TestCase):
-    def test_valid_bundle_passes_all_eleven_checks(self):
+    def test_valid_bundle_passes_all_twelve_checks(self):
         checks = cc.run_checks(load_valid())
-        self.assertEqual(len(checks), 11)
+        self.assertEqual(len(checks), 12)
         failures = [f"{c.code}: {c.problems}" for c in checks if not c.ok]
         self.assertEqual([], failures)
 
@@ -194,6 +194,44 @@ class GateTests(unittest.TestCase):
         result = check(cc.run_checks(data), "CHK-11")
         self.assertFalse(result.ok)
         self.assertTrue(any("引用" in problem or "竖切片" in problem for problem in result.problems))
+
+    def test_chk12_well_formed_bundle_passes(self):
+        result = check(cc.run_checks(load_valid()), "CHK-12")
+        self.assertTrue(result.ok)
+
+    def test_chk12_missing_scene_project_pair_fails(self):
+        data = load_valid()
+        data["difference-entries"] = []
+        result = check(cc.run_checks(data), "CHK-12")
+        self.assertFalse(result.ok)
+        self.assertEqual("error", result.severity)
+        self.assertTrue(any("缺失差异条目" in problem for problem in result.problems))
+
+    def test_chk12_duplicate_scene_project_pair_fails(self):
+        data = load_valid()
+        entry = data["difference-entries"][0]
+        data["difference-entries"].append({
+            "id": "DE::0002",
+            "scene": entry["scene"],
+            "project": entry["project"],
+            "verdict": "native",
+            "evidence-refs": entry["evidence-refs"],
+        })
+        result = check(cc.run_checks(data), "CHK-12")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("重复" in problem for problem in result.problems))
+
+    def test_chk12_bad_scene_or_project_ref_fails(self):
+        data = load_valid()
+        data["difference-entries"][0]["scene"] = "SC::nope"
+        result = check(cc.run_checks(data), "CHK-12")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("scene" in problem for problem in result.problems))
+        data = load_valid()
+        data["difference-entries"][0]["project"] = "P2"
+        result = check(cc.run_checks(data), "CHK-12")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("project" in problem for problem in result.problems))
 
     def test_chk01_version_pin_is_mandatory(self):
         data = load_valid()

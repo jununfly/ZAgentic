@@ -15,7 +15,7 @@
 
 子命令:
   init      写出一份最小输入模板(JSON)，必须给 --out
-  validate  加载 bundle -> 跑 CHK-01..11 -> 打印结果；有 ERROR 时 exit 1
+  validate  加载 bundle -> 跑 CHK-01..12 -> 打印结果；有 ERROR 时 exit 1
   report    先跑闸门，通过后计算摘要指标；--out 可选，缺省只打印
 """
 
@@ -40,7 +40,7 @@ ID_PREFIXES = {
     "F", "T", "S", "X", "D", "RC", "CTX", "SC", "DE", "SCENE-SET", "RULING", "EQ",
 }
 FORBIDDEN_SCENE_FIELDS = {"nodes", "modules", "module", "members", "implementation", "required-nodes"}
-CHECK_CODES = tuple(f"CHK-{n:02d}" for n in range(1, 12))
+CHECK_CODES = tuple(f"CHK-{n:02d}" for n in range(1, 13))
 ELEMENT_FIELDS = (
     "nodes", "slice-edges", "cross-cutting-paths", "dependency-edges",
     "relation-constraints", "context-entries",
@@ -393,7 +393,7 @@ def run_checks(data: Any) -> list[Check]:
     return [
         check_01(data), check_02(data), check_03(data), check_04(data), check_05(data),
         check_06(data), check_07(data), check_08(data), check_09(data), check_10(data),
-        check_11(data),
+        check_11(data), check_12(data),
     ]
 
 
@@ -430,6 +430,54 @@ def check_11(data: dict) -> Check:
         if not isinstance(scene, str) or scene not in scene_ids:
             problems.append(f"scene-mapping[{index}] 的 scene 须引用固定场景集中的场景，得到 {scene!r}")
     return Check("CHK-11", "error", tuple(problems), "场景映射裁决留痕")
+
+
+def check_12(data: dict) -> Check:
+    """差异条目基数：场景×项目恰好一条。
+
+    契约规定 DE 为「场景乘项目一条」的唯一结论载体。机械验：
+      - 每条 DE 的 scene 须引用固定场景集中的场景、project 须匹配某张图的 project；
+      - (scene, project) 对集合须恰为 |scenes| × |projects| 全集——
+        缺失、重复、或溢出（不在全集内）一律 error。
+    裁决内容（verdict 等）归 Human，本 CHK 只管基数与引用合法性。
+    """
+    problems: list[str] = []
+    scene_ids = {
+        s.get("id") for s in as_list(scene_set_of(data).get("scenes"))
+        if isinstance(s, dict)
+    }
+    project_names = {
+        g.get("project") for g in graphs_of(data) if isinstance(g, dict)
+    }
+    pairs: list[tuple[Any, Any]] = []
+    for index, de in enumerate(as_list(data.get("difference-entries"))):
+        if not isinstance(de, dict):
+            continue
+        label = de.get("id") or f"difference-entries[{index}]"
+        scene = de.get("scene")
+        project = de.get("project")
+        if not valid_id(scene) or scene not in scene_ids:
+            problems.append(f"{label}: scene 须引用固定场景集中的场景，得到 {scene!r}")
+        if not nonempty(project) or project not in project_names:
+            problems.append(f"{label}: project 须匹配某张图的 project，得到 {project!r}")
+        pairs.append((scene, project))
+    expected = {(s, p) for s in scene_ids for p in project_names}
+    actual = set(pairs)
+    if len(pairs) != len(actual):
+        problems.append("差异条目存在重复的 (scene, project) 对，违反「场景×项目一条」")
+    missing = expected - actual
+    if missing:
+        problems.append(
+            "缺失差异条目：每个 (scene, project) 须恰好一条 DE，缺 "
+            + ", ".join(f"({s}, {p})" for s, p in sorted(missing))
+        )
+    extra = actual - expected
+    if extra:
+        problems.append(
+            "多余差异条目：以下 (scene, project) 不在场景×项目全集内 "
+            + ", ".join(f"({s}, {p})" for s, p in sorted(extra))
+        )
+    return Check("CHK-12", "error", tuple(problems), "差异条目基数：场景×项目恰好一条")
 
 
 def summary_metrics(data: dict) -> dict:
@@ -619,7 +667,7 @@ def main(argv: list[str] | None = None) -> int:
     p_init = sub.add_parser("init", help="写出最小输入模板")
     p_init.add_argument("--out", required=True, help="输出路径（.yaml/.yml 或 .json）；必须显式给出")
 
-    p_validate = sub.add_parser("validate", help="只跑 CHK-01..11")
+    p_validate = sub.add_parser("validate", help="只跑 CHK-01..12")
     p_validate.add_argument("--input", required=True, help="bundle 路径（YAML 或 JSON）")
 
     p_report = sub.add_parser("report", help="跑闸门并计算摘要指标")
