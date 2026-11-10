@@ -172,6 +172,7 @@ from roadmap import (
     unlock_roadmap,
     resolve_md_file,
     orchestration_signals,
+    signal_to_changeset,
 )
 from roadmap_sqlite import RoadmapSqlite, is_sqlite_path
 from carrier_migration import CARRIERS, default_output, migrate
@@ -1288,14 +1289,32 @@ def cmd_next(args: dict):
 def cmd_signals(args: dict):
     """只读编排信号：把「现在可能需要编排」变成可发现的确定性输出。
 
-    与 `ready` / `recommend-storage` 同款：不拿整图锁、不写 carrier、不写 md、
-    不产出 ChangeSet。每条信号附一条 `suggested_action` 文本——把命令写出来
-    ≠ 替人跑；编排决策仍由 Human 用 decide / changeset 显式落盘。
+    与 `ready` / `recommend-storage` 同款：不拿整图锁、不写 carrier、不写 md。
+    每条信号附一条 `suggested_action` 文本——把命令写出来 ≠ 替人跑；编排决策仍由
+    Human 用 decide / changeset 显式落盘。
+
+    `--as-changeset` 把信号转成*候选* ChangeSet（仍是只读输出，不落盘）：每条信号
+    先落一条 decision.append 记录决策，`cleared_exit_criteria` 信号在显式给出
+    `--criterion` 时再补一个 work.patch(exit_criteria)。Human 拿到后按需编辑
+    （尤其判据内容，绝不替人猜），再走 changeset preview/apply 完成一次确认。
     """
     r = _load_roadmap(args["positional"][0])
-    _print_json(orchestration_signals(
+    signals = orchestration_signals(
         (node["id"], node) for node in r.iter_nodes()
-    ))
+    )
+    if args.get("as-changeset") == "true":
+        criterion = _multi_text_arg(args, "criterion")
+        criterion_text = criterion[0] if criterion else None
+        changes: list = []
+        for sig in signals["signals"]:
+            changes.extend(signal_to_changeset(
+                sig,
+                lambda ref: r.get_node(r.resolve_node(ref))["uid"],
+                criterion=criterion_text,
+            ))
+        _print_json(changes)
+        return
+    _print_json(signals)
 
 
 def _authority_excludes_arg(args: dict, root: Path) -> list[str]:
