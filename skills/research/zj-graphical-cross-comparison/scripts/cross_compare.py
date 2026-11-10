@@ -15,7 +15,7 @@
 
 子命令:
   init      写出一份最小输入模板(JSON)，必须给 --out
-  validate  加载 bundle -> 跑 CHK-01..10 -> 打印结果；有 ERROR 时 exit 1
+  validate  加载 bundle -> 跑 CHK-01..11 -> 打印结果；有 ERROR 时 exit 1
   report    先跑闸门，通过后计算摘要指标；--out 可选，缺省只打印
 """
 
@@ -40,7 +40,7 @@ ID_PREFIXES = {
     "F", "T", "S", "X", "D", "RC", "CTX", "SC", "DE", "SCENE-SET", "RULING", "EQ",
 }
 FORBIDDEN_SCENE_FIELDS = {"nodes", "modules", "module", "members", "implementation", "required-nodes"}
-CHECK_CODES = tuple(f"CHK-{n:02d}" for n in range(1, 11))
+CHECK_CODES = tuple(f"CHK-{n:02d}" for n in range(1, 12))
 ELEMENT_FIELDS = (
     "nodes", "slice-edges", "cross-cutting-paths", "dependency-edges",
     "relation-constraints", "context-entries",
@@ -111,6 +111,14 @@ def all_node_index(data: dict) -> set[str]:
     }
 
 
+def graph_label(graph: dict, index: int) -> str:
+    return graph.get("project") or f"graphs[{index}]"
+
+
+def is_ctx_id(value: Any) -> bool:
+    return str(value).startswith("CTX::")
+
+
 def check_01(data: dict) -> Check:
     problems: list[str] = []
     if data.get("schema") != SCHEMA:
@@ -124,7 +132,7 @@ def check_01(data: dict) -> Check:
             problems.append(f"scene-set.scenes 存在非法稳定 ID: {scene}")
     seen_global: set[str] = set()
     for index, graph in enumerate(graphs_of(data)):
-        label = graph.get("project") or f"graphs[{index}]"
+        label = graph_label(graph, index)
         if not nonempty(graph.get("project")):
             problems.append(f"{label}: project 缺失")
         if not nonempty(graph.get("version-pin")):
@@ -162,7 +170,7 @@ def check_01(data: dict) -> Check:
 def check_02(data: dict) -> Check:
     problems: list[str] = []
     for index, graph in enumerate(graphs_of(data)):
-        label = graph.get("project") or f"graphs[{index}]"
+        label = graph_label(graph, index)
         nodes = node_map(graph)
         for ident, node in nodes.items():
             expected = VALID_NODE_KINDS.get(node.get("kind"))
@@ -179,7 +187,7 @@ def check_02(data: dict) -> Check:
             for member in members:
                 if member not in nodes:
                     problems.append(f"{label}: 竖切片 {s.get('id')} 的成员 {member} 不属于 V")
-                if str(member).startswith("CTX::"):
+                if is_ctx_id(member):
                     problems.append(f"{label}: 上下文条目 {member} 不得进入 S.members")
             has_feature = any(nodes.get(m, {}).get("kind") == "feature" for m in members)
             has_capability = any(nodes.get(m, {}).get("kind") == "capability" for m in members)
@@ -199,7 +207,7 @@ def check_02(data: dict) -> Check:
                 target = dep.get(endpoint)
                 if target not in nodes:
                     problems.append(f"{label}: 依赖边 {dep.get('id')} 的 {endpoint} 不属于 V")
-                if str(target).startswith("CTX::"):
+                if is_ctx_id(target):
                     problems.append(f"{label}: 上下文条目不得进入有向依赖图")
         for path in as_list(graph.get("cross-cutting-paths")):
             if not isinstance(path, dict):
@@ -213,7 +221,7 @@ def check_02(data: dict) -> Check:
             if rc.get("kind") not in VALID_RELATION_KINDS:
                 problems.append(f"{label}: 图内关系约束 {rc.get('id')} 的 kind 非法")
             for member in as_list(rc.get("members")):
-                if member not in nodes or str(member).startswith("CTX::"):
+                if member not in nodes or is_ctx_id(member):
                     problems.append(f"{label}: 图内关系约束 {rc.get('id')} 的成员 {member} 非法")
     return Check("CHK-02", "error", tuple(problems), "竖切片、节点与依赖边合法性")
 
@@ -221,24 +229,20 @@ def check_02(data: dict) -> Check:
 def check_03(data: dict) -> Check:
     unruled: list[str] = []
     for index, graph in enumerate(graphs_of(data)):
-        label = graph.get("project") or f"graphs[{index}]"
+        label = graph_label(graph, index)
         for relation in as_list(graph.get("undeclared-relations")):
             if not isinstance(relation, dict):
                 continue
             if not nonempty(relation.get("ruling-by")) or not nonempty(relation.get("effective-version")):
                 unruled.append(f"{label}::{relation.get('id')}")
-    differences = as_list(data.get("difference-entries"))
     if not unruled:
-        return Check("CHK-03", "error", (), "未决关系：登记簿无未裁决项")
-    severity = "error" if differences else "warning"
+        return Check("CHK-03", "error", (), "未决关系已全部裁决")
+    # 未裁决关系一律 fail-closed：无论是否已有 difference-entries，都阻塞进入 Stage 3（不得签发报告）。
     return Check(
-        "CHK-03", severity,
-        (f"未裁决关系按 fail-closed 处理，阻塞进入 Stage 3: {', '.join(unruled)}",) if differences
-        else (f"未裁决关系 {len(unruled)} 条；当前仍为过程材料，不得签发报告",),
+        "CHK-03", "error",
+        (f"未裁决关系按 fail-closed 处理，阻塞进入 Stage 3: {', '.join(unruled)}",),
         "未决关系与 fail-closed",
     )
-
-
 def check_04(data: dict) -> Check:
     problems: list[str] = []
     scene_set = scene_set_of(data)
@@ -320,7 +324,7 @@ def check_07(data: dict) -> Check:
 def check_08(data: dict) -> Check:
     problems: list[str] = []
     for index, graph in enumerate(graphs_of(data)):
-        label = graph.get("project") or f"graphs[{index}]"
+        label = graph_label(graph, index)
         connected: set[str] = set()
         for s in as_list(graph.get("slice-edges")):
             if isinstance(s, dict):
@@ -360,7 +364,7 @@ def check_10(data: dict) -> Check:
                 problems.append(f"{label} 含非对象上下文条目")
                 continue
             ident = entry.get("id")
-            if not valid_id(ident) or not str(ident).startswith("CTX::"):
+            if not valid_id(ident) or not is_ctx_id(ident):
                 problems.append(f"{label}: 上下文条目 ID {ident} 非法")
             elif ident in seen:
                 problems.append(f"{label}: 上下文条目 ID 重复 {ident}")
@@ -379,7 +383,7 @@ def check_10(data: dict) -> Check:
     inspect(as_list(scene_set_of(data).get("context-entries")), "domain", "scene-set.context-entries")
     for index, graph in enumerate(graphs_of(data)):
         inspect(as_list(graph.get("context-entries")), "project",
-                f"{graph.get('project') or index}.context-entries")
+                f"{graph_label(graph, index)}.context-entries")
     return Check("CHK-10", "error", tuple(problems), "上下文条目契约：旁挂、不进 V / S.members / 依赖图")
 
 
@@ -389,7 +393,43 @@ def run_checks(data: Any) -> list[Check]:
     return [
         check_01(data), check_02(data), check_03(data), check_04(data), check_05(data),
         check_06(data), check_07(data), check_08(data), check_09(data), check_10(data),
+        check_11(data),
     ]
+
+
+def check_11(data: dict) -> Check:
+    """场景映射裁决留痕：每条 slice->scene 映射须带 ruling-ref 与 ruling-by，且引用合法。
+
+    契约要求 scene-mapping[] 为「slice -> scene，带 ruling-ref 与 ruling-by」；
+    机械验留痕与引用合法性，裁决内容归 Human（与 CHK-03 同一纪律）。
+    竖切片引用沿用跨项目限定形态 ``<project>::<slice-id>``（与 difference-entries
+    的 supporting-slices 一致），短形态 ``<slice-id>`` 亦接受。
+    """
+    problems: list[str] = []
+    scene_ids = {s.get("id") for s in as_list(scene_set_of(data).get("scenes"))}
+    qualified_slice_ids: set[str] = set()
+    short_slice_ids: set[str] = set()
+    for graph in graphs_of(data):
+        for s in as_list(graph.get("slice-edges")):
+            if isinstance(s, dict):
+                short_slice_ids.add(s.get("id"))
+                qualified_slice_ids.add(f"{graph.get('project')}::{s.get('id')}")
+    for index, entry in enumerate(as_list(data.get("scene-mapping"))):
+        if not isinstance(entry, dict):
+            problems.append(f"scene-mapping[{index}] 必须是对象")
+            continue
+        if not nonempty(entry.get("ruling-ref")) or not nonempty(entry.get("ruling-by")):
+            problems.append(f"scene-mapping[{index}] 须带 ruling-ref 与 ruling-by（裁决留痕）")
+        ref = entry.get("slice")
+        if not isinstance(ref, str) or (ref not in qualified_slice_ids and ref not in short_slice_ids):
+            problems.append(
+                f"scene-mapping[{index}] 的 slice 须引用已存在的竖切片"
+                f"（<project>::<slice-id> 或 <slice-id>），得到 {ref!r}"
+            )
+        scene = entry.get("scene")
+        if not isinstance(scene, str) or scene not in scene_ids:
+            problems.append(f"scene-mapping[{index}] 的 scene 须引用固定场景集中的场景，得到 {scene!r}")
+    return Check("CHK-11", "error", tuple(problems), "场景映射裁决留痕")
 
 
 def summary_metrics(data: dict) -> dict:
@@ -397,7 +437,7 @@ def summary_metrics(data: dict) -> dict:
     per_graph: list[dict] = []
     undecided_stock = 0
     for index, graph in enumerate(graphs_of(data)):
-        label = graph.get("project") or f"graphs[{index}]"
+        label = graph_label(graph, index)
         nodes = [n for n in as_list(graph.get("nodes")) if isinstance(n, dict)]
         slices = [s for s in as_list(graph.get("slice-edges")) if isinstance(s, dict)]
         deps = [d for d in as_list(graph.get("dependency-edges")) if isinstance(d, dict)]
@@ -579,7 +619,7 @@ def main(argv: list[str] | None = None) -> int:
     p_init = sub.add_parser("init", help="写出最小输入模板")
     p_init.add_argument("--out", required=True, help="输出路径（.yaml/.yml 或 .json）；必须显式给出")
 
-    p_validate = sub.add_parser("validate", help="只跑 CHK-01..10")
+    p_validate = sub.add_parser("validate", help="只跑 CHK-01..11")
     p_validate.add_argument("--input", required=True, help="bundle 路径（YAML 或 JSON）")
 
     p_report = sub.add_parser("report", help="跑闸门并计算摘要指标")

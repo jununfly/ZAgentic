@@ -96,13 +96,13 @@ summary-metrics-usage       必须为 display-only
 `unknown`（两者皆无，须附最小验证计划）。`context-verdicts` 不改变 `verdict`，
 它补的是「两个项目都 native，但一个数据不出域、另一个依赖第三方 LLM API」这一类差异。
 
-## 5. 复核条件 CHK-01..10
+## 5. 复核条件 CHK-01..11
 
 | 条件 | 后果 | 仪器 |
 | --- | --- | --- |
 | CHK-01 版本与 ID | 不得签发报告 | 机械 |
 | CHK-02 竖切片合法 | 拒绝该边 | 机械 + Human 判原子化 |
-| CHK-03 未决关系 | 不得进入 Stage 3 | 机械验留痕，Human 裁决内容 |
+| CHK-03 未决关系 | 不得进入 Stage 3 | 机械验留痕；未裁决关系一律 error（fail-closed），不再降级为 warning，Human 裁决内容 |
 | CHK-04 场景集外部性 | 不得签发报告 | 机械验形状，Human 验来源 |
 | CHK-05 场景内等价 | 该节点对不写共有语义 | 机械验引用，Human 裁决等价 |
 | CHK-06 状态判据 | 该条目退回 | 机械 |
@@ -110,6 +110,7 @@ summary-metrics-usage       必须为 display-only
 | CHK-08 孤儿节点 | 就绪度提示，不阻塞 | 机械（WARN） |
 | CHK-09 报告结构 | 不得签发报告 | 机械验八节与来源标注，Human 验可复核性 |
 | CHK-10 上下文条目 | 该条目退回 | 机械验 scope / kind / 证据与旁挂 |
+| CHK-11 场景映射裁决 | 该映射退回 | 机械验 ruling-ref / ruling-by 留痕与 slice / scene 引用合法性，Human 裁决内容 |
 
 任何条件不满足时产出仍可保留为**过程材料**，但不得标注为已完成的横比报告。
 仪器对「零语义操作」「证据真伪」「语义等价」这类不可形式化的部分一律只验留痕，不做推断；
