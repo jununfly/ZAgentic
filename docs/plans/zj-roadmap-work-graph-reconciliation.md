@@ -4,6 +4,8 @@ doc-kind: plan
 
 # Roadmap reconciliation and work-graph design review
 
+> **Status: Closed (2026-11-10).** All four mapped Issues (#233 / #234 / #235 / #236) are closed and the close-out gate (§Execution order and close-out gate) is satisfied — the plan is closed by the four Issues. Physical removal per ADR 0010 (close-out 后清理, semantics migrated to `zj-docs-ontology`) is a separate, deliberate action and was **not** performed here. See [Plan close-out](#plan-close-out-2026-11-10).
+
 ## One-page overview
 
 ### Decision
@@ -620,3 +622,30 @@ and never become a gate.
 
 This section is a cross-reference only. The plan is closed by the four Issues in
 the table above, not by the two Issues named in this addendum.
+
+## Plan close-out (2026-11-10)
+
+All four mapped execution items are complete and their Issues are closed:
+
+| Item | Issue | Closed |
+|---|---|---|
+| S3-1 | [#233](https://github.com/jununfly/ZAgentic/issues/233) | ✅ |
+| S3-2 | [#234](https://github.com/jununfly/ZAgentic/issues/234) | ✅ (PR [#248](https://github.com/jununfly/ZAgentic/pull/248)) |
+| S4-1 | [#235](https://github.com/jununfly/ZAgentic/issues/235) | ✅ |
+| S4-2 | [#236](https://github.com/jununfly/ZAgentic/issues/236) | ✅ (PR [#251](https://github.com/jununfly/ZAgentic/pull/251)) |
+
+Close-out gate (§Execution order and close-out gate) satisfied:
+
+- All four Issues closed — ✅
+- S3/S4 evidence recorded above and in the linked review record — ✅
+- Final tests plus documentation/ADR/runtime/authority gates pass — ✅
+  (carried by PR #251: 7/7 governance gates, skill + repo tests green,
+  three install roots byte-identical)
+
+Per the plan's own statement ("The plan is closed by the four Issues"), this plan
+is **Closed (2026-11-10)**.
+
+Note: ADR 0010 defines `docs/plans/` as transient Process staging and calls for
+cleanup after close-out, with semantics migrated into `zj-docs-ontology`. That
+physical removal was **not** performed here — it is a separate, deliberate action
+left for an explicit follow-up so the plan's provenance stays reviewable.
