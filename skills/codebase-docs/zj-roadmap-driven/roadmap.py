@@ -4117,13 +4117,13 @@ class Roadmap:
                 return
             if work_uid in path:
                 cycle_node = dict(node)
-                cycle_node["label"] = f"↪ reference: {node['label']} [cycle omitted]"
+                cycle_node["label"] = f"↪ reference (same WorkItem, not a copy): {node['label']} [cycle omitted]"
                 lines.append(tree_line(cycle_node, prefix, is_last, depth, blocked, owners.get(node["id"])))
                 return
             display_node = node
             if placement.get("kind") == "reference":
                 display_node = dict(node)
-                display_node["label"] = f"↪ reference: {node['label']}"
+                display_node["label"] = f"↪ reference (same WorkItem, not a copy): {node['label']}"
             lines.append(tree_line(display_node, prefix, is_last, depth, blocked, owners.get(node["id"])))
             child_prefix = prefix + ("    " if is_last else "│   ")
             children = by_parent.get(work_uid, [])
@@ -4187,7 +4187,7 @@ class Roadmap:
             display_node = node
             if placement_kind == "reference":
                 display_node = dict(node)
-                display_node["label"] = f"↪ reference: {node['label']}"
+                display_node["label"] = f"↪ reference (same WorkItem, not a copy): {node['label']}"
             lines.append(tree_line(display_node, prefix, is_last, depth, blocked, owners.get(nid)))
             children = outline_children(nid)
             if not children:
