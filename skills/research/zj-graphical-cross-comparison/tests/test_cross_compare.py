@@ -45,9 +45,9 @@ def run_cli(*args: str) -> subprocess.CompletedProcess:
 
 
 class GateTests(unittest.TestCase):
-    def test_valid_bundle_passes_all_ten_checks(self):
+    def test_valid_bundle_passes_all_eleven_checks(self):
         checks = cc.run_checks(load_valid())
-        self.assertEqual(len(checks), 10)
+        self.assertEqual(len(checks), 11)
         failures = [f"{c.code}: {c.problems}" for c in checks if not c.ok]
         self.assertEqual([], failures)
 
@@ -62,7 +62,7 @@ class GateTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertEqual("error", result.severity)
 
-    def test_chk03_unruled_without_differences_is_warning_only(self):
+    def test_chk03_unruled_blocks_even_without_difference_entries(self):
         data = load_valid()
         data["graphs"][0]["undeclared-relations"].append({
             "id": "UR::unruled", "elements": [], "description": "疑似依赖但无裁决",
@@ -72,7 +72,7 @@ class GateTests(unittest.TestCase):
         data["difference-entries"] = []
         result = check(cc.run_checks(data), "CHK-03")
         self.assertFalse(result.ok)
-        self.assertEqual("warning", result.severity)
+        self.assertEqual("error", result.severity)
 
     def test_chk02_slice_requires_both_feature_and_capability(self):
         data = load_valid()
@@ -164,6 +164,36 @@ class GateTests(unittest.TestCase):
         data = load_valid()
         data["graphs"][0]["context-entries"][0]["members"] = ["F::personal-shared-scope"]
         self.assertFalse(check(cc.run_checks(data), "CHK-10").ok)
+
+    def test_chk11_scene_mapping_requires_ruling_ref_and_by(self):
+        data = load_valid()
+        scene_id = data["scene-set"]["scenes"][0]["id"]
+        slice_id = f"{data['graphs'][0]['project']}::{data['graphs'][0]['slice-edges'][0]['id']}"
+        data["scene-mapping"].append({"slice": slice_id, "scene": scene_id})
+        result = check(cc.run_checks(data), "CHK-11")
+        self.assertFalse(result.ok)
+        self.assertEqual("error", result.severity)
+        self.assertTrue(any("ruling" in problem for problem in result.problems))
+
+    def test_chk11_well_formed_scene_mapping_passes(self):
+        data = load_valid()
+        scene_id = data["scene-set"]["scenes"][0]["id"]
+        slice_id = f"{data['graphs'][0]['project']}::{data['graphs'][0]['slice-edges'][0]['id']}"
+        data["scene-mapping"].append({
+            "slice": slice_id, "scene": scene_id,
+            "ruling-ref": "EQ::001", "ruling-by": "zj",
+        })
+        self.assertTrue(check(cc.run_checks(data), "CHK-11").ok)
+
+    def test_chk11_bad_scene_or_slice_ref_fails(self):
+        data = load_valid()
+        data["scene-mapping"].append({
+            "slice": "S::nope", "scene": "SC::nope",
+            "ruling-ref": "EQ::001", "ruling-by": "zj",
+        })
+        result = check(cc.run_checks(data), "CHK-11")
+        self.assertFalse(result.ok)
+        self.assertTrue(any("引用" in problem or "竖切片" in problem for problem in result.problems))
 
     def test_chk01_version_pin_is_mandatory(self):
         data = load_valid()
@@ -294,6 +324,17 @@ class YamlParityTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stdout + result.stderr)
             payload = _yaml.safe_load(path.read_text(encoding="utf-8"))
             self.assertTrue(payload["not_for_conclusion"])
+
+
+class HelperTests(unittest.TestCase):
+    def test_graph_label_falls_back_to_index(self):
+        self.assertEqual("P1", cc.graph_label({"project": "P1"}, 0))
+        self.assertEqual("graphs[2]", cc.graph_label({}, 2))
+
+    def test_is_ctx_id_detects_ctx_namespace(self):
+        self.assertTrue(cc.is_ctx_id("CTX::data-residency"))
+        self.assertFalse(cc.is_ctx_id("F::example"))
+        self.assertFalse(cc.is_ctx_id(None))
 
 
 if __name__ == "__main__":
