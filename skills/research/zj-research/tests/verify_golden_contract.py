@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Golden contract tests for the zj-research protocol adapters.
 
-zj-research is a protocol adapter and supplies no compiler. These tests
-exercise the adapters against a compiler the caller injects through
-ZJ_RESEARCH_CLI / ZJ_RESEARCH_EVAL_CLI. A missing pointer is a setup failure:
-the runner fails with injection instructions and never resolves any fallback,
-including a retired bundled-artifact cache.
+zj-research is a protocol adapter and supplies no compiler and no publisher.
+These tests exercise the adapters against a compiler the caller injects through
+ZJ_RESEARCH_CLI / ZJ_RESEARCH_EVAL_CLI, and a report publisher through
+ZJ_RESEARCH_PUBLISHER. A missing pointer is a setup failure: the runner fails
+with injection instructions and never resolves any fallback, including a retired
+bundled-artifact cache or a hard-coded sibling-skill path.
 """
 
 import json
@@ -20,9 +21,32 @@ ROOT = Path(__file__).resolve().parents[1]
 ADAPTER = ROOT / "scripts" / "research_cli.py"
 RUNTIME_CONTRACT = ROOT / "tests" / "verify_runtime_contract.py"
 EVALUATION_ADAPTER = ROOT / "scripts" / "research_eval_cli.py"
-PUBLISHER = ROOT.parent / "zj-tech-research-report" / "scripts" / "publish_report.py"
 FIXTURE = Path(__file__).with_name("golden-contract.json")
 EVALUATION_ASSETS = ROOT / "tests" / "golden" / "controlled-quality-v1"
+
+
+def publisher_path() -> Path:
+    """Return the caller-injected publish_report.py, with no sibling fallback.
+
+    The publisher lives in a separate skill (zj-tech-research-report). This
+    contract owns no publisher and must not reach into a sibling skill by a
+    hard-coded parent-path assumption — that hidden coupling reintroduces
+    exactly the install-time fragility the vendor-neutral refactor removed.
+    The caller injects the path; a missing pointer is a setup failure.
+    """
+
+    raw = os.environ.get("ZJ_RESEARCH_PUBLISHER")
+    if not raw:
+        raise RuntimeError(
+            "No publisher injected: set ZJ_RESEARCH_PUBLISHER to the publish_report.py "
+            "path (e.g. export ZJ_RESEARCH_PUBLISHER="
+            '"python /path/to/zj-tech-research-report/scripts/publish_report.py"). '
+            "zj-research owns no publisher and resolves no sibling-skill fallback."
+        )
+    path = Path(raw)
+    if not path.exists():
+        raise RuntimeError(f"ZJ_RESEARCH_PUBLISHER points to a missing file: {path}")
+    return path
 
 
 def compiler_env() -> dict[str, str]:
@@ -68,7 +92,7 @@ def main() -> int:
         receipt = root / "receipt.json"
         report_ir.write_text(json.dumps(compiled_request["report"], ensure_ascii=False), encoding="utf-8")
         ledger.write_text(json.dumps(compiled_request["ledger"], ensure_ascii=False), encoding="utf-8")
-        run([sys.executable, str(PUBLISHER), str(report_ir), str(ledger), str(markdown), "--receipt", str(receipt)], env=env)
+        run([sys.executable, str(publisher_path()), str(report_ir), str(ledger), str(markdown), "--receipt", str(receipt)], env=env)
         publication = json.loads(receipt.read_text(encoding="utf-8"))
         if publication["evaluation"]["healthy"] is not True or not markdown.exists() or not markdown.with_suffix(".html").exists():
             raise AssertionError("compiler-backed publication did not produce a healthy Markdown/HTML pair")
@@ -88,7 +112,7 @@ def main() -> int:
         rejected_markdown = root / "rejected.md"
         rejected_receipt = root / "rejected-receipt.json"
         rejected = subprocess.run(
-            [sys.executable, str(PUBLISHER), str(report_ir), str(unhealthy), str(rejected_markdown), "--receipt", str(rejected_receipt)],
+            [sys.executable, str(publisher_path()), str(report_ir), str(unhealthy), str(rejected_markdown), "--receipt", str(rejected_receipt)],
             env=env,
             text=True,
             capture_output=True,
@@ -123,7 +147,7 @@ def verify_independent_report_runtime(root: Path, report_ir: Path, ledger: Path,
 
     independent_publisher = root / "independent-report-skill" / "scripts" / "publish_report.py"
     independent_publisher.parent.mkdir(parents=True)
-    shutil.copy2(PUBLISHER, independent_publisher)
+    shutil.copy2(publisher_path(), independent_publisher)
     missing_env = dict(env)
     missing_env.pop("ZJ_RESEARCH_RUNTIME", None)
     missing = subprocess.run(
