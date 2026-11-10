@@ -192,7 +192,11 @@ against their derived primary facts before any materialization.
 children as `group` and leaves as `work`, and preserves UIDs, decisions, status,
 edges, leases, and source bytes. Once Placements exist, `tree`, `section`, and
 `render` read them as the outline source; reference entries render with the
-text marker `↪ reference:`.
+text marker `↪ reference (same WorkItem, not a copy):`. The `↪` glyph is a
+redundant visual hint: removing it leaves the full plain-text semantics, so the
+notation never depends on color or an icon alone. The marker names identity in
+words instead of pointing at a primary display id, because display ids are
+convenience addresses and are not durable references.
 
 `render` writes the lightweight Markdown view: when there is a current focus it renders a radial view (ancestor chain always visible + focus subtree drilled down + non-focus siblings collapsed to a count), and falls back to a root tree at depth=2 when there is no focus; completed subtrees collapse, in_progress/blocked/open_question nodes force-expand; the tail carries a `ready` preview. `section` is bounded by default; use `--all` for an explicit full export and optionally cap its bytes. `focus` returns the first in-progress leaf.
 

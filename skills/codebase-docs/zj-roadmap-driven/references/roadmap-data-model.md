@@ -138,7 +138,7 @@ approval. Omitting it preserves the existing unrestricted behavior.
 
 When a Placement array exists, `tree`, `section`, and `render` use it as the
 Human outline source. Primary placements retain the old tree shape; reference
-placements are text-marked `↪ reference:` and never duplicate WorkItem state.
+placements are text-marked `↪ reference (same WorkItem, not a copy):` and never duplicate WorkItem state. The arrow is a redundant visual hint; the text alone carries the meaning in plain-text and screen-reader linear reading.
 
 ## Budget and exit criteria
 

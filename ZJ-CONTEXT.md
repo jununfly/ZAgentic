@@ -1019,8 +1019,10 @@ _Avoid_: leaf identity from display id, work with children, copied reference
 **Placement projection**:
 The Markdown/tree rendering path that reads explicit Placement facts when a
 roadmap has migrated Placements. Primary entries retain the legacy tree shape;
-reference entries render with the text marker `↪ reference:` so the extra
-context is visible without changing WorkItem status or scheduling semantics.
+reference entries render with the text marker
+`↪ reference (same WorkItem, not a copy):` so the extra context is visible
+without changing WorkItem status or scheduling semantics; the text alone
+carries the meaning and the arrow is only a redundant visual hint.
 _Avoid_: rendering parent/children after migration, color-only reference marker
 
 **Reconciliation corpus**:

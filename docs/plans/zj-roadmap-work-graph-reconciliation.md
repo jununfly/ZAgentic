@@ -28,8 +28,9 @@ Blocking findings:
 
 Non-blocking findings:
 
-- The final Markdown notation for reference Placements (`↪` or another marker)
-  needs Human review.
+- The final Markdown notation for reference Placements was settled by
+  Human review on 2026-11-10 (see the S4-2 review record):
+  `↪ reference (same WorkItem, not a copy):`.
 - A separate non-causal `precedes` constraint may be useful, but `priority` plus
   `blocks` should be tried first to avoid expanding the relation vocabulary.
 
@@ -121,7 +122,8 @@ Unknown:
 
 - The duplicate and overlap rate in completed real-world Roadmaps.
 - How often users need non-causal mandatory ordering beyond `priority` and `blocks`.
-- Whether reference Placements are understandable in the bounded Markdown view.
+- Whether collapsed radial/anchor views can hide a reference entry;
+  recorded as unresolved risks R2/R3 in the 2026-11-10 review record.
 
 ### Goals
 
@@ -353,9 +355,11 @@ process artifacts under `tmp/skills-outputs/` and remain out of Git):
 | Placement projection and typed migration | source-preserving primary/reference projection, radial Markdown coverage, group/work classification | `skills/codebase-docs/zj-roadmap-driven/tests/test_placement_projection.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_type_migration.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_placement_migration.py` |
 | S3-1 default `promote --accept` routing | reviewed digest/idempotency adapter; JSON/SQLite receipts; stale/digest/legacy-override rejection; direct API bypass rejected | `skills/codebase-docs/zj-roadmap-driven/tests/test_promote.py`, `skills/codebase-docs/zj-roadmap-driven/tests/test_trace_prune_context.py`, `skills/codebase-docs/zj-roadmap-driven/roadmap.py`, `skills/codebase-docs/zj-roadmap-driven/roadmap_cli.py` |
 
-This closes the synthetic S0–S2 implementation gate and implements S3-1. The
-S3 rollout close-out, replay against three real Roadmaps, and Human review of the
-reference notation remain open before the plan can be declared complete.
+This closes the synthetic S0–S2 implementation gate and implements S3-1. S3-2
+has since been closed out (#234), the S4-1 three-corpus gate was dropped
+(2026-11-10), and the S4-2 Human notation review closed on 2026-11-10 (see the
+S4-2 review record). Six unresolved accessibility ambiguities remain recorded
+as risks R1–R6 rather than being reported as passes.
 
 ## Rollout, recovery, and lifecycle
 
@@ -474,7 +478,7 @@ reopen, and topology effects obvious.
 | Should `group`/`work` typing precede Placement separation? | Migration spike on three real Roadmaps | Migration owner | Blocking: before S2 implementation plan |
 | Is `precedes` needed in addition to `priority` and `blocks`? | At least three real mandatory non-causal ordering cases | Decision owner | Non-blocking: default is no new Edge type |
 | Should proposals persist in the carrier or an isolated process artifact? | Crash/retry and ADR 0010 path analysis | Carrier owner | Blocking: before preview persistence lands |
-| How should reference Placements render in Markdown? | Plain-text and screen-reader review of two variants | Projection owner | Non-blocking: before S4 |
+| ~~How should reference Placements render in Markdown?~~ Decided 2026-11-10 | Three variants (A/B/C) reviewed on two carriers; see the S4-2 review record | Projection owner | Closed: `↪ reference (same WorkItem, not a copy):` |
 | Is full immutable revision history justified later? | Storage/latency measurements and recovery incidents | Decision owner | Non-blocking: after ChangeSet rollout |
 
 ## Review record
@@ -483,7 +487,39 @@ reopen, and topology effects obvious.
 |---|---|---|---|---|
 | Initial architecture analysis | 2026-11-02 | Ordered tree conflates identity, decomposition, order and dependency | Choose reconciliation + ChangeSet first; tree becomes a projection incrementally | Identity key and migration remain blocking |
 | S3-2 close-out | 2026-11-10 | Direct topology write 收口；`promote --accept` parity / fault / 兼容错误证据 | 删除 `apply_promotion` 的 accept 分支与 `Roadmap.promote` 的 `create_plan` 消费（`add_node`/`add_edge`）；补 `promote --accept` 与 `apply` 的 receipt 同构 + Markdown 发布失败只留 stale view 证据；direct API / CLI 缺 digest 均给出可执行迁移命令。S4-1 / S4-2 仍 open，本 plan 不关闭。 | S4 real-corpus replay 与 Human notation review 仍 blocking |
-| Pending Human review | TBD | Validate daily usability and reference notation | Open | Human review pending |
+| zj (Human) | 2026-11-10 | #236 reference Placement notation short-read | Chose variant C: `↪ reference (same WorkItem, not a copy):`; full record below | R1–R6 recorded as unresolved risks |
+
+### S4-2 Human notation review record (2026-11-10, #236)
+
+| Field | Value |
+| --- | --- |
+| Reviewer | zj (Human maintainer) |
+| Date | 2026-11-10 |
+| Views | `tree`, `tree --anchor`, `section`, `section --all`, `render`, `placement list`, `stats` |
+| Variants | A `↪ reference: <label>`; B `<label> [reference to 1-1]`; C `↪ reference (same WorkItem, not a copy): <label>` |
+| Carriers | single-file JSON and SQLite |
+| Fixture | one WorkItem in three outline contexts; long title, Chinese, completed, in_progress, blocked and repeated context; isolated under `tmp/skills-outputs/` with repository sources read-only |
+| Findings | six Human questions reviewed against real CLI output; mechanically decidable parts proven by the fixture; unresolved ambiguities recorded as R1–R6 below, **not** defaulted to pass |
+| Rationale | B was rejected: display ids come from the WorkItem, so a reference row also starts with `1-1`, producing the self-reference `1-1. Shared work [reference to 1-1]`; its trailing marker lands 200+ characters into a long title; and display ids are explicitly not durable references. A was rejected because "same WorkItem / not a copy" can only be inferred. C keeps the marker leading, spells identity out in words, and still reads correctly with the `↪` glyph removed. |
+| Final notation | `↪ reference (same WorkItem, not a copy): <label>` |
+| Cross-carrier | 3 variants x 7 views x 2 carriers; byte-identical after normalizing carrier filename, timestamp and uid (21/21) |
+| Not a copy | 15 Placements over 9 distinct `work_uid`; status icons, blocked chain and ready list appear once per WorkItem |
+
+Unresolved risks (acceptance criterion 4 — recorded as risks, not as passes):
+
+| ID | Risk | Scope |
+| --- | --- | --- |
+| R1 | Primary and reference rows show the same display id (`1-1.` three times), because display ids come from the WorkItem rather than the Placement. | All variants; display-id projection layer, out of #236 scope |
+| R2 | `tree --anchor` collapses a completed reference into `... 1-4 已完成（折叠 1 项）▸`; the collapsed summary carries no `reference` text. | All variants; render-layer follow-up |
+| R3 | In the radial `render` view the tree shows only the reference row while the primary row appears under `### 下一步可开工（ready 前 3）` without a marker. | All variants; existing focus-radial design |
+| R4 | A trailing marker lands after 200+ characters on long titles, so a screen reader reaches it only after the whole label. | Variant B (rejected) |
+| R5 | Display ids are convenience addresses, not durable references; a marker naming `1-1` drifts when the outline changes. | Variant B (rejected) |
+| R6 | Uniqueness of Status, Decision, lease and scheduling is guaranteed structurally but never stated in words in the view. | A/B; partly mitigated by C |
+
+R2 and R3 are render-layer follow-ups and are **not** fixed by this issue.
+R1 and R6 remain known limitations of the display-id projection and the view
+text respectively. The final notation is applied in the renderer, tests, CLI
+reference, data model and skill documentation as one identical string.
 
 ### S3-2 close-out (2026-11-10)
 
@@ -510,8 +546,10 @@ ADR / authority）全绿。
   （仅在后续真要喂真实语料时才生效）。
 - S4-2 (#236) Human notation 评审不受影响，仍 open。
 
-**本 plan 保持 open**：S4-2 (#236) 仍 open（S4-1 的 three-corpus 门槛已于 2026-11-10 撤销，见上），close-out gate 要求四个
-Issue 全关，故 S3-2 收口不触发 plan 关闭。
+**本 plan 的四项执行项现已全部完成**：S4-2 (#236) Human notation review 于
+2026-11-10 收口（见上方 review record），S4-1 的 three-corpus 门槛已于同日撤销。
+GitHub Issue 的关闭与 plan 按 ADR 0010 的 close-out/移除属独立动作，不在本次
+文档改动内执行；R1–R6 作为已知风险随结论一并保留。
 
 ### Short-read acceptance
 
@@ -536,7 +574,7 @@ do not get reported as one indistinguishable task.
 | [x] | S3-1 | Make `promote --accept` route through reviewed reconciliation and ChangeSet apply; remove the direct `add_node` bypass. | [#233](https://github.com/jununfly/ZAgentic/issues/233) | Current reconciliation/apply APIs | Single/SQLite accept receipts, stale/digest/idempotency rejection tests, legacy override rejection, and direct API bypass rejection. |
 | [x] | S3-2 | Close the S3 rollout: compatibility error, CLI/reference updates, parity/fault tests, governance gates, and Review record. | [#234](https://github.com/jununfly/ZAgentic/issues/234) | S3-1 | Explicit `reconcile + apply` and default accept produce the same semantic state; all gates pass. |
 | [x] | S4-1 | ~~Replay migration and reconciliation against three supplied, read-only real Roadmap copies~~ — gate relaxed: original intent was evidence of usability/effectiveness, already confirmed sufficient via in-development dual-carrier fixture replay and dev use; the three-redacted-corpus collection requirement is dropped. | [#235](https://github.com/jununfly/ZAgentic/issues/235) | S2 implementation (done) | In-development validation: 30-scenario dual-carrier JSON/SQLite corpus replay (parity, reconciliation dispositions, zero false merges) + dev confirmation of usability/effectiveness. Source hashes/UIDs/Status/Decisions/Edges/leases preserved on synthetic corpora. Three-corpus gate dropped per 2026-11-10 decision. |
-| [ ] | S4-2 | Human-review reference Placement notation in plain text and screen-reader-oriented Markdown views, then fix the final notation in tests/docs. | [#236](https://github.com/jununfly/ZAgentic/issues/236) | Placement projection fixture; Human reviewer | Dated review record with chosen notation, rationale, unresolved risks and synchronized tests/docs. |
+| [x] | S4-2 | Human-review reference Placement notation in plain text and screen-reader-oriented Markdown views, then fix the final notation in tests/docs. | [#236](https://github.com/jununfly/ZAgentic/issues/236) | Placement projection fixture; Human reviewer | 2026-11-10 review record (reviewer/date/views/variants/findings/rationale/final choice), R1–R6 risks, and one identical marker across renderer, tests, CLI reference, data model, SKILL.md, ZJ-CONTEXT.md and this plan. |
 
 Execution order and close-out gate:
 
@@ -551,9 +589,9 @@ The actual work must use the `zj-roadmap-driven` workflow. Real Roadmap
 sources stay read-only; migration targets and replay reports go under
 `tmp/skills-outputs/`. The plan may be closed only after all four Issues are
 closed, the S3/S4 evidence is added above or in the linked review record, and
-the final tests plus documentation/ADR/runtime/authority gates pass. S3
-rollout closure is complete; S4-1's real-corpus gate was dropped (2026-11-10),
-so only S4-2 Human notation review remains open.
+the final tests plus documentation/ADR/runtime/authority gates pass. S3 rollout closure is complete; S4-1's real-corpus gate was dropped
+(2026-11-10); S4-2 Human notation review closed on 2026-11-10 with R1–R6
+recorded as unresolved risks. All four mapped execution items are complete.
 
 ## Parallel work — issue mapping addendum (2026-11-10)
 
@@ -561,7 +599,8 @@ so only S4-2 Human notation review remains open.
 produced [#245](https://github.com/jununfly/ZAgentic/issues/245), a scoped
 improvement to `zj-roadmap-driven`. It is **parallel to this plan**, not a fifth
 mapped execution item: the four rows above and the close-out gate are unchanged
-(only S3-1 is complete; S3-2, S4-1 and S4-2 remain open). This addendum keeps
+(status as recorded when this addendum was written; see the four-row table
+above for current status). This addendum keeps
 the two tracks from being reported as one.
 
 | Status | Scope | Issue / PR | Evidence | Remaining |
