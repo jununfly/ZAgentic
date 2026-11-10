@@ -525,3 +525,28 @@ closed, the S3/S4 evidence is added above or in the linked review record, and
 the final tests plus documentation/ADR/runtime/authority gates pass. Until
 then, S3 rollout closure and S4 real-corpus/Human validation are explicitly
 unfinished.
+
+## Parallel work — issue mapping addendum (2026-11-10)
+
+[#242](https://github.com/jununfly/ZAgentic/issues/242) (ZKC usage feedback)
+produced [#245](https://github.com/jununfly/ZAgentic/issues/245), a scoped
+improvement to `zj-roadmap-driven`. It is **parallel to this plan**, not a fifth
+mapped execution item: the four rows above and the close-out gate are unchanged
+(only S3-1 is complete; S3-2, S4-1 and S4-2 remain open). This addendum keeps
+the two tracks from being reported as one.
+
+| Status | Scope | Issue / PR | Evidence | Remaining |
+| --- | --- | --- | --- | --- |
+| [x] | Slice 1 — read-only `signals` advisory plus registering the already-existing `next` command | [#245](https://github.com/jununfly/ZAgentic/issues/245), [#246](https://github.com/jununfly/ZAgentic/pull/246) | main `8d1e794`; 29 new contract tests; skill tests 603 and repo tests 243 green; closure / dangling-refs / ADR / frontmatter / authority gates clean; three install roots byte-identical (528 files each) | — |
+| [ ] | Slice 2 — `work.patch` gains `exit_criteria`, and a one-confirm "signal → candidate ChangeSet → Human decision" path | [#245](https://github.com/jununfly/ZAgentic/issues/245) | not started | Blocked on S3-2 ([#234](https://github.com/jununfly/ZAgentic/issues/234)): a second canonical write path would undercut the direct-bypass close-out |
+
+Dependency direction: slice 2 must reuse `zj-changeset/v1` digest,
+`--idempotency-key` and `--scope`, and must not add a second canonical write
+path. S4-1 ([#235](https://github.com/jununfly/ZAgentic/issues/235)) would
+provide the first real Roadmap corpus for the signal layer, but the three
+redacted read-only copies do not exist yet. Signals stay a process-state
+advisory: they never infer product facts, never mutate the carrier, and never
+become a gate.
+
+This section is a cross-reference only. The plan is closed by the four Issues in
+the table above, not by the two Issues named in this addendum.
