@@ -49,8 +49,8 @@ def migrate_types(source: str | Path, output: str | Path) -> dict[str, Any]:
     write_carrier(target_path, target_storage, data, export_lease_store(original))
     return {
         "schema": "zj-node-type-migration/v1",
-        "source": str(source_path),
-        "target": str(target_path),
+        "source": str(source),
+        "target": str(output),
         "source_unchanged": True,
         "typed_plan_nodes": typed,
         "node_types": {

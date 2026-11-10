@@ -66,6 +66,16 @@ class TypeMigrationTest(unittest.TestCase):
                 )
                 self.assertEqual(run_cli("validate", target, cwd=tmpdir).stdout.strip(), "Valid.")
 
+    def test_migrate_types_reports_given_paths_not_resolved(self):
+        with tempfile.TemporaryDirectory() as directory:
+            tmpdir = Path(directory)
+            run_cli("init", "source.json", "--title", "Roadmap", cwd=tmpdir)
+            report = json.loads(run_cli(
+                "migrate-types", "source.json", "--output", "target.json", cwd=tmpdir,
+            ).stdout)
+            self.assertEqual(report["source"], "source.json")
+            self.assertEqual(report["target"], "target.json")
+
 
 if __name__ == "__main__":
     unittest.main()

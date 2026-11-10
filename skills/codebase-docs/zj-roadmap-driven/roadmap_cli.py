@@ -1200,11 +1200,12 @@ def cmd_migrate_placements(args: dict):
 
 
 def cmd_migrate_types(args: dict):
-    source = Path(args["positional"][0]).expanduser().resolve()
-    output = args.get("output")
-    if output in (None, "true"):
+    source_arg = args["positional"][0]
+    output_arg = args.get("output")
+    if output_arg in (None, "true"):
         raise CliUsageError("migrate-types requires --output <path>")
-    target = Path(output).expanduser().resolve()
+    source = Path(source_arg).expanduser().resolve()
+    target = Path(output_arg).expanduser().resolve()
     with ExitStack() as stack:
         locked_dirs = set()
         for lock_path in sorted({str(source), str(target)}):
@@ -1213,7 +1214,8 @@ def cmd_migrate_types(args: dict):
                 continue
             locked_dirs.add(lock_dir)
             stack.enter_context(roadmap_file_lock(lock_path))
-        report = migrate_types(source, target)
+        # 锁用解析路径；返回给调用方的 source/target 保留原始（相对）形态，避免绝对路径落入产出物（ADR 0010）。
+        report = migrate_types(source_arg, output_arg)
     _print_json(report)
 
 
