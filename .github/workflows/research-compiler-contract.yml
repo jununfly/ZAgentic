@@ -90,6 +90,7 @@ jobs:
     env:
       ZJ_RESEARCH_CLI: ${{ vars.ZJ_RESEARCH_CLI }}
       ZJ_RESEARCH_EVAL_CLI: ${{ vars.ZJ_RESEARCH_EVAL_CLI }}
+      ZJ_RESEARCH_PUBLISHER: ${{ github.workspace }}/skills/research/zj-tech-research-report/scripts/publish_report.py
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

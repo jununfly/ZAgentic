@@ -96,7 +96,7 @@ summary-metrics-usage       必须为 display-only
 `unknown`（两者皆无，须附最小验证计划）。`context-verdicts` 不改变 `verdict`，
 它补的是「两个项目都 native，但一个数据不出域、另一个依赖第三方 LLM API」这一类差异。
 
-## 5. 复核条件 CHK-01..11
+## 5. 复核条件 CHK-01..12
 
 | 条件 | 后果 | 仪器 |
 | --- | --- | --- |
@@ -111,6 +111,7 @@ summary-metrics-usage       必须为 display-only
 | CHK-09 报告结构 | 不得签发报告 | 机械验八节与来源标注，Human 验可复核性 |
 | CHK-10 上下文条目 | 该条目退回 | 机械验 scope / kind / 证据与旁挂 |
 | CHK-11 场景映射裁决 | 该映射退回 | 机械验 ruling-ref / ruling-by 留痕与 slice / scene 引用合法性，Human 裁决内容 |
+| CHK-12 差异条目基数 | 不得签发报告 | 机械验每条 DE 的 scene 引用固定场景集、project 匹配某图，且 (scene, project) 对集合恰为 \|scenes\|×\|projects\| 全集（缺 / 重 / 溢一律 error），Human 裁决内容 |
 
 任何条件不满足时产出仍可保留为**过程材料**，但不得标注为已完成的横比报告。
 仪器对「零语义操作」「证据真伪」「语义等价」这类不可形式化的部分一律只验留痕，不做推断；
