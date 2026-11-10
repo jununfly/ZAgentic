@@ -19,6 +19,12 @@ from research_cli import invoke
 PROTOCOL = "zj-research-eval-cli/v1"
 REQUIRED_OPERATIONS = {"validate-assets", "calibrate-judge"}
 
+# operation -> (expected input count, ordered request keys)
+OPERATION_ASSETS = {
+    "validate-assets": (4, ("manifest", "rubrics", "annotations", "calibration")),
+    "calibrate-judge": (2, ("rubrics", "calibration")),
+}
+
 
 def command() -> list[str]:
     """Resolve the evaluation compiler command.
@@ -57,13 +63,9 @@ def main() -> int:
         return 0
     if args.operation is None:
         parser.error("operation is required unless --check is used")
-    expected_inputs = 4 if args.operation == "validate-assets" else 2
+    expected_inputs, keys = OPERATION_ASSETS[args.operation]
     if len(args.inputs) != expected_inputs:
         parser.error(f"{args.operation} requires {expected_inputs} JSON input files")
-    if args.operation == "validate-assets":
-        keys = ("manifest", "rubrics", "annotations", "calibration")
-    else:
-        keys = ("rubrics", "calibration")
     request: dict[str, object] = {"protocol": PROTOCOL, "operation": args.operation}
     request.update({key: read_json(path) for key, path in zip(keys, args.inputs)})
     response = invoke(executable, request)
