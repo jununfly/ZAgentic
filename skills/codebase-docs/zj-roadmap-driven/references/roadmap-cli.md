@@ -60,7 +60,9 @@ python roadmap_cli.py trace prune <roadmap_path> <trace_uid> [--edge <edge_id>]
 python roadmap_cli.py context <roadmap_path> <node_id> [--include trace]
 python roadmap_cli.py promote <roadmap_path> <trace_uid> --under <plan_id> [--label "..."]
 python roadmap_cli.py promote <roadmap_path> <trace_uid> --accept \
-    --approved-digest <digest> --idempotency-key <key> [--answer '<json object>']
+    --approved-digest <digest> --idempotency-key <key> [--answer '<json object>'] \
+    [--fault-stage before-commit|during-commit|after-commit-before-view]
+python roadmap_cli.py promote <roadmap_path> <trace_uid> --reject [--reason "..."]
 
 # Deterministic reconciliation preview (read-only; no ChangeSet is applied)
 python roadmap_cli.py reconcile <roadmap_path> <trace_uid>
@@ -70,6 +72,7 @@ python roadmap_cli.py reconcile <roadmap_path> <trace_uid> --answer '<json objec
 # Reviewed ChangeSet apply; retries with the same key are idempotent
 python roadmap_cli.py apply <roadmap_path> <proposal_id> \
     --approved-digest <digest> --idempotency-key <key> \
+    [--answer '<json object>'] \
     [--fault-stage before-commit|during-commit|after-commit-before-view]
 
 # Reviewed batch ChangeSet; duplicate novel findings share one WorkItem
@@ -135,11 +138,15 @@ same candidate-state validator as generic ChangeSets.
 `promote --accept` is a compatibility adapter for the reviewed reconciliation
 path. It recomputes the trace-scoped proposal (or recovers the original proposal
 on an idempotent retry), verifies `--approved-digest`, and then delegates the
-topology write to the same ChangeSet apply path as `apply`. It requires an
-idempotency key and rejects legacy `--under`, `--label`, and `--reason` overrides;
-Human decisions belong in `reconcile --answer`. Direct `Roadmap.promote(...,
-"accept")` calls return `E_RECONCILIATION_REQUIRED`, and old `promotion` fields
-are compatibility state rather than a second canonical write path.
+topology write and Markdown publication to the same ChangeSet apply path as
+`apply`. It requires an idempotency key and rejects legacy `--under`, `--label`,
+and `--reason` overrides; Human decisions belong in `reconcile --answer`. The
+legacy direct topology write — the `apply_promotion` accept branch and the
+`Roadmap.promote` `create_plan` consumer (`add_node` / `add_edge`) — was removed
+in #234: `apply_promotion` no longer accepts `accept`, and `Roadmap.promote(...,
+"accept")` raises `E_RECONCILIATION_REQUIRED` before any state machine runs. The
+reviewed path is now the only writer; old `promotion` fields are compatibility
+state rather than a second canonical write path.
 
 Repeated `--trace` values produce one deterministic
 `zj-reconciliation-batch/v1` response: duplicate trace references are removed,

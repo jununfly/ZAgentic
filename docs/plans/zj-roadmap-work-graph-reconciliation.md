@@ -482,7 +482,21 @@ reopen, and topology effects obvious.
 | Reviewer | Date | Concern | Response or decision | Remaining risk |
 |---|---|---|---|---|
 | Initial architecture analysis | 2026-11-02 | Ordered tree conflates identity, decomposition, order and dependency | Choose reconciliation + ChangeSet first; tree becomes a projection incrementally | Identity key and migration remain blocking |
+| S3-2 close-out | 2026-11-10 | Direct topology write 收口；`promote --accept` parity / fault / 兼容错误证据 | 删除 `apply_promotion` 的 accept 分支与 `Roadmap.promote` 的 `create_plan` 消费（`add_node`/`add_edge`）；补 `promote --accept` 与 `apply` 的 receipt 同构 + Markdown 发布失败只留 stale view 证据；direct API / CLI 缺 digest 均给出可执行迁移命令。S4-1 / S4-2 仍 open，本 plan 不关闭。 | S4 real-corpus replay 与 Human notation review 仍 blocking |
 | Pending Human review | TBD | Validate daily usability and reference notation | Open | Human review pending |
+
+### S3-2 close-out (2026-11-10)
+
+S3-2 (#234) 已收口：直接拓扑写入路径（`apply_promotion` 的 `accept` 分支返回的
+`create_plan`，以及 `Roadmap.promote` 据此执行的 `add_node`/`add_edge`）已彻底删除。
+`promote --accept` 与 `apply` 现在经由**同一** ChangeSet apply 路径，parity
+（两 carrier 的 receipt / trace / derived queries / Markdown 同构）、fault
+（Markdown 发布失败只留 stale view，重试修复）与兼容错误（direct API / CLI 缺
+digest 均给出可执行迁移命令）证据齐备，governance gates（closure / dangling-refs /
+ADR / authority）全绿。
+
+**本 plan 保持 open**：S4-1 (#235) 与 S4-2 (#236) 仍 open，close-out gate 要求四个
+Issue 全关，故 S3-2 收口不触发 plan 关闭。
 
 ### Short-read acceptance
 
@@ -505,7 +519,7 @@ do not get reported as one indistinguishable task.
 | Status | ID | Remaining item | Issue | Depends on | Completion evidence |
 |---|---|---|---|---|---|
 | [x] | S3-1 | Make `promote --accept` route through reviewed reconciliation and ChangeSet apply; remove the direct `add_node` bypass. | [#233](https://github.com/jununfly/ZAgentic/issues/233) | Current reconciliation/apply APIs | Single/SQLite accept receipts, stale/digest/idempotency rejection tests, legacy override rejection, and direct API bypass rejection. |
-| [ ] | S3-2 | Close the S3 rollout: compatibility error, CLI/reference updates, parity/fault tests, governance gates, and Review record. | [#234](https://github.com/jununfly/ZAgentic/issues/234) | S3-1 | Explicit `reconcile + apply` and default accept produce the same semantic state; all gates pass. |
+| [x] | S3-2 | Close the S3 rollout: compatibility error, CLI/reference updates, parity/fault tests, governance gates, and Review record. | [#234](https://github.com/jununfly/ZAgentic/issues/234) | S3-1 | Explicit `reconcile + apply` and default accept produce the same semantic state; all gates pass. |
 | [ ] | S4-1 | Replay migration and reconciliation against three supplied, read-only real Roadmap copies. | [#235](https://github.com/jununfly/ZAgentic/issues/235) | S2 implementation; three redacted Roadmap inputs | Source hashes unchanged; UIDs, Status, Decisions, Edges and leases preserved; JSON/SQLite parity and replay report pass. |
 | [ ] | S4-2 | Human-review reference Placement notation in plain text and screen-reader-oriented Markdown views, then fix the final notation in tests/docs. | [#236](https://github.com/jununfly/ZAgentic/issues/236) | Placement projection fixture; Human reviewer | Dated review record with chosen notation, rationale, unresolved risks and synchronized tests/docs. |
 

@@ -931,7 +931,11 @@ The compatibility behavior of `promote --accept`: it requires an approved
 reconciliation digest and idempotency key, resolves the trace-scoped proposal,
 and delegates the topology write and Markdown publication to the ChangeSet apply
 path. Legacy `--under`, `--label`, and `--reason` overrides are rejected during
-accept; Human choices belong in `reconcile --answer`.
+accept; Human choices belong in `reconcile --answer`. As of #234 the legacy
+direct topology write — the `apply_promotion` accept branch and the
+`Roadmap.promote` `create_plan` consumer (`add_node`/`add_edge`) — is removed:
+`apply_promotion` no longer accepts `accept`, and `Roadmap.promote(..., "accept")`
+raises `E_RECONCILIATION_REQUIRED` before any state machine runs.
 _Avoid_: direct add-node acceptance, promotion as a second canonical fact source
 
 **E_RECONCILIATION_REQUIRED**:
