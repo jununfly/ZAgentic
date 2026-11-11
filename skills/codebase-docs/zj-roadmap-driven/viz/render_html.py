@@ -13,8 +13,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .context import unchecked_status
+from .dependency import build_edge_meta
+
 HERE = Path(__file__).resolve().parent
 DAGRE_JS = (HERE / "dagre.vendor.js").read_text(encoding="utf-8")
+
+# 主视图内嵌的展示字段白名单：carrier 的 context / traces 等侧载字段绝不进 GRAPH，
+# 否则「上下文条目增长时主视图字节不变」这条 S4 硬判据会失效。
+DISPLAY_FIELDS = (
+    "id", "label", "status", "mode", "parent", "rounds",
+    "notes", "decisions", "exit_criteria", "budget",
+)
 
 # ---------------------------------------------------------------------------
 # HTML 模板（CSS + 结构 + JS 运行时）。__DAGRE__ / __GRAPH__ / __ENVELOPE__ 占位。
@@ -37,6 +47,10 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
   .anchor input[type=range]{width:130px}
   .stat{font-size:11px;color:var(--muted);padding:3px 8px;background:var(--chip);border-radius:6px}
   .stat.warn{background:var(--warn);color:#92400e}
+  .stale{background:#fdecec;color:#991b1b;border:1px solid #f3c4c4;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px}
+  .edge-info{margin-top:8px;font-size:11px;color:var(--muted);background:#fafafa;border:1px dashed var(--line);border-radius:8px;padding:6px 8px}
+  .edge-hit{cursor:pointer}
+  .edge-hit:hover{stroke-width:3}
   .layout{display:flex;gap:12px;align-items:flex-start;position:relative}
   .dag{flex:1 1 auto;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
   .dag-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px}
@@ -88,6 +102,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
   .nid{font-size:11px;fill:var(--ink);font-weight:800;font-family:ui-monospace,Menlo,Consolas,monospace}
 </style>
 </head><body><div class="wrap">
+  <div id="stale-banner" class="stale" hidden></div>
   <div class="anchor">
     <h1 id="ptitle"></h1>
     <div class="grp">焦点 <select id="focus"></select></div>
@@ -110,6 +125,12 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
     <div class="sidebar" id="sidebar"><h2>信息卡片（三级 LOD · 40 行阅读预算）</h2><div id="cards"></div></div>
     <div class="sidebar-handle" id="sidebar-handle" title="展开/收起卡片侧栏">收起</div>
   </div>
+  <div class="delta"><h2 style="font-size:12px;margin:0 0 8px;color:var(--muted)">边回溯 / 上下文侧载</h2>
+    <div id="edge-info" class="edge-info">点击 blocks 边可回溯 edge id 与来源；上下文条目由 --context 侧载为独立 JSON。</div>
+    <details><summary>上下文包入口（恒定，不随条目数变化）</summary>
+      <div class="legend">单节点的决策、trace、边、证据引用与影响闭包打包为侧载数据；主视图不内嵌条目、不显示条目数，展开时显示上下文来源、BFS 半径与条目数。</div>
+    </details>
+  </div>
   <div class="delta"><h2 style="font-size:12px;margin:0 0 8px;color:var(--muted)">增量重入（Δ 提示）</h2>
     <div class="row" id="delta"></div>
     <div class="legend" id="delta-note"></div>
@@ -119,6 +140,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <script>
 const GRAPH = __GRAPH__;
 const ENVELOPE = __ENVELOPE__;
+const EDGE_META = __EDGE_META__;
+const EDGE_BY_PAIR = {};
+EDGE_META.forEach(m=>{ EDGE_BY_PAIR[m.from+"|"+m.to]=m; });
 const W = {T1:0.30,T2:0.25,T3:0.15,T4:0.15,T5:0.10,T6:0.05};
 const BUDGET = 40, COST = {L2:4,L1:2,L0:1};
 const NODE_H = 46, V_GAP = 18, H_GAP = 44;
@@ -287,7 +311,9 @@ function render(){
   edges.forEach(e=>{ if(e.type==="blocks"&&dl.keep.has(e.from)&&dl.keep.has(e.to)){
     const a=dl.pos[e.from],b=dl.pos[e.to], aw=dl.w[e.from], ah=dl.h[e.from], bw=dl.w[e.to], bh=dl.h[e.to];
     const ax=a.x+aw, ay=a.y+ah/2, bx=b.x, by=b.y+bh/2;
-    svg+=`<path d="M${ax},${ay} C${(ax+bx)/2},${ay} ${(ax+bx)/2},${by} ${bx},${by}" fill="none" stroke="#b91c1c" stroke-width="1.8" marker-end="url(#ar)"/>`; } });
+    const em=EDGE_BY_PAIR[e.from+"|"+e.to];
+    const eid=em?em.edge_id:"unknown";
+    svg+=`<path class="edge-hit" data-edge="${eid}" d="M${ax},${ay} C${(ax+bx)/2},${ay} ${(ax+bx)/2},${by} ${bx},${by}" fill="none" stroke="#b91c1c" stroke-width="1.8" marker-end="url(#ar)"><title>${eid} · ${e.from} → ${e.to}</title></path>`; } });
   dl.keep.forEach(id=>{ const p=dl.pos[id],n=nodes[id], w=dl.w[id], h=dl.h[id], lines=dl.lines[id];
     const st = id===focus?"focus": res.pdepth[id]!==undefined?"block": n.parent===res.fp?"sib": debt[id].score>0?"debt":"";
     let t=`<text class="nid" x="${p.x+6}" y="${p.y+17}">${id}</text>`;
@@ -336,8 +362,17 @@ vp.addEventListener("mousedown",e=>{ dragging=true; startX=e.clientX-panX; start
 window.addEventListener("mousemove",e=>{ if(!dragging) return; panX=e.clientX-startX; panY=e.clientY-startY; clampPan(); });
 window.addEventListener("mouseup",()=>{ if(dragging){ dragging=false; vp.classList.remove("grabbing"); } });
 document.getElementById("reset-pan").addEventListener("click",centerFocus);
+function showEdge(eid){
+  const box=document.getElementById("edge-info");
+  const m=EDGE_META.filter(x=>x.edge_id===eid)[0];
+  if(!m){ box.textContent=`edge ${eid} · 无来源元数据（unknown）`; return; }
+  box.textContent=`edge ${m.edge_id} · ${m.from} → ${m.to} (${m.type}) · 来源 ${m.source.carrier_stem}:edges[${m.source.index}] · evidence-ref ${m.source.evidence_ref} · rev ${m.source.carrier_revision}`;
+}
 document.getElementById("dag").addEventListener("click", e=>{
-  const g=(e.target&&e.target.closest)?e.target.closest("g"):null; if(!g) return;
+  const t=e.target;
+  const p=(t&&t.closest)?t.closest("path[data-edge]"):null;
+  if(p){ showEdge(p.getAttribute("data-edge")); return; }
+  const g=(t&&t.closest)?t.closest("g"):null; if(!g) return;
   const cid=g.getAttribute("data-id");
   if(cid){ document.getElementById("focus").value=cid; render(); return; }
   const comp=g.getAttribute("data-comp");
@@ -348,6 +383,11 @@ window.addEventListener("resize",clampPan);
 const sb=document.getElementById("sidebar"), handle=document.getElementById("sidebar-handle");
 handle.addEventListener("click",()=>{ const c=sb.classList.toggle("collapsed"); handle.textContent=c?"卡片":"收起"; });
 
+const staleBox=document.getElementById("stale-banner");
+if(ENVELOPE.revision_status && ENVELOPE.revision_status.stale){
+  staleBox.hidden=false;
+  staleBox.textContent=`STALE · 视图 revision ${ENVELOPE.revision_status.expected_revision} ≠ carrier ${ENVELOPE.revision_status.carrier_revision}；刷新命令（只写出，不执行）：${ENVELOPE.revision_status.refresh_command}`;
+}
 document.getElementById("ptitle").textContent=GRAPH.title||"路线图可视化";
 document.getElementById("s-env").textContent=`carrier:${ENVELOPE.carrier_stem} · rev:${ENVELOPE.carrier_revision} · uid:${(ENVELOPE.node_uid)||"?"}`;
 const sel=document.getElementById("focus");
@@ -364,18 +404,27 @@ render();
 </body></html>"""
 
 
-def render_html(graph, focus, theta=None):
-    """生成自包含 HTML。
+def render_html(graph, focus, theta=None, edge_meta=None, revision_status=None):
+    """生成自包含 HTML（S2 主视图 + S3 边回溯 + S4 stale 横幅）。
+
+    context 侧载条目永不进入 embed / envelope / edge_meta；主视图只有一个恒定入口，
+    因此上下文条目增长时本函数输出逐字节不变（S4 硬判据）。
 
     Args:
         graph: viz.graph.RoadmapGraph 归一化图。
         focus: 默认焦点节点 id。
         theta: 可选，固定 θ；None 时由前端按焦点百分位校准（概览/邻域/展开三档）。
+        edge_meta: S3 边回溯元数据；None 时由 dependency.build_edge_meta 确定性生成。
+        revision_status: S4 stale 判定；None 时为 checked=false 的未核对态。
     Returns:
-        HTML 字符串（含 vendored dagre + 内嵌 GRAPH/ENVELOPE）。
+        HTML 字符串（含 vendored dagre + 内嵌 GRAPH/ENVELOPE/EDGE_META）。
     """
     embed_nodes = {
-        nid: {**node, "layer": graph.layer.get(nid, nid.count("-")), "uid": graph.uid.get(nid)}
+        nid: {
+            **{k: node.get(k) for k in DISPLAY_FIELDS},
+            "layer": graph.layer.get(nid, nid.count("-")),
+            "uid": graph.uid.get(nid),
+        }
         for nid, node in graph.nodes.items()
     }
     embed = {
@@ -393,10 +442,13 @@ def render_html(graph, focus, theta=None):
         "focus": focus,
         "theta": theta,
         "generated_by": "zj-roadmap-driven/viz",
+        "revision_status": revision_status if revision_status is not None else unchecked_status(graph),
     }
+    meta = edge_meta if edge_meta is not None else build_edge_meta(graph)
     return (
         HTML_TEMPLATE
         .replace("__DAGRE__", DAGRE_JS)
+        .replace("__EDGE_META__", json.dumps(meta, ensure_ascii=False))
         .replace("__GRAPH__", json.dumps(embed, ensure_ascii=False))
         .replace("__ENVELOPE__", json.dumps(envelope, ensure_ascii=False))
     )

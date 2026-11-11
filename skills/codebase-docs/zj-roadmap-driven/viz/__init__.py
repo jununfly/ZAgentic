@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""zj-roadmap-driven / viz —— 路线图只读可视化投影（S0/S2 落地包）。
+"""zj-roadmap-driven / viz —— 路线图只读可视化投影（S0/S2 + S3/S4 落地包）。
 
 只读取 roadmap carrier，派生 view-ir，再由确定性模板投影成：
-  - 自包含 HTML（局部 DAG + 信息卡片 + 交互；dagre 坐标来自 vendored @dagrejs/dagre）
+  - 自包含 HTML（局部 DAG + 信息卡片 + 交互 + 边回溯 + stale 横幅）
   - Mermaid 文本等价物（可 diff、可逐字节回归）
+  - dependency 投影（S3）：阻塞链 / critical-path / impact + 每条边的 id 与来源
+  - context side-pack（S4）：侧载 JSON，主视图字节不随上下文条目增长变化
 
 绝不回写 carrier。S1 的只读命令 / anchor 信封 / reentry receipt 持久化与
-S3（依赖回溯）/ S4（stale 标记）按路线图后续切片落地。
+两 carrier 逐字节相同契约按路线图后续切片落地。
 """
 from __future__ import annotations
 
-from . import doi
+from . import context, dependency, doi
 from .graph import RoadmapGraph, edge_endpoints, layer_of, build_debt, debt_signal
 from .ir import build_view
 from .render_html import render_html
@@ -28,6 +30,8 @@ __all__ = [
     "render_mermaid",
     "to_mermaid",
     "doi",
+    "dependency",
+    "context",
 ]
 
 # DOI / 预算常量（与 spec information-selection 一致）

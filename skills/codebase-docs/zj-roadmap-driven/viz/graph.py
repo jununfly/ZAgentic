@@ -86,6 +86,7 @@ class RoadmapGraph:
     uid: dict = field(default_factory=dict)  # id -> 不可变 uid
     layer: dict = field(default_factory=dict)  # id -> 层级
     debt: dict = field(default_factory=dict)  # id -> {score,level,hits,severity}
+    context: dict = field(default_factory=dict)  # S4 侧载上下文条目（carrier.context），不进主视图
     revision: str = "unknown"
     carrier_stem: str = "roadmap"
     title: str = ""
@@ -115,13 +116,14 @@ class RoadmapGraph:
         uid = {nid: n.get("uid") or nid for nid, n in nodes.items()}
         layer = {nid: layer_of(nid) for nid in nodes}
         debt = build_debt(nodes, data.get("debts"))
+        side_context = data.get("context") or {}  # S4 侧载条目，只读引用，不进主视图
         meta = data.get("metadata", {}) or {}
         revision = meta.get("updated") or data.get("version") or "unknown"
         title = data.get("title", "") or ""
         description = data.get("description", "") or ""
         return cls(
             nodes=nodes, edges=blocks, adj=adj, pred=pred, succ=succ,
-            parent=parent, uid=uid, layer=layer, debt=debt,
+            parent=parent, uid=uid, layer=layer, debt=debt, context=side_context,
             revision=revision, carrier_stem=carrier_stem,
             title=title, description=description,
         )
