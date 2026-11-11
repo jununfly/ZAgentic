@@ -157,11 +157,12 @@ ChangeSet（仍是只读输出，不落盘）：每条信号先落一条 `decisi
 按需编辑（尤其判据内容，绝不替人猜），再走 `changeset preview/apply` 一次确认——复用既有
 digest / `--idempotency-key` / `--scope`，不开第二套写入命令。该 flag 不增命令数。
 
-## 只读可视化（viz/ 包，S0/S2 切片）
+## 只读可视化（viz/ 包，S0/S2 + S3/S4 切片）
 
-把 roadmap carrier **只读**投影成两张同源视图：自包含 HTML（局部 DAG + 信息卡片 + 交互）与 Mermaid
-文本等价物（可 diff、可逐字节回归）。**绝不回写 carrier**——只消费 `nodes` / `edges`(blocks) /
-`debts` / `metadata.updated`，不修改任何传入数据（见 `tests/test_viz.py::TestS0ReadonlyContract`）。
+把 roadmap carrier **只读**投影成同一份 view-ir 派生的多张视图：自包含 HTML（局部 DAG + 信息卡片 +
+交互 + 边回溯）、Mermaid 文本等价物、S3 dependency 投影、S4 context 侧载包。**绝不回写 carrier**——
+只消费 `nodes` / `edges`(blocks) / `debts` / `context` / `metadata.updated`，不修改任何传入数据
+（只读不变式由 S0/S2 与 S3/S4 两组单测共同钉住，见 `tests/test_viz.py::TestS0ReadonlyContract`）。
 
 设计要点：
 
@@ -176,20 +177,36 @@ digest / `--idempotency-key` / `--scope`，不开第二套写入命令。该 fla
 - **局部 DAG 渲染**：vendored `@dagrejs/dagre@3.1.3` UMD 提供分层坐标，自研 SVG 渲染；交互含多行标签、
   点击展开折叠项、重置视图、θ 滑块。几何经 `verify_geometry.mjs` 校验：全焦点零重叠、零裁切、复合节点界内。
 - **anchor 信封**：`zj-roadmap-visual-review/v1` 携带 view-kind + carrier-stem + node-uid + carrier-revision，
-  视图可追溯到源 carrier 而不污染 carrier。
+  视图可追溯到源 carrier 而不污染 carrier。S4 起另有 `zj-roadmap-anchor/v1` 单行 token
+  （CLI 输出、可复制、可解析），显示 id 从不作锚点。
+- **S3 dependency 投影**：阻塞链取自 `doi.rev_bfs`（与 S1 view-ir 的 `selection.pdepth` 同一函数），
+  `impact` / `critical-path` 与 `roadmap_cli.py` 同名查询逐行等价，测试直接 import `roadmap` 交叉断言。
+  每条 blocks 边带 `edge_id`（carrier uid，缺失时确定性派生）与 `source`（edges 下标 + evidence-ref，
+  缺失显式 `unknown`）；HTML 点击边回溯，Mermaid 等价物用边标签写 id。
+- **S4 context side-pack**：单节点的决策 / trace / 边 / 证据引用 / 影响闭包打成独立 JSON，
+  每条带 `source` 与 `evidence-ref`。主视图只内嵌展示字段白名单并留一个恒定入口，
+  **上下文条目增长时 HTML 逐字节不变**。`revision` 不符时显式 stale 并写出刷新命令，
+  `auto_refresh=false`——绝不执行、不静默重绘、不回写 carrier。
 
 用法（不新增 `roadmap_cli.py` 命令，独立 `viz/` 包，避免触碰已冻结的 CLI 命令清单）：
 
 ```bash
-# 生成自包含 HTML（双击离线可用，dagre 已内联）+ 可选 Mermaid 文本等价物
-python -m viz.cli <roadmap.json> --out X.html --mermaid X.mmd \
-    [--focus <节点id>] [--theta 0.45] [--expand] [--json]
+# 主视图 + 可选 Mermaid / dependency 投影 / context 侧载包
+# --dependency / --context 必须显式给路径（ADR 0010），不设默认、不落 cwd
+python -m viz.cli <roadmap.json> --out X.html [--mermaid X.mmd] \
+    [--dependency X.dependency.json] [--dependency-mermaid X.dependency.mmd] \
+    [--context X.context.json] \
+    [--focus <节点id>] [--theta 0.45] [--expand] [--json] \
+    [--anchor <token>] [--expect-revision <rev>] [--context-radius 2]
+
+# 拿旧 anchor 请求新视图：revision 不符时打印 STALE + 刷新命令（只写出、不执行）
+python -m viz.cli <roadmap.json> --anchor 'zj-roadmap-anchor/v1|...' --context X.context.json
 
 # 几何硬校验（Node）：加载真实 HTML，DOM 桩跑内嵌运行时，全焦点零重叠零裁切
 node viz/verify_geometry.mjs X.html
 
 # 出口判据 + 只读不变式单测（anaconda3 python3）
-python viz/tests/test_viz.py
+python -m unittest viz.tests.test_viz viz.tests.test_s3_s4 -v
 ```
 
 演示语料：`demos/roadmap_viz_sample.json`（21 节点 + 15 条 blocks 边 + 3 条一等债务）。
