@@ -1,0 +1,51 @@
+{
+  "title": "路线图可视化落地（viz 示例）",
+  "description": "zj-roadmap-driven / viz 的演示与测试语料：含 blocks 边与一等债务。",
+  "version": "viz-sample-1",
+  "metadata": { "updated": "2026-11-11T14:00:00" },
+  "nodes": {
+    "1":   { "id": "1",   "uid": "u-1",   "label": "路线图可视化落地", "status": "in_progress", "mode": "exploit", "parent": null, "children": ["1-1","1-2","1-3"], "decisions": [], "notes": "本仓库 S0/S2 切片。", "rounds": 1 },
+    "1-1": { "id": "1-1", "uid": "u-1-1", "label": "数据模型归一层", "status": "completed", "mode": "exploit", "parent": "1", "children": ["1-1-1","1-1-2"], "decisions": [], "notes": "", "rounds": 1 },
+    "1-2": { "id": "1-2", "uid": "u-1-2", "label": "局部 DAG 投影", "status": "in_progress", "mode": "exploit", "parent": "1", "children": ["1-2-1","1-2-2"], "decisions": [], "notes": "dagre 坐标 + 自研渲染。", "rounds": 2 },
+    "1-3": { "id": "1-3", "uid": "u-1-3", "label": "卡片渲染", "status": "pending", "mode": "exploit", "parent": "1", "children": ["1-3-1"], "decisions": [], "notes": "", "rounds": 0 },
+    "1-1-1": { "id": "1-1-1", "uid": "u-1-1-1", "label": "归一化图", "status": "completed", "mode": "exploit", "parent": "1-1", "children": [], "decisions": [], "notes": "", "rounds": 1 },
+    "1-1-2": { "id": "1-1-2", "uid": "u-1-1-2", "label": "邻接与父树", "status": "pending", "mode": "exploit", "parent": "1-1", "children": [], "decisions": [], "notes": "", "rounds": 0 },
+    "1-2-1": { "id": "1-2-1", "uid": "u-1-2-1", "label": "dagre 布局接入", "status": "completed", "mode": "exploit", "parent": "1-2", "children": [], "decisions": [], "notes": "", "rounds": 1 },
+    "1-2-2": { "id": "1-2-2", "uid": "u-1-2-2", "label": "交互层", "status": "in_progress", "mode": "exploit", "parent": "1-2", "children": [], "decisions": [], "notes": "拖拽 / 展开 / θ。", "rounds": 1 },
+    "1-3-1": { "id": "1-3-1", "uid": "u-1-3-1", "label": "LOD 预算", "status": "pending", "mode": "exploit", "parent": "1-3", "children": [], "decisions": [], "notes": "", "rounds": 0 },
+    "2":   { "id": "2",   "uid": "u-2",   "label": "债务建模", "status": "pending", "mode": "explore", "parent": "1", "children": ["2-1","2-2"], "decisions": [], "notes": "", "rounds": 0 },
+    "2-1": { "id": "2-1", "uid": "u-2-1", "label": "gap 收集", "status": "pending", "mode": "explore", "parent": "2", "children": ["2-1-1"], "decisions": [], "notes": "待整理 gap 清单", "rounds": 0 },
+    "2-2": { "id": "2-2", "uid": "u-2-2", "label": "不自动晋升", "status": "pending", "mode": "explore", "parent": "2", "children": ["2-2-1"], "decisions": [], "notes": "", "rounds": 0 },
+    "2-1-1": { "id": "2-1-1", "uid": "u-2-1-1", "label": "扫描全部节点", "status": "pending", "mode": "explore", "parent": "2-1", "children": [], "decisions": [], "notes": "", "rounds": 0 },
+    "2-2-1": { "id": "2-2-1", "uid": "u-2-2-1", "label": "晋升边界", "status": "pending", "mode": "explore", "parent": "2-2", "children": [], "decisions": [], "notes": "", "rounds": 0 },
+    "3":   { "id": "3",   "uid": "u-3",   "label": "增量重入", "status": "pending", "mode": "explore", "parent": "1", "children": ["3-1"], "decisions": [], "notes": "", "rounds": 0 },
+    "3-1": { "id": "3-1", "uid": "u-3-1", "label": "receipt 契约", "status": "pending", "mode": "explore", "parent": "3", "children": ["3-1-1"], "decisions": [], "notes": "", "rounds": 0 },
+    "3-1-1": { "id": "3-1-1", "uid": "u-3-1-1", "label": "条目 hash", "status": "pending", "mode": "explore", "parent": "3-1", "children": [], "decisions": [], "notes": "hash 碰撞风险需评估", "rounds": 0 },
+    "4":   { "id": "4",   "uid": "u-4",   "label": "验收回归", "status": "pending", "mode": "explore", "parent": "1", "children": ["4-1","4-2"], "decisions": [], "notes": "", "rounds": 0 },
+    "4-1": { "id": "4-1", "uid": "u-4-1", "label": "几何校验", "status": "pending", "mode": "explore", "parent": "4", "children": ["4-1-1"], "decisions": [], "notes": "", "rounds": 0 },
+    "4-2": { "id": "4-2", "uid": "u-4-2", "label": "字节回归", "status": "pending", "mode": "explore", "parent": "4", "children": [], "decisions": [], "notes": "", "rounds": 0 },
+    "4-1-1": { "id": "4-1-1", "uid": "u-4-1-1", "label": "overlap 检测", "status": "pending", "mode": "explore", "parent": "4-1", "children": [], "decisions": [], "notes": "几何校验尚无自动化", "rounds": 0 }
+  },
+  "edges": [
+    { "from": "1-1",   "to": "1-2",   "type": "blocks", "uid": "e-1" },
+    { "from": "1-2-1", "to": "1-2-2", "type": "blocks", "uid": "e-2" },
+    { "from": "1-2",   "to": "1-3",   "type": "blocks", "uid": "e-3" },
+    { "from": "1-3",   "to": "1-3-1", "type": "blocks", "uid": "e-4" },
+    { "from": "1",     "to": "2",     "type": "blocks", "uid": "e-5" },
+    { "from": "1-1",   "to": "2-1",   "type": "blocks", "uid": "e-6" },
+    { "from": "1-2",   "to": "3",     "type": "blocks", "uid": "e-7" },
+    { "from": "3",     "to": "3-1",   "type": "blocks", "uid": "e-8" },
+    { "from": "1-3",   "to": "4",     "type": "blocks", "uid": "e-9" },
+    { "from": "4",     "to": "4-1",   "type": "blocks", "uid": "e-10" },
+    { "from": "4-1",   "to": "4-2",   "type": "blocks", "uid": "e-11" },
+    { "from": "2-1",   "to": "2-1-1", "type": "blocks", "uid": "e-12" },
+    { "from": "2-2",   "to": "2-2-1", "type": "blocks", "uid": "e-13" },
+    { "from": "3-1",   "to": "3-1-1", "type": "blocks", "uid": "e-14" },
+    { "from": "4-1",   "to": "4-1-1", "type": "blocks", "uid": "e-15" }
+  ],
+  "debts": [
+    { "anchor": "4-1-1", "kind": "gap",   "severity": "high",   "note": "几何校验尚无自动化",  "discovered_revision": "viz-sample-1", "evidence_ref": "self", "state": "open" },
+    { "anchor": "3-1-1", "kind": "risk",  "severity": "high",   "note": "hash 碰撞风险需评估", "discovered_revision": "viz-sample-1", "evidence_ref": "self", "state": "open" },
+    { "anchor": "2-1",   "kind": "todo",  "severity": "medium", "note": "待整理 gap 清单",     "discovered_revision": "viz-sample-1", "evidence_ref": "self", "state": "open" }
+  ]
+}

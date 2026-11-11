@@ -157,6 +157,43 @@ ChangeSet（仍是只读输出，不落盘）：每条信号先落一条 `decisi
 按需编辑（尤其判据内容，绝不替人猜），再走 `changeset preview/apply` 一次确认——复用既有
 digest / `--idempotency-key` / `--scope`，不开第二套写入命令。该 flag 不增命令数。
 
+## 只读可视化（viz/ 包，S0/S2 切片）
+
+把 roadmap carrier **只读**投影成两张同源视图：自包含 HTML（局部 DAG + 信息卡片 + 交互）与 Mermaid
+文本等价物（可 diff、可逐字节回归）。**绝不回写 carrier**——只消费 `nodes` / `edges`(blocks) /
+`debts` / `metadata.updated`，不修改任何传入数据（见 `tests/test_viz.py::TestS0ReadonlyContract`）。
+
+设计要点：
+
+- **确定性 DOI 选择**（非 LLM）：六权重加权 `T1 图邻近 0.30 / T2 阻塞关键 0.25 / T3 共享上下文 0.15 /
+  T4 债务严重度 0.15 / T5 新鲜度 0.10 / T6 稳定性惩罚 0.05`（sum=1.0）。焦点自身 DOI=1.0；低于 θ 直接折叠。
+- **θ 单一旋钮**（A 方案）：θ = 最低可见 DOI 下限；运行时按焦点下非强制项 DOI 分布取百分位
+  （0.85/0.50/0.15）校准三档预设（overview/neighborhood/expand），避免写死阈值在部分焦点退化成等价。
+- **三档 LOD + 阅读预算**：L2(4行)/L1(2行)/L0(1行)，预算硬上限 40 行；预算溢出**不静默**——
+  `budget_folded` 显式报数，且 LOD 对 DOI **严格单调**（同 DOI 整桶一起升级，升不动即停手，禁止更低 DOI 越级）。
+- **三类必备项强制可见**：焦点 + 阻塞前驱 + 后继 + 高严重度债务必进可见集 V，非焦点必备项恒为 L1。
+- **债务一等建模**：显式 `debts` 优先；文本启发仅认 gap/todo/risk/sweep 一类关键词，**不把「有 notes」误判为债务**。
+- **局部 DAG 渲染**：vendored `@dagrejs/dagre@3.1.3` UMD 提供分层坐标，自研 SVG 渲染；交互含多行标签、
+  点击展开折叠项、重置视图、θ 滑块。几何经 `verify_geometry.mjs` 校验：全焦点零重叠、零裁切、复合节点界内。
+- **anchor 信封**：`zj-roadmap-visual-review/v1` 携带 view-kind + carrier-stem + node-uid + carrier-revision，
+  视图可追溯到源 carrier 而不污染 carrier。
+
+用法（不新增 `roadmap_cli.py` 命令，独立 `viz/` 包，避免触碰已冻结的 CLI 命令清单）：
+
+```bash
+# 生成自包含 HTML（双击离线可用，dagre 已内联）+ 可选 Mermaid 文本等价物
+python -m viz.cli <roadmap.json> --out X.html --mermaid X.mmd \
+    [--focus <节点id>] [--theta 0.45] [--expand] [--json]
+
+# 几何硬校验（Node）：加载真实 HTML，DOM 桩跑内嵌运行时，全焦点零重叠零裁切
+node viz/verify_geometry.mjs X.html
+
+# 出口判据 + 只读不变式单测（anaconda3 python3）
+python viz/tests/test_viz.py
+```
+
+演示语料：`demos/roadmap_viz_sample.json`（21 节点 + 15 条 blocks 边 + 3 条一等债务）。
+
 ## Scope gate — before any node write or project edit
 
 先判断当前 roadmap 的角色，再把节点置为 `in_progress` 或修改项目文件：
