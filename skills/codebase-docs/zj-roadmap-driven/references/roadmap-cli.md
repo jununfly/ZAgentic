@@ -1,120 +1,123 @@
 # Roadmap CLI reference
 
+`$SKILL_ROOT` 是本 SKILL.md 所在目录的绝对路径（路径基准定义见 [SKILL.md](../SKILL.md) 的 Quick start）。
+以下命令的 cwd 是**目标项目**，不是 skill 目录；所有脚本调用都必须带这个前缀，解释器统一用 `python3`。
+
 All roadmap operations use the skill's `roadmap_cli.py`. Inputs are deterministic and the Python dependency is standard-library-only (Python 3.8+).
 
 ## Commands
 
 ```bash
 # Initialize (single-file mode is the default)
-python roadmap_cli.py init <roadmap_path> --title "项目名称" [--description "描述"] [--md-file "关联的md文件.md"]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" init <roadmap_path> --title "项目名称" [--description "描述"] [--md-file "关联的md文件.md"]
 
 # Convert between carriers explicitly; the source is never rewritten
-python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" migrate <roadmap_path> --to single|sqlite \
     [--output <path>]
 
 # Add explicit outline Placement facts; target carrier follows its extension
-python roadmap_cli.py migrate-placements <roadmap_path> --output <path>
-python roadmap_cli.py migrate-types <roadmap_path> --output <path>
-python roadmap_cli.py placement list <roadmap_path>
-python roadmap_cli.py placement add-reference <roadmap_path> <work> <parent> [--rank N]
-python roadmap_cli.py placement move <roadmap_path> <placement_id> <parent> [--rank N]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" migrate-placements <roadmap_path> --output <path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" migrate-types <roadmap_path> --output <path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" placement list <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" placement add-reference <roadmap_path> <work> <parent> [--rank N]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" placement move <roadmap_path> <placement_id> <parent> [--rank N]
 
 # Node CRUD
-python roadmap_cli.py add <json_path> <parent_id> "<label>" [--status pending] [--mode explore]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" add <json_path> <parent_id> "<label>" [--status pending] [--mode explore]
     [--obligation-key <key>]
-python roadmap_cli.py add <json_path> <parent_id> "<label>" --max-children 3 --max-rounds 2
-python roadmap_cli.py update <json_path> <node_id> --status completed
-python roadmap_cli.py update <json_path> <node_id> --label "新标签" --notes "备注内容"
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" add <json_path> <parent_id> "<label>" --max-children 3 --max-rounds 2
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update <json_path> <node_id> --status completed
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update <json_path> <node_id> --label "新标签" --notes "备注内容"
 
 # Explore budget (structural units) and exit criteria
-python roadmap_cli.py update <json_path> <node_id> --max-children 3 --max-rounds 2
-python roadmap_cli.py update <json_path> <node_id> --exit-criteria "判据文本"   # repeatable
-python roadmap_cli.py update <json_path> <node_id> --clear-budget --clear-exit-criteria
-python roadmap_cli.py delete <json_path> <node_id>
-python roadmap_cli.py get <json_path> <node_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update <json_path> <node_id> --max-children 3 --max-rounds 2
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update <json_path> <node_id> --exit-criteria "判据文本"   # repeatable
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update <json_path> <node_id> --clear-budget --clear-exit-criteria
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" delete <json_path> <node_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" get <json_path> <node_id>
 
 # Decisions
-python roadmap_cli.py decide <json_path> <node_id> "问题" "答案" ["备注"]
-python roadmap_cli.py decisions <json_path> [<node_id>]
-python roadmap_cli.py remove-decision <json_path> <node_id> --index N
-python roadmap_cli.py remove-decision <json_path> <node_id> --question "<问题文本>"
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" decide <json_path> <node_id> "问题" "答案" ["备注"]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" decisions <json_path> [<node_id>]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" remove-decision <json_path> <node_id> --index N
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" remove-decision <json_path> <node_id> --question "<问题文本>"
 
 # Failure semantics & escalation
-python roadmap_cli.py fail <json_path> <node_id> --error "失败原因" [--question "升级时给 Human 的问题"] [--max-attempts N]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" fail <json_path> <node_id> --error "失败原因" [--question "升级时给 Human 的问题"] [--max-attempts N]
 #   attempts+1 / last_error / retry_backoff(封顶指数退避)；达阈值(默认3)挂 open_question 升级。不改 status。
 #   执行侧元数据，需持租约（同 status）：非持有者写返回 E_LEASE_HELD。
 
 # Dependencies — edges live outside the tree.
 # Note: `edge` takes the action first and the path second, unlike every other
 # command, because it is a command group (`git remote add` style).
-python roadmap_cli.py edge add <roadmap_path> <from_id> <to_id> --type blocks|informs|supersedes|derives-from
-python roadmap_cli.py edge list <roadmap_path> [--node <node_id>]
-python roadmap_cli.py edge remove <roadmap_path> <edge_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" edge add <roadmap_path> <from_id> <to_id> --type blocks|informs|supersedes|derives-from
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" edge list <roadmap_path> [--node <node_id>]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" edge remove <roadmap_path> <edge_id>
 
 # Execution trace. `prompted-by` is written as plan -> trace when --under is present.
-python roadmap_cli.py trace add <roadmap_path> --kind <kind> --body "..." [--under <plan_id>] [--from <trace_id>]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" trace add <roadmap_path> --kind <kind> --body "..." [--under <plan_id>] [--from <trace_id>]
     [--obligation-key <key>] [--evidence "..."]...
-python roadmap_cli.py trace list <roadmap_path>
-python roadmap_cli.py trace get <roadmap_path> <trace_uid>
-python roadmap_cli.py trace prune <roadmap_path> <trace_uid> [--edge <edge_id>]
-python roadmap_cli.py context <roadmap_path> <node_id> [--include trace]
-python roadmap_cli.py promote <roadmap_path> <trace_uid> --under <plan_id> [--label "..."]
-python roadmap_cli.py promote <roadmap_path> <trace_uid> --accept \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" trace list <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" trace get <roadmap_path> <trace_uid>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" trace prune <roadmap_path> <trace_uid> [--edge <edge_id>]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" context <roadmap_path> <node_id> [--include trace]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" promote <roadmap_path> <trace_uid> --under <plan_id> [--label "..."]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" promote <roadmap_path> <trace_uid> --accept \
     --approved-digest <digest> --idempotency-key <key> [--answer '<json object>'] \
     [--fault-stage before-commit|during-commit|after-commit-before-view]
-python roadmap_cli.py promote <roadmap_path> <trace_uid> --reject [--reason "..."]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" promote <roadmap_path> <trace_uid> --reject [--reason "..."]
 
 # Deterministic reconciliation preview (read-only; no ChangeSet is applied)
-python roadmap_cli.py reconcile <roadmap_path> <trace_uid>
-python roadmap_cli.py reconcile <roadmap_path> --trace <trace_uid> --trace <trace_uid>
-python roadmap_cli.py reconcile <roadmap_path> <trace_uid> --answer '<json object>'
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" reconcile <roadmap_path> <trace_uid>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" reconcile <roadmap_path> --trace <trace_uid> --trace <trace_uid>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" reconcile <roadmap_path> <trace_uid> --answer '<json object>'
 
 # Reviewed ChangeSet apply; retries with the same key are idempotent
-python roadmap_cli.py apply <roadmap_path> <proposal_id> \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" apply <roadmap_path> <proposal_id> \
     --approved-digest <digest> --idempotency-key <key> \
     [--answer '<json object>'] \
     [--fault-stage before-commit|during-commit|after-commit-before-view]
 
 # Reviewed batch ChangeSet; duplicate novel findings share one WorkItem
-python roadmap_cli.py apply-batch <roadmap_path> \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" apply-batch <roadmap_path> \
     --trace <trace_uid> [--trace <trace_uid> ...] \
     --approved-digest <batch_digest> --idempotency-key <key>
 
 # Generic closed topology ChangeSet
-python roadmap_cli.py changeset preview <roadmap_path> --changes '<json array>' \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" changeset preview <roadmap_path> --changes '<json array>' \
     [--scope <node_uid>]
-python roadmap_cli.py changeset apply <roadmap_path> --changes '<json array>' \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" changeset apply <roadmap_path> --changes '<json array>' \
     --approved-digest <digest> --idempotency-key <key> [--scope <node_uid>]
 
 # Lease inputs accept display ids for Human convenience; the sidecar/database
 # key and every emitted node_uid use the node's immutable uid.
-python roadmap_cli.py lease claim <roadmap_path> <node_uid> --agent <agent_id> [--ttl 300]
-python roadmap_cli.py lease heartbeat <roadmap_path> <node_uid> --agent <agent_id>
-python roadmap_cli.py lease steal <roadmap_path> <node_uid> --agent <agent_id>
-python roadmap_cli.py lease release <roadmap_path> <node_uid> --agent <agent_id> [--force]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" lease claim <roadmap_path> <node_uid> --agent <agent_id> [--ttl 300]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" lease heartbeat <roadmap_path> <node_uid> --agent <agent_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" lease steal <roadmap_path> <node_uid> --agent <agent_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" lease release <roadmap_path> <node_uid> --agent <agent_id> [--force]
 
 # Render and inspect
-python roadmap_cli.py render <roadmap_path>
-python roadmap_cli.py section <roadmap_path> [--max-depth 2] [--max-bytes N]
-python roadmap_cli.py section <roadmap_path> --all [--max-bytes N]
-python roadmap_cli.py link <json_path> <md_file>
-python roadmap_cli.py tree <json_path> [<node_id>] [--depth 3]
-python roadmap_cli.py path <json_path> <node_id>
-python roadmap_cli.py siblings <json_path> <node_id>
-python roadmap_cli.py focus <json_path>
-python roadmap_cli.py validate <json_path>
-python roadmap_cli.py stats <json_path>
-python roadmap_cli.py recommend-storage <roadmap_path> [--measure]
-python roadmap_cli.py next <roadmap_path>
-python roadmap_cli.py signals <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" render <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" section <roadmap_path> [--max-depth 2] [--max-bytes N]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" section <roadmap_path> --all [--max-bytes N]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" link <json_path> <md_file>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" tree <json_path> [<node_id>] [--depth 3]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" path <json_path> <node_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" siblings <json_path> <node_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" focus <json_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" validate <json_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" stats <json_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" recommend-storage <roadmap_path> [--measure]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" next <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" signals <roadmap_path>
 
 # Scheduling query (read-only, derived) — see "## Scheduling query" below
-python roadmap_cli.py ready <roadmap_path>
-python roadmap_cli.py critical-path <roadmap_path>
-python roadmap_cli.py impact <roadmap_path> <node_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" ready <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" critical-path <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" impact <roadmap_path> <node_id>
 
 # Process-state authority boundary
-python roadmap_cli.py authority-check <project_root> [--exclude <path>]...
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" authority-check <project_root> [--exclude <path>]...
 ```
 
 Missing positional arguments and unknown command-group actions fail with
@@ -257,7 +260,7 @@ The CLI selects storage from the path: a `.sqlite` / `.sqlite3` / `.db` file is
 contract, so the same command works on any of them.
 
 ```bash
-python roadmap_cli.py migrate <roadmap_path> --to single|sqlite \
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" migrate <roadmap_path> --to single|sqlite \
     [--output <path>]
 ```
 
@@ -290,9 +293,9 @@ concurrent reads and could trip the lock-timeout exit code 2, which is a
 writer's failure mode, not a reader's.
 
 ```bash
-python roadmap_cli.py ready <roadmap_path>
-python roadmap_cli.py critical-path <roadmap_path>
-python roadmap_cli.py impact <roadmap_path> <node_id>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" ready <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" critical-path <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" impact <roadmap_path> <node_id>
 ```
 
 - **`ready`** — the work-claiming set: nodes that are `pending` **and** have no
@@ -327,8 +330,8 @@ set. A lease claims work; it does not hide it.
 CLI 认知。`next` 是另一个早已存在、此前未登记的只读建议（关键路径优先的就绪节点）。
 
 ```bash
-python roadmap_cli.py next <roadmap_path>
-python roadmap_cli.py signals <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" next <roadmap_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" signals <roadmap_path>
 ```
 
 `signals` 输出 `zj-orchestration-signals/v1`：`checked` 是实际检查过的 plan 节点数
@@ -498,7 +501,7 @@ that touches any lease-holder field is rejected whole — no half-written node.
 `fail` records an execution failure on a node:
 
 ```bash
-python roadmap_cli.py fail <json_path> <node_id> --error "..." [--question "..."] [--max-attempts N]
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" fail <json_path> <node_id> --error "..." [--question "..."] [--max-attempts N]
 ```
 
 - `attempts` increments; `last_error` and `last_failed_at` are recorded; `retry_backoff`
@@ -523,7 +526,7 @@ old `import` command is intentionally not supported; use
 `unlock` is an explicit cleanup operation:
 
 ```bash
-python roadmap_cli.py unlock <json_path>
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" unlock <json_path>
 ```
 
 Run it only after confirming that no roadmap CLI writer is still active.
@@ -532,24 +535,24 @@ Run it only after confirming that no roadmap CLI writer is still active.
 
 ```bash
 # Human says: 「把文章处理后端走通」
-python roadmap_cli.py tree roadmap.json 1-1-1
-python roadmap_cli.py add roadmap.json 1-1-1 "文章处理后端流水线" --status in_progress
-python roadmap_cli.py decide roadmap.json 1-1-1-5 "后端用什么？" "Python + FastAPI" "轻量够用"
-python roadmap_cli.py update roadmap.json 1-1-1-5 --status completed --notes "API: POST /articles/convert"
-python roadmap_cli.py render roadmap.json
-python roadmap_cli.py section roadmap.json --all
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" tree roadmap.json 1-1-1
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" add roadmap.json 1-1-1 "文章处理后端流水线" --status in_progress
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" decide roadmap.json 1-1-1-5 "后端用什么？" "Python + FastAPI" "轻量够用"
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update roadmap.json 1-1-1-5 --status completed --notes "API: POST /articles/convert"
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" render roadmap.json
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" section roadmap.json --all
 ```
 
 ## Script location and write safety
 
-Scripts live beside this skill:
+Scripts live inside this skill, addressed by the `$SKILL_ROOT` path basis declared in [SKILL.md](../SKILL.md):
 
 ```text
-<skill_dir>/roadmap.py        # core library
-<skill_dir>/roadmap_cli.py    # CLI entry point
+$SKILL_ROOT/scripts/roadmap.py        # core library
+$SKILL_ROOT/scripts/roadmap_cli.py    # CLI entry point
 ```
 
-After the skill is loaded, locate them with `$SKILL_DIR` or an absolute path.
+The Agent resolves `$SKILL_ROOT` to an absolute path when the skill is loaded. The command cwd is the target project, never the skill directory.
 
 Write commands use `<roadmap_path>.lock/` and atomic JSON/Markdown writes. Do not
 run write commands for the same roadmap in parallel. A stale lock is not cleared
@@ -565,3 +568,63 @@ Deleting a node recursively deletes its children; confirm the target first.
 - `demos/roadmap_demo.json` — an AI-Native personal compounding-tool-system roadmap.
 - `demos/ZJ_ROADMAP_section_demo.md` — standard output rendered from JSON.
 - `tests/verify_real_plan_corpus.py` — read-only real Markdown-plan corpus migration contract.
+
+## 高级拓扑语义（reconciliation / Placement / ChangeSet）
+
+当前 reconciliation preview 只接受显式 `obligation_key`：先用确定性 key
+匹配全图 plan 节点，再输出 `covered`、`refine`、`reshape`、`novel`、
+`dismiss` 或 `unresolved` proposal。`novel` 必须由 trace 的 `evidence`
+支撑；多个 exact match 只提出 Human 问题，不自动创建 WorkItem。Human
+答案通过 inline JSON 传给 `--answer`：`dismiss` 必须有 reason，完成项的
+`refine` 支持 reopen/supersede/noop，`reshape` 携带闭合 ChangeSet changes。
+可以用重复的 `--trace` 一次生成批量 preview；`reconcile` 本身只读，单条
+ChangeSet 经 digest 审批后显式 `apply`，重复 obligation 的 Trace 批次经
+`apply-batch` 合并为一个 WorkItem 并保留所有来源。
+
+Placement 迁移也是显式的：`migrate-placements <source> --output <target>`
+按目标扩展名选择 JSON 或 SQLite carrier，把旧的 ordered `parent`/`children`
+投影成 primary Placement，并保留源文件字节不变。`placement list <roadmap>`
+只显示 Placement 及其 Work/parent 的 display-id 投影；`outline_rank` 只表达
+展示顺序，不表达调度或因果关系。已有 roadmap 可用 `placement add-reference`
+添加共享 Work 的第二个 outline context，用 `placement move` 移动 Placement；
+这两者不复制 WorkItem 的状态、决策或租约。
+
+通用拓扑 ChangeSet 可用 `changeset preview/apply` 走同一套候选状态校验，
+支持 `work.create/patch/coalesce/supersede`、Placement put/move/reference、
+Edge put/remove/replace、Decision append 和 Trace disposition。已迁移的
+roadmap 可用 `migrate-types --output` 将带 children 的 plan 节点分类为
+`group`、叶节点分类为 `work`；有 Placements 时 `tree`、`section`、`render`
+从 Placement 事实投影，并以文本 `↪ reference (same WorkItem, not a copy):`
+显示引用上下文（`↪` 仅为冗余视觉提示，语义由文字承载）。
+ChangeSet 也可带 `--scope <node_uid>`；preview 会展开 Edge/Placement 的
+不透明引用并拒绝所有越出该子树的 Work、Decision、Trace 或拓扑端点，scope
+同时进入 approved digest。
+
+## 编排信号与候选 ChangeSet
+
+初始 roadmap 就绪后，`signals` 与 md 尾部的折叠小节负责让「现在可能需要编排」
+成为可发现、可确认的信号，而不是靠 Human 记得去触发。它只报 roadmap 自身可
+机械判定的结构状态（`completed` 仍挂 `open_question`、探索预算触顶、判据被显式
+清空），**不推断产品事实或外部证据** —— 后者属于 process-state 权威边界之外。
+`signals` 不写入、不产出 ChangeSet；`suggested_action` 只给可确认的
+next-action 文本，**把命令写出来 ≠ 替人跑**，决策仍用 `decide` 落盘、结构变更
+仍走 `changeset preview/apply`。无信号时两个 Markdown 视图逐字节不变。
+
+`signals --as-changeset` 把信号转成**候选** ChangeSet（仍是只读输出，不落盘）：
+每条信号先落一条 `decision.append`，`cleared_exit_criteria` 信号在显式给出
+`--criterion <文本>` 时再补 `work.patch(exit_criteria)`。Human 拿到候选后按需
+编辑（尤其判据内容，绝不替人猜），再走 `changeset preview/apply` 一次确认 ——
+复用既有 digest / `--idempotency-key` / `--scope`，不开第二套写入命令。
+该 flag 不增命令数。
+
+## 载体迁移与推荐（只读建议）
+
+`recommend-storage` 只读取事实源和派生文件，**但从不动手**：输出 `keep-single`、
+`consider-sqlite` 或 `keep-sqlite`，不写索引、不迁 carrier、不改写 Markdown。给出迁移
+目标的档位会在 `recommendation.command` 里附上那条显式命令
+（`migrate <path> --to <carrier>`）让人去跑——把命令写出来 ≠ 替人跑。
+
+换 carrier 只能靠 `migrate <path> --to single|sqlite`：源文件一个字节都不改，目标已
+存在或与源同 carrier 都直接拒绝。**没有任何命令会自动替你换事实源**，所以「现在
+哪个产物是事实源」永远是你上一次显式做出的那个。租约与它的审计事件会一起走
+（带过去的那把锁在新 carrier 上仍然生效）。

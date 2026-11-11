@@ -109,7 +109,7 @@ S1 `layer` 字段 + 迁移 + L1/L2 归口 → S2 `trace add` + provenance → S3
 ## Source map
 
 - [Roadmap skill](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
-- [Roadmap implementation](../../skills/codebase-docs/zj-roadmap-driven/roadmap.py)
+- [Roadmap implementation](../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap.py)
 - [Roadmap CLI contract](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
 - [Trace behavior tests](../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace.py)
 - [Trace provenance tests](../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace_provenance.py)

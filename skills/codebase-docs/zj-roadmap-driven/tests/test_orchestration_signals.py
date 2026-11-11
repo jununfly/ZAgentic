@@ -26,11 +26,12 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 import roadmap as core  # noqa: E402
 import roadmap_cli as cli  # noqa: E402
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
 
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
@@ -297,8 +298,11 @@ class SignalsCliTest(unittest.TestCase):
 class DiscoverabilityContractTest(unittest.TestCase):
     def test_cli_reference_lists_both_read_only_commands(self):
         text = (SKILL_DIR / "references" / "roadmap-cli.md").read_text(encoding="utf-8")
-        self.assertRegex(text, r"python roadmap_cli\.py next <roadmap_path>")
-        self.assertRegex(text, r"python roadmap_cli\.py signals <roadmap_path>")
+        # Match the command, not its published path prefix: the install-state
+        # path basis (and the scripts/ location) can change without breaking
+        # the discoverability contract.
+        self.assertRegex(text, r'roadmap_cli\.py" next <roadmap_path>')
+        self.assertRegex(text, r'roadmap_cli\.py" signals <roadmap_path>')
         heading = "## Orchestration signals (read-only)"
         self.assertIn(heading, text)
         # 专门章节必须声明「只读 + 不替人执行」，否则命令列出来仍会被误当成写入口。

@@ -39,7 +39,6 @@ STANDARD_OPTIONAL_FIELDS = {
     "source",
 }
 INVOCATION_FIELDS = {"disable-model-invocation", "argument-hint"}
-ROADMAP_FIELDS = {"title", "triggers"}
 
 
 def frontmatter(path: Path) -> dict[str, Any]:
@@ -66,8 +65,6 @@ def validate_skill(path: Path) -> list[str]:
         return [str(exc)]
 
     allowed = CORE_FIELDS | STANDARD_OPTIONAL_FIELDS | INVOCATION_FIELDS
-    if path.parent.name == "zj-roadmap-driven":
-        allowed |= ROADMAP_FIELDS
     unknown = sorted(set(data) - allowed)
     errors.extend(f"unknown top-level field: {field}" for field in unknown)
 
@@ -110,15 +107,6 @@ def validate_skill(path: Path) -> list[str]:
         errors.append("disable-model-invocation must be boolean")
     if "argument-hint" in data and not isinstance(data["argument-hint"], str):
         errors.append("argument-hint must be a string")
-
-    if path.parent.name == "zj-roadmap-driven":
-        if "title" in data and not isinstance(data["title"], str):
-            errors.append("title must be a string")
-        triggers = data.get("triggers")
-        if not isinstance(triggers, list) or not triggers or not all(
-            isinstance(item, str) and item.strip() for item in triggers
-        ):
-            errors.append("triggers must be a non-empty list of strings")
 
     sidecar = path.parent / "agents" / "openai.yaml"
     if sidecar.exists():

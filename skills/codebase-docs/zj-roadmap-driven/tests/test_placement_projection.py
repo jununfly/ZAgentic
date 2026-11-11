@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 # Issue #236 Human review (zj, 2026-11-10): final notation chosen from
 # A (`↪ reference: <label>`), B (`<label> [reference to <id>]`) and C.

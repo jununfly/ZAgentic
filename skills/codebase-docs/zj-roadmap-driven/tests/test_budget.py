@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 E_BUDGET_EXCEEDED = "E_BUDGET_EXCEEDED"
 BUDGET_EXIT_CODE = 3

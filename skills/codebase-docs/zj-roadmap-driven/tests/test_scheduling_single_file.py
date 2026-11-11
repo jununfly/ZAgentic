@@ -22,8 +22,9 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 # 行首的节点 id：`1-2. 向量化入库 [ ]`
 NODE_ID = re.compile(r"^(\d+(?:-\d+)*)\.")

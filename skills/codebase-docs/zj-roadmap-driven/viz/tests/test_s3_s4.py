@@ -25,6 +25,7 @@ VIZ = HERE.parent
 SKILL = VIZ.parent
 if str(SKILL) not in sys.path:
     sys.path.insert(0, str(SKILL))
+sys.path.insert(0, str(SKILL / "scripts"))
 
 from viz import context, dependency  # noqa: E402
 from viz.graph import RoadmapGraph  # noqa: E402

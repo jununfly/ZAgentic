@@ -32,6 +32,7 @@ VIZ = HERE.parent  # .../zj-roadmap-driven/viz
 SKILL = VIZ.parent  # .../zj-roadmap-driven（viz 在此作为包被发现）
 if str(SKILL) not in sys.path:
     sys.path.insert(0, str(SKILL))
+sys.path.insert(0, str(SKILL / "scripts"))
 
 from viz import doi  # noqa: E402
 from viz.graph import RoadmapGraph, layer_of, edge_endpoints, debt_signal, build_debt  # noqa: E402

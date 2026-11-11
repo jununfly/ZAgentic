@@ -17,6 +17,7 @@ from pathlib import Path
 TEST_DIR = Path(__file__).resolve().parent
 SKILL_DIR = TEST_DIR.parent
 sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 import verify_real_plan_corpus  # noqa: E402
 

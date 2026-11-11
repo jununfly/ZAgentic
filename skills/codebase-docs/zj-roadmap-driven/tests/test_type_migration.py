@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 
 def run_cli(*args: object, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:

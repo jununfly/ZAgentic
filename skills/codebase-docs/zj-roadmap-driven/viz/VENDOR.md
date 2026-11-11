@@ -8,14 +8,17 @@
 
 ## 刷新方式
 
+`$SKILL_ROOT` 是本 SKILL.md 所在目录的绝对路径（定义见 [SKILL.md](../SKILL.md) 的 Quick start）。
+
 ```bash
-cd viz
+cd "$SKILL_ROOT/viz"
 npm pack @dagrejs/dagre@3.1.3        # 得到 dagrejs-dagre-3.1.3.tgz
 tar xzf dagrejs-dagre-3.1.3.tgz
 cp package/dist/dagre.min.js dagre.vendor.js
 ```
 
-刷新后重跑 `python -m viz.cli` 生成样例并跑 `node verify_geometry.mjs` 复核零重叠 / 零裁切。
+刷新后重跑 `PYTHONPATH="$SKILL_ROOT" python3 -m viz.cli` 生成样例，并跑
+`node "$SKILL_ROOT/viz/verify_geometry.mjs"` 复核零重叠 / 零裁切。
 
 ## 为什么不 `import @dagrejs/dagre`（ESM）？
 

@@ -41,9 +41,10 @@ type: `license`, `compatibility`, `metadata`, and `allowed-tools`. Invocation
 metadata is limited to `disable-model-invocation` (boolean) and `argument-hint`
 (string). Unknown top-level fields fail validation.
 
-`zj-roadmap-driven` is the sole registered exception: its `title` string and
-non-empty `triggers` string list remain top-level compatibility fields. No
-other skill may introduce them without a new schema decision.
+There are no per-skill compatibility extensions. A skill that needs a new
+top-level field requires a schema decision, not a validator branch keyed on a
+directory name; discovery still happens through `description`, which is the
+only always-loaded context pointer.
 
 When `agents/openai.yaml` exists (relative to each skill root), its `policy.allow_implicit_invocation` value <!-- # docs-ref-allow: 泛指每个 skill 根目录内的约定文件 -->
 must be boolean. A sidecar cannot enable implicit invocation when the matching
@@ -55,8 +56,6 @@ frontmatter sets `disable-model-invocation: true`.
   executable field, type, namespace, and sidecar checks.
 - [recursive plugin validator](../../scripts/validate-zagentic-plugin.py) —
   catalog discovery and the caller for frontmatter validation.
-- [zj-roadmap-driven frontmatter](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
-  — registered compatibility extension.
 
 ## Related authority
 

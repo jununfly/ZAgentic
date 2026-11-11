@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 
-SKILL_DIR = Path(__file__).resolve().parent
-CLI = SKILL_DIR / "roadmap_cli.py"
+SKILL_DIR = Path(__file__).resolve().parent.parent
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 
 class AdvisorCliCase(unittest.TestCase):

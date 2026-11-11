@@ -28,6 +28,7 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import (  # noqa: E402
     Roadmap,
@@ -40,7 +41,7 @@ from roadmap import (  # noqa: E402
 )
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
 
 # 时间戳差异（render / section 的 updated 行）会让逐字节比较假红，统一归一。

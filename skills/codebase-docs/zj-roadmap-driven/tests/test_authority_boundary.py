@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 AUTHORITY_ENVELOPE = """<!-- zj-roadmap-authority/v1
 role: process-state
 durable-citation: forbidden

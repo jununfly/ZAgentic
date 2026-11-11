@@ -31,6 +31,7 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import (  # noqa: E402
     ERROR_EXIT_CODES,
@@ -41,7 +42,7 @@ from roadmap import (  # noqa: E402
 )
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 TMP_ROOT = Path(os.environ.get("TMPDIR") or "/tmp")
 
 # 两条"别人机器上"的**合成**绝对路径：一台 Windows、一台 macOS。

@@ -25,8 +25,9 @@ import unittest
 from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import (  # noqa: E402
     Roadmap,

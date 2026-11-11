@@ -25,6 +25,7 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import Roadmap, RoadmapError  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402

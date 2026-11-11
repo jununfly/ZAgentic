@@ -23,9 +23,10 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import Roadmap  # noqa: E402  （辅缝：Python API）
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 # 「current」侧的运行时清单由 roadmap_cli.py 自己的 import 推导，不在这里手抄：
 # 手抄的清单在 #116 加 roadmap_sqlite.py 时全部漏更新，克隆出来的 CLI 在 import
@@ -507,9 +508,9 @@ class Slice08NoEdgeBaselineTest(unittest.TestCase):
             for name in self.BASELINE_FILES
             # 当前实现里已删除的文件（如 #140 移除的 roadmap_bundle.py）：它只在
             # 历史基线里存在，基线必然 ≠ 当前实现，跳过比对。
-            if (SKILL_DIR / name).exists()
+            if (SKILL_DIR / "scripts" / name).exists()
             and (target / name).read_text(encoding="utf-8")
-            == (SKILL_DIR / name).read_text(encoding="utf-8")
+            == (SKILL_DIR / "scripts" / name).read_text(encoding="utf-8")
         ]
         if len(identical) == len(self.BASELINE_FILES):
             self.fail(

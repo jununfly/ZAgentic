@@ -22,6 +22,7 @@ import ast
 from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
+SCRIPTS_DIR = SKILL_DIR / "scripts"
 
 
 def local_imports(cli_path: str | Path | None = None) -> list[str]:
@@ -31,7 +32,7 @@ def local_imports(cli_path: str | Path | None = None) -> list[str]:
     ``.py`` in the skill directory" test, which is exactly the closure the
     cloned directory has to satisfy.
     """
-    cli = Path(cli_path) if cli_path is not None else SKILL_DIR / "roadmap_cli.py"
+    cli = Path(cli_path) if cli_path is not None else SCRIPTS_DIR / "roadmap_cli.py"
     tree = ast.parse(cli.read_text(encoding="utf-8"))
     names: list[str] = []
     for node in ast.walk(tree):
@@ -43,15 +44,21 @@ def local_imports(cli_path: str | Path | None = None) -> list[str]:
     seen: set[str] = set()
     ordered: list[str] = []
     for name in names:
-        if name not in seen and (SKILL_DIR / f"{name}.py").is_file():
+        if name not in seen and (cli.parent / f"{name}.py").is_file():
             seen.add(name)
             ordered.append(name)
     return ordered
 
 
+def _cli_dir(skill: Path) -> Path:
+    """Current layout uses scripts/; a pinned baseline is flat."""
+    nested = skill / "scripts"
+    return nested if (nested / "roadmap_cli.py").is_file() else skill
+
+
 def current_files(skill_dir: str | Path = SKILL_DIR) -> tuple[str, ...]:
     """Every file a cloned "current" CLI needs in order to import cleanly."""
-    skill = Path(skill_dir)
+    skill = _cli_dir(Path(skill_dir))
     required = {f"{name}.py" for name in local_imports(skill / "roadmap_cli.py")}
     required.add("roadmap_cli.py")
     return tuple(sorted(required))
@@ -60,8 +67,8 @@ def current_files(skill_dir: str | Path = SKILL_DIR) -> tuple[str, ...]:
 def clone_current_cli(target: str | Path, skill_dir: str | Path = SKILL_DIR) -> Path:
     """Write today's CLI plus its runtime dependencies into ``target``."""
     target_dir = Path(target)
-    skill = Path(skill_dir)
+    skill = _cli_dir(Path(skill_dir))
     target_dir.mkdir(parents=True, exist_ok=True)
-    for name in current_files(skill):
+    for name in current_files(skill_dir):
         (target_dir / name).write_text((skill / name).read_text(encoding="utf-8"), encoding="utf-8")
     return target_dir
