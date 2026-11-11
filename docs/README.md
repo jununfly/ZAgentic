@@ -57,6 +57,8 @@ doc-kind: doc-map
 - [designs/zj-composer-plan-product-form.md](designs/zj-composer-plan-product-form.md) — composer plan/product form; authority-id: `design.composer-plan-product-form`
 - [designs/zj-skill-runtime-closure.md](designs/zj-skill-runtime-closure.md) — skill 运行期闭包自包含（源仓 docs 不得运行时依赖、SSOT 不迁单 skill）; authority-id: `design.skill-runtime-closure`
 - [designs/zj-docs-convention-distillation-playbook.md](designs/zj-docs-convention-distillation-playbook.md) — 跨仓文档规范蒸馏 playbook（不建 skill 的判决 + 五段法）; authority-id: `design.docs-convention-distillation`
+- [designs/zj-roadmap-visual-review-product.md](designs/zj-roadmap-visual-review-product.md) — roadmap Human 视图产品设计方案（四场景锚定 + 同源多投影）; authority-id: `design.roadmap-visual-review-product`
+- [designs/zj-roadmap-visual-review-technical.md](designs/zj-roadmap-visual-review-technical.md) — roadmap Human 视图技术设计方案（由确定性脚本从机器可读 SoT 生成）; authority-id: `design.roadmap-visual-review-technical`
 
 ### Contract（ui-agent-skills 子系统机器可读契约/清单/账本等）
 机器可读契约：`skills/ui/zj-ui-core/contracts/`（随 skill 安装，closure 合规）。

@@ -1,0 +1,9 @@
+{
+  "name": "zj-roadmap-driven-viz-dagre-vendor",
+  "version": "3.1.3",
+  "private": true,
+  "description": "Pinned provenance for the vendored dagre UMD used by viz/render_html.py. The UMD is committed at dagre.vendor.js; no install step is required at runtime.",
+  "dependencies": {
+    "@dagrejs/dagre": "3.1.3"
+  }
+}

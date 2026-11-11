@@ -1,0 +1,1733 @@
+{
+  "schema": "zj-roadmap-visual-review/spec/v1",
+  "version-pin": "2026-11-10",
+  "authority-ids": {
+    "product": "design.roadmap-visual-review-product",
+    "technical": "design.roadmap-visual-review-technical"
+  },
+  "bounded-question": "zj-roadmap-driven 如何在不膨胀 Human 主视图、不破坏 process-state 权威边界的前提下，向 Human 提供可视化阅读、理解、焦点对齐与基于 roadmap 的完整上下文对齐能力？",
+  "method-contract": {
+    "skill": "zj-graphical-cross-comparison",
+    "applied": [
+      "scene-anchoring",
+      "supply-four-state",
+      "context-three-state",
+      "evidence-traceability",
+      "mechanical-gate"
+    ],
+    "imported-conditions": [
+      "CHK-04",
+      "CHK-06",
+      "CHK-09",
+      "CHK-12"
+    ],
+    "not-applied": [
+      "signed-cross-comparison-report"
+    ],
+    "reason": "固定场景集未由 Human 独立给定并带版本 pin（SKILL.md 范围闸门 2）。本 spec 的场景集是对 Human 口述四能力维度的 Agent 转写，human-independent-pin=false，故差异条目清单只作过程材料，不签发横比报告；补齐独立 pin 后方可作为正式报告输入。",
+    "no-silent-substitution": "unknown 是证据缺口，不等于 unsupported；unsupported 必须绑定一手材料中的显式否定陈述。本 spec 未采集到任何显式否定陈述，故 unsupported 计数为 0。"
+  },
+  "scene-set": {
+    "id": "SCENE-SET::roadmap-human-view-v1",
+    "version-pin": "human-query-2026-11-10",
+    "source": "Human 口述四能力维度（2026-11-10 user_query：方便阅读 / 方便理解 / 对齐焦点 / 基于 roadmap 的完整上下文对齐）",
+    "derived-from-graphs": false,
+    "human-independent-pin": false,
+    "scenes": [
+      {
+        "id": "SC::01",
+        "start": "Human 打开一份层级计划的可视化视图",
+        "end": "同时获得当前焦点位置与全局分布",
+        "observable": "焦点锚点与非焦点分区计数在同一屏可见，无需滚动或翻页"
+      },
+      {
+        "id": "SC::02",
+        "start": "Human 选中计划中的一个工作单元",
+        "end": "理解它的依赖来龙去脉",
+        "observable": "视图显示谁阻塞它、它阻塞谁、改动会波及哪些下游，且无需切换到命令行或翻查对话历史"
+      },
+      {
+        "id": "SC::03",
+        "start": "Agent 与 Human 就某个工作单元展开讨论",
+        "end": "双方指向同一锚点",
+        "observable": "存在双方可引用的稳定锚点标识；锚点切换后局部视图同步；不出现焦点在主视图中找不到的情况"
+      },
+      {
+        "id": "SC::04",
+        "start": "Human 需要某个工作单元的决策与过程记录来龙去脉",
+        "end": "按需获得完整上下文而不被信息淹没",
+        "observable": "上下文可按需展开且每条可追溯到来源；默认主视图规模不随上下文条目数增长"
+      }
+    ]
+  },
+  "context-entries": [
+    {
+      "id": "CTX::process-authority",
+      "scope": "domain",
+      "kind": "constraint",
+      "statement": "可视化产物是 process-state 派生视图，不得作为产品行为、架构、发布或正确性的证据",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "CTX::line-budget",
+      "scope": "domain",
+      "kind": "constraint",
+      "statement": "Human 主视图行数不得随 trace / 上下文条目增长（trace layer 硬判据）",
+      "evidence-ref": "E::execution-graph"
+    },
+    {
+      "id": "CTX::carrier-identity",
+      "scope": "domain",
+      "kind": "data-contract",
+      "statement": "单文件 JSON 与 SQLite 两 carrier 的同类视图必须逐字节相同",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "CTX::single-template",
+      "scope": "domain",
+      "kind": "constraint",
+      "statement": "同一语义只写一份模板；模板抄两份本身即缺陷",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "CTX::no-import",
+      "scope": "domain",
+      "kind": "constraint",
+      "statement": "派生视图不可反向导入事实源",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "CTX::runtime-closure",
+      "scope": "domain",
+      "kind": "external-dep",
+      "statement": "安装态只携带 skill 目录，运行时不得依赖源仓 docs 或外部服务",
+      "evidence-ref": "E::closure-design"
+    }
+  ],
+  "projects": [
+    {
+      "id": "P1",
+      "name": "Nx Graph",
+      "repo": "nrwl/nx",
+      "license": "MIT",
+      "statement": "从源码计算得到的 project graph / task graph 交互视图，支持 focus、affected、复合节点与图数据 JSON 导出",
+      "evidence-refs": [
+        "E::nx-graph"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Overture",
+      "repo": "SixHq/Overture",
+      "license": "MIT",
+      "statement": "MCP server + 本地 Web UI，把 agent 的执行计划渲染成可交互流程图，节点级挂载上下文，未批准不写码",
+      "evidence-refs": [
+        "E::overture"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Cognograph",
+      "repo": "skovalik/cognograph",
+      "license": "unknown",
+      "statement": "以图边做上下文注入的画布，带 5 级 semantic zoom LOD 与上下文注入路径可视化",
+      "evidence-refs": [
+        "E::cognograph"
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Markmap",
+      "repo": "markmap/markmap",
+      "license": "MIT",
+      "statement": "Markdown in / mind map out，支持折叠、缩放、frontmatter 选项与单文件离线 HTML 输出",
+      "evidence-refs": [
+        "E::markmap"
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "/visual-plan",
+      "repo": "BuilderIO/skills",
+      "license": "unknown",
+      "statement": "把文本计划升级为可批注 MDX 审阅面，含图、file map、open questions，并作为写代码前的批准 gate",
+      "evidence-refs": [
+        "E::visual-plan",
+        "E::visual-plan-local"
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "inplan",
+      "repo": "melly-lgtm/inplan",
+      "license": "AGPL-3.0",
+      "statement": "人与 agent 共编同一份 Markdown 计划，开放问题作行内批注，修订像 PR 一样 apply diff",
+      "evidence-refs": [
+        "E::inplan"
+      ]
+    }
+  ],
+  "difference-entries": [
+    {
+      "id": "DE::0001",
+      "scene": "SC::01",
+      "project": "P1",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::nx-graph"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "satisfied",
+          "evidence-ref": "E::nx-graph"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "focus + composite nodes + proximity + group-by-folder 在同一交互画布给出焦点与全局分布"
+    },
+    {
+      "id": "DE::0002",
+      "scene": "SC::02",
+      "project": "P1",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::nx-graph"
+      ],
+      "context-refs": [
+        "CTX::process-authority"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::process-authority",
+          "verdict": "satisfied",
+          "evidence-ref": "E::nx-graph"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "Start/End 追踪依赖链、点击依赖线定位创建它的文件、--affected 展示波及范围"
+    },
+    {
+      "id": "DE::0003",
+      "scene": "SC::03",
+      "project": "P1",
+      "verdict": "adapted",
+      "adaptation-target": "把 project-name 提升为带 carrier revision 的显式锚点 token，供 Human 复制回对话",
+      "evidence-refs": [
+        "E::nx-graph"
+      ],
+      "context-refs": [
+        "CTX::carrier-identity"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::carrier-identity",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "nx graph --focus <name> 有稳定锚点，但产品未定义 Human↔Agent 双向引用协议"
+    },
+    {
+      "id": "DE::0004",
+      "scene": "SC::04",
+      "project": "P1",
+      "verdict": "unknown",
+      "verification-plan": "核查 Nx 文档是否存在上下文按需展开与主视图规模约束的声明；若无则视为该场景的能力缺口而非否定",
+      "evidence-refs": [],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "assumption"
+      ],
+      "note": "一手材料既无覆盖证据也无显式否定陈述"
+    },
+    {
+      "id": "DE::0005",
+      "scene": "SC::01",
+      "project": "P2",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::overture"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "React Flow 画布 pan/zoom、状态色、complexity badge、next-node 脉冲"
+    },
+    {
+      "id": "DE::0006",
+      "scene": "SC::02",
+      "project": "P2",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::overture"
+      ],
+      "context-refs": [
+        "CTX::process-authority"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::process-authority",
+          "verdict": "satisfied",
+          "evidence-ref": "E::overture"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "依赖变边、分支点显式 pros/cons、节点详情面板给出风险与预期产出"
+    },
+    {
+      "id": "DE::0007",
+      "scene": "SC::03",
+      "project": "P2",
+      "verdict": "adapted",
+      "adaptation-target": "把 UI 内节点 id 导出为可粘贴的文本锚点，并绑定到计划版本",
+      "evidence-refs": [
+        "E::overture"
+      ],
+      "context-refs": [
+        "CTX::carrier-identity"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::carrier-identity",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "人机共享同一张计划图，但锚点只存在于 UI 内"
+    },
+    {
+      "id": "DE::0008",
+      "scene": "SC::04",
+      "project": "P2",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::overture"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "satisfied",
+          "evidence-ref": "E::overture"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "节点级作用域挂载 files/docs/secrets/MCP/instructions，只在该节点执行时生效，天然不膨胀画布"
+    },
+    {
+      "id": "DE::0009",
+      "scene": "SC::01",
+      "project": "P3",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::cognograph"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "satisfied",
+          "evidence-ref": "E::cognograph"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "5 级 LOD semantic zoom、远距 cluster summary bubbles、Canvas Table of Contents"
+    },
+    {
+      "id": "DE::0010",
+      "scene": "SC::02",
+      "project": "P3",
+      "verdict": "adapted",
+      "adaptation-target": "把 requires/blocks 的调度语义编码进 edge grammar，并让弱边在远距自动隐藏",
+      "evidence-refs": [
+        "E::cognograph"
+      ],
+      "context-refs": [
+        "CTX::process-authority"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::process-authority",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "有 edge grammar 与 BFS 遍历，但阻塞链不是其原生语义"
+    },
+    {
+      "id": "DE::0011",
+      "scene": "SC::03",
+      "project": "P3",
+      "verdict": "adapted",
+      "adaptation-target": "把 COGNOGRAPH_NODE_ID 的 session→node 映射提升为 Human 可复制的锚点信封",
+      "evidence-refs": [
+        "E::cognograph"
+      ],
+      "context-refs": [
+        "CTX::carrier-identity"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::carrier-identity",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "3-tier session mapping 已有节点级绑定，但缺双向可引用 token"
+    },
+    {
+      "id": "DE::0012",
+      "scene": "SC::04",
+      "project": "P3",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::cognograph"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "satisfied",
+          "evidence-ref": "E::cognograph"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "BFS inbound-edge 上下文注入 + token budget + hop 深度 + context scope badge / BFS radius / context-viz-included 高亮"
+    },
+    {
+      "id": "DE::0013",
+      "scene": "SC::01",
+      "project": "P4",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::markmap"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "satisfied",
+          "evidence-ref": "E::markmap"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "fold / zoom / pan + frontmatter foldLevel + 行内折叠注释"
+    },
+    {
+      "id": "DE::0014",
+      "scene": "SC::02",
+      "project": "P4",
+      "verdict": "unknown",
+      "verification-plan": "核查 Markmap 是否支持树之外的依赖边渲染；若无一手声明则记为缺口，不得写成 unsupported",
+      "evidence-refs": [],
+      "context-refs": [
+        "CTX::single-template"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::single-template",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "assumption"
+      ],
+      "note": "一手材料只声明 Markdown 标题/列表到树，未声明依赖边，也无显式否定"
+    },
+    {
+      "id": "DE::0015",
+      "scene": "SC::03",
+      "project": "P4",
+      "verdict": "adapted",
+      "adaptation-target": "把 Markdown 标题路径与节点 uid 绑定成稳定锚点，并用离线单文件承载同一视图",
+      "evidence-refs": [
+        "E::markmap"
+      ],
+      "context-refs": [
+        "CTX::no-import"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::no-import",
+          "verdict": "satisfied",
+          "evidence-ref": "E::markmap"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "标题层级是稳定地址且单文件可分享；但 Markdown 是输入不是派生视图，方向需反转"
+    },
+    {
+      "id": "DE::0016",
+      "scene": "SC::04",
+      "project": "P4",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::markmap"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "satisfied",
+          "evidence-ref": "E::markmap"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "段落/表格/代码留在所属分支的 note 中，以 popover 打开而非铺开在主图"
+    },
+    {
+      "id": "DE::0017",
+      "scene": "SC::01",
+      "project": "P5",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::visual-plan",
+        "E::visual-plan-local"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "scannable 审阅面 + diagrams / file maps / wireframes / open questions，按内容选视觉面"
+    },
+    {
+      "id": "DE::0018",
+      "scene": "SC::02",
+      "project": "P5",
+      "verdict": "adapted",
+      "adaptation-target": "在 MDX 组件集中补一个只读的依赖/阻塞链组件，数据来自 carrier 而非 agent 复述",
+      "evidence-refs": [
+        "E::visual-plan"
+      ],
+      "context-refs": [
+        "CTX::process-authority"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::process-authority",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "有架构图与 file map，但阻塞链不是原生组件"
+    },
+    {
+      "id": "DE::0019",
+      "scene": "SC::03",
+      "project": "P5",
+      "verdict": "adapted",
+      "adaptation-target": "把审阅面的批准记录绑定显式计划版本与节点锚点，使 Human 与 Agent 指向同一处",
+      "evidence-refs": [
+        "E::visual-plan"
+      ],
+      "context-refs": [
+        "CTX::carrier-identity"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::carrier-identity",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "plan 作为 approval gate 已有共享文档，但无节点级锚点 token"
+    },
+    {
+      "id": "DE::0020",
+      "scene": "SC::04",
+      "project": "P5",
+      "verdict": "unknown",
+      "verification-plan": "核查 MDX 审阅面是否对上下文条目做规模约束；无一手声明则记为缺口",
+      "evidence-refs": [],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "assumption"
+      ],
+      "note": "有 open questions / comments，但未声明主视图规模不随上下文增长"
+    },
+    {
+      "id": "DE::0021",
+      "scene": "SC::01",
+      "project": "P6",
+      "verdict": "unknown",
+      "verification-plan": "核查 inplan 编辑器是否提供层级计划的全局分布视图；若无一手声明则记为缺口",
+      "evidence-refs": [],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "assumption"
+      ],
+      "note": "一手 README 描述的是文档编辑与批注，未声明全局分布可视化"
+    },
+    {
+      "id": "DE::0022",
+      "scene": "SC::02",
+      "project": "P6",
+      "verdict": "unknown",
+      "verification-plan": "核查 inplan 是否渲染任务依赖/阻塞；无一手声明则记为缺口",
+      "evidence-refs": [],
+      "context-refs": [
+        "CTX::single-template"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::single-template",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "assumption"
+      ],
+      "note": "一手材料未声明依赖图，也无显式否定"
+    },
+    {
+      "id": "DE::0023",
+      "scene": "SC::03",
+      "project": "P6",
+      "verdict": "native",
+      "evidence-refs": [
+        "E::inplan"
+      ],
+      "context-refs": [
+        "CTX::no-import"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::no-import",
+          "verdict": "satisfied",
+          "evidence-ref": "E::inplan"
+        }
+      ],
+      "sources": [
+        "evidence"
+      ],
+      "note": "人与 agent 编同一份 Markdown，批注锚定具体句子，修订以 diff 应用；锚点天然双方共享"
+    },
+    {
+      "id": "DE::0024",
+      "scene": "SC::04",
+      "project": "P6",
+      "verdict": "adapted",
+      "adaptation-target": "把行内批注从文档层下沉为节点级上下文包，并显式约束主视图规模",
+      "evidence-refs": [
+        "E::inplan"
+      ],
+      "context-refs": [
+        "CTX::line-budget"
+      ],
+      "context-verdicts": [
+        {
+          "ref": "CTX::line-budget",
+          "verdict": "unknown",
+          "evidence-ref": null
+        }
+      ],
+      "sources": [
+        "evidence",
+        "assumption"
+      ],
+      "note": "计划与 rationale 同行且可 git review，但按需展开的规模约束未声明"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "C::01",
+      "name": "radial-overview",
+      "scene-refs": [
+        "SC::01"
+      ],
+      "statement": "焦点辐射概览：祖先链必现、焦点子树下钻、非焦点兄弟折叠为分区计数",
+      "interaction": "单文件离线视图，可折叠/缩放/平移；状态用颜色与形状双编码，不依赖颜色 alone",
+      "acceptance": "任一层级的焦点都能在同一屏看到其祖先链与兄弟分区计数，且焦点不在主视图中消失",
+      "evidence-refs": [
+        "E::nx-graph",
+        "E::markmap",
+        "E::cognograph"
+      ],
+      "rejected": "把整棵树平铺成大图——50+ 节点可读性未验证，且违反主视图规模约束"
+    },
+    {
+      "id": "C::02",
+      "name": "dependency-lens",
+      "scene-refs": [
+        "SC::02"
+      ],
+      "statement": "依赖透镜：只画 blocks 有向边与关键路径，点击边可回溯创建该边的证据",
+      "interaction": "选中节点后显示被谁挡住、挡住谁、impact 闭包；点击边显示边 id 与来源",
+      "acceptance": "Human 不调用 CLI、不翻对话历史即可读出阻塞链与波及范围；视图与 ready/critical-path/impact 同源",
+      "evidence-refs": [
+        "E::nx-graph",
+        "E::overture"
+      ],
+      "rejected": "把树与依赖边混画在一张无差别图里——方向语义会丢失"
+    },
+    {
+      "id": "C::03",
+      "name": "anchor-envelope",
+      "scene-refs": [
+        "SC::03"
+      ],
+      "statement": "锚点信封 zj-roadmap-anchor/v1：view-kind + carrier-stem + node-uid + revision 组成可复制 token",
+      "interaction": "Human 点节点复制 token，贴回对话；Agent 用同一 token 请求同一局部视图",
+      "acceptance": "同一 token 在两 carrier 上生成逐字节相同的局部视图；revision 不符时视图显式标记 stale，不静默展示旧图",
+      "evidence-refs": [
+        "E::nx-graph",
+        "E::inplan",
+        "E::cognograph"
+      ],
+      "rejected": "用节点显示 id 当锚点——显示 id 会因重排漂移，不能作持久引用"
+    },
+    {
+      "id": "C::04",
+      "name": "context-pack",
+      "scene-refs": [
+        "SC::04"
+      ],
+      "statement": "按需上下文包：单节点的决策、trace、边、证据引用与影响闭包打包为侧载数据",
+      "interaction": "主视图只留一个入口；展开时显示上下文来源、BFS 半径与条目数；条目带 evidence-ref",
+      "acceptance": "上下文条目数增长时主视图行数不变；每条上下文可追溯到 carrier 内记录或显式 unknown",
+      "evidence-refs": [
+        "E::cognograph",
+        "E::overture",
+        "E::markmap"
+      ],
+      "rejected": "把 trace 直接写进主视图——execution-graph 设计的硬判据明确禁止"
+    },
+    {
+      "id": "C::05",
+      "name": "surface-choice",
+      "scene-refs": [
+        "SC::01",
+        "SC::02",
+        "SC::04"
+      ],
+      "statement": "视觉面选择规则：结构/调度类走图，长文本决策类走文档，上下文类走侧载包",
+      "interaction": "由 view-kind 显式选择，不由 LLM 自由决定渲染形态",
+      "acceptance": "同一 carrier 下 view-kind 到输出形态是一一映射，可在契约测试中枚举断言",
+      "evidence-refs": [
+        "E::visual-plan",
+        "E::visual-plan-local"
+      ],
+      "rejected": "一套界面打天下，或让模型每次自由生成 HTML"
+    },
+    {
+      "id": "C::06",
+      "name": "revision-staleness",
+      "scene-refs": [
+        "SC::03",
+        "SC::04"
+      ],
+      "statement": "视图版本绑定：所有投影带 carrier revision，过期视图显式标记 stale",
+      "interaction": "token 内 revision 与当前 carrier 比对；不符时给出刷新命令，不自动改事实源",
+      "acceptance": "过期视图不会把旧状态误当作当前状态；刷新是显式命令，把命令写出来不等于替人跑",
+      "evidence-refs": [
+        "E::nx-graph",
+        "E::plans"
+      ],
+      "rejected": "静默重绘——等于让派生视图偷偷变成第二个事实源"
+    },
+    {
+      "id": "C::07",
+      "name": "doi-layering",
+      "scene-refs": [
+        "SC::01",
+        "SC::02",
+        "SC::04"
+      ],
+      "statement": "焦点自适应分层：按确定性 DOI 排序选条目，theta 上移压缩、下移拓展",
+      "interaction": "一个连续旋钮（overview / neighborhood / expand 三档只是预设 theta）；每条显示 DOI 与选中理由",
+      "acceptance": "固定阅读预算下，IS::mandatory::v1 的全部必备项（焦点 + 阻塞前驱闭包 + 后继 + 高严重度债务）全部出现在 V 中；被压缩条目显式报数，不静默丢失",
+      "evidence-refs": [
+        "E::cognograph",
+        "E::nx-graph",
+        "E::markmap"
+      ],
+      "rejected": "与焦点无关的固定 depth 折叠；让模型判断哪些信息重要"
+    },
+    {
+      "id": "C::08",
+      "name": "debt-lens",
+      "scene-refs": [
+        "SC::02",
+        "SC::04"
+      ],
+      "statement": "动态债务透镜：执行期涌现的 GAP / TODO / 风险 / sweep 一等建模、按严重度加权进 DOI",
+      "interaction": "债务旁挂于锚点邻域，显示 kind / severity / discovered-revision / evidence-ref；展开不等于改图",
+      "acceptance": "新增债务不改变 plan tree 拓扑、不进 ready；高严重度债务在预算内优先可见",
+      "evidence-refs": [
+        "E::execution-graph",
+        "E::overture"
+      ],
+      "rejected": "发现债务就自动 add 成节点——图膨胀且绕过 Human 审核"
+    },
+    {
+      "id": "C::09",
+      "name": "delta-reentry",
+      "scene-refs": [
+        "SC::01",
+        "SC::03"
+      ],
+      "statement": "增量重入：视图 receipt 记上次读到的条目 hash，重入只输出 added / changed / removed / stable-folded",
+      "interaction": "Human 回到会话先看到一段增量；稳定项折成「其余 N 项未变」一行；receipt 损坏则 fail-closed 回退全量",
+      "acceptance": "S 增长时重入阅读量只随增量增长，不随 S 增长；baseline=None 的全量视图两 carrier 逐字节相同",
+      "evidence-refs": [
+        "E::cognograph",
+        "E::plans"
+      ],
+      "rejected": "每次回来整页重绘并要求重新通读"
+    },
+    {
+      "id": "C::10",
+      "name": "presentation-surfaces",
+      "scene-refs": [
+        "SC::01",
+        "SC::02",
+        "SC::04"
+      ],
+      "statement": "把 DOI 选择结果做成空间编码：局部 DAG 表达顺序依赖，信息卡片表达单节点完整上下文与债务",
+      "interaction": "三区布局；θ 同时驱动 DAG 裁剪与卡片 LOD；点击卡片展开 L2；重入增量走独立横条",
+      "acceptance": "同一 θ 下 DAG 与卡片共用同一 DOI 排序；视觉编码不单靠颜色；文本等价物与视觉产物同源且两 carrier 字节相同",
+      "evidence-refs": [
+        "E::nx-graph",
+        "E::overture",
+        "E::cognograph",
+        "E::markmap"
+      ],
+      "rejected": "单一文本列表演示所有场景；全量 DAG 平铺；卡片墙不受预算"
+    }
+  ],
+  "view-contracts": [
+    {
+      "id": "VC::01",
+      "name": "view-ir",
+      "kind": "intermediate-representation",
+      "statement": "单一中间表示：nodes / edges / anchor / context-pack / evidence-refs / revision；所有输出形态由它投影",
+      "format": "json",
+      "producer": "只读 CLI 子命令，从 carrier 直接派生",
+      "consumers": [
+        "VC::02",
+        "VC::03",
+        "VC::04"
+      ],
+      "invariant-refs": [
+        "INV::01",
+        "INV::02",
+        "INV::03",
+        "INV::08"
+      ]
+    },
+    {
+      "id": "VC::02",
+      "name": "overview-projection",
+      "kind": "human-readable",
+      "statement": "Mermaid 文本图 + 单文件离线 HTML 双投影；前者可 git diff，后者可折叠缩放",
+      "format": "mermaid|html",
+      "producer": "VC::01",
+      "consumers": [],
+      "invariant-refs": [
+        "INV::02",
+        "INV::03",
+        "INV::05",
+        "INV::07"
+      ]
+    },
+    {
+      "id": "VC::03",
+      "name": "dependency-projection",
+      "kind": "human-readable",
+      "statement": "blocks 有向图投影，节点带 display-id 与状态，边带 id；点击边可回溯证据",
+      "format": "mermaid|dot",
+      "producer": "VC::01",
+      "consumers": [],
+      "invariant-refs": [
+        "INV::02",
+        "INV::05",
+        "INV::06"
+      ]
+    },
+    {
+      "id": "VC::04",
+      "name": "context-projection",
+      "kind": "side-loaded",
+      "statement": "侧载 JSON 上下文包 + 折叠区；不进 Human 主视图，不进摘要分母",
+      "format": "json|details-block",
+      "producer": "VC::01",
+      "consumers": [],
+      "invariant-refs": [
+        "INV::01",
+        "INV::04",
+        "INV::06"
+      ]
+    },
+    {
+      "id": "VC::05",
+      "name": "doi-projection",
+      "kind": "human-readable",
+      "statement": "按 DOI 排序的分层投影，输出受阅读预算约束；每条带稳定 id / content hash / 选中理由",
+      "format": "mermaid|html|text",
+      "producer": "VC::01",
+      "consumers": [
+        "VC::06"
+      ],
+      "invariant-refs": [
+        "INV::01",
+        "INV::09",
+        "INV::10",
+        "INV::11"
+      ]
+    },
+    {
+      "id": "VC::06",
+      "name": "delta-projection",
+      "kind": "incremental",
+      "statement": "以视图 receipt 为 baseline 的条目级增量投影；baseline 是显式输入，不藏在 carrier",
+      "format": "text|json",
+      "producer": "VC::01",
+      "consumers": [],
+      "invariant-refs": [
+        "INV::02",
+        "INV::11",
+        "INV::12"
+      ]
+    },
+    {
+      "id": "VC::07",
+      "name": "dag-projection",
+      "kind": "human-readable",
+      "statement": "局部 DAG：只画 DOI>=theta 的节点与必备项；其余折成复合节点计数，边语义用线型编码",
+      "format": "mermaid|svg|html",
+      "producer": "VC::01",
+      "consumers": [],
+      "invariant-refs": [
+        "INV::09",
+        "INV::10",
+        "INV::13",
+        "INV::14"
+      ]
+    },
+    {
+      "id": "VC::08",
+      "name": "card-projection",
+      "kind": "human-readable",
+      "statement": "信息卡片列：焦点卡 / 耦合卡 / 债务卡，三级 LOD，受同一阅读预算",
+      "format": "html|text",
+      "producer": "VC::01",
+      "consumers": [],
+      "invariant-refs": [
+        "INV::01",
+        "INV::09",
+        "INV::12",
+        "INV::14"
+      ]
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV::01",
+      "statement": "Human 主视图行数不随 trace / 上下文条目数增长",
+      "guard": "负向用例：注入 N 条上下文后主视图字节不变",
+      "evidence-ref": "E::execution-graph"
+    },
+    {
+      "id": "INV::02",
+      "statement": "两 carrier 的同类视图逐字节相同",
+      "guard": "跨 carrier 参数化字节断言",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::03",
+      "statement": "同一语义只写一份模板",
+      "guard": "投影函数与模板一一映射的枚举断言",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::04",
+      "statement": "派生视图不可反向导入事实源",
+      "guard": "命令清单冻结断言（无 import 类命令）",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::05",
+      "statement": "所有公开视图必带 zj-roadmap-authority/v1 信封",
+      "guard": "逐视图 assertIn 权威信封",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::06",
+      "statement": "视图状态只表达 process-state，不证明产品正确性",
+      "guard": "authority-check 对长期文档引用过程产物的拒绝用例",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::07",
+      "statement": "skill 运行时闭包自包含，不依赖源仓 docs 或托管服务",
+      "guard": "closure-lint 与离线单文件产物断言",
+      "evidence-ref": "E::closure-design"
+    },
+    {
+      "id": "INV::08",
+      "statement": "确定性：同 carrier + 同 anchor + 同 revision 生成逐字节相同的视图",
+      "guard": "两次生成字节比较；无时间戳、无随机布局",
+      "evidence-ref": "E::d2-dac"
+    },
+    {
+      "id": "INV::09",
+      "statement": "阅读预算硬上限；被压缩条目显式报数，不允许静默丢失",
+      "guard": "注入 N 条条目后断言输出行数 <= max 且溢出报告含被压缩计数",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::10",
+      "statement": "DOI 是确定性函数：同 carrier + 同 anchor + 同 theta + 同 baseline 输出逐字节相同",
+      "guard": "两次生成字节比较；权重与阈值是脚本内常量，禁止 LLM 推断",
+      "evidence-ref": "E::d2-dac"
+    },
+    {
+      "id": "INV::11",
+      "statement": "视图 receipt 不进 carrier、不参与 view-ir 计算；baseline=None 时全量视图两 carrier 逐字节相同",
+      "guard": "receipt 缺失/损坏的 fail-closed 回退用例 + 跨 carrier 全量字节断言",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    {
+      "id": "INV::12",
+      "statement": "债务不自动成为 WorkItem，不进 plan tree 的 children 与 ready 遍历集",
+      "guard": "新增债务后断言 ready / tree 输出字节不变",
+      "evidence-ref": "E::execution-graph"
+    },
+    {
+      "id": "INV::13",
+      "statement": "DAG 布局确定性；同一输入不得因随机布局产生不同输出；Mermaid / DOT 文本等价物必现且与视觉同源",
+      "guard": "禁用 force-directed 的静态检查 + 两次生成字节比较 + 文本投影存在性断言",
+      "evidence-ref": "E::d2-dac"
+    },
+    {
+      "id": "INV::14",
+      "statement": "DOI 与边语义的视觉编码不得只靠颜色；尺寸 / 线型 / 形状同步承载",
+      "guard": "编码通道枚举断言（>=2 通道）+ 无颜色单通道用例",
+      "evidence-ref": "E::cognograph"
+    }
+  ],
+  "slices": [
+    {
+      "id": "S0",
+      "statement": "DOI 函数 + 阅读预算 + 债务 schema + 视图 receipt 契约（本轮问题定义的机器可读落点）",
+      "depends-on": [],
+      "exit-criteria": "权重归一且阈值有序；预算溢出不静默丢失；IS::mandatory::v1 全部必备项恒在 V 中（不被折叠、不占满预算）；receipt 不进 carrier"
+    },
+    {
+      "id": "S1",
+      "statement": "view-ir + anchor-envelope 只读命令与两 carrier 字节相同契约",
+      "depends-on": [
+        "S0"
+      ],
+      "exit-criteria": "IR schema 冻结；两 carrier 同 anchor 输出逐字节相同；权威信封必现"
+    },
+    {
+      "id": "S2",
+      "statement": "overview 投影（局部 DAG + 信息卡片 + Mermaid 文本等价物）",
+      "depends-on": [
+        "S1"
+      ],
+      "exit-criteria": "无焦点回退行为与现状逐字节一致；有焦点时祖先链必现且兄弟折叠计数可见；DAG 布局确定性且文本等价物与视觉同源；卡片受 40 行预算"
+    },
+    {
+      "id": "S3",
+      "statement": "dependency 投影与边回溯",
+      "depends-on": [
+        "S1"
+      ],
+      "exit-criteria": "阻塞链、critical-path、impact 与视图同源；点击边可回溯边 id 与来源"
+    },
+    {
+      "id": "S4",
+      "statement": "context side-pack 与 stale 标记",
+      "depends-on": [
+        "S1"
+      ],
+      "exit-criteria": "上下文条目增长时主视图字节不变；revision 不符时显式 stale 且不自动刷新"
+    }
+  ],
+  "rejected-defaults": [
+    {
+      "id": "RD::01",
+      "statement": "让 LLM 自由绘制 HTML / Mermaid",
+      "reason": "非确定性，无法做逐字节回归，也无法保证两 carrier 一致"
+    },
+    {
+      "id": "RD::02",
+      "statement": "把 trace 直接铺进 Human 主视图",
+      "reason": "违反 execution-graph 的硬判据，会让 P5 自我否定"
+    },
+    {
+      "id": "RD::03",
+      "statement": "再建一张独立图作为第二事实源",
+      "reason": "execution-graph 已判定「解法不是加更多图，而是从同一 carrier 派生不同投影」"
+    },
+    {
+      "id": "RD::04",
+      "statement": "用 hosted 服务渲染与批注计划",
+      "reason": "数据出域、依赖托管服务、违反 ADR 0010 相对路径与 skill runtime closure"
+    },
+    {
+      "id": "RD::05",
+      "statement": "把可视化状态或勾选当验收证据",
+      "reason": "process-state 权威边界；完成态只是过程记录，不是正确性证明"
+    },
+    {
+      "id": "RD::06",
+      "statement": "把 doc-slop / 视图质量做成运行时门禁",
+      "reason": "本仓 ADR 0011 与 zj-doc-health 已把机械 health gate 列为 rejected default"
+    },
+    {
+      "id": "RD::07",
+      "statement": "让 LLM 每次判断「哪些信息重要」来做 smart 压缩",
+      "reason": "非确定性、不可逐字节回归、两 carrier 无法保证一致；smart 只能是确定性 DOI 加显式阈值"
+    },
+    {
+      "id": "RD::08",
+      "statement": "每次重入整页重绘，让人重新通读全量",
+      "reason": "阅读成本随 S 线性增长；应改为条目级增量加稳定项折叠计数"
+    },
+    {
+      "id": "RD::09",
+      "statement": "执行期发现债务就自动 add 成 plan 节点",
+      "reason": "图膨胀并绕过 Human 审核，正是 execution-graph 用 promote proposal 防住的缺陷"
+    },
+    {
+      "id": "RD::10",
+      "statement": "把压缩与拓展做成两套独立界面 / 两套模板",
+      "reason": "同一 DOI 排序上 theta 的两个方向；两套模板必然漂移（本仓已翻过车）"
+    },
+    {
+      "id": "RD::11",
+      "statement": "把全量 DAG 平铺出来让人自己找重点",
+      "reason": "50+ 节点可读性未验证（Overture 作者自述开放问题），且绕过阅读预算；必须画 DOI 裁剪后的局部 DAG"
+    },
+    {
+      "id": "RD::12",
+      "statement": "用卡片墙承载所有上下文条目",
+      "reason": "卡片比文本行更占视觉面积，瞬时阅读量反而更大；必须受同一预算并走三级 LOD"
+    },
+    {
+      "id": "RD::13",
+      "statement": "用 force-directed 随机布局生成 DAG",
+      "reason": "每次布局不同，破坏确定性与两 carrier 字节相同；必须用确定性分层布局"
+    }
+  ],
+  "evidence-integrity": {
+    "statement": "本 spec 的一手材料为各项目官方 README / 官方文档，抓取日期见 sources.captured。部分来源只有访问日期 pin，未取固定 commit sha；Nx 文档亦为活文档。",
+    "consequence": "因此本 spec 可作为产品/技术方案的证据层，但不足以支撑需要固定版本 pin 的正式横比报告。若 zj 补齐独立场景 pin 与各源 commit sha，可提升为正式报告输入。",
+    "no-secondary-as-native": "标为 secondary 的来源不得单独支撑 native 判定。"
+  },
+  "sources": [
+    {
+      "id": "E::nx-graph",
+      "kind": "primary",
+      "title": "Nx — Explore your Workspace",
+      "url": "https://nx.dev/docs/features/explore-graph",
+      "pin": "live docs, visited 2026-11-10",
+      "captured": "2026-11-10",
+      "quote": "Focus on a specific project ... nx graph --focus <project-name>; Click on any dependency line to find which file(s) created the dependency; nx graph --file=output.json; It always stays up to date without having to actively maintain a document as it is calculated by analyzing your source code."
+    },
+    {
+      "id": "E::overture",
+      "kind": "primary",
+      "title": "SixHq/Overture README",
+      "url": "https://github.com/SixHq/Overture",
+      "pin": "main@14c8929 (per repo page, 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "The agent doesn't write a single line of code until you approve the plan. ... Text Plans Don't Help: Dependencies / Branch points / Context requirements / Complexity / Progress"
+    },
+    {
+      "id": "E::cognograph",
+      "kind": "primary",
+      "title": "skovalik/cognograph FEATURES.md",
+      "url": "https://github.com/skovalik/cognograph/blob/master/FEATURES.md",
+      "pin": "master (visited 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Visual display of context injection paths. Context Scope Badge ... BFS radius display; Context depth control: Configure how many hops of the graph to traverse per conversation; 5-Level LOD; Session Re-Entry Prompt surfaces your most recently interacted nodes; Cognitive Load Meter: Weighted combination of visible node count + connection density; Canvas Table of Contents: Searchable, sortable outline of your entire canvas."
+    },
+    {
+      "id": "E::markmap",
+      "kind": "primary",
+      "title": "markmap/markmap README",
+      "url": "https://github.com/markmap/markmap",
+      "pin": "master (visited 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Headings and list items become branches you can fold, zoom and pan. Other text ... stays with its branch as a note that opens in a popover. ... markmap notes.md writes notes.html, one file that works offline. License: MIT"
+    },
+    {
+      "id": "E::visual-plan",
+      "kind": "primary",
+      "title": "BuilderIO/skills README — /visual-plan",
+      "url": "https://github.com/BuilderIO/skills",
+      "pin": "main (visited 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Turn ordinary text plans into rich interactive visual plans with diagrams, file maps, annotated code, open questions ... scannable, commentable, and intuitive enough for a human to approve before code changes start."
+    },
+    {
+      "id": "E::visual-plan-local",
+      "kind": "primary",
+      "title": "/visual-plan README — visual surface choice & local-files mode",
+      "url": "https://github.com/nexuslinkproductions/yuri-os/blob/main/skills/visual-plan/README.md",
+      "pin": "main (visited 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Chooses the right visual surface: document-only, wireframe canvas, prototype, design direction, or visual intake. ... Local files only: writes a local MDX folder, starts a localhost bridge ... No sharing, all local."
+    },
+    {
+      "id": "E::inplan",
+      "kind": "primary",
+      "title": "melly-lgtm/inplan README",
+      "url": "https://github.com/melly-lgtm/inplan",
+      "pin": "main@062761f (per repo page, 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Comments live in the document itself, so the plan and its rationale travel together and stay reviewable in Git. ... you apply the diff like a PR."
+    },
+    {
+      "id": "E::openspec",
+      "kind": "primary",
+      "title": "Fission-AI/OpenSpec README",
+      "url": "https://github.com/Fission-AI/OpenSpec",
+      "pin": "main (visited 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Created openspec/changes/add-dark-mode/ with proposal.md, specs/, design.md, tasks.md ... Your AI writes these; you review the plan before any code is written. One source of truth your whole team and every coding agent can read. License: MIT"
+    },
+    {
+      "id": "E::kanvas",
+      "kind": "primary",
+      "title": "XMihura/Kanvas README",
+      "url": "https://github.com/XMihura/Kanvas",
+      "pin": "main (visited 2026-11-10)",
+      "captured": "2026-11-10",
+      "quote": "Cards have colors. Colors are states. Arrows are dependencies. ... The CLI tool keeps agents honest. Enforces valid transitions ... instead of letting agents edit .canvas JSON directly."
+    },
+    {
+      "id": "E::plans",
+      "kind": "secondary",
+      "title": "yrangana/plans — roadmap.html + /plans sync",
+      "url": "https://github.com/yrangana/plans",
+      "pin": "visited 2026-11-10 via aggregated research",
+      "captured": "2026-11-10",
+      "quote": "roadmap.html renders from auto-generated plans.json; /plans sync audits plan-vs-commit drift with git log."
+    },
+    {
+      "id": "E::d2-dac",
+      "kind": "secondary",
+      "title": "Diagram-as-Code 工具对照（Mermaid / D2 / Structurizr / Graphviz）",
+      "url": "https://stackbriefly.com/blog/diagram-as-code-tools-2026-mermaid-plantuml-d2-graphviz-structurizr",
+      "pin": "article, checked 2026-11-10",
+      "captured": "2026-11-10",
+      "quote": "Text-based diagramming lets a team store source in Git, inspect changes, and automate rendering. ... Structurizr builds multiple views from a shared architecture model."
+    },
+    {
+      "id": "E::roadmap-skill",
+      "kind": "primary",
+      "title": "zj-roadmap-driven SKILL.md（本仓）",
+      "url": "skills/codebase-docs/zj-roadmap-driven/SKILL.md",
+      "pin": "workspace HEAD, 2026-11-10",
+      "captured": "2026-11-10",
+      "quote": "Markdown 永远不能反向导入事实源；两个载体的两个 Markdown 视图共用同一份模板，逐字节相同；render 与 section 会在所有 Markdown 视图中写入 zj-roadmap-authority/v1 权威信封。"
+    },
+    {
+      "id": "E::execution-graph",
+      "kind": "primary",
+      "title": "docs/designs/zj-roadmap-execution-graph.md（本仓）",
+      "url": "docs/designs/zj-roadmap-execution-graph.md",
+      "pin": "workspace HEAD, 2026-11-10",
+      "captured": "2026-11-10",
+      "quote": "解法不是「加更多图」，而是从同一 carrier 派生不同投影；trace 可自由增殖，但 md 行数不允许随之增长。"
+    },
+    {
+      "id": "E::closure-design",
+      "kind": "primary",
+      "title": "docs/designs/zj-skill-runtime-closure.md（本仓）",
+      "url": "docs/designs/zj-skill-runtime-closure.md",
+      "pin": "workspace HEAD, 2026-11-10",
+      "captured": "2026-11-10",
+      "quote": "安装态只携带 skill 目录；运行时不得依赖源仓 docs 或外部路径。"
+    }
+  ],
+  "problem-refinement": {
+    "id": "PR::v1",
+    "source": "Human 第二轮口述（2026-11-11）",
+    "statement": "完整上下文足够大时，纯文字化交互骨架有两类问题：工作效能（快速俯瞰全貌、多次中途离开后回来继续、抓到焦点的关键阻塞事项以明确顺序依赖、高亮与焦点高度耦合的事项以界定应整体处理的 scope、动态执行中发现的 GAP/TODO/风险/应及时做的 sweep 债务）；心智负担（瞬时阅读量巨大且状态持续变化、变化后要重新阅读，需 smart 压缩降低阅读成本、smart 拓展协助理解应聚焦的 scope）",
+    "diagnosis": "信息总量 S 随执行单调增长，Human 瞬时阅读量 C 恒定，且 S 在离开期间持续变化，故重入时不能复用上次心智模型。全量展示是 f(S)=S 不可行；固定折叠是与焦点无关的切分，焦点邻域可能恰好被折掉。要解的是在锚点 A 下确定性选出 V(A)，使 |V|<=C 且覆盖阻塞 / 高耦合 / 债务三类，并在重入时只读增量。",
+    "gap-in-prior-design": "上一轮只解了投影形态（图 / 锚点 / 侧载）与沿 blocks 边的阻塞链，未覆盖多次重入的增量重建、焦点高耦合项的圈选、执行期债务的一等建模、以及随焦点自适应的压缩与拓展。",
+    "not-a-new-scene-set": "本段是负载条件与问题锐化，不是新场景；固定场景集仍为 Human 口述四维度且 derived-from-graphs=false，不得由 Agent 扩充（CHK-04）。",
+    "loads": [
+      "LC::01",
+      "LC::02",
+      "LC::03",
+      "LC::04"
+    ],
+    "addressed-by": [
+      "C::07",
+      "C::08",
+      "C::09",
+      "VC::05",
+      "VC::06",
+      "INV::09",
+      "INV::10",
+      "INV::11",
+      "INV::12",
+      "S0"
+    ]
+  },
+  "load-conditions": [
+    {
+      "id": "LC::01",
+      "statement": "完整上下文规模远超一次可阅读量（S 远大于 C）",
+      "consequence": "必须有阅读预算硬上限；与焦点无关的固定折叠不够"
+    },
+    {
+      "id": "LC::02",
+      "statement": "工作一次性做不完，会多次中途离开后再回来继续",
+      "consequence": "重入时不能复用上次心智模型；必须给出自上次访问以来的增量"
+    },
+    {
+      "id": "LC::03",
+      "statement": "执行期持续涌现债务：GAP / TODO / 风险 / 应及时做的 sweep",
+      "consequence": "债务须一等建模并旁挂，不自动变成 plan 节点"
+    },
+    {
+      "id": "LC::04",
+      "statement": "状态持续变化，变化后原视图即失效",
+      "consequence": "条目级 content hash 是算增量的前提；禁止整页重绘后要求重新通读"
+    }
+  ],
+  "information-selection": {
+    "id": "IS::v1",
+    "statement": "给定锚点 A，从完整上下文 S 中确定性选出可见子集 V(A, theta)，使阅读量不超过预算且覆盖所有与 A 决策相关的项。smart 是确定性相关度函数加显式阈值，不是模型每次推断。",
+    "bounded-relation": "|V(A, theta)| <= C；V 必须包含 IS::mandatory::v1 的全部必备项（焦点 + 阻塞前驱闭包 + 后继 + 高严重度债务），缺一即判该视图不合格；必备项不占满阅读预算、永不被 θ/预算静默折叠。",
+    "mandatory-set": {
+      "id": "IS::mandatory::v1",
+      "statement": "必备项是与锚点 A 决策强相关、无论 θ 取值都必须进入 V 的节点集合；确定性算出，非 LLM 推断。它收紧了原 bounded-relation 的抽象三类（blocking / high-coupling / open-debt），给出可机器断言的精确构成。",
+      "composition": [
+        {
+          "id": "IS::mandatory::focus",
+          "name": "焦点锚点",
+          "definition": "锚点 A 自身",
+          "lod": "L2",
+          "evidence-ref": "E::roadmap-skill"
+        },
+        {
+          "id": "IS::mandatory::blockers",
+          "name": "阻塞前驱闭包",
+          "definition": "沿 blocks 边的反向 BFS 闭包（A 上游所有（可能传递）阻塞 A 的节点），depth = 到 A 的阻断跳数",
+          "lod": "L1",
+          "evidence-ref": "E::nx-graph"
+        },
+        {
+          "id": "IS::mandatory::successors",
+          "name": "后继",
+          "definition": "graph.succ(A)：A 直接阻塞的下游节点（A 改动的波及方），仅 blocks 边计入",
+          "lod": "L1",
+          "evidence-ref": "E::nx-graph"
+        },
+        {
+          "id": "IS::mandatory::debt",
+          "name": "高严重度债务",
+          "definition": "承载 severity=high 债务（DEBT::gap / DEBT::risk）的节点；无一等债务记录时由文本启发式判定为 high 的节点亦纳入",
+          "lod": "L1",
+          "evidence-ref": "E::execution-graph"
+        }
+      ],
+      "lod-rule": "mandatory→L2 仅限焦点；其余 mandatory 恒为 L1，不参与 budget 循环的 L1→L2 升级（避免非焦点必备项误升 L2）",
+      "never-silent": "mandatory 永不被 θ/预算折叠为 COMPRESSED；阅读预算溢出时先压缩候选（非 mandatory），mandatory 例外",
+      "invariant-refs": [
+        "INV::09"
+      ]
+    },
+    "reading-budget": {
+      "id": "RB::v1",
+      "unit": "lines",
+      "max": 40,
+      "silent-drop": false,
+      "overflow-report": "超出预算时按 DOI 截断，并显式报告被压缩条目数与其中高 DOI 未显示数；不允许静默丢弃",
+      "evidence-ref": "E::roadmap-skill"
+    },
+    "doi-function": {
+      "id": "DOI::v1",
+      "deterministic": true,
+      "owner": "skill runtime（脚本内常量，非 LLM 推断）",
+      "formula": "DOI(n|A) = sum(weight_i * term_i(n,A))，各项归一化到 [0,1]，结果降序排序",
+      "terms": [
+        {
+          "id": "DOI::T1",
+          "name": "graph-proximity",
+          "weight": 0.3,
+          "definition": "沿 blocks / informs / derives-from / reference 边到 A 的最短跳数取倒数",
+          "evidence-ref": "E::cognograph"
+        },
+        {
+          "id": "DOI::T2",
+          "name": "blocking-criticality",
+          "weight": 0.25,
+          "definition": "是否在 A 的未完成 blocks 前驱链或 critical-path 上",
+          "evidence-ref": "E::nx-graph"
+        },
+        {
+          "id": "DOI::T3",
+          "name": "shared-context",
+          "weight": 0.15,
+          "definition": "与 A 共享的文件 / 证据 / 决策 / trace 条目数",
+          "evidence-ref": "E::cognograph"
+        },
+        {
+          "id": "DOI::T4",
+          "name": "debt-severity",
+          "weight": 0.15,
+          "definition": "挂在 A 邻域上的未结债务等级（gap / risk 高于 todo / sweep）",
+          "evidence-ref": "E::overture"
+        },
+        {
+          "id": "DOI::T5",
+          "name": "recency",
+          "weight": 0.1,
+          "definition": "自上次视图 receipt 以来该条目是否发生变化",
+          "evidence-ref": "E::cognograph"
+        },
+        {
+          "id": "DOI::T6",
+          "name": "stability-penalty",
+          "weight": 0.05,
+          "definition": "已完成且长期未变、且不在 A 关键路径上则抑制",
+          "evidence-ref": "E::markmap"
+        }
+      ],
+      "thresholds": {
+        "role": "declared-fallback",
+        "note": "固定值为运行时退化的兜底；正常由 theta-calibration 按焦点百分位覆盖（见 DOI::theta-calib::v1）",
+        "overview": 0.75,
+        "neighborhood": 0.45,
+        "expand": 0.2
+      },
+      "theta-calibration": {
+        "id": "DOI::theta-calib::v1",
+        "statement": "运行时三档预设（overview/neighborhood/expand）不写死绝对值，而是按当前焦点下非必备项的 DOI 分布取百分位，保证三档在任意焦点下都保持可观测差异。",
+        "method": "percentile-nearest-rank",
+        "distribution": "非必备项（不在 IS::mandatory::v1 集合内）的 DOI 升序数组",
+        "presets": {
+          "overview": {"percentile": 0.85, "semantics": "概览档：可见集 ≈ 最高 15% 非必备 DOI（叠加全部必备项）"},
+          "neighborhood": {"percentile": 0.50, "semantics": "邻域档：可见集 ≈ 中上位 50% 非必备 DOI"},
+          "expand": {"percentile": 0.15, "semantics": "展开档：可见集 ≈ 大半个非必备 DOI 分布"}
+        },
+        "index-formula": "rank(p) = min(n-1, floor(p * n))，n 为非必备项个数，取升序数组第 rank 位的值",
+        "fallback": "候选为空（图极小，所有节点都属 IS::mandatory::v1）时退化为 thresholds 声明的固定值 overview 0.75 / neighborhood 0.45 / expand 0.20",
+        "rationale": "DOI 是焦点相对量，绝对值随焦点漂移；写死阈值会在部分焦点退化成等价（三档无差异甚至次序反转）。百分位校准消除该退化：无论图规模与焦点如何，三档预设始终落在分布的不同分位，保证 overview/neighborhood/expand 行为可区分。",
+        "evidence-refs": ["E::cognograph"]
+      },
+      "single-knob": "压缩是 theta 上移，拓展是 theta 下移，共用同一排序与同一套模板；不产生第二套界面",
+      "invariant-refs": [
+        "INV::09",
+        "INV::10",
+        "INV::03"
+      ],
+      "evidence-refs": [
+        "E::cognograph",
+        "E::nx-graph",
+        "E::markmap"
+      ]
+    },
+    "reentry": {
+      "id": "RE::v1",
+      "statement": "重入只输出自上次访问以来的增量，稳定项折成一行计数",
+      "receipt-fields": [
+        "anchor-token",
+        "carrier-revision",
+        "theta",
+        "seen-item-hashes"
+      ],
+      "receipt-storage": "本地隔离区（gitignored），不进 carrier、不进 git 跟踪文件",
+      "delta-kinds": [
+        "added",
+        "changed",
+        "removed",
+        "stable-folded"
+      ],
+      "item-identity": "每个可见条目带稳定 id 与 content hash，增量在条目级计算，不是整页 diff",
+      "carrier-identity": "baseline=None 时输出全量视图，两 carrier 逐字节相同；给定 baseline 时字节相同性针对同一 ir + 同一 baseline 成立。receipt 绝不参与 view-ir 的计算",
+      "no-hidden-state": "receipt 缺失或损坏时 fail-closed 回退到全量视图并显式提示，不猜测上次读到哪",
+      "evidence-refs": [
+        "E::cognograph",
+        "E::plans"
+      ]
+    }
+  },
+  "debt-schema": {
+    "id": "DEBT::v1",
+    "statement": "执行期涌现的 GAP / TODO / 风险 / 应及时做的 sweep 是一等旁挂清单，不是 plan 节点、不进 ready 调度",
+    "kinds": [
+      {
+        "id": "DEBT::gap",
+        "name": "gap",
+        "severity": "high",
+        "definition": "应有但缺失的能力或证据"
+      },
+      {
+        "id": "DEBT::risk",
+        "name": "risk",
+        "severity": "high",
+        "definition": "可能导致返工或方向错误的不确定项"
+      },
+      {
+        "id": "DEBT::todo",
+        "name": "todo",
+        "severity": "medium",
+        "definition": "已明确但尚未排期的小动作"
+      },
+      {
+        "id": "DEBT::sweep",
+        "name": "sweep",
+        "severity": "medium",
+        "definition": "应及时做的横扫式清理或一致性核对"
+      }
+    ],
+    "required-fields": [
+      "id",
+      "kind",
+      "severity",
+      "anchor-ref",
+      "discovered-revision",
+      "evidence-ref",
+      "state"
+    ],
+    "states": [
+      "open",
+      "acknowledged",
+      "scheduled",
+      "resolved"
+    ],
+    "promotion-rule": "债务不自动变成 WorkItem；须走既有 promote 的 proposal → Human 审核 → accept 路径，沿用 execution-graph 的图膨胀防线",
+    "visibility": "按 DOI 的 debt-severity 项参与排序；高严重度债务在预算内优先且不可被折叠静默丢弃",
+    "not-in": [
+      "plan tree 的 children",
+      "ready 遍历集",
+      "摘要指标分母"
+    ],
+    "evidence-refs": [
+      "E::execution-graph",
+      "E::overture"
+    ]
+  },
+  "presentation": {
+    "id": "PRES::v1",
+    "source": "Human 第三轮口述（2026-11-11）：演示的交互在 UI/UX 设计上不够优雅，信息卡片与 DAG 图是不是更好的选择",
+    "verdict": "采纳，但带约束；不是换皮，是把 DOI 选择结果做空间编码",
+    "replaces": "第二轮演示用的「单一文本列表 + θ 滑块 + 文字状态条」原型。该原型用一套界面演示所有场景，违反了本设计自己的 C::05 Visual Surface Choice 规则",
+    "why": [
+      "DAG 用空间位置与边方向表达顺序依赖，纯文字缩进树做不到",
+      "卡片用分组与视觉层次承载单节点的完整上下文与债务，避免长列表平铺",
+      "DOI 可用尺寸 / 饱和度 / 景深连续编码，比文字标注「必备」更快被感知",
+      "重入增量可作独立横条，不占主视图视线"
+    ],
+    "three-regions": [
+      {
+        "id": "PRES::R1",
+        "name": "anchor-bar",
+        "statement": "常驻锚点条：anchor token + θ 旋钮 + 阅读预算指示 + 重入入口；高度固定、不随 S 增长"
+      },
+      {
+        "id": "PRES::R2",
+        "name": "local-dag",
+        "statement": "左区局部 DAG：只画 DOI>=theta 的节点与必备项，边语义用线型区分"
+      },
+      {
+        "id": "PRES::R3",
+        "name": "card-rail",
+        "statement": "右区信息卡片列：焦点卡 / 耦合卡 / 债务卡，三级 LOD，点击展开不撑高左区"
+      },
+      {
+        "id": "PRES::R4",
+        "name": "delta-strip",
+        "statement": "底部增量横条：added / changed / removed / stable-folded，重入时先入眼"
+      }
+    ],
+    "dag-encoding": {
+      "id": "PRES::DAG",
+      "scope": "只画 DOI>=theta 的节点与必备项；其余折成复合节点计数，绝不铺全量图",
+      "node-encoding": [
+        "节点尺寸与饱和度随 DOI 连续变化，焦点节点最大且描边加粗",
+        "非焦点子树折成复合节点并显示「K 项」，点击才展开",
+        "债务不是节点，不上 DAG 拓扑"
+      ],
+      "edge-encoding": [
+        "blocks 粗实线（顺序依赖，最高视觉权重）",
+        "informs 细虚线（上下文引用，低视觉权重）",
+        "derives-from 点线（来源追溯）",
+        "点击边显示边 id 与 carrier 内证据"
+      ],
+      "layout": "确定性分层布局（dagre / Sugiyama 或固定坐标），禁止 force-directed 随机布局",
+      "text-equivalent": "Mermaid / DOT 文本投影必现，可 git diff、可两 carrier 字节回归",
+      "evidence-refs": [
+        "E::nx-graph",
+        "E::overture",
+        "E::cognograph"
+      ]
+    },
+    "card-lod": {
+      "id": "PRES::CARD",
+      "levels": [
+        {
+          "id": "PRES::L0",
+          "name": "compact",
+          "behavior": "色块 + 分类计数，用于远距俯瞰"
+        },
+        {
+          "id": "PRES::L1",
+          "name": "summary",
+          "behavior": "标题 + kind 徽标 + DOI，用于界定 scope"
+        },
+        {
+          "id": "PRES::L2",
+          "name": "full",
+          "behavior": "完整内容 + 证据引用 + 操作入口，点击才展开"
+        }
+      ],
+      "budget": "卡片数受同一阅读预算约束；远距用色块与计数而非卡片墙",
+      "debt": "债务是卡片不是 DAG 节点，不进拓扑、不进 ready",
+      "evidence-refs": [
+        "E::cognograph",
+        "E::markmap",
+        "E::overture"
+      ]
+    },
+    "doi-encoding": {
+      "id": "PRES::DOI",
+      "channels": [
+        "size",
+        "saturation",
+        "depth"
+      ],
+      "dual-coding": "DOI 不得只靠颜色；尺寸与线型同步承载，保证可访问性与灰度可打印",
+      "no-color-only": true
+    },
+    "constraints": [
+      "PRES::K1 局部 DAG 而非全量 DAG：50+ 节点可读性未验证",
+      "PRES::K2 卡片受阅读预算约束，不变成卡片墙",
+      "PRES::K3 布局确定性 + 文本等价物必现",
+      "PRES::K4 压缩与拓展仍是同一 θ，DAG 与卡片共用同一 DOI 排序",
+      "PRES::K5 债务旁挂为卡片，不进 DAG 拓扑"
+    ],
+    "invariant-refs": [
+      "INV::09",
+      "INV::10",
+      "INV::13",
+      "INV::14"
+    ],
+    "evidence-refs": [
+      "E::nx-graph",
+      "E::overture",
+      "E::cognograph",
+      "E::markmap"
+    ],
+    "addressed-by": [
+      "C::10",
+      "VC::07",
+      "VC::08"
+    ]
+  }
+}
