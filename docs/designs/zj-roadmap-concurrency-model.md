@@ -106,8 +106,8 @@ P5（执行图 / trace layer）是另一张图的设计，权威见 [`zj-roadmap
 - [Roadmap skill](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
 - [Roadmap data model](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-data-model.md)
 - [Roadmap CLI contract](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
-- [Single-file carrier](../../skills/codebase-docs/zj-roadmap-driven/roadmap.py)
-- [SQLite carrier](../../skills/codebase-docs/zj-roadmap-driven/roadmap_sqlite.py)
+- [Single-file carrier](../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap.py)
+- [SQLite carrier](../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap_sqlite.py)
 
 ## Related authority
 

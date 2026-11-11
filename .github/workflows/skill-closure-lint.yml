@@ -33,7 +33,24 @@ jobs:
       - name: Enforce Roadmap process-state authority boundary
         # Roadmap progress may drive work, but durable code/docs must promote
         # claims to ADR/design/contract/runtime evidence before citing them.
-        run: python3 skills/codebase-docs/zj-roadmap-driven/roadmap_cli.py authority-check .
+        run: python3 skills/codebase-docs/zj-roadmap-driven/scripts/roadmap_cli.py authority-check .
+      - name: Verify published skill contracts
+        # Static closure lint cannot see this class of breakage: a skill is a
+        # published unit, and its commands execute with cwd = target project,
+        # not the skill directory. Bare script names and undeclared path vars
+        # pass every static check and fail on every installed copy.
+        # Four guards: install-state commands (with in-memory negative probes
+        # so a checker that cannot fail is itself red), landing guard for core
+        # disciplines, scripts/ + tests/ layout, and frontmatter schema
+        # consistency. Same unfiltered required job: a path-filtered required
+        # check leaves unrelated PRs BLOCKED (#211).
+        run: >-
+          python3 -m unittest
+          tests.test_skill_install_smoke
+          tests.test_zj_roadmap_driven_landing
+          tests.test_zj_roadmap_driven_layout
+          tests.test_zj_roadmap_driven_frontmatter
+          -v
 
   docs-dangling-refs:
     runs-on: ubuntu-latest

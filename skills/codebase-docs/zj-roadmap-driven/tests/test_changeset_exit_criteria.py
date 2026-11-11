@@ -26,11 +26,12 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 import roadmap as core  # noqa: E402
 import roadmap_cli as cli  # noqa: E402
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
 
 # 切片 2 落地前已有的命令清单快照：新增只应是 flag，不该出现新顶层命令。

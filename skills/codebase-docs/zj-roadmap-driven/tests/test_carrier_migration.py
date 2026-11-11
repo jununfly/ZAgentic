@@ -31,6 +31,7 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from carrier_migration import (  # noqa: E402
     CARRIERS,
@@ -43,7 +44,7 @@ from carrier_migration import (  # noqa: E402
 from roadmap import Roadmap, _roadmap_isolated_dir  # noqa: E402
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 CARRIERS = ("single", "sqlite")
 SUFFIX = {"single": ".json", "sqlite": ".sqlite"}
 

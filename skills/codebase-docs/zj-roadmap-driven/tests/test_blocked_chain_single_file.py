@@ -27,10 +27,11 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 import cli_runtime  # noqa: E402
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")
 
@@ -492,9 +493,9 @@ class Slice06NothingBlockedMeansByteIdenticalMarkdownTest(BlockedChainContractTe
             # 当前实现里已删除的文件（如 #140 移除的 roadmap_bundle.py）：它只在
             # 历史基线里存在，基线必然 ≠ 当前实现，跳过比对。
             if (target / name).exists()
-            and (SKILL_DIR / name).exists()
+            and (SKILL_DIR / "scripts" / name).exists()
             and (target / name).read_text(encoding="utf-8")
-            == (SKILL_DIR / name).read_text(encoding="utf-8")
+            == (SKILL_DIR / "scripts" / name).read_text(encoding="utf-8")
         ]
         # 判别力守卫：基线若与当前实现逐字节相同，这条控制例就是恒真的。
         if len(identical) == len(self.BASELINE_FILES):

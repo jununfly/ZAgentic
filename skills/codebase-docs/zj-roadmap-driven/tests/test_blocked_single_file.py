@@ -27,6 +27,7 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import (  # noqa: E402  （错误码表这道缝只在 Python API 上看得见）
     ERROR_EXIT_CODES,
@@ -35,7 +36,7 @@ from roadmap import (  # noqa: E402  （错误码表这道缝只在 Python API �
 )
 from roadmap_sqlite import RoadmapSqlite  # noqa: E402  # 第二个 carrier：blocked 派生在 sqlite 上同样只存在于读视图
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 E_INVALID_STATUS = "E_INVALID_STATUS"
 

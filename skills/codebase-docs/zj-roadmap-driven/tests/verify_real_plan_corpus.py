@@ -20,8 +20,9 @@ from typing import Any
 
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
 from roadmap import Roadmap  # noqa: E402
 

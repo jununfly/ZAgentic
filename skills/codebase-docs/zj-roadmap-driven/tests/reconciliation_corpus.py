@@ -19,7 +19,7 @@ from typing import Any
 
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 ERROR_RE = re.compile(r"E_[A-Z0-9_]+")
 
 SCENARIOS = [

@@ -31,8 +31,9 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent
 if str(SKILL_DIR) not in sys.path:
     sys.path.insert(0, str(SKILL_DIR))
+sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
-CLI = SKILL_DIR / "roadmap_cli.py"
+CLI = SKILL_DIR / "scripts" / "roadmap_cli.py"
 
 # 载体 → 文件名后缀。init 的 --storage 与后缀要一致，否则 CLI 会按路径形状挑错载体。
 TARGETS = {"single": "roadmap.json", "sqlite": "roadmap.sqlite"}
