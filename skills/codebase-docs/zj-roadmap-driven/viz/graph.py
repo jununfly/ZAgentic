@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -73,6 +74,35 @@ def build_debt(nodes: dict, explicit: list | None) -> dict:
     return debt
 
 
+_REVISION_NODE_FIELDS = (
+    "id", "label", "status", "mode", "parent", "children", "decisions",
+    "notes", "rounds", "exit_criteria", "budget",
+)
+
+
+def _content_revision(title, description, nodes, blocks, debt) -> str:
+    """Stable short hash of the projected content (S1 two-carrier identity).
+
+    Deliberately excludes metadata.updated (a carrier write timestamp) and
+    carrier-added fields such as uid/layer: two carriers holding the same
+    roadmap must produce the same revision and therefore the same bytes.
+    """
+    canonical = {
+        "title": title,
+        "description": description,
+        "nodes": {
+            nid: {k: node.get(k) for k in _REVISION_NODE_FIELDS}
+            for nid, node in nodes.items()
+        },
+        "edges": sorted(
+            tuple(str(part) for part in edge_endpoints(edge)) for edge in blocks
+        ),
+        "debt": debt,
+    }
+    raw = json.dumps(canonical, ensure_ascii=False, sort_keys=True, default=str)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
 @dataclass
 class RoadmapGraph:
     """归一化图：可视化只读消费的单一内部表示。"""
@@ -117,10 +147,10 @@ class RoadmapGraph:
         layer = {nid: layer_of(nid) for nid in nodes}
         debt = build_debt(nodes, data.get("debts"))
         side_context = data.get("context") or {}  # S4 侧载条目，只读引用，不进主视图
-        meta = data.get("metadata", {}) or {}
-        revision = meta.get("updated") or data.get("version") or "unknown"
         title = data.get("title", "") or ""
         description = data.get("description", "") or ""
+        # Content-derived, deliberately independent of metadata.updated.
+        revision = _content_revision(title, description, nodes, blocks, debt)
         return cls(
             nodes=nodes, edges=blocks, adj=adj, pred=pred, succ=succ,
             parent=parent, uid=uid, layer=layer, debt=debt, context=side_context,
@@ -130,7 +160,9 @@ class RoadmapGraph:
 
     @classmethod
     def load(cls, path: str | Path, carrier_stem: str | None = None) -> "RoadmapGraph":
-        with open(path, encoding="utf-8") as handle:
-            data = json.load(handle)
+        # S1: JSON and SQLite carriers must project to identical bytes.
+        from .carrier import load_data
+
+        data = load_data(path)
         stem = carrier_stem or Path(path).stem
         return cls.from_data(data, carrier_stem=stem)

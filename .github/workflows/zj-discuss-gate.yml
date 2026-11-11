@@ -1,5 +1,9 @@
 name: zj-discuss dual gate
 
+# NOT a required check: this workflow is path-filtered. main protection requires
+# only `ui-contract` + `closure-lint` (verified via gh api). A path-filtered
+# required check leaves unrelated PRs BLOCKED (#211).
+#
 # Resolves #202: keeps the repo-root landing guard and the skill-local
 # regression suite in the SAME gate so a change cannot go green on one face
 # while silently breaking the other (the #153 / #167 / #201 recurrence class).

@@ -299,3 +299,54 @@ L1 律不是只对 roadmap 成立，它先在本设计里成立。
 - [ADR 0010 本地文件持久化约定](../zj-adr/0010-local-file-persistence-convention.md)
 - [ADR 0011 文档治理质量契约与 rejected defaults](../zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md)
 - [文档地图](../README.md) — 本页的 authority-id 绑定
+
+## Amendment (2026-11-12)
+
+上文 :264–:273 的交付边界是 #255 的 docs 提交当时的快照。之后 zj 明确「选 C 路径」，
+批准把 S0/S2 落成 `zj-roadmap-driven` 的真实只读包，并分别走分支与显式审批
+（PR #255 / #256）；#257 又收敛了安装态路径基准、skill 结构与门禁覆盖。
+本 Amendment **不推翻上文的切片顺序判决**，只更正「已落地范围」这一事实。
+
+### 当前状态
+
+- 已落地：S0（DOI / 预算 / 债务 schema）、S2（overview + Mermaid 文本等价物）、
+  S3（dependency 投影与边回溯）、S4（context side-pack 与 stale 标记）。
+  各公开视图已携带 `zj-roadmap-authority/v1` 权威信封（INV::05）。
+- **deferred（S1，未获批，不得假完成）**：view-ir / anchor-envelope 只读命令、
+  两 carrier 同 anchor 输出逐字节相同、Δ 增量重入的条目级 hash receipt
+  （含 fail-closed 回退与 gitignored 落盘）。
+- S2/S3/S4 的 `depends-on: ["S1"]` 保持原样：这是**已知的规格债**，由
+  `tests/test_roadmap_visual_review_governance.py` 钉住 S1 判据未被删除，
+  不靠改 depends-on 把它抹平。
+
+### Why
+
+S1 涉及两 carrier 归一化与跨设备 receipt 状态，属独立功能切片，须 Human 显式批准，
+不能在一次 cleanup 里顺手实现。把状态写清楚，避免派生页与实现各说各话；
+需要推进时另开分支与切片，不改写本页历史论证。
+
+## Amendment (2026-11-12, S1 delivered)
+
+上一条 Amendment 把 S1 标为 deferred。zj 随后显式批准「开 S1 切片」，本 Amendment
+只更新状态，**不改写上文任何判决**。
+
+### 交付内容
+
+- `viz/ir_schema` 模块：冻结 `zj-roadmap-view-ir/v1` 的字段集合并在运行期断言；改结构须显式升版。
+- `viz/carrier` 模块 与 `graph.load()`：JSON / SQLite 走同一份归一化数据；SQLite carrier 补齐
+  `debts` 无损迁移、容忍语义化 version 字符串。
+- `graph.revision` 改为内容派生短码（排除 `metadata.updated` 写入时间戳与 carrier 派生字段），
+  使同内容两 carrier 的 envelope 一致。
+- `viz/receipt.py`：条目级 content hash、added / changed / removed / stable-folded、
+  receipt 损坏时 fail-closed 全量回退、路径显式给、不进 carrier 也不参与 view-ir 计算。
+- HTML 的 Δ 区块从「按 status 数状态」换成真实增量数据（baseline=None 为确定性全量回退）。
+
+### 判据核对
+
+S1 的「IR schema 冻结 / 两 carrier 同 anchor 输出逐字节相同 / 权威信封必现」与
+INV::11「receipt 不进 carrier、baseline=None 全量视图两 carrier 逐字节相同」，
+均由 viz 包的 S1 单测套件机械断言（六类公开视图逐字节比对）。
+
+### 仍 open
+
+跨设备 receipt 同步与过期策略 spec 未要求，不擅自加。

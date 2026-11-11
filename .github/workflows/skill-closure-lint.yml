@@ -51,6 +51,32 @@ jobs:
           tests.test_zj_roadmap_driven_layout
           tests.test_zj_roadmap_driven_frontmatter
           -v
+      - name: Install gate dependencies
+        # The frontmatter validator needs PyYAML; without it the validator
+        # exits 2 and an absent check can look green (see ui-contract gate).
+        run: python3 -m pip install -r requirements.txt
+      - name: Validate every published SKILL.md frontmatter
+        run: python3 scripts/validate-skill-frontmatter.py
+      - name: Verify the plugin validation entrypoint
+        # Previously an orphan: scripts/test_validate_plugin.py had no CI caller.
+        run: python3 -m unittest discover -s scripts -p 'test_validate_plugin.py' -v
+      - name: Validate and verify the visual-review spec projection
+        run: |
+          python3 scripts/roadmap_visual_review_spec.py validate
+          python3 scripts/roadmap_visual_review_spec.py verify
+          python3 -m unittest tests.test_roadmap_visual_review_spec -v
+      - name: Verify viz view contracts and Python/JS selection parity
+        # viz lives inside the skill; its import root must be explicit, and
+        # verify_selection.mjs needs node (preinstalled on ubuntu-latest).
+        env:
+          PYTHONPATH: skills/codebase-docs/zj-roadmap-driven
+        run: >-
+          python3 -m unittest
+          viz.tests.test_viz
+          viz.tests.test_s3_s4
+          viz.tests.test_review_contracts
+          viz.tests.test_s1
+          -v
 
   docs-dangling-refs:
     runs-on: ubuntu-latest

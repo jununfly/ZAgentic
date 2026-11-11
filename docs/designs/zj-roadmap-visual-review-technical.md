@@ -424,7 +424,7 @@ zj-roadmap-driven 如何在不膨胀 Human 主视图、不破坏 process-state �
 | S3 | dependency 投影与边回溯 | S1 | 阻塞链、critical-path、impact 与视图同源；点击边可回溯边 id 与来源 |
 | S4 | context side-pack 与 stale 标记 | S1 | 上下文条目增长时主视图字节不变；revision 不符时显式 stale 且不自动刷新 |
 
-S1 先冻结 IR 与锚点契约：S2/S3/S4 都从 S1 投影，任何切片不得自带第二份模板。新增只读命令须同步 CLI 命令清单冻结测试、CLI 参考与 SKILL.md；本次交付只落规格与机械闸门，不改 skill 运行时实现。
+S1 先冻结 IR 与锚点契约：S2/S3/S4 都从 S1 投影，任何切片不得自带第二份模板。新增只读命令须同步 CLI 命令清单冻结测试、CLI 参考与 SKILL.md。规格与机械闸门先行；其后 zj 批准 C 路径，把 S0/S2/S3/S4 落成 viz 只读包（#255 / #256 各走分支与显式审批），#257 再收敛安装态路径基准、结构与门禁。S1 已按 zj 批准的独立切片落地：view-ir schema 冻结、两 carrier 同 anchor 输出逐字节相同、权威信封必现、Δ reentry receipt（fail-closed / gitignored / 显式路径）；逐条机械判据见 viz 包的 S1 单测套件。
 
 ## 机械闸门（本脚本 `validate`）
 

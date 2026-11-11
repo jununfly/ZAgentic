@@ -116,7 +116,7 @@ anchor / S3 / S4）按需读 [可视化设计要点](references/viz-design.md)�
 
 ```bash
 # 主视图 + 可选 Mermaid / dependency 投影 / context 侧载包
-# --dependency / --context 必须显式给路径（ADR 0010），不设默认、不落 cwd
+# --out / --dependency / --context 一律显式给路径（ADR 0010），不设默认、不落 cwd；不传 --out 则不写 HTML
 PYTHONPATH="$SKILL_ROOT" python3 -m viz.cli <roadmap.json> --out X.html [--mermaid X.mmd] \
     [--dependency X.dependency.json] [--dependency-mermaid X.dependency.mmd] \
     [--context X.context.json] \
@@ -134,6 +134,9 @@ PYTHONPATH="$SKILL_ROOT" python3 -m unittest viz.tests.test_viz viz.tests.test_s
 ```
 
 演示语料：`demos/roadmap_viz_sample.json`（21 节点 + 15 条 blocks 边 + 3 条一等债务）。
+
+S1 只读入口：`--ir`（冻结 view-ir）、`--receipt`（Δ 重入，fail-closed）、`--delta`（增量清单），
+路径一律显式给；`roadmap` 参数也接受 SQLite carrier。命令细节见 [CLI 参考](references/roadmap-cli.md)。
 
 ## Scope gate — before any node write or project edit
 

@@ -8,8 +8,8 @@
   - dependency 投影（S3）：阻塞链 / critical-path / impact + 每条边的 id 与来源
   - context side-pack（S4）：侧载 JSON，主视图字节不随上下文条目增长变化
 
-绝不回写 carrier。S1 的只读命令 / anchor 信封 / reentry receipt 持久化与
-两 carrier 逐字节相同契约按路线图后续切片落地。
+绝不回写 carrier。S1 已落地：view-ir schema 冻结、两 carrier 同 anchor 输出
+逐字节相同、权威信封必现、Δ reentry receipt（fail-closed、gitignored、路径显式）。
 """
 from __future__ import annotations
 

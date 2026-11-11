@@ -10,6 +10,7 @@ JS 运行时做 DOI 选择、卡片 LOD、拖拽平移、点击聚焦、展开/�
 """
 from __future__ import annotations
 
+from .authority import AUTHORITY_ENVELOPE
 import json
 from pathlib import Path
 
@@ -141,6 +142,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 const GRAPH = __GRAPH__;
 const ENVELOPE = __ENVELOPE__;
 const EDGE_META = __EDGE_META__;
+const DELTA = __DELTA__;
 const EDGE_BY_PAIR = {};
 EDGE_META.forEach(m=>{ EDGE_BY_PAIR[m.from+"|"+m.to]=m; });
 const W = {T1:0.30,T2:0.25,T3:0.15,T4:0.15,T5:0.10,T6:0.05};
@@ -188,16 +190,34 @@ function select(focus, theta){
     lod[id]=L; });
   let used=0; const shown=[];
   [...mandatory].forEach(id=>{ used+=COST[lod[id]]; shown.push(id); });
+  // 与 Python doi.select 同源：整桶塞入，首个塞不下的桶及其后全部 COMPRESSED。
   const candList=scores.filter(s=>!mandatory.has(s.id)&&lod[s.id]==="L2").sort((a,b)=>b.d-a.d);
-  candList.forEach(({id,d})=>{ if(used+COST.L0<=BUDGET){ lod[id]="L0"; used+=COST.L0; shown.push(id); } else lod[id]="COMPRESSED"; });
-  candList.filter(s=>lod[s.id]==="L0").sort((a,b)=>b.d-a.d).forEach(({id})=>{
-    if(used+(COST.L1-COST.L0)<=BUDGET){ lod[id]="L1"; used+=COST.L1-COST.L0; }
-    if(lod[id]==="L1"&&used+(COST.L2-COST.L1)<=BUDGET){ lod[id]="L2"; used+=COST.L2-COST.L1; }
+  const byD=new Map();
+  candList.forEach(s=>{ const k=s.d.toFixed(12); if(!byD.has(k)) byD.set(k,[]); byD.get(k).push(s.id); });
+  let exhausted=false;
+  [...byD.keys()].sort((a,b)=>Number(b)-Number(a)).forEach(k=>{
+    const ids=byD.get(k);
+    if(!exhausted && used+COST.L0*ids.length<=BUDGET){ ids.forEach(id=>{lod[id]="L0"; used+=COST.L0; shown.push(id);}); }
+    else { exhausted=true; ids.forEach(id=>{lod[id]="COMPRESSED";}); }
+  });
+  // 两轮整桶升级；首个升不动的桶即停手，禁止更低 d 节点越级。
+  [["L0","L1",COST.L1-COST.L0],["L1","L2",COST.L2-COST.L1]].forEach(([from,to,step])=>{
+    const byD2=new Map();
+    Object.keys(lod).forEach(id=>{
+      if(lod[id]===from && !(to==="L2"&&mandatory.has(id))){
+        const k=byId[id].d.toFixed(12); if(!byD2.has(k)) byD2.set(k,[]); byD2.get(k).push(id);
+      }
+    });
+    const keys=[...byD2.keys()].sort((a,b)=>Number(b)-Number(a));
+    for(const k of keys){ const ids=byD2.get(k);
+      if(used+step*ids.length<=BUDGET){ ids.forEach(id=>{lod[id]=to; used+=step;}); }
+      else break; }
   });
   const compressed=Object.keys(lod).filter(id=>lod[id]==="COMPRESSED");
   const thetaFolded=compressed.filter(id=>byId[id].d<theta).length;
   const budgetFolded=compressed.length-thetaFolded;
-  return {shown,lod,scores,byId,used,mandatory,pdepth,compressed,thetaFolded,budgetFolded,hop,fp,fl};
+  const budgetOverflow=Math.max(0,used-BUDGET);
+  return {shown,lod,scores,byId,used,mandatory,pdepth,compressed,thetaFolded,budgetFolded,budgetOverflow,hop,fp,fl};
 }
 
 // ---- 局部 DAG 布局：委托 dagre（Sugiyama 确定性分层）----
@@ -328,15 +348,18 @@ function render(){
   svg+=`</svg>`;
   document.getElementById("dag").innerHTML=svg;
   lastDL=dl; centerFocus();
-  const changed=Object.keys(nodes).filter(id=>nodes[id].status==="in_progress");
-  const added=Object.keys(nodes).filter(id=>nodes[id].status==="pending");
-  const stable=Object.keys(nodes).length-changed.length-added.length;
+  const D = (typeof DELTA!=="undefined" && DELTA) ? DELTA :
+    {mode:"full-fallback",added:[],changed:[],removed:[],"stable-folded":0,warning:null};
+  const stableN = D["stable-folded"]||0;
   document.getElementById("delta").innerHTML=
-    `<span class="pill chg">变更 ${changed.length}（in_progress，状态/笔记在动）</span>`+
-    `<span class="pill add">新增 ${added.length}（pending，首次浮现）</span>`+
-    `<span class="pill stab">稳定折叠 ${stable}（未变，折成一行）</span>`;
+    `<span class="pill chg">变更 ${D.changed.length}</span>`+
+    `<span class="pill add">新增 ${D.added.length}</span>`+
+    `<span class="pill comp">移除 ${D.removed.length}</span>`+
+    `<span class="pill stab">稳定折叠 ${stableN}</span>`;
   document.getElementById("delta-note").textContent=
-    `本次视图基于条目级 DOI 选择；reentry receipt（anchor=${(ENVELOPE.node_uid||focus)}、θ=${theta.toFixed(2)}、已见条目 hash）在视图生成时计算。真实实现将其落到 gitignored 区、fail-closed 回退，且绝不写入 carrier（S1 切片，本切片只读投影）。`;
+    D.mode==="full-fallback"
+      ? `全量视图（fail-closed）：${D.warning||"无 baseline"}；receipt 不进 carrier、不参与 view-ir 计算。`
+      : `增量重入：added=${D.added.length} changed=${D.changed.length} removed=${D.removed.length} stable-folded=${stableN}；锚点=${(ENVELOPE.node_uid||focus)}、θ=${theta.toFixed(2)}。`;
 }
 
 const vp=document.getElementById("dag-viewport"), cv=document.getElementById("dag-canvas");
@@ -404,7 +427,7 @@ render();
 </body></html>"""
 
 
-def render_html(graph, focus, theta=None, edge_meta=None, revision_status=None):
+def render_html(graph, focus, theta=None, edge_meta=None, revision_status=None, delta=None):
     """生成自包含 HTML（S2 主视图 + S3 边回溯 + S4 stale 横幅）。
 
     context 侧载条目永不进入 embed / envelope / edge_meta；主视图只有一个恒定入口，
@@ -442,13 +465,20 @@ def render_html(graph, focus, theta=None, edge_meta=None, revision_status=None):
         "focus": focus,
         "theta": theta,
         "generated_by": "zj-roadmap-driven/viz",
+        "authority": AUTHORITY_ENVELOPE,
         "revision_status": revision_status if revision_status is not None else unchecked_status(graph),
     }
     meta = edge_meta if edge_meta is not None else build_edge_meta(graph)
+    if delta is None:
+        # Deterministic full-view fallback: baseline=None stays byte-identical
+        # across carriers (INV::11).
+        delta = {"mode": "full-fallback", "added": [], "changed": [],
+                 "removed": [], "stable-folded": 0, "warning": None}
     return (
         HTML_TEMPLATE
         .replace("__DAGRE__", DAGRE_JS)
         .replace("__EDGE_META__", json.dumps(meta, ensure_ascii=False))
         .replace("__GRAPH__", json.dumps(embed, ensure_ascii=False))
         .replace("__ENVELOPE__", json.dumps(envelope, ensure_ascii=False))
+        .replace("__DELTA__", json.dumps(delta, ensure_ascii=False, sort_keys=True))
     )

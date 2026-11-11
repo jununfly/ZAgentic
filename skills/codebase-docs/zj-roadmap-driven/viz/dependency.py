@@ -14,6 +14,7 @@ carrier-stem + revision + evidence_ref）。evidence_ref 缺失一律显式 `unk
 """
 from __future__ import annotations
 
+from .authority import AUTHORITY_ENVELOPE, mermaid_header
 from . import doi
 from .graph import RoadmapGraph, edge_endpoints
 
@@ -152,6 +153,7 @@ def build_dependency(focus: str, graph: RoadmapGraph, view: dict | None = None) 
         "carrier_revision": graph.revision,
         "focus": focus,
         "generated_by": "zj-roadmap-driven/viz",
+        "authority": AUTHORITY_ENVELOPE,
     }
     return {
         "envelope": envelope,
@@ -168,7 +170,7 @@ def build_dependency(focus: str, graph: RoadmapGraph, view: dict | None = None) 
 
 def to_dependency_mermaid(dep: dict) -> str:
     """dependency 投影的文本等价物：只画 blocks 边，边标签即 edge_id。"""
-    lines = ["flowchart TB"]
+    lines = ["flowchart TB", mermaid_header().strip()]
     lines.append("classDef critical fill:#fff7ed,stroke:#ea580c,stroke-width:2px;")
     ids = set()
     for e in dep["edges"]:

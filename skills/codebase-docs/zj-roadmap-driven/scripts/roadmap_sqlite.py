@@ -105,10 +105,16 @@ class RoadmapSqlite(Roadmap):
             self._ensure_schema(conn)
             meta_rows = {row[0]: row[1] for row in conn.execute("SELECT key, value FROM meta")}
 
+            raw_version = meta_rows.get("version", "1")
+            try:
+                version = int(raw_version)
+            except (TypeError, ValueError):
+                version = raw_version  # semantic version strings are legal
+
             data: dict = {
                 "title": meta_rows.get("title", ""),
                 "description": meta_rows.get("description", ""),
-                "version": int(meta_rows.get("version", "1")),
+                "version": version,
                 "nodes": {},
                 "metadata": json.loads(meta_rows["metadata"]) if meta_rows.get("metadata") else {},
             }
@@ -116,6 +122,8 @@ class RoadmapSqlite(Roadmap):
                 data["placements"] = json.loads(meta_rows["placements"])
             if "edge_seq" in meta_rows:
                 data["edge_seq"] = int(meta_rows["edge_seq"])
+            if "debts" in meta_rows:
+                data["debts"] = json.loads(meta_rows["debts"])
 
             for _uid, display_id, body in conn.execute("SELECT uid, display_id, body FROM nodes"):
                 data["nodes"][display_id] = json.loads(body)
@@ -150,6 +158,8 @@ class RoadmapSqlite(Roadmap):
                 meta["placements"] = json.dumps(self.data["placements"], ensure_ascii=False)
             if "edge_seq" in self.data:
                 meta["edge_seq"] = self.data["edge_seq"]
+            if "debts" in self.data:
+                meta["debts"] = json.dumps(self.data["debts"], ensure_ascii=False)
             conn.executemany(
                 "INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)", list(meta.items())
             )
