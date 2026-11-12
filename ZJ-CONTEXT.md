@@ -1461,6 +1461,21 @@ _Avoid_: 整页 diff, 猜测上次读到哪, 写回 carrier
 revision 由内容派生而非文件写入时间，同 anchor 输出逐字节相同。
 _Avoid_: 按载体分支渲染, 用 mtime 作 revision
 
+**portable receipt (v2)**:
+reentry receipt 的设备可移植形态：v1 五字段之外带 `device_id` / `generated_at` /
+`ttl_seconds`；不传设备信息仍写 v1，字节兼容 S1。收据是**可丢弃的派生缓存**，不是权威状态。
+_Avoid_: 把 receipt 当跨设备事实源, 隐式默认设备标识
+
+**merged baseline**:
+两台设备的收据在版本 / anchor / carrier revision / θ 一致、双方未过期、条目 hash
+无冲突时取并集，作为 `compute_delta` 的 baseline；任一条件不满足即 fail-closed 全量回退。
+_Avoid_: last-write-wins, vector clock, 静默丢弃冲突
+
+**receipt TTL**:
+`now > generated_at + ttl_seconds` 即过期，与缺失 / 损坏共用同一条 fail-closed 全量回退
+路径；非正 TTL 在写入时拒绝。同步介质由 Human 显式给路径，本契约不含网络协议。
+_Avoid_: 后台自动同步, 隐式默认 TTL, 过期后仍用旧增量
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

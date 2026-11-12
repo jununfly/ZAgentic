@@ -10,6 +10,8 @@
 
 绝不回写 carrier。S1 已落地：view-ir schema 冻结、两 carrier 同 anchor 输出
 逐字节相同、权威信封必现、Δ reentry receipt（fail-closed、gitignored、路径显式）。
+S1b 已落地：v2 收据带设备标识与 TTL、跨设备合并取并集、冲突/过期一律
+fail-closed 全量回退；同步介质由 Human 显式给路径，不含网络协议。
 """
 from __future__ import annotations
 

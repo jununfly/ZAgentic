@@ -586,6 +586,16 @@ S1 追加只读入口（路径一律显式，ADR 0010）：
 - `roadmap` 位置参数同时接受 JSON 与 SQLite carrier（`.sqlite/.sqlite3/.db`）；同 anchor 下
   两 carrier 的 HTML / Mermaid / dependency / context / view-ir 逐字节相同。
 
+S1b 追加跨设备可移植收据（receipt 是**可丢弃的派生缓存**，不是权威状态）：
+
+- `--device-id <标识>` 与 `--receipt-ttl <秒>` 必须同时给出，启用 v2 receipt：写入
+  `device_id` / `generated_at` / `ttl_seconds`；都不给则沿用 S1 的 v1 格式，字节不变。
+- `--merge-receipt <另一设备的收据路径>` — 导入对方收据并合并为本次 baseline：
+  仅当版本、anchor、carrier revision、θ 一致，双方都未过期，且条目 hash 无冲突时取并集；
+  **任何不一致一律 fail-closed 回退全量视图**，不做 last-write-wins、不引入网络协议。
+- 过期收据与损坏收据走同一条 fail-closed 路径；v1 收据可继续读，但不可跨设备合并。
+- 同步介质由 Human 决定（显式路径搬运文件）；合并产物不写回 carrier、不进 view-ir。
+
 ## Demos
 
 - `demos/roadmap_demo.json` — 历史静态示例（2026-06-22），仅用于说明 carrier 形状；不作为回归语料。

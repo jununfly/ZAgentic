@@ -347,6 +347,34 @@ S1 的「IR schema 冻结 / 两 carrier 同 anchor 输出逐字节相同 / 权�
 INV::11「receipt 不进 carrier、baseline=None 全量视图两 carrier 逐字节相同」，
 均由 viz 包的 S1 单测套件机械断言（六类公开视图逐字节比对）。
 
-### 仍 open
+## Amendment (2026-11-12, S1b delivered)
 
-跨设备 receipt 同步与过期策略 spec 未要求，不擅自加。
+Human 于 2026-11-12 显式批准「解决待办 4」，把下面这项从 open 转为 delivered。
+只更新状态，**不改写上文任何判决**，也不回头修改 spec 的 invariants / capabilities
+集合（S1b 是 S1 之上的后续增量，不是原 spec 的新判据）。
+
+### 领域判决
+
+receipt 是**可丢弃的派生缓存**，不是权威状态。因此跨设备同步不需要分布式一致性
+协议（那是投机性通用性）：视图上下文一致且条目 hash 无冲突才合并取并集，任何
+冲突 / 版本不一致 / 上下文不一致 / TTL 过期一律 fail-closed 回退全量视图。
+同步介质由 Human 决定（显式路径搬运收据文件），本切片只保证收据
+**可移植、可合并、可过期**，不引入网络依赖，也不做 last-write-wins。
+
+### 交付内容
+
+- v2 receipt：在 v1 五字段之外增加 `device_id` / `generated_at` / `ttl_seconds`；
+  不传设备信息时仍写 v1，保持 S1 字节兼容。v1 收据可继续读，但不可跨设备合并。
+- 合并：版本、anchor、carrier revision、θ 一致 + 双方未过期 + 条目 hash 无冲突
+  → 取并集作为 baseline；否则返回显式 fail-closed warning。
+- 过期：`now > generated_at + ttl_seconds` 视为过期，与「缺失 / 损坏」共用同一条
+  全量回退路径；TTL 非正数在写入时即拒绝。
+- CLI 三个显式入口：`--device-id` / `--receipt-ttl` / `--merge-receipt`，全部要求
+  Human 给路径或值（ADR 0010）。`roadmap_cli` 冻结命令清单未动。
+- 机械守卫：viz 包的 S1b 单测套件覆盖便携性、v1 兼容、合并并集、四类上下文不一致、
+  hash 冲突、混合版本、过期边界、CLI 端到端、合并产物不进 carrier / view-ir。
+
+### 仍 open（范围外，非缺陷）
+
+跨设备**传输介质与自动同步调度**不属于本切片：本切片只定义收据本身的可移植契约，
+不提供网络协议、设备发现或后台同步。

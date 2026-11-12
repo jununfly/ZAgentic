@@ -168,5 +168,40 @@ class SelectionParityContract(unittest.TestCase):
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
 
+class ViewDeterminismContract(unittest.TestCase):
+    """INV::08: same carrier + anchor + revision => byte-identical views."""
+
+    def _public_views(self) -> dict[str, str]:
+        graph = _graph()
+        view = build_view("1", graph, theta=0.45)
+        status = ctx.revision_status(graph, roadmap_arg=str(SAMPLE))
+        return {
+            "html": render_html(graph, "1", theta=0.45,
+                                edge_meta=dep.build_edge_meta(graph),
+                                revision_status=status),
+            "mermaid": render_mermaid("1", graph, theta=0.45),
+            "dependency": json.dumps(
+                dep.build_dependency("1", graph, view=view),
+                ensure_ascii=False, sort_keys=True,
+            ),
+            "context": json.dumps(
+                ctx.build_context_pack("1", graph, view=view, status=status),
+                ensure_ascii=False, sort_keys=True,
+            ),
+            "view-ir": json.dumps(view, ensure_ascii=False, sort_keys=True),
+        }
+
+    def test_same_carrier_anchor_revision_renders_identical_public_views(self):
+        first = self._public_views()
+        second = self._public_views()
+        self.assertEqual(first, second)
+        self.assertEqual(first["html"], second["html"])
+
+    def test_revision_is_content_derived_not_a_wall_clock(self):
+        first, second = _graph(), _graph()
+        self.assertEqual(first.revision, second.revision)
+        self.assertNotRegex(first.revision, r"20\d\d-\d\d-\d\d")
+
+
 if __name__ == "__main__":
     unittest.main()

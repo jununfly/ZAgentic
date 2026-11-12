@@ -65,6 +65,13 @@ jobs:
           python3 scripts/roadmap_visual_review_spec.py validate
           python3 scripts/roadmap_visual_review_spec.py verify
           python3 -m unittest tests.test_roadmap_visual_review_spec -v
+      - name: Verify every spec id has an executable guard or a recorded reason
+        # The suite inserts the skill import root into sys.path itself, so it
+        # needs no PYTHONPATH here. Negative probes prove a dropped id, a fake
+        # guard name, an unjustified gap or a growing gap set all fail.
+        run: python3 -m unittest tests.test_roadmap_visual_review_traceability -v
+      - name: Verify ADR 0006 dated bucket counts are not read as live
+        run: python3 -m unittest tests.test_adr_0006_bucket_counts -v
       - name: Verify viz view contracts and Python/JS selection parity
         # viz lives inside the skill; its import root must be explicit, and
         # verify_selection.mjs needs node (preinstalled on ubuntu-latest).
@@ -76,6 +83,7 @@ jobs:
           viz.tests.test_s3_s4
           viz.tests.test_review_contracts
           viz.tests.test_s1
+          viz.tests.test_s1b
           -v
 
   docs-dangling-refs:

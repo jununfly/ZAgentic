@@ -69,7 +69,14 @@ def main(argv=None) -> int:
     p.add_argument("--ir", help="S1：输出冻结 view-ir JSON（必须显式给路径）")
     p.add_argument("--receipt", help="S1：Δ 重入 receipt 路径（读 baseline 并写回，必须显式给路径）")
     p.add_argument("--delta", help="S1：输出增量 JSON（必须显式给路径）")
+    p.add_argument("--device-id", help="S1b：本设备标识；与 --receipt-ttl 一起启用可移植 v2 receipt")
+    p.add_argument("--receipt-ttl", type=float, help="S1b：receipt 有效期（秒）")
+    p.add_argument("--merge-receipt", help="S1b：导入另一设备 receipt 并合并为 baseline（必须显式给路径）")
     args = p.parse_args(argv)
+
+    if bool(args.device_id) != bool(args.receipt_ttl):
+        print("ERROR: --device-id 与 --receipt-ttl 必须同时给出", file=sys.stderr)
+        return 2
 
     anchor_env = None
     if args.anchor:
@@ -101,6 +108,12 @@ def main(argv=None) -> int:
     baseline, baseline_warning = (None, None)
     if args.receipt:
         baseline, baseline_warning = receipt.load_receipt(args.receipt)
+        if args.merge_receipt and baseline_warning is None:
+            peer, peer_warning = receipt.load_receipt(args.merge_receipt)
+            if peer_warning:
+                baseline, baseline_warning = None, peer_warning
+            else:
+                baseline, baseline_warning = receipt.merge_baselines(baseline, peer)
     delta = receipt.compute_delta(hashes, baseline, baseline_warning)
     edge_meta = dep.build_edge_meta(graph)
     html = render_html(
@@ -169,8 +182,10 @@ def main(argv=None) -> int:
         receipt.write_receipt(
             args.receipt, anchor=anchor_token, carrier_revision=graph.revision,
             theta=view["selection"]["theta"], hashes=hashes,
+            device_id=args.device_id, ttl_seconds=args.receipt_ttl,
         )
-        print(f"receipt: {args.receipt} (mode={delta['mode']}, 条目 hash={len(hashes)})")
+        print(f"receipt: {args.receipt} (mode={delta['mode']}, 条目 hash={len(hashes)}, "
+              f"format={'v2' if args.device_id else 'v1'})")
     if status["stale"]:
         print(
             f"STALE: 期望 revision={status['expected_revision']} "
