@@ -137,7 +137,7 @@ def select(focus: str, theta: float, graph) -> dict:
     出口判据校验点：
       - 三类必备项全在 V（mandatory ⊆ shown）
       - 预算溢出不静默丢失（budget_folded 显式报数）
-      - 预算 ≤ BUDGET
+      - 预算 ≤ BUDGET；必备项物理超限时以 budget_overflow 显式报数
     """
     hop = bfs_hop(focus, graph.adj)
     pdepth = rev_bfs(focus, graph.pred)
@@ -205,6 +205,8 @@ def select(focus: str, theta: float, graph) -> dict:
             else:
                 break  # 更低 d 桶不得越级
 
+    # 必备项恒见，物理上可能击穿 40 行上限；此时不得静默（INV::09）。
+    budget_overflow = max(0, used - BUDGET)
     compressed = [nid for nid in lod if lod[nid] == "COMPRESSED"]
     theta_folded = sum(1 for nid in compressed if by_id[nid]["d"] < theta)
     budget_folded = len(compressed) - theta_folded
@@ -221,6 +223,7 @@ def select(focus: str, theta: float, graph) -> dict:
         "compressed": compressed,
         "theta_folded": theta_folded,
         "budget_folded": budget_folded,
+        "budget_overflow": budget_overflow,
         "fp": fp,
         "fl": fl,
     }

@@ -1,5 +1,9 @@
 name: Research compiler contract
 
+# NOT a required check: this workflow is path-filtered. main protection requires
+# only `ui-contract` + `closure-lint` (verified via gh api). Making a filtered
+# check required leaves unrelated PRs BLOCKED (#211). Keep this one advisory.
+#
 # Issue #243: zj-research is a protocol adapter, not a compiler carrier. It
 # bundles no compiler, so CI must not assume one is present on the runner.
 #

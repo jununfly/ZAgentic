@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 
+from .authority import mermaid_header
 from .graph import RoadmapGraph
 from .ir import build_view
 
@@ -19,7 +20,7 @@ def to_mermaid(view: dict, graph: RoadmapGraph) -> str:
     sel = view["selection"]
     focus = view["envelope"]["focus"]
     shown = set(sel["shown"])
-    lines = ["flowchart TB"]
+    lines = ["flowchart TB", mermaid_header().strip()]
 
     lines.append("classDef focus fill:#fff7ed,stroke:#ea580c,stroke-width:2px;")
     lines.append("classDef block fill:#fef2f2,stroke:#b91c1c;")

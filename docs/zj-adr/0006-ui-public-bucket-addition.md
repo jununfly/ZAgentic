@@ -35,10 +35,21 @@ stable `authority-id` in the architecture map before shipping.
 
 - The system overview's "5 + 1" model becomes "6 + 1"; its bucket table gains a `ui`
   row (11 skills: S0 + S1..S10) and, as of 2026-10-23, the `productivity` (13) and `research` (5) counts
-  are refreshed to match the live tree.
+  were refreshed to match the then-live tree (historical snapshot, not a live count;
+  see the Amendment below).
 - A per-bucket subsystem page `ta-skill-bucket-ui.md` is added to the architecture map
   so the `ui` bucket has the same routing surface as the other five public buckets.
 - Reorganising or splitting `ui` (e.g. promoting a stage to its own bucket) stays
   ADR-bearing; this ADR is the recorded provenance for the bucket's existence.
 - The validator's `rule.bucket-reorg-is-adr-bearing` now resolves: the `ui` bucket is
   both declared in the overview and referenced by this ADR.
+
+## Amendment (2026-11-12)
+
+事实治理复核（review finding #6）：Consequences 中的 `productivity` (13) 与 `research` (5)
+是 **2026-10-23 的历史快照**，不是活树计数；顶部时点说明已声明本页为历史决策记录，
+正文原句的现在时被上面的限定语更正。此后 `research` 桶增加一项，活树为 `research` (6)
+（由架构总览桶表与 skills 目录双向核对，根守卫机械钉住）。
+
+本 Amendment 只澄清事实口径，**不改写上文的历史数字、不推翻 ADR 判决**。现行桶计数以
+架构总览的桶表为唯一事实源，本 ADR 不再维护活数；将来桶计数变化也不回填本页。

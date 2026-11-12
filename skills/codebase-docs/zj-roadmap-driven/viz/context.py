@@ -17,6 +17,7 @@ anchor 信封 `zj-roadmap-anchor/v1` = view-kind + carrier-stem + node-uid + rev
 """
 from __future__ import annotations
 
+from .authority import AUTHORITY_ENVELOPE
 from urllib.parse import quote, unquote
 
 from . import doi
@@ -201,6 +202,7 @@ def build_context_pack(
         "carrier_revision": graph.revision,
         "focus": focus,
         "generated_by": "zj-roadmap-driven/viz",
+        "authority": AUTHORITY_ENVELOPE,
     }
     return {
         "envelope": envelope,

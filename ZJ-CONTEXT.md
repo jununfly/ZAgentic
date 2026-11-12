@@ -1402,6 +1402,80 @@ _Avoid_: 把约束写成能力, 把数据对象写成技术节点, 把角色当�
 `satisfied / violated / unknown`，由差异条目的 `context-verdicts` 逐条给出；`violated` 须绑定显式否定证据，`unknown` 须附最小验证计划。**与供给四态是两套枚举，不得混用**；它不改变差异条目的 `verdict`，只补「能力结构相同但上下文条件不同」这类差异（如两个项目都 `native`，一个数据不出域、一个依赖第三方模型服务）。
 _Avoid_: 与 native/adapted/unsupported/unknown 混用, 压成单一标量, 一次裁决批量套用多个项目
 
+### Roadmap visual review (viz)
+
+**DOI selection (degree of interest)**:
+确定性六权重打分（图邻近 .30 / 阻塞关键 .25 / 共享上下文 .15 / 债务严重度 .15 /
+新鲜度 .10 / 稳定抑制 .05），决定大上下文里哪些节点进入可见集 V。刻意不用 LLM
+每次推断：那会同时破坏确定性、两 carrier 字节相同与可回归性。
+_Avoid_: relevance score, 智能推荐, LLM ranking
+
+**theta calibration (θ 校准)**:
+θ 是最低可见 DOI 下限；运行时按焦点下非必备项 DOI 分布取百分位（0.85 / 0.50 /
+0.15）校准三档预设，避免写死阈值在部分焦点退化成等价。
+_Avoid_: 固定阈值, hard-coded cutoff
+
+**LOD + reading budget**:
+三级细节档 L2(4 行) / L1(2 行) / L0(1 行) 配 40 行硬上限；LOD 对 DOI 严格单调，
+同 DOI 整桶一起升级，升不动即停手，溢出必须显式报数。
+_Avoid_: infinite scroll, 折叠而不报数
+
+**budget overflow**:
+必备项恒见，数量过多时物理上可击穿 40 行；此时不静默吞掉，用
+`budget_overflow` 显式报出行数。必备项不折叠与预算硬上限的冲突靠报数暴露，
+不靠偷偷放宽任何一方。
+_Avoid_: silently truncate, auto-expand budget
+
+**mandatory-set**:
+必备可见集 = 焦点(L2) + 阻塞前驱闭包(L1) + 后继(L1) + 高严重度债务(L1)；
+同父子树只作 DOI 提升，不强制全见。
+_Avoid_: 同父全部展开, high-coupling 泛化
+
+**zj-roadmap-anchor/v1**:
+单行可复制 token，携带 view-kind + carrier-stem + node-uid + carrier-revision，
+让视图可追溯到源 carrier 而不污染 carrier；显示 id 从不作锚点。
+_Avoid_: display id as anchor, 指针写回 carrier
+
+**dependency projection (S3)**:
+只沿 blocks 边的阻塞链 / impact / critical-path 投影，每条边带 edge_id 与来源，
+HTML 点边可回溯、Mermaid 文本等价物用边标签写 id。
+_Avoid_: 全量 DAG, force-directed 随机布局
+
+**context side-pack (S4)**:
+单节点决策 / trace / 边 / 证据引用 / 影响闭包打成独立 JSON，主视图只留恒定入口；
+上下文条目增长时 HTML 逐字节不变。
+_Avoid_: 上下文内联进主视图, 静默重绘
+
+**view-ir schema (frozen)**:
+`zj-roadmap-view-ir/v1`，`build_view()` 的顶层 / envelope / selection / card 字段集合
+由独立字面量冻结并在运行期断言；改结构必须显式升版并同步冻结清单。
+_Avoid_: 按当前代码自动推导 schema, 静默加字段
+
+**reentry receipt**:
+上次访问的条目级 content hash 清单，落在 gitignored 隔离区、路径由 Human 显式给；
+重入只输出 added / changed / removed / stable-folded，损坏即 fail-closed 回退全量。
+_Avoid_: 整页 diff, 猜测上次读到哪, 写回 carrier
+
+**carrier-agnostic projection**:
+视图是 roadmap 内容的纯投影：JSON 与 SQLite 经同一份归一化数据进入 `RoadmapGraph`，
+revision 由内容派生而非文件写入时间，同 anchor 输出逐字节相同。
+_Avoid_: 按载体分支渲染, 用 mtime 作 revision
+
+**portable receipt (v2)**:
+reentry receipt 的设备可移植形态：v1 五字段之外带 `device_id` / `generated_at` /
+`ttl_seconds`；不传设备信息仍写 v1，字节兼容 S1。收据是**可丢弃的派生缓存**，不是权威状态。
+_Avoid_: 把 receipt 当跨设备事实源, 隐式默认设备标识
+
+**merged baseline**:
+两台设备的收据在版本 / anchor / carrier revision / θ 一致、双方未过期、条目 hash
+无冲突时取并集，作为 `compute_delta` 的 baseline；任一条件不满足即 fail-closed 全量回退。
+_Avoid_: last-write-wins, vector clock, 静默丢弃冲突
+
+**receipt TTL**:
+`now > generated_at + ttl_seconds` 即过期，与缺失 / 损坏共用同一条 fail-closed 全量回退
+路径；非正 TTL 在写入时拒绝。同步介质由 Human 显式给路径，本契约不含网络协议。
+_Avoid_: 后台自动同步, 隐式默认 TTL, 过期后仍用旧增量
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

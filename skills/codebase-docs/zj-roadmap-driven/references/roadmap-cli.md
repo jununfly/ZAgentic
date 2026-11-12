@@ -563,10 +563,44 @@ the source untouched.
 
 Deleting a node recursively deletes its children; confirm the target first.
 
+## 只读可视化（独立 viz 包）
+
+viz 是独立 Python 包，**不新增 roadmap_cli 顶层命令**（命令清单冻结测试保持不变）。
+所有产物路径必须 Human 显式给出；`--out` 不传则不写 HTML 文件（ADR 0010），只打印
+摘要与 anchor；`--dependency` / `--context` 同样无默认值、不落 cwd。
+
+```bash
+PYTHONPATH="$SKILL_ROOT" python3 -m viz.cli <roadmap.json> --out X.html \
+    [--dependency X.dependency.json] [--context X.context.json] [--focus <节点id>]
+```
+
+设计要点见[可视化设计要点](viz-design.md)；几何校验与 dagre 溯源见
+[VENDOR.md](../viz/VENDOR.md)。
+
+S1 追加只读入口（路径一律显式，ADR 0010）：
+
+- `--ir X.ir.json` — 输出冻结的 view-ir（`zj-roadmap-view-ir/v1`，字段集合由守卫锁定）。
+- `--receipt X.receipt.json` — 读上次 baseline 并写回；缺失/损坏时 fail-closed 回退全量视图，
+  receipt 不进 carrier、不参与 view-ir 计算，落点须在 gitignored 隔离区。
+- `--delta X.delta.json` — 输出 `added / changed / removed / stable-folded`。
+- `roadmap` 位置参数同时接受 JSON 与 SQLite carrier（`.sqlite/.sqlite3/.db`）；同 anchor 下
+  两 carrier 的 HTML / Mermaid / dependency / context / view-ir 逐字节相同。
+
+S1b 追加跨设备可移植收据（receipt 是**可丢弃的派生缓存**，不是权威状态）：
+
+- `--device-id <标识>` 与 `--receipt-ttl <秒>` 必须同时给出，启用 v2 receipt：写入
+  `device_id` / `generated_at` / `ttl_seconds`；都不给则沿用 S1 的 v1 格式，字节不变。
+- `--merge-receipt <另一设备的收据路径>` — 导入对方收据并合并为本次 baseline：
+  仅当版本、anchor、carrier revision、θ 一致，双方都未过期，且条目 hash 无冲突时取并集；
+  **任何不一致一律 fail-closed 回退全量视图**，不做 last-write-wins、不引入网络协议。
+- 过期收据与损坏收据走同一条 fail-closed 路径；v1 收据可继续读，但不可跨设备合并。
+- 同步介质由 Human 决定（显式路径搬运文件）；合并产物不写回 carrier、不进 view-ir。
+
 ## Demos
 
-- `demos/roadmap_demo.json` — an AI-Native personal compounding-tool-system roadmap.
-- `demos/ZJ_ROADMAP_section_demo.md` — standard output rendered from JSON.
+- `demos/roadmap_demo.json` — 历史静态示例（2026-06-22），仅用于说明 carrier 形状；不作为回归语料。
+- `demos/ZJ_ROADMAP_section_demo.md` — 同上，历史渲染样例。
+- `demos/roadmap_viz_sample.json` — **活跃语料**（21 节点 / 15 条 blocks 边 / 3 条一等债务），viz 单测与几何校验都用它。
 - `tests/verify_real_plan_corpus.py` — read-only real Markdown-plan corpus migration contract.
 
 ## 高级拓扑语义（reconciliation / Placement / ChangeSet）

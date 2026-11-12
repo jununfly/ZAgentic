@@ -9,6 +9,8 @@ anchor 信封（zj-roadmap-anchor/v1）携带 view-kind + carrier-stem + node-ui
 from __future__ import annotations
 
 from . import doi
+from .ir_schema import VIEW_IR_SCHEMA_VERSION, assert_frozen
+from .authority import AUTHORITY_ENVELOPE
 from .graph import RoadmapGraph
 
 
@@ -82,8 +84,10 @@ def build_view(focus: str, graph: RoadmapGraph, theta: float | None = None, expa
         "focus": focus,
         "theta": theta,
         "generated_by": "zj-roadmap-driven/viz",
+        "authority": AUTHORITY_ENVELOPE,
+        "schema": VIEW_IR_SCHEMA_VERSION,
     }
-    return {
+    view = {
         "envelope": envelope,
         "selection": {
             "shown": shown_eff,
@@ -92,6 +96,7 @@ def build_view(focus: str, graph: RoadmapGraph, theta: float | None = None, expa
             "theta": theta,
             "theta_folded": res["theta_folded"],
             "budget_folded": res["budget_folded"],
+            "budget_overflow": res["budget_overflow"],
             "used": used_eff,
             "budget": doi.BUDGET,
             "mandatory": sorted(res["mandatory"]),
@@ -103,3 +108,5 @@ def build_view(focus: str, graph: RoadmapGraph, theta: float | None = None, expa
         "cards": cards,
         "presets": presets,
     }
+    assert_frozen(view)
+    return view

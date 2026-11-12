@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 from . import context as ctx
+from . import receipt
 from . import dependency as dep
 from .graph import RoadmapGraph, edge_endpoints
 from .ir import build_view
@@ -41,12 +42,19 @@ def default_focus(graph: RoadmapGraph) -> str | None:
     )
 
 
+def _emit(path: str, content: str, label: str, detail: str = "") -> None:
+    """Write one Human-requested artifact; the path is always explicit."""
+    Path(path).write_text(content, encoding="utf-8")
+    suffix = f" {detail}" if detail else ""
+    print(f"OK: {label} -> {path}{suffix}")
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(
         prog="viz", description="zj-roadmap-driven 只读可视化投影（卡片 + 局部 DAG + 边回溯 + 侧载上下文）"
     )
     p.add_argument("roadmap", help="roadmap carrier JSON 路径")
-    p.add_argument("--out", help="输出 HTML 路径（默认 <stem>.viz.html）")
+    p.add_argument("--out", help="输出 HTML 路径；不传则不写文件（ADR 0010）")
     p.add_argument("--mermaid", help="可选：输出 Mermaid .mmd 路径")
     p.add_argument("--dependency", help="S3：输出 dependency 投影 JSON（必须显式给路径）")
     p.add_argument("--dependency-mermaid", help="S3：输出 dependency 投影的 Mermaid 文本等价物")
@@ -58,7 +66,17 @@ def main(argv=None) -> int:
     p.add_argument("--anchor", help="S4 锚点 token；用于 stale 比对，并可反查焦点（node-uid）")
     p.add_argument("--expect-revision", help="S4：期望 carrier revision，与当前比对")
     p.add_argument("--context-radius", type=int, default=2, help="S4：上下文 BFS 半径（默认 2）")
+    p.add_argument("--ir", help="S1：输出冻结 view-ir JSON（必须显式给路径）")
+    p.add_argument("--receipt", help="S1：Δ 重入 receipt 路径（读 baseline 并写回，必须显式给路径）")
+    p.add_argument("--delta", help="S1：输出增量 JSON（必须显式给路径）")
+    p.add_argument("--device-id", help="S1b：本设备标识；与 --receipt-ttl 一起启用可移植 v2 receipt")
+    p.add_argument("--receipt-ttl", type=float, help="S1b：receipt 有效期（秒）")
+    p.add_argument("--merge-receipt", help="S1b：导入另一设备 receipt 并合并为 baseline（必须显式给路径）")
     args = p.parse_args(argv)
+
+    if bool(args.device_id) != bool(args.receipt_ttl):
+        print("ERROR: --device-id 与 --receipt-ttl 必须同时给出", file=sys.stderr)
+        return 2
 
     anchor_env = None
     if args.anchor:
@@ -78,7 +96,7 @@ def main(argv=None) -> int:
         print(f"ERROR: 无效或缺失焦点：{focus!r}", file=sys.stderr)
         return 2
 
-    out = args.out or (Path(args.roadmap).stem + ".viz.html")
+    out = args.out  # ADR 0010: never default an artifact into cwd
     status = ctx.revision_status(
         graph,
         expected_revision=args.expect_revision,
@@ -86,67 +104,88 @@ def main(argv=None) -> int:
         roadmap_arg=args.roadmap,
     )
     view = build_view(focus, graph, theta=args.theta, expand=args.expand)
+    hashes = receipt.item_hashes(graph, list(view["selection"]["shown"]))
+    baseline, baseline_warning = (None, None)
+    if args.receipt:
+        baseline, baseline_warning = receipt.load_receipt(args.receipt)
+        if args.merge_receipt and baseline_warning is None:
+            peer, peer_warning = receipt.load_receipt(args.merge_receipt)
+            if peer_warning:
+                baseline, baseline_warning = None, peer_warning
+            else:
+                baseline, baseline_warning = receipt.merge_baselines(baseline, peer)
+    delta = receipt.compute_delta(hashes, baseline, baseline_warning)
     edge_meta = dep.build_edge_meta(graph)
     html = render_html(
         graph, focus, theta=args.theta,
-        edge_meta=edge_meta, revision_status=status,
+        edge_meta=edge_meta, revision_status=status, delta=delta,
     )
 
-    Path(out).write_text(html, encoding="utf-8")
-    print(f"OK: HTML -> {out} ({len(html)} bytes)")
+    if out:
+        _emit(out, html, "HTML", f"({len(html)} bytes)")
 
     if args.mermaid:
-        Path(args.mermaid).write_text(
-            render_mermaid(focus, graph, theta=args.theta, expand=args.expand), encoding="utf-8"
-        )
-        print(f"OK: Mermaid -> {args.mermaid}")
+        _emit(args.mermaid,
+              render_mermaid(focus, graph, theta=args.theta, expand=args.expand),
+              "Mermaid")
 
     if args.dependency or args.dependency_mermaid:
         d = dep.build_dependency(focus, graph, view=view)
         d["revision_status"] = status
         if args.dependency:
-            Path(args.dependency).write_text(
-                json.dumps(d, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-            )
-            print(
-                f"OK: dependency -> {args.dependency} "
+            _emit(
+                args.dependency,
+                json.dumps(d, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                "dependency",
                 f"(edges={d['edge_count']} blocked={len(d['blocked_by'])} "
-                f"impact={len(d['impact'])} critical-path={len(d['critical_path'])})"
+                f"impact={len(d['impact'])} critical-path={len(d['critical_path'])})",
             )
         if args.dependency_mermaid:
-            Path(args.dependency_mermaid).write_text(
-                dep.to_dependency_mermaid(d), encoding="utf-8"
-            )
-            print(f"OK: dependency Mermaid -> {args.dependency_mermaid}")
+            _emit(args.dependency_mermaid, dep.to_dependency_mermaid(d),
+                  "dependency Mermaid")
 
     if args.context:
         pack = ctx.build_context_pack(
             focus, graph, radius=args.context_radius, view=view, status=status
         )
-        Path(args.context).write_text(
-            json.dumps(pack, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
-        print(
-            f"OK: context -> {args.context} "
-            f"(entries={pack['entry_count']} radius={pack['bfs_radius']})"
+        _emit(
+            args.context,
+            json.dumps(pack, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            "context",
+            f"(entries={pack['entry_count']} radius={pack['bfs_radius']})",
         )
 
     sel = view["selection"]
     print(
         f"焦点={focus} θ={sel['theta']:.2f} 可见={len(sel['shown'])} 压缩={len(sel['compressed'])} "
-        f"(θ截{sel['theta_folded']}·预算截{sel['budget_folded']}) 预算={sel['used']}/{sel['budget']} 行"
+        f"(θ截{sel['theta_folded']}·预算截{sel['budget_folded']}) "
+        f"预算={sel['used']}/{sel['budget']} 行"
+        + (f" 溢出={sel['budget_overflow']} 行（必备项超限，已显式报数）"
+           if sel["budget_overflow"] else "")
+        + f" Δ={delta['mode']} (+{len(delta['added'])} ~{len(delta['changed'])} "
+          f"-{len(delta['removed'])} 稳{delta['stable-folded']})"
     )
-    print(
-        "anchor: "
-        + ctx.encode_anchor(
-            {
-                "view_kind": "zj-roadmap-visual-review/v1",
-                "carrier_stem": graph.carrier_stem,
-                "node_uid": graph.uid.get(focus),
-                "carrier_revision": graph.revision,
-            }
+    anchor_token = ctx.encode_anchor(
+        {
+            "view_kind": "zj-roadmap-visual-review/v1",
+            "carrier_stem": graph.carrier_stem,
+            "node_uid": graph.uid.get(focus),
+            "carrier_revision": graph.revision,
+        }
+    )
+    print("anchor: " + anchor_token)
+    if args.ir:
+        _emit(args.ir, json.dumps(view, ensure_ascii=False, sort_keys=True) + "\n", "view-ir")
+    if args.delta:
+        _emit(args.delta, json.dumps(delta, ensure_ascii=False, sort_keys=True) + "\n", "delta")
+    if args.receipt:
+        receipt.write_receipt(
+            args.receipt, anchor=anchor_token, carrier_revision=graph.revision,
+            theta=view["selection"]["theta"], hashes=hashes,
+            device_id=args.device_id, ttl_seconds=args.receipt_ttl,
         )
-    )
+        print(f"receipt: {args.receipt} (mode={delta['mode']}, 条目 hash={len(hashes)}, "
+              f"format={'v2' if args.device_id else 'v1'})")
     if status["stale"]:
         print(
             f"STALE: 期望 revision={status['expected_revision']} "

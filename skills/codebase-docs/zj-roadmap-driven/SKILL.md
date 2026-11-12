@@ -116,7 +116,7 @@ anchor / S3 / S4）按需读 [可视化设计要点](references/viz-design.md)�
 
 ```bash
 # 主视图 + 可选 Mermaid / dependency 投影 / context 侧载包
-# --dependency / --context 必须显式给路径（ADR 0010），不设默认、不落 cwd
+# --out / --dependency / --context 一律显式给路径（ADR 0010），不设默认、不落 cwd；不传 --out 则不写 HTML
 PYTHONPATH="$SKILL_ROOT" python3 -m viz.cli <roadmap.json> --out X.html [--mermaid X.mmd] \
     [--dependency X.dependency.json] [--dependency-mermaid X.dependency.mmd] \
     [--context X.context.json] \
@@ -134,6 +134,13 @@ PYTHONPATH="$SKILL_ROOT" python3 -m unittest viz.tests.test_viz viz.tests.test_s
 ```
 
 演示语料：`demos/roadmap_viz_sample.json`（21 节点 + 15 条 blocks 边 + 3 条一等债务）。
+
+S1 只读入口：`--ir`（冻结 view-ir）、`--receipt`（Δ 重入，fail-closed）、`--delta`（增量清单），
+路径一律显式给；`roadmap` 参数也接受 SQLite carrier。命令细节见 [CLI 参考](references/roadmap-cli.md)。
+
+S1b 跨设备收据：`--device-id` + `--receipt-ttl` 同时给出才写 v2（否则沿用 v1 字节兼容），
+`--merge-receipt` 导入对方收据；**receipt 是可丢弃的派生缓存**，上下文/hash 冲突或过期一律
+fail-closed 全量回退，同步介质由 Human 显式给路径，不含网络协议。
 
 ## Scope gate — before any node write or project edit
 
