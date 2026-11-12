@@ -108,7 +108,8 @@ class RoadmapGraph:
     """归一化图：可视化只读消费的单一内部表示。"""
 
     nodes: dict  # id -> 原始 roadmap 节点（不在此处被改写）
-    edges: list  # 仅 blocks 边（原始 edge dict）
+    edges: list  # 仅 blocks 边（端点已归一化为节点 id）
+    hierarchy: list = field(default_factory=list)  # 父子层级边 [{from: parent_id, to: child_id}]
     adj: dict = field(default_factory=dict)  # id -> [邻居 id]（blocks 无向）
     pred: dict = field(default_factory=dict)  # id -> set(阻塞前驱)
     succ: dict = field(default_factory=dict)  # id -> set(阻塞后继)
@@ -124,35 +125,64 @@ class RoadmapGraph:
 
     @classmethod
     def from_data(cls, data: dict, carrier_stem: str = "roadmap") -> "RoadmapGraph":
+        """归一化 carrier → 内部图。
+
+        端点键空间收敛：carrier 的 blocks 边可能以 **uid** 存储（`add_edge` 写入 uid），
+        也可能以 **id** 存储（老数据 / 部分 fixture）。roadmap.py 的展示约定也是 id
+        （`edge_endpoints_as_display` 把 uid 解析成 id），因此这里统一把边端点解析为节点
+        id，使 `adj/pred/succ`、`graph.edges`、embed 与前端 JS 全部按 id 索引一致。
+        归一化只读入参、不改写。
+        """
         nodes = data.get("nodes", {}) or {}
         edges_raw = data.get("edges", []) or []
-        blocks = [
+        uid = {nid: n.get("uid") or nid for nid, n in nodes.items()}
+        id_by_uid = {v: k for k, v in uid.items()}
+
+        def endpoint_to_id(ep):
+            # ep 可能是 uid 或 id：uid→id，否则原样保留（幂等）。
+            return id_by_uid.get(ep, ep)
+
+        # 原始 blocks 边（保留 uid 端点）仅用于内容指纹，不参与图查询。
+        blocks_raw = [
             e for e in edges_raw
             if (edge_endpoints(e)[2] or "").lower() == "blocks"
         ]
+        # 归一化：端点统一为节点 id，供图查询与前端按 id 索引。
+        blocks = []
         adj, pred, succ = {}, {}, {}
         for nid in nodes:
             adj[nid] = []
             pred[nid] = set()
             succ[nid] = set()
-        for e in blocks:
+        for e in blocks_raw:
             s, d, _ = edge_endpoints(e)
-            if s in nodes and d in nodes:
-                adj[s].append(d)
-                adj[d].append(s)
-                pred[d].add(s)
-                succ[s].add(d)
+            s_id, d_id = endpoint_to_id(s), endpoint_to_id(d)
+            ne = dict(e)
+            ne["from"] = s_id
+            ne["to"] = d_id
+            blocks.append(ne)
+            if s_id in nodes and d_id in nodes:
+                adj[s_id].append(d_id)
+                adj[d_id].append(s_id)
+                pred[d_id].add(s_id)
+                succ[s_id].add(d_id)
         parent = {nid: n.get("parent") for nid, n in nodes.items()}
-        uid = {nid: n.get("uid") or nid for nid, n in nodes.items()}
         layer = {nid: layer_of(nid) for nid in nodes}
         debt = build_debt(nodes, data.get("debts"))
+        # 父子层级边（parent → child），供主图可见大纲拓扑；与 blocks 边用不同线型区分。
+        hierarchy = []
+        for nid, n in nodes.items():
+            p = n.get("parent")
+            if p and p in nodes:
+                hierarchy.append({"from": p, "to": nid})
         side_context = data.get("context") or {}  # S4 侧载条目，只读引用，不进主视图
         title = data.get("title", "") or ""
         description = data.get("description", "") or ""
         # Content-derived, deliberately independent of metadata.updated.
-        revision = _content_revision(title, description, nodes, blocks, debt)
+        # 用原始 blocks_raw（uid 端点）保证同一 carrier 指纹不变（S1 Δ 可回归）。
+        revision = _content_revision(title, description, nodes, blocks_raw, debt)
         return cls(
-            nodes=nodes, edges=blocks, adj=adj, pred=pred, succ=succ,
+            nodes=nodes, edges=blocks, hierarchy=hierarchy, adj=adj, pred=pred, succ=succ,
             parent=parent, uid=uid, layer=layer, debt=debt, context=side_context,
             revision=revision, carrier_stem=carrier_stem,
             title=title, description=description,
