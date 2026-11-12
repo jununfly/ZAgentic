@@ -108,6 +108,13 @@ def mandatory_set(focus: str, pdepth: dict, graph) -> set:
     for nid, db in graph.debt.items():
         if db.get("level") == "high":
             m.add(nid)
+    # C::01: the tree ancestor chain must be visible regardless of theta.
+    # blocks-predecessor closure alone is not the same thing as tree parents.
+    parent, seen = graph.parent.get(focus), set()
+    while parent and parent in graph.nodes and parent not in seen:
+        seen.add(parent)
+        m.add(parent)
+        parent = graph.parent.get(parent)
     return m
 
 

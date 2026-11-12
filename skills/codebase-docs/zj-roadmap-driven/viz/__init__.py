@@ -12,6 +12,9 @@
 逐字节相同、权威信封必现、Δ reentry receipt（fail-closed、gitignored、路径显式）。
 S1b 已落地：v2 收据带设备标识与 TTL、跨设备合并取并集、冲突/过期一律
 fail-closed 全量回退；同步介质由 Human 显式给路径，不含网络协议。
+S1c 已落地：--merge-receipt 可重复导入多个 peer（整链 fail-closed）；
+后台自动同步调度按 RD::14 明确拒绝；DAG 与卡片共用 rankByDoi 排序，
+树祖先链必现且折叠项按父分区计数；24 个 spec id 全部有可执行守卫。
 """
 from __future__ import annotations
 

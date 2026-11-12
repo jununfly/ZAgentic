@@ -39,7 +39,7 @@ jobs:
         # published unit, and its commands execute with cwd = target project,
         # not the skill directory. Bare script names and undeclared path vars
         # pass every static check and fail on every installed copy.
-        # Four guards: install-state commands (with in-memory negative probes
+        # Five guards: install-state commands (with in-memory negative probes
         # so a checker that cannot fail is itself red), landing guard for core
         # disciplines, scripts/ + tests/ layout, and frontmatter schema
         # consistency. Same unfiltered required job: a path-filtered required
@@ -50,7 +50,12 @@ jobs:
           tests.test_zj_roadmap_driven_landing
           tests.test_zj_roadmap_driven_layout
           tests.test_zj_roadmap_driven_frontmatter
+          tests.test_process_authority_boundary
           -v
+      - name: Verify roadmap visual-review governance guards
+        # Previously local-only: this suite asserts CLI reference, glossary,
+        # product/spec pages and required-job wiring, but had no CI caller.
+        run: python3 -m unittest tests.test_roadmap_visual_review_governance -v
       - name: Install gate dependencies
         # The frontmatter validator needs PyYAML; without it the validator
         # exits 2 and an absent check can look green (see ui-contract gate).

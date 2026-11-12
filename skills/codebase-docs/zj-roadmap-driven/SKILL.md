@@ -141,6 +141,8 @@ S1 只读入口：`--ir`（冻结 view-ir）、`--receipt`（Δ 重入，fail-cl
 S1b 跨设备收据：`--device-id` + `--receipt-ttl` 同时给出才写 v2（否则沿用 v1 字节兼容），
 `--merge-receipt` 导入对方收据；**receipt 是可丢弃的派生缓存**，上下文/hash 冲突或过期一律
 fail-closed 全量回退，同步介质由 Human 显式给路径，不含网络协议。
+S1c：`--merge-receipt` 可重复给多次导入多个 peer，任一不合格则整链 fail-closed；
+后台自动同步调度按 RD::14 明确拒绝，不实现。
 
 ## Scope gate — before any node write or project edit
 

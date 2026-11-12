@@ -1215,6 +1215,11 @@
       "id": "RD::13",
       "statement": "用 force-directed 随机布局生成 DAG",
       "reason": "每次布局不同，破坏确定性与两 carrier 字节相同；必须用确定性分层布局"
+    },
+    {
+      "id": "RD::14",
+      "statement": "为 view receipt 增加后台自动同步调度（网络协议 / 设备发现 / 定时任务）",
+      "reason": "receipt 是可丢弃的派生缓存，损坏、冲突或过期一律 fail-closed 回退全量视图，代价极小；后台自动同步会引入网络、凭据、设备发现、失败态与并发写，收益为负。跨设备传输介质固定为 Human 显式给路径搬运文件（--merge-receipt 可重复导入多个 peer），不提供自动调度。"
     }
   ],
   "evidence-integrity": {

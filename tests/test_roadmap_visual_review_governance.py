@@ -95,5 +95,37 @@ class RequiredCoverageContract(unittest.TestCase):
         self.assertNotIn("paths:", head, "a filtered required check blocks unrelated PRs (#211)")
 
 
+class SyncTransportVerdict(unittest.TestCase):
+    """The open item is closed by a decision, not by building a daemon."""
+
+    def test_automatic_receipt_sync_is_an_explicit_rejected_default(self):
+        rejected = {
+            item["id"]: item
+            for item in json.loads(_read(SPEC))["rejected-defaults"]
+        }
+        self.assertIn("RD::14", rejected)
+        item = rejected["RD::14"]
+        text = item["statement"] + item["reason"]
+        for word in ("后台", "自动同步", "网络"):
+            self.assertIn(word, text)
+        for word in ("可丢弃", "显式", "fail-closed"):
+            self.assertIn(word, item["reason"])
+
+    def test_product_ledger_records_a_decision_not_an_open_item(self):
+        body = _read(PRODUCT)
+        self.assertIn("已判决", body)
+        self.assertIn("RD::14", body)
+        self.assertNotIn("仍 open（范围外，非缺陷）", body)
+
+    def test_cli_reference_publishes_repeatable_peer_import(self):
+        body = _read(CLI_REF)
+        self.assertIn("可重复", body)
+        self.assertIn("--merge-receipt", body)
+
+    def test_required_job_runs_the_governance_guard(self):
+        self.assertIn("tests.test_roadmap_visual_review_governance",
+                      _read(WORKFLOW))
+
+
 if __name__ == "__main__":
     unittest.main()

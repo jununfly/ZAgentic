@@ -43,7 +43,14 @@ def to_mermaid(view: dict, graph: RoadmapGraph) -> str:
 
     rest = view["rest"]
     if rest:
-        lines.append(f'COMPOSITE["其余 {len(rest)} 项（未展开）"]:::comp')
+        # C::01: folded siblings are counted per tree partition, not as one
+        # opaque total. Same shape as the HTML composite node (INV::03).
+        parts: dict[str, int] = {}
+        for nid in rest:
+            parent = graph.parent.get(nid) or "根"
+            parts[parent] = parts.get(parent, 0) + 1
+        detail = " · ".join(f"分区 {p} {parts[p]} 项" for p in sorted(parts))
+        lines.append(f'COMPOSITE["其余 {len(rest)} 项（{detail} · 未展开）"]:::comp')
         # 文本等价：复合节点与焦点用虚线连，提示「还有远端子树被折起」
         lines.append(f"{focus} -.-> COMPOSITE")
 

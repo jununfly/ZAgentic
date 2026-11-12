@@ -71,7 +71,8 @@ def main(argv=None) -> int:
     p.add_argument("--delta", help="S1：输出增量 JSON（必须显式给路径）")
     p.add_argument("--device-id", help="S1b：本设备标识；与 --receipt-ttl 一起启用可移植 v2 receipt")
     p.add_argument("--receipt-ttl", type=float, help="S1b：receipt 有效期（秒）")
-    p.add_argument("--merge-receipt", help="S1b：导入另一设备 receipt 并合并为 baseline（必须显式给路径）")
+    p.add_argument("--merge-receipt", action="append", default=[],
+                   help="S1c：导入另一设备 receipt 并合并为 baseline；可重复给多次（路径一律显式）")
     args = p.parse_args(argv)
 
     if bool(args.device_id) != bool(args.receipt_ttl):
@@ -109,11 +110,17 @@ def main(argv=None) -> int:
     if args.receipt:
         baseline, baseline_warning = receipt.load_receipt(args.receipt)
         if args.merge_receipt and baseline_warning is None:
-            peer, peer_warning = receipt.load_receipt(args.merge_receipt)
+            peers, peer_warning = [], None
+            for peer_path in args.merge_receipt:
+                peer, warning = receipt.load_receipt(peer_path)
+                if warning:
+                    peer_warning = warning
+                    break
+                peers.append(peer)
             if peer_warning:
                 baseline, baseline_warning = None, peer_warning
             else:
-                baseline, baseline_warning = receipt.merge_baselines(baseline, peer)
+                baseline, baseline_warning = receipt.merge_baseline_chain(baseline, peers)
     delta = receipt.compute_delta(hashes, baseline, baseline_warning)
     edge_meta = dep.build_edge_meta(graph)
     html = render_html(

@@ -593,8 +593,11 @@ S1b 追加跨设备可移植收据（receipt 是**可丢弃的派生缓存**，�
 - `--merge-receipt <另一设备的收据路径>` — 导入对方收据并合并为本次 baseline：
   仅当版本、anchor、carrier revision、θ 一致，双方都未过期，且条目 hash 无冲突时取并集；
   **任何不一致一律 fail-closed 回退全量视图**，不做 last-write-wins、不引入网络协议。
+  **可重复给多次**导入多个 peer（S1c）：`merge_baseline_chain` 依次合并成一个 baseline，
+  任一 peer 损坏 / 过期 / 上下文不符 / hash 冲突则**整链** fail-closed，不保留部分增量。
 - 过期收据与损坏收据走同一条 fail-closed 路径；v1 收据可继续读，但不可跨设备合并。
-- 同步介质由 Human 决定（显式路径搬运文件）；合并产物不写回 carrier、不进 view-ir。
+- 同步介质由 Human 决定（显式路径搬运文件）；**后台自动同步调度为 RD::14 明确拒绝**，
+  不提供网络协议、设备发现或定时任务。合并产物不写回 carrier、不进 view-ir。
 
 ## Demos
 

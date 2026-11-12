@@ -1476,6 +1476,12 @@ _Avoid_: last-write-wins, vector clock, 静默丢弃冲突
 路径；非正 TTL 在写入时拒绝。同步介质由 Human 显式给路径，本契约不含网络协议。
 _Avoid_: 后台自动同步, 隐式默认 TTL, 过期后仍用旧增量
 
+**peer receipt chain**:
+多个设备收据按同一视图上下文依次合并为一个 baseline（S1c）；任一 peer 损坏 /
+过期 / 上下文不符 / hash 冲突则整链 fail-closed，不保留部分增量。传输介质固定为
+Human 显式给路径搬运文件；后台自动同步调度是 RD::14 的 rejected default。
+_Avoid_: 网络协议, 设备发现, 定时任务, last-write-wins, 部分成功
+
 ## Flagged ambiguities
 
 - "ticket" was previously `_Avoid_` in the issue-triage glossary — resolved:

@@ -72,8 +72,9 @@ class TraceabilityContract(unittest.TestCase):
                                     f"{name} is not an executable test")
 
 
-def _mapping_errors(mapping, spec_ids) -> list[str]:
+def _mapping_errors(mapping, spec_ids, ledger=None) -> list[str]:
     """The single checker used by both the real contract and negative probes."""
+    accepted = ACCEPTED_UNGOVERNED if ledger is None else ledger
     errors: list[str] = []
     if set(mapping) != set(spec_ids):
         errors.append("E_ID_SET")
@@ -81,9 +82,9 @@ def _mapping_errors(mapping, spec_ids) -> list[str]:
     if len(ungoverned) > MAX_UNGOVERNED:
         errors.append("E_TOO_MANY_UNGOVERNED")
     for spec_id in ungoverned:
-        if len(ACCEPTED_UNGOVERNED.get(spec_id, "")) < 30:
+        if len(accepted.get(spec_id, "")) < 30:
             errors.append("E_UNJUSTIFIED:" + spec_id)
-    for spec_id in ACCEPTED_UNGOVERNED:
+    for spec_id in accepted:
         if spec_id not in mapping or mapping[spec_id] is not None:
             errors.append("E_STALE_LEDGER:" + spec_id)
     loader = unittest.TestLoader()
@@ -129,11 +130,18 @@ class LedgerAndNegativeProbes(unittest.TestCase):
         self.assertIn("E_TOO_MANY_UNGOVERNED", _mapping_errors(broken, _spec_ids()))
 
     def test_a_stale_ledger_entry_is_detected(self):
-        self.assertFalse(
-            any(TRACEABILITY.get(spec_id) is not None
-                for spec_id in ACCEPTED_UNGOVERNED),
-            "an id with a real guard must be removed from the ungoverned ledger",
-        )
+        # With the live ledger empty, an `any(...)` over it would be vacuously
+        # true. Inject a deliberately stale entry so the probe still proves
+        # the checker can fail (防假绿).
+        fake = {"INV::01": "该判据已有可执行守卫，却仍被登记为未守卫，属于陈旧台账条目，必须报错。"}
+        self.assertIn("E_STALE_LEDGER:INV::01",
+                      _mapping_errors(TRACEABILITY, _spec_ids(), ledger=fake))
+
+    def test_no_spec_id_is_left_ungoverned(self):
+        self.assertEqual([], [key for key, value in TRACEABILITY.items()
+                              if value is None])
+        self.assertEqual({}, ACCEPTED_UNGOVERNED)
+        self.assertEqual(0, MAX_UNGOVERNED)
 
     def test_required_ci_job_runs_this_guard(self):
         body = WORKFLOW.read_text(encoding="utf-8")

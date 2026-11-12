@@ -34,7 +34,10 @@ TRACEABILITY: dict[str, tuple[str, ...] | None] = {
     "INV::05": (
         V + "test_s1.TwoCarrierByteIdentity.test_authority_envelope_in_every_public_view",
     ),
-    "INV::06": None,
+    "INV::06": (
+        T + "test_process_authority_boundary.ProcessAuthorityBoundaryContract."
+            "test_durable_doc_citing_process_state_is_rejected",
+    ),
     "INV::07": (
         T + "test_skill_install_smoke.InstalledCopyExecution."
             "test_quick_start_init_runs_with_only_the_declared_basis",
@@ -57,13 +60,19 @@ TRACEABILITY: dict[str, tuple[str, ...] | None] = {
         T + "test_roadmap_visual_review_spec.InformationSelectionTest."
             "test_debts_are_first_class_but_never_auto_promoted",
     ),
-    "INV::13": None,
+    "INV::13": (
+        V + "test_review_contracts.DagLayoutDeterminismContract."
+            "test_two_renders_are_byte_identical",
+    ),
     "INV::14": (
         T + "test_roadmap_visual_review_spec.PresentationTest."
             "test_visual_encoding_never_relies_on_colour_alone",
     ),
     # ---- capabilities -----------------------------------------------------
-    "C::01": None,
+    "C::01": (
+        V + "test_review_contracts.AncestorChainContract."
+            "test_tree_ancestors_are_always_visible",
+    ),
     "C::02": (
         V + "test_s3_s4.TestS3Dependency.test_blocked_by_matches_s1_ir_pdepth",
     ),
@@ -73,7 +82,10 @@ TRACEABILITY: dict[str, tuple[str, ...] | None] = {
     "C::04": (
         V + "test_s3_s4.TestS4Context.test_context_pack_is_side_loaded_not_embedded",
     ),
-    "C::05": None,
+    "C::05": (
+        V + "test_review_contracts.ViewKindRoutingContract."
+            "test_spec_view_contracts_match_the_independent_route_table",
+    ),
     "C::06": (
         V + "test_s3_s4.TestS4Context.test_stale_when_revision_mismatch",
     ),
@@ -89,33 +101,16 @@ TRACEABILITY: dict[str, tuple[str, ...] | None] = {
         V + "test_s1b.CrossDeviceMerge."
             "test_same_context_receipts_merge_into_a_usable_baseline",
     ),
-    "C::10": None,
-}
-
-# Explicitly accepted, *mechanically unguarded* claims. These are not marked
-# as covered: each entry records what is missing. The count is capped so the
-# set cannot grow silently when a future change drops a guard.
-MAX_UNGOVERNED = 5
-
-ACCEPTED_UNGOVERNED: dict[str, str] = {
-    "INV::06": (
-        "process-state 权威边界由 authority-check 实施，但现有守卫只断言命令名与 "
-        "SKILL.md 纪律文本，缺「长期文档引用过程产物」的端到端拒绝用例；属真实缺口。"
-    ),
-    "INV::13": (
-        "只有 Mermaid 文本等价物存在性与 spec 文本断言，缺 DAG 布局确定性的两次生成"
-        "字节比较，以及禁用 force-directed / 随机布局的静态检查。"
-    ),
-    "C::01": (
-        "缺「祖先链必现、非焦点兄弟折叠为分区计数」的运行时断言；现有 S2 投影测试"
-        "只校 cards 键集合与 mermaid 文本存在性，不校验概览结构不变量。"
-    ),
-    "C::05": (
-        "缺 view-kind 到输出形态的一一映射枚举断言；现有断言只读 spec 的 "
-        "presentation 文本字段，没有对实际投影产物的路由做机械钉住。"
-    ),
     "C::10": (
-        "缺同一 θ 下局部 DAG 与信息卡片共用 DOI 排序的运行时断言；"
-        "cards_match_shown 只校键集合，不校空间编码与排序同源。"
+        V + "test_review_contracts.DoiOrderingContract."
+            "test_dag_and_cards_share_one_doi_ordering",
     ),
 }
+
+# Explicitly accepted, *mechanically unguarded* claims. Empty as of S1c:
+# all 24 spec ids now have an executable guard. MAX_UNGOVERNED = 0 means any
+# future `None` in TRACEABILITY is a hard failure, so a dropped guard can
+# never be laundered into a "recorded gap" without an explicit decision.
+MAX_UNGOVERNED = 0
+
+ACCEPTED_UNGOVERNED: dict[str, str] = {}

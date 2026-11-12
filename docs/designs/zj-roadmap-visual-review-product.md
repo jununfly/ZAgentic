@@ -374,7 +374,36 @@ receipt 是**可丢弃的派生缓存**，不是权威状态。因此跨设备�
 - 机械守卫：viz 包的 S1b 单测套件覆盖便携性、v1 兼容、合并并集、四类上下文不一致、
   hash 冲突、混合版本、过期边界、CLI 端到端、合并产物不进 carrier / view-ir。
 
-### 仍 open（范围外，非缺陷）
+### 已判决（2026-11-12，S1c）
 
-跨设备**传输介质与自动同步调度**不属于本切片：本切片只定义收据本身的可移植契约，
-不提供网络协议、设备发现或后台同步。
+跨设备**传输介质与自动同步调度**原本登记为 open，现按 Human 指令「解决」收口为两条判决，
+不再保留悬置项：
+
+1. **传输介质 = 已交付**：Human 显式给路径搬运收据文件是唯一支持的介质；
+   `--merge-receipt` 从单文件扩到**可重复给多次**，`merge_baseline_chain` 把多个 peer
+   按同一视图上下文合并为一个 baseline，任一 peer 不合格则整链 fail-closed 回退全量。
+   这已覆盖「多设备怎么把收据带到一起」，无需网络协议。
+2. **后台自动同步调度 = 明确不做**：写入 spec 的 `RD::14`（rejected-defaults）。
+   receipt 是可丢弃的派生缓存，错了的代价只是重算全量视图；为它引入网络、凭据、
+   设备发现、定时任务与并发写，复杂度与失败面都远大于收益。
+
+本段只更新台账状态，**不改写上文 S1b 的任何判决与范围声明**。
+
+## Amendment (2026-11-12, S1c guards delivered)
+
+traceability 台账里 5 条显式 UNGOVERNED 判据已全部收口，**24 个 spec id 现在都有
+可执行守卫**，`MAX_UNGOVERNED = 0`（今后任何 `None` 都是硬失败）：
+
+- `INV::06` → 根级 CLI 端到端用例：长期文档引用 roadmap 过程产物被拒
+  （`E_PROCESS_AUTHORITY_LEAK`），并配「干净项目通过」「`--exclude` 通过」对称探针。
+- `INV::13` → 两次生成逐字节、静态禁用随机/时钟布局、Mermaid 节点集合与 view 同源。
+- `C::05` → `viz/view_kinds` 模块的独立字面量路由表，与 spec 的 8 条 view-contracts
+  逐条比对，且每条都指向真实 CLI flag；负向探针覆盖改契约/删契约。
+- `C::10` → **实现缺陷已修**：抽出唯一 `rankByDoi` 比较器，卡片与 DAG 节点插入
+  顺序同源；`verify_ordering` Node 探针用 VM 跑真实内嵌 JS 做交叉断言。
+- `C::01` → **实现缺陷已修**：`mandatory_set` 与 JS 两处 `mandatory` 构造补上树父链
+  （原先只覆盖 blocks 前驱闭包，21 个焦点里 20 个祖先链缺失）；折叠项按父分区计数，
+  Mermaid 与 HTML 共用同一形态。冻结的 view-ir schema **未改动**。
+
+另：governance 守卫此前从未接进 required CI，本切片补上；Node 几何校验在排序与
+mandatory 变化后回归 ALL_OK。本 Amendment 只记录交付，不改写上文任何判决。

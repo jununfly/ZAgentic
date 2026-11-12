@@ -183,6 +183,8 @@ function select(focus, theta){
   pdepth && Object.keys(pdepth).forEach(p=>mandatory.add(p));
   (succ[focus]||[]).forEach(s=>mandatory.add(s));
   Object.keys(debt).forEach(id=>{ if(debt[id].level==="high") mandatory.add(id); });
+  let tp=nodes[focus].parent; const tseen=new Set();
+  while(tp && nodes[tp] && !tseen.has(tp)){ mandatory.add(tp); tseen.add(tp); tp=nodes[tp].parent; }
   const lod={};
   scores.forEach(({id,d})=>{ let L;
     if(mandatory.has(id)){ L = (id===focus)?"L2":"L1"; }
@@ -226,14 +228,23 @@ function wrapLabel(s, maxChars){ s=(s||""); if(!s) return [""]; if(s.length<=max
 function nodeWidth(id, res){ return Math.max(104, 84 + Math.round((res && res.byId[id] ? res.byId[id].d : 0) * 46)); }
 function nodeLines(id, w){ const n=nodes[id]; const maxC=Math.max(6, Math.floor((w-12)/11)); return wrapLabel(n.label, maxC); }
 function nodeHeight(lines){ return NODE_H + (lines.length-1)*14; }
+// C::10 / INV::03: ONE ordering comparator for both the DAG and the cards.
+// mandatory first, then DOI descending. Never fork this into a second sort.
+function rankByDoi(ids, res){ return [...ids].sort((a,b)=>{
+  const ma=res.mandatory.has(a)?0:1, mb=res.mandatory.has(b)?0:1; if(ma!==mb) return ma-mb;
+  return res.byId[b].d-res.byId[a].d; }); }
+// C::01: one partition helper, shared shape with the Mermaid COMPOSITE line.
+function partitionRest(ids){ const m=new Map();
+  ids.forEach(id=>{ const p=(nodes[id]&&nodes[id].parent)||"根"; m.set(p,(m.get(p)||0)+1); });
+  return [...m.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))); }
 function layoutDAG(focus, res, expSet){
   const nbhd=new Set([focus]);
   (res.pdepth?Object.keys(res.pdepth):[]).forEach(p=>nbhd.add(p));
   (succ[focus]||[]).forEach(s=>nbhd.add(s));
   (adj[focus]||[]).forEach(n=>nbhd.add(n));
   const exp=expSet||new Set();
-  const keepBase=[...nbhd].filter(id=>res.shown.includes(id));
-  const keepAll=keepBase.concat([...exp].filter(id=>res.shown.includes(id)));
+  const keepBase=rankByDoi([...nbhd].filter(id=>res.shown.includes(id)), res);
+  const keepAll=keepBase.concat(rankByDoi([...exp].filter(id=>res.shown.includes(id)), res));
   const kset=new Set(keepAll);
   const rest=res.shown.filter(id=>!kset.has(id)).concat([...nbhd].filter(id=>!res.shown.includes(id)));
   const subPred={}, subSucc={}; keepAll.forEach(id=>{subPred[id]=new Set();subSucc[id]=new Set();});
@@ -254,7 +265,7 @@ function layoutDAG(focus, res, expSet){
   if(compX!==null) W_=W_+14+compW;
   if(collapseX!==null) W_=W_+14+compW;
   if((compX!==null||collapseX!==null) && H_<100) H_=100;
-  return {keep:kset, subPred, subSucc, pos, w, h, lines, rest, W_, H_, compW, compH, compX, collapseX};
+  return {keep:kset, orderedKeep:keepAll, subPred, subSucc, pos, w, h, lines, rest, W_, H_, compW, compH, compX, collapseX};
 }
 function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function txt(v){ return Array.isArray(v)? v.join("；") : String(v==null?"":v); }
@@ -265,6 +276,8 @@ function render(){
   const hop=bfsHop(focus), pdepth=revBFS(focus);
   const allD=Object.values(nodes).map(n=>({id:n.id, d:doi(n,focus,hop,pdepth)}));
   const mand=new Set([focus]); pdepth&&Object.keys(pdepth).forEach(p=>mand.add(p)); (succ[focus]||[]).forEach(s=>mand.add(s)); Object.keys(debt).forEach(id=>{ if(debt[id].level==="high") mand.add(id); });
+  let tpm=nodes[focus].parent; const tseem=new Set();
+  while(tpm && nodes[tpm] && !tseem.has(tpm)){ mand.add(tpm); tseem.add(tpm); tpm=nodes[tpm].parent; }
   const cand=allD.filter(s=>!mand.has(s.id)).map(s=>s.d).sort((a,b)=>a-b);
   const pct=p=> cand.length? cand[Math.min(cand.length-1, Math.floor(p*cand.length))] : null;
   const tOv=pct(0.85), tNb=pct(0.50), tEx=pct(0.15);
@@ -278,9 +291,7 @@ function render(){
   document.getElementById("theta").value=Math.round(theta*100);
   document.getElementById("thv").textContent=theta.toFixed(2);
   const res=select(focus,theta);
-  const order=[...res.shown].sort((a,b)=>{
-    const ma=res.mandatory.has(a)?0:1, mb=res.mandatory.has(b)?0:1; if(ma!==mb) return ma-mb;
-    return res.byId[b].d-res.byId[a].d; });
+  const order=rankByDoi(res.shown, res);
   let html="";
   order.forEach(id=>{
     const n=nodes[id],L=res.lod[id],d=res.byId[id].d, db=debt[id];
@@ -341,7 +352,7 @@ function render(){
     svg+=`<g class="node" data-id="${id}"><rect class="nbox ${st}" x="${p.x}" y="${p.y}" width="${w}" height="${h}" rx="8"/>${t}</g>`; });
   if(dl.rest.length){ const cx2=dl.compX;
     svg+=`<g class="composite-g" data-comp="expand"><rect class="composite" x="${cx2}" y="20" width="${dl.compW}" height="${dl.compH}" rx="8"/>`+
-      `<text class="nodetxt" x="${cx2+8}" y="${20+dl.compH/2+4}">其余 ${dl.rest.length} 项（未展开 · 点击展开）</text></g>`; }
+      `<text class="nodetxt" x="${cx2+8}" y="${20+dl.compH/2+4}">其余 ${dl.rest.length} 项（${partitionRest(dl.rest).map(x=>"分区 "+x[0]+" "+x[1]+" 项").join(" · ")} · 点击展开）</text></g>`; }
   if(dl.collapseX!==null){ const cx2=dl.collapseX;
     svg+=`<g class="composite-g" data-comp="collapse"><rect class="composite" x="${cx2}" y="20" width="${dl.compW}" height="${dl.compH}" rx="8"/>`+
       `<text class="nodetxt" x="${cx2+8}" y="${20+dl.compH/2+4}">收起（点击）</text></g>`; }
