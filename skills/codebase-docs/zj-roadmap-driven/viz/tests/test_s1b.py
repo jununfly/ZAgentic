@@ -253,6 +253,8 @@ class ExpiryAndPublishedEntrypoints(unittest.TestCase):
             self.assertIn(flag, body, f"CLI reference does not publish {flag}")
         self.assertIn("跨设备", body)
 
+    @unittest.skipUnless(PRODUCT.exists(),
+                         "external product doc (docs/designs) absent outside repo tree")
     def test_product_ledger_no_longer_marks_s1b_as_open(self):
         body = PRODUCT.read_text(encoding="utf-8")
         self.assertIn("S1b delivered", body)
