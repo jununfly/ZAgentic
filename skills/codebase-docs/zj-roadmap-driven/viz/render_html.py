@@ -94,6 +94,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
   .node,.composite-g{cursor:pointer}
   .node:hover .nbox{stroke-width:2.5}
   .elabel{font-size:9px;fill:var(--muted)}
+  .edge-hier{stroke:#94a3b8;stroke-width:1.4;stroke-dasharray:5 4;fill:none}
+  .edge-hier.edge-hint{stroke-dasharray:2 3;opacity:.7}
+  .edge-blocks{stroke:#b91c1c}
   .delta{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
   .delta .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .pill{font-size:11px;padding:3px 9px;border-radius:8px}
@@ -121,7 +124,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
     <div class="dag">
       <div class="dag-head"><h2>局部 DAG（DOI 裁剪 · 确定性分层 · 可拖拽平移）</h2><button id="reset-pan">复位视图</button></div>
       <div class="dag-viewport" id="dag-viewport"><div class="dag-canvas" id="dag-canvas"><div id="dag"></div></div></div>
-      <div class="legend">实线箭头 = blocks（顺序依赖，X 完成才能做 Y）。节点描边：<b style="color:var(--focus)">焦点</b>/<b style="color:var(--block)">阻塞前驱</b>/<b style="color:var(--sib)">同父高耦合</b>/<b style="color:var(--debt)">含债务</b>。远端子树折成复合节点。<b>左键按住拖拽平移；点击节点=设为焦点；点击「其余 N 项」=展开折叠项，点击「收起」=折叠。</b></div>
+      <div class="legend">实线红箭头 = blocks（顺序依赖，X 完成才能做 Y）；灰色虚线 = 父子层级（outline 结构，parent → child）。两者用<b>颜色 + 线型 + 有无箭头</b>三重冗余区分，不只用颜色。节点描边：<b style="color:var(--focus)">焦点</b>/<b style="color:var(--block)">阻塞前驱</b>/<b style="color:var(--sib)">同父高耦合</b>/<b style="color:var(--debt)">含债务</b>。远端子树折成复合节点。<b>左键按住拖拽平移；点击节点=设为焦点；点击「其余 N 项」=展开折叠项，点击「收起」=折叠。</b></div>
     </div>
     <div class="sidebar" id="sidebar"><h2>信息卡片（三级 LOD · 40 行阅读预算）</h2><div id="cards"></div></div>
     <div class="sidebar-handle" id="sidebar-handle" title="展开/收起卡片侧栏">收起</div>
@@ -153,6 +156,7 @@ const DEBT_MED=["todo","待","sweep","清理","核对","跟进","补","未覆盖
 
 // ---- 图结构（blocks 邻接；edges 已过滤为 blocks）----
 const nodes = GRAPH.nodes, edges = GRAPH.edges, debt = GRAPH.debt;
+const hierarchy = GRAPH.hierarchy || [];
 const adj = {}, pred = {}, succ = {};
 Object.keys(nodes).forEach(id=>{adj[id]=[];pred[id]=new Set();succ[id]=new Set();});
 edges.forEach(e=>{ const f=e.from, t=e.to; if(f in nodes && t in nodes){ adj[f].push(t); adj[t].push(f); pred[t].add(f); succ[f].add(t);} });
@@ -254,6 +258,9 @@ function layoutDAG(focus, res, expSet){
   const lines={}, h={}, w={};
   keepAll.forEach(id=>{ w[id]=nodeWidth(id,res); lines[id]=nodeLines(id,w[id]); h[id]=nodeHeight(lines[id]); g.setNode(id,{width:w[id], height:h[id]}); });
   edges.forEach(e=>{ if(e.type==="blocks"&&kset.has(e.from)&&kset.has(e.to)) g.setEdge(e.from,e.to); });
+  // 父子层级边也进 dagre：让 outline 在 TB 布局里纵向对齐（parent 在上、child 在下），
+  // 与 blocks 红实线箭头形成可读的路线图 DAG。
+  hierarchy.forEach(h=>{ if(kset.has(h.from)&&kset.has(h.to)) g.setEdge(h.from,h.to); });
   dagre.layout(g);
   const pos={};
   keepAll.forEach(id=>{ const n=g.node(id); pos[id]={x:n.x-n.width/2, y:n.y-n.height/2}; });
@@ -344,7 +351,33 @@ function render(){
     const ax=a.x+aw, ay=a.y+ah/2, bx=b.x, by=b.y+bh/2;
     const em=EDGE_BY_PAIR[e.from+"|"+e.to];
     const eid=em?em.edge_id:"unknown";
-    svg+=`<path class="edge-hit" data-edge="${eid}" d="M${ax},${ay} C${(ax+bx)/2},${ay} ${(ax+bx)/2},${by} ${bx},${by}" fill="none" stroke="#b91c1c" stroke-width="1.8" marker-end="url(#ar)"><title>${eid} · ${e.from} → ${e.to}</title></path>`; } });
+    svg+=`<path class="edge-hit" data-edge="${eid}" data-from="${e.from}" data-to="${e.to}" d="M${ax},${ay} C${(ax+bx)/2},${ay} ${(ax+bx)/2},${by} ${bx},${by}" fill="none" stroke="#b91c1c" stroke-width="1.8" marker-end="url(#ar)"><title>${eid} · ${e.from} → ${e.to}</title></path>`; } });
+  // 父子层级连线：灰色虚线、无箭头，与 blocks 红实线箭头冗余区分（颜色+线型+箭头）。
+  function hierPath(p, c, hint){
+    const a=dl.pos[p], b=dl.pos[c];
+    const ax=a.x+dl.w[p]/2, ay=a.y+dl.h[p];      // parent 底边中点
+    const bx=b.x+dl.w[c]/2, by=b.y;               // child 顶边中点
+    const my=(ay+by)/2;
+    return `<path class="edge-hier${hint?" edge-hint":""}" data-from="${p}" data-to="${c}" d="M${ax},${ay} C${ax},${my} ${bx},${my} ${bx},${by}"><title>父子层级: ${p} → ${c}</title></path>`;
+  }
+  function hierHintToComp(p, hint){               // parent 可见、child 折进复合节点：画到复合节点
+    if(dl.compX==null) return "";
+    const a=dl.pos[p]; const ax=a.x+dl.w[p]/2, ay=a.y+dl.h[p];
+    const bx=dl.compX+dl.compW/2, by=20+dl.compH/2; const my=(ay+by)/2;
+    return `<path class="edge-hier${hint?" edge-hint":""}" data-from="${p}" data-to="(composite)" d="M${ax},${ay} C${ax},${my} ${bx},${my} ${bx},${by}"><title>父子层级: ${p} → (其余) 折叠子树</title></path>`;
+  }
+  function hierHintFromComp(c, hint){             // child 可见、parent 折进复合节点：从复合节点画到 child
+    if(dl.compX==null) return "";
+    const b=dl.pos[c]; const bx=b.x+dl.w[c]/2, by=b.y;
+    const ax=dl.compX+dl.compW/2, ay=20+dl.compH/2; const my=(ay+by)/2;
+    return `<path class="edge-hier${hint?" edge-hint":""}" data-from="(composite)" data-to="${c}" d="M${ax},${ay} C${ax},${my} ${bx},${my} ${bx},${by}"><title>父子层级: (其余) 折叠子树 → ${c}</title></path>`;
+  }
+  hierarchy.forEach(h=>{
+    const p=h.from, c=h.to;
+    if(dl.keep.has(p)&&dl.keep.has(c)) svg+=hierPath(p,c,false);
+    else if(dl.keep.has(p)&&dl.rest.includes(c)) svg+=hierHintToComp(p,true);
+    else if(dl.keep.has(c)&&dl.rest.includes(p)) svg+=hierHintFromComp(c,true);
+  });
   dl.keep.forEach(id=>{ const p=dl.pos[id],n=nodes[id], w=dl.w[id], h=dl.h[id], lines=dl.lines[id];
     const st = id===focus?"focus": res.pdepth[id]!==undefined?"block": n.parent===res.fp?"sib": debt[id].score>0?"debt":"";
     let t=`<text class="nid" x="${p.x+6}" y="${p.y+17}">${id}</text>`;
@@ -466,6 +499,7 @@ def render_html(graph, focus, theta=None, edge_meta=None, revision_status=None, 
         "description": getattr(graph, "description", "") or "",
         "nodes": embed_nodes,
         "edges": graph.edges,
+        "hierarchy": graph.hierarchy,
         "debt": graph.debt,
     }
     envelope = {

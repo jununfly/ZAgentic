@@ -83,12 +83,48 @@ function checkGeom(label) {
   return ok;
 }
 
+// 边校验：端点绑定（data-from/data-to 必须落在可见节点或复合节点）+ 坐标不裁切（箭头/标签余量容忍）。
+const EDGE_TOL = 16;
+function checkEdges(label) {
+  const svg = dagEl.innerHTML;
+  const svgDims = svg.match(/<svg width="(\d+)" height="(\d+)"/);
+  if (!svgDims) return true;
+  const W = +svgDims[1], H = +svgDims[2];
+  const nodeIds = new Set([...svg.matchAll(/<g class="node" data-id="([^"]+)"/g)].map((m) => m[1]));
+  const hasComp = svg.includes('class="composite"');
+  const allowed = (x) => nodeIds.has(x) || (x === "(composite)" && hasComp);
+  const paths = [
+    ...svg.matchAll(/<path class="(edge-hit|edge-hier[^"]*)"( data-edge="[^"]+")? data-from="([^"]+)" data-to="([^"]+)" d="([^"]+)"/g),
+  ];
+  let badBind = 0, badBounds = 0, blocks = 0, hier = 0;
+  for (const m of paths) {
+    const cls = m[1], from = m[3], to = m[4], d = m[5];
+    if (cls === "edge-hit") blocks++; else hier++;
+    if (!allowed(from) || !allowed(to)) { badBind++; console.log(`  ${label}: 边端点未绑定 ${from}→${to}`); }
+    // 路径 d 中的数字按 (x,y) 坐标对解析：x 对 W 校验、y 对 H 校验（不要混用）。
+    const nums = (d.match(/-?\d+(\.\d+)?/g) || []).map(Number);
+    for (let i = 0; i + 1 < nums.length; i += 2) {
+      const x = nums[i], y = nums[i + 1];
+      if (x < -EDGE_TOL || x > W + EDGE_TOL || y < -EDGE_TOL || y > H + EDGE_TOL) {
+        badBounds++; break;
+      }
+    }
+  }
+  if (blocks > 0) seenBlocks = true;
+  if (hier > 0) seenHier = true;
+  const ok = badBind === 0 && badBounds === 0;
+  if (!ok) console.log(`${label}: 边校验 FAIL 绑定=${badBind} 裁切=${badBounds} (blocks=${blocks} hier=${hier})`);
+  return ok;
+}
+
 let allOk = true;
+let seenBlocks = false, seenHier = false;
 const foci = fociAll;
 for (const f of foci) {
   focusEl.value = f;
   sandbox.__render();
   if (!checkGeom(`焦点 ${f}`)) allOk = false;
+  if (!checkEdges(`焦点 ${f}`)) allOk = false;
 }
 // 展开态：取一个有复合节点（rest 非空）的焦点，展开后校验
 const someFocus = foci.find((f) => {
@@ -99,8 +135,15 @@ if (someFocus) {
   focusEl.value = someFocus; sandbox.__render();
   sandbox.__setExpanded(true);
   if (!checkGeom(`焦点 ${someFocus} 展开态`)) allOk = false;
+  if (!checkEdges(`焦点 ${someFocus} 展开态`)) allOk = false;
   sandbox.__setExpanded(false);
 }
 
-console.log(allOk ? "\nALL_OK: 全焦点零重叠零裁切，复合节点界内" : "\nFAIL: 存在几何问题");
+// 端点绑定/裁切通过但边数量校验：carrier 声明了边就必须画出来（覆盖 #260 的「边消失」回归）。
+const wantBlocks = (GRAPH.edges || []).length > 0;
+const wantHier = (GRAPH.hierarchy || []).length > 0;
+if (wantBlocks && !seenBlocks) { console.log("FAIL: carrier 含 blocks 边但运行时不曾画出任何 blocks 边"); allOk = false; }
+if (wantHier && !seenHier) { console.log("FAIL: carrier 含父子层级但运行时不曾画出任何层级边"); allOk = false; }
+
+console.log(allOk ? "\nALL_OK: 全焦点零重叠零裁切，复合节点界内，边端点绑定且未裁切" : "\nFAIL: 存在几何/边问题");
 process.exit(allOk ? 0 : 1);
