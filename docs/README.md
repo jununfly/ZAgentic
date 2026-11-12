@@ -91,7 +91,7 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 | 问题 | 位置 | 生命周期 |
 | --- | --- | --- |
 | 已完成会话揭示了什么？ | `docs/zj-retros/`（由 `zj-debrief` 惰性创建） | 待持久抽取、权威审计、显式确认删除 |
-| 哪些跨仓工单已就绪？ | [.scratch/knowledge-compounding-slice1/](../.scratch/knowledge-compounding-slice1/) | 该 roadmap 关闭前为本地执行源 |
+| 哪些跨仓工单已就绪？ | `.scratch/knowledge-compounding-slice1/`（已退役，见 `6c5781b`） | 该 roadmap 关闭前为本地执行源 |
 | 活跃执行计划的生命周期？ | 按 ADR 0010，`docs/plans/` 下页面为临时过程材料，持久文档不引用；由治理 pass 逐项审阅 | 关联 issue 全部关闭并完成抽取后才进入退役 |
 
 ## 证据面（EvidenceSurface）
