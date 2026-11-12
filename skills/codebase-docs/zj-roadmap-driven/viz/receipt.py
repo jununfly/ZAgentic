@@ -180,6 +180,29 @@ def merge_baselines(local: dict | None, remote: dict | None, *,
     return {"seen_item_hashes": dict(sorted(union.items()))}, None
 
 
+def merge_baseline_chain(local: dict | None, peers: list[dict], *,
+                         now: float | None = None
+                         ) -> tuple[dict | None, str | None]:
+    """Merge one local receipt with any number of peer receipts.
+
+    Every peer must match the *original* view context and be unexpired; a
+    single bad peer fails the whole chain closed (no partial increment).
+    Returns a baseline for compute_delta, never a writable receipt.
+    """
+    if not isinstance(local, dict) or frozenset(local) != RECEIPT_FIELDS_V2:
+        return None, "receipt 不是合法 v2 收据，fail-closed 回退全量"
+    current = dict(local)
+    # A synthetic identity keeps the accumulated union distinct from any real
+    # peer, so merge_baselines never takes its same-device shortcut.
+    current["device_id"] = str(local["device_id"]) + "+chain"
+    for peer in peers:
+        merged, warning = merge_baselines(current, peer, now=now)
+        if warning:
+            return None, warning
+        current["seen_item_hashes"] = merged["seen_item_hashes"]
+    return {"seen_item_hashes": dict(sorted(current["seen_item_hashes"].items()))}, None
+
+
 def full_fallback(ids: list[str], warning: str) -> dict:
     """Explicit full view; never silently pretend an increment was computed."""
     return {
