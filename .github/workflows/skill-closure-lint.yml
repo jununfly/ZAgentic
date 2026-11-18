@@ -60,6 +60,17 @@ jobs:
         # The frontmatter validator needs PyYAML; without it the validator
         # exits 2 and an absent check can look green (see ui-contract gate).
         run: python3 -m pip install -r requirements.txt
+      - name: Verify shared skill-conventions authority (3 checks)
+        # Shared core rules (naming-syntax-core / doc-kind / authority) live in
+        # one machine-readable rule source; each consuming SKILL.md carries an
+        # inline BASE_RULES block generated from it. Three checks keep the
+        # single source honest: closed-schema (no private extension leaks into
+        # the shared source), byte-equal re-render (inline blocks are exactly
+        # generator output), and validator-binding canary (an injected doc-kind
+        # flips the architecture validator — proof it derives from the block).
+        # Pure stdlib, ~1s, canary runs in a temp copy. Same unfiltered required
+        # job: a path-filtered required check leaves unrelated PRs BLOCKED (#211).
+        run: python3 scripts/check-shared-conventions.py --root .
       - name: Validate every published SKILL.md frontmatter
         run: python3 scripts/validate-skill-frontmatter.py
       - name: Verify the plugin validation entrypoint

@@ -19,6 +19,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 CHECKER_PATH = REPO / "scripts" / "check-shared-conventions.py"
+WORKFLOW = REPO / ".github" / "workflows" / "skill-closure-lint.yml"
 
 
 def _load(path: Path, name: str):
@@ -121,6 +122,46 @@ class RedStateTest(unittest.TestCase):
             validator.write_text(text, encoding="utf-8")
             errors = CHECKER.check_canary(repo, gen)
             self.assertTrue(any("hardcoded" in e or "still rejected" in e for e in errors), errors)
+
+
+class CIWiringContract(unittest.TestCase):
+    """Roadmap 1-2-7: the three checks must actually run in the required CI
+    job on every push / pull_request. A check nobody calls is a check that
+    silently rots — this pins the seam between the script and the workflow.
+    """
+
+    def _workflow(self) -> str:
+        return WORKFLOW.read_text(encoding="utf-8")
+
+    def _required_job_block(self) -> str:
+        body = self._workflow()
+        job = body.split("jobs:", 1)[1]
+        # closure-lint is the first job; slice up to the next top-level job.
+        start = job.index("closure-lint:")
+        rest = job[start + len("closure-lint:"):]
+        nxt = rest.find("\n  docs-")
+        return rest if nxt == -1 else rest[:nxt]
+
+    def test_required_job_calls_the_consistency_check(self) -> None:
+        self.assertIn("check-shared-conventions.py", self._required_job_block(),
+                      "required job does not run the shared-conventions checks")
+
+    def test_check_is_invoked_with_explicit_root(self) -> None:
+        block = self._required_job_block()
+        self.assertIn("check-shared-conventions.py --root .", block,
+                      "check must be anchored to repo root, not implicit cwd")
+
+    def test_all_three_check_names_are_visible_in_ci_step(self) -> None:
+        # The script's docstring names the checks; keep those names discoverable
+        # from the workflow comment so a future reader knows what the step guards.
+        block = self._required_job_block()
+        for name in ("closed-schema", "byte-equal", "canary"):
+            self.assertIn(name, block, f"CI step does not advertise the {name!r} check")
+
+    def test_required_job_stays_unfiltered(self) -> None:
+        head = self._workflow().split("jobs:", 1)[0]
+        self.assertNotIn("paths:", head,
+                         "a path-filtered required check blocks unrelated PRs (#211)")
 
 
 if __name__ == "__main__":
