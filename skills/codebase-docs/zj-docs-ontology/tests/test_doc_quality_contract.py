@@ -16,6 +16,7 @@ wording, so normal editing does not trip these.
 
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -24,6 +25,7 @@ from pathlib import Path
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = SKILL_ROOT / "references" / "governance-contract.md"
 KIND_TEMPLATES = SKILL_ROOT / "references" / "kind-templates.md"
+PRESET = SKILL_ROOT / "references" / "canonical-preset.json"
 SLOP = SKILL_ROOT / "references" / "doc-slop-checklist.md"
 SKILL = SKILL_ROOT / "SKILL.md"
 
@@ -136,11 +138,26 @@ class KindTemplateTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.assertTrue(CONTRACT.is_file(), "contract missing")
+        self.assertTrue(PRESET.is_file(), "canonical-preset.json missing")
         self.kinds = doc_kinds(CONTRACT.read_text(encoding="utf-8"))
 
     def rows(self) -> list[list[str]]:
-        self.assertTrue(KIND_TEMPLATES.is_file(), "references/kind-templates.md missing")
-        return table_rows(KIND_TEMPLATES.read_text(encoding="utf-8"))
+        """Rows now come from the single machine-readable preset, not a human
+        Markdown mirror. Same six-cell shape the guards below have always
+        asserted — only the source moved (Ruling 1 / roadmap 1-1-1)."""
+        preset = json.loads(PRESET.read_text(encoding="utf-8"))
+        kinds = preset["kinds"]
+        return [
+            [
+                f"`{kind}`",
+                row["job"],
+                row["does_not_belong"],
+                row["must_write_sections"],
+                row["page_form"],
+                row["focused_check"],
+            ]
+            for kind, row in kinds.items()
+        ]
 
     def test_the_template_table_exists(self) -> None:
         self.assertNotEqual([], self.rows())
@@ -169,6 +186,24 @@ class KindTemplateTest(unittest.TestCase):
         for row in self.rows():
             with self.subTest(kind=row[0]):
                 self.assertIn(row[4].strip("`").lower(), PAGE_FORMS)
+
+    def test_markdown_tables_are_pointers_not_data_mirrors(self) -> None:
+        """The preset is the single source: neither Markdown file may carry a
+        copy of the rows. A duplicated table reintroduces the drift this ruling
+        removes, even if today it happens to match."""
+        contract = CONTRACT.read_text(encoding="utf-8")
+        templates = KIND_TEMPLATES.read_text(encoding="utf-8")
+        self.assertIn("canonical-preset.json#/categories", contract)
+        self.assertIn("canonical-preset.json#/kinds", templates)
+        # No data rows remain in either markdown file.
+        self.assertNotIn("| Lifecycle | Categories |", contract)
+        self.assertNotIn("| Long-lived |", contract)
+        self.assertNotIn("| doc-kind | Job |", templates)
+        self.assertNotIn("| `method` |", templates)
+        # The preset itself is normative and distinguishable from the shared core.
+        preset = json.loads(PRESET.read_text(encoding="utf-8"))
+        self.assertEqual("normative", preset["status"])
+        self.assertEqual("migration", preset["provenance"]["method"])
 
 
 class SlopChecklistTest(unittest.TestCase):

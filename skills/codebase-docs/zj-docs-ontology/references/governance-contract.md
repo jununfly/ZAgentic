@@ -11,10 +11,10 @@ repository wins over this convention.
 
 ## Categories
 
-| Lifecycle | Categories |
-| --- | --- |
-| Long-lived | `methods`, `prds`, `architecture`, `agreements`, `designs`, `testing`, `benchmarks`, `references`, `zj-adr`, `ontology` |
-| Process | `plans`, `zj-retros` |
+The authoritative category set is a single machine-readable source: see
+`canonical-preset.json#/categories` (long-lived and process arrays) in this
+skill's `references/` directory. This section intentionally holds no copy of
+the rows — a second human mirror is the drift this preset removes.
 
 `ontology` is the unified documentation ontology home (ZAgentic-local): the T-Box
 (`ONTOLOGY.md` + `ontology.schema.json`) and the product-domain extraction /
@@ -40,9 +40,10 @@ disagree no reader can recover which one was true.
 Each `doc-kind` is therefore placed by a tier description with two halves —
 what it holds (`Job`) and what it refuses (`Does NOT belong there`). The
 refused half is what actually prevents drift; a kind defined only by what it
-holds will absorb whatever lands beside it. The full mapping is
-[kind-templates.md](kind-templates.md), and it is kept 1:1 with the vocabulary
-below: a `doc-kind` without a row is a kind that has not been placed.
+holds will absorb whatever lands beside it. The authoritative mapping is
+`canonical-preset.json#/kinds` (one entry per `doc-kind`); [kind-templates.md](kind-templates.md)
+explains what each field means and points to that source. A `doc-kind` without
+an entry in the preset is a kind that has not been placed.
 
 Placement follows the nearest owner — a package contract sits beside the
 package code, and `docs/` carries what crosses packages. When a fact could sit
@@ -78,8 +79,14 @@ The binding is what the governance tool checks. One `authority-id` appearing on
 two map entries is `MAP_AUTHORITY_CONFLICT`, reported against the map and
 reflected in a non-zero exit — two pages answering the same bounded question is
 a decision the Human has to make, and a report that exits zero would present it
-as settled. The tool reads the map only; a page's own `authority` front matter
-is `zj-docs-architecture`'s contract to enforce.
+as settled. For the **binding** check the tool reads the map only; whether two
+pages *declare* the same id, and whether a page's declaration agrees with the
+map, remain `zj-docs-architecture`'s contract to enforce. Separately, the
+**vocabulary** check (`PRESET_VOCABULARY_VIOLATION`) does read each living
+page's front matter — but only to compare `doc-kind`, `authority` and the
+`authority: primary` id *count* against the closed vocabularies in
+`canonical-preset.json#/kinds` and the shared core. It does not judge binding,
+does not read evidence or process material, and never mutates a page.
 
 ## Page form: tutorial or reference
 
@@ -93,8 +100,9 @@ shapes fail in opposite ways.
 
 A page that mixes them hides the lookup inside the lesson and the lesson inside
 the lookup. Mixed on a large scale, split it; mixed on a small scale, label the
-sections so a reader can skip one. `Page form` in
-[kind-templates.md](kind-templates.md) records the default per kind.
+sections so a reader can skip one. The default `page_form` per kind is in
+`canonical-preset.json#/kinds`; [kind-templates.md](kind-templates.md) explains
+the field.
 
 The authoring order is fixed: locate the audience → decide how much detail is
 allowed here → pick tutorial or reference → order by prerequisite and

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://zagentic.local/schemas/zj-docs-ontology/canonical-preset/v1",
+  "schema_version": "canonical-preset/v1",
+  "id": "zj-docs-ontology-canonical-preset",
+  "status": "normative",
+  "authored": "2026-11-18",
+  "role": "single machine-readable source for the ontology-private documentation preset: category set and per-kind placement vocabulary. Shipped inside the skill next to the scripts; a sibling resolve (not CWD, not repo root). The two Markdown tables (governance-contract.md Categories, kind-templates.md doc-kind rows) are pointers to this file, not human mirrors. This is ontology-private semantic payload — distinct from the shared cross-skill core in docs/skill-conventions/.",
+  "provenance": {
+    "method": "migration",
+    "note": "Migrated verbatim from the two Markdown tables (governance-contract.md Categories rows and kind-templates.md 17 doc-kind rows). Content moved, not derived from any governed repository artifact; no seeded baseline. This file is the normative source from now on; the Markdown tables point here.",
+    "sources": [
+      "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md#Categories",
+      "skills/codebase-docs/zj-docs-ontology/references/kind-templates.md"
+    ]
+  },
+  "categories": {
+    "long_lived": [
+      "methods",
+      "prds",
+      "architecture",
+      "agreements",
+      "designs",
+      "testing",
+      "benchmarks",
+      "references",
+      "zj-adr",
+      "ontology"
+    ],
+    "process": [
+      "plans",
+      "zj-retros"
+    ],
+    "notes": "ontology is the ZAgentic-local ontology home (long-lived but repo-specific); other repos may not carry it. Permitted divergence is reported as signal (PRESET_DIVERGENCE), not a vocabulary violation."
+  },
+  "kinds": {
+    "method": {
+      "job": "How to perform one repeated piece of work: steps, usage, current behavior",
+      "does_not_belong": "Why it is done this way (a design or adr claims that), and records of one particular run (process material)",
+      "must_write_sections": "Purpose / When to use / Steps / Verification / Ownership",
+      "page_form": "reference",
+      "focused_check": "Every command, flag and default value has actually been run"
+    },
+    "prd": {
+      "job": "What problem one capability solves, its goals and its non-goals",
+      "does_not_belong": "Implementation detail (design), and usage instructions after it ships (method or reference)",
+      "must_write_sections": "Problem / Goals / Non-goals / Scope / Open questions",
+      "page_form": "reference",
+      "focused_check": "Non-goals is non-empty and names something someone will ask for"
+    },
+    "architecture-map": {
+      "job": "The index: which page owns which bounded question",
+      "does_not_belong": "Any body content — it holds pointers, never prose",
+      "must_write_sections": "Bound authorities / Categories / Pointer rules",
+      "page_form": "reference",
+      "focused_check": "One authority-id is bound to exactly one page"
+    },
+    "architecture-overview": {
+      "job": "What the system is: boundary, main parts, and how they relate",
+      "does_not_belong": "Subsystem internals (architecture-subsystem), and step-by-step procedures (method)",
+      "must_write_sections": "Scope / Context / Components / Boundaries",
+      "page_form": "reference",
+      "focused_check": "Every component links to the descendant that owns it"
+    },
+    "architecture-layers": {
+      "job": "Layer responsibilities and the allowed direction of dependency",
+      "does_not_belong": "What happens inside one layer (architecture-subsystem)",
+      "must_write_sections": "Layer list / Dependency direction / Rules",
+      "page_form": "reference",
+      "focused_check": "Dependency direction is stated once and is one-way"
+    },
+    "architecture-subsystem": {
+      "job": "One subsystem's purpose, responsibility and high-level behavior",
+      "does_not_belong": "Low-level implementation detail (link to the owning descendant) and cross-part sequences (architecture-flow)",
+      "must_write_sections": "Purpose / Responsibility / Interfaces / Behavior",
+      "page_form": "reference",
+      "focused_check": "No section explains something a descendant already owns"
+    },
+    "architecture-flow": {
+      "job": "One sequence that crosses parts: control or data, in order, with failure",
+      "does_not_belong": "Static responsibility of the participants (that is architecture-subsystem or architecture-overview)",
+      "must_write_sections": "Actors / Steps / Failure and retry / Boundaries",
+      "page_form": "either",
+      "focused_check": "Every step names an owner and a failure path"
+    },
+    "architecture-cross-cutting": {
+      "job": "One concern that applies everywhere: logging, security, configuration, errors",
+      "does_not_belong": "A single component's own explanation of that concern",
+      "must_write_sections": "Concern / Rule / Exceptions / Where enforced",
+      "page_form": "reference",
+      "focused_check": "Every exception is named rather than implied"
+    },
+    "agreement": {
+      "job": "What two or more parties owe each other: interface contracts, commitments, limits",
+      "does_not_belong": "One party's internal decision (that is adr or design)",
+      "must_write_sections": "Parties / Terms / Change process",
+      "page_form": "reference",
+      "focused_check": "Change process says who has to agree"
+    },
+    "design": {
+      "job": "Why one option was chosen: options considered, trade-offs, consequences",
+      "does_not_belong": "Usage steps (method) and, once built, the description of what now exists (architecture-*)",
+      "must_write_sections": "Context / Options / Trade-offs / Decision / Consequences",
+      "page_form": "either",
+      "focused_check": "At least two rejected alternatives, each with a reason"
+    },
+    "testing": {
+      "job": "Test strategy: levels, how to run them, what fixtures pin",
+      "does_not_belong": "The result of one run — that is an evidence surface, not a page",
+      "must_write_sections": "Levels / How to run / Fixtures / Coverage expectations",
+      "page_form": "either",
+      "focused_check": "Every command in it has been run"
+    },
+    "benchmark": {
+      "job": "The definition of a measurement and the conditions that make two runs comparable",
+      "does_not_belong": "Raw profiles and any single run's numbers (evidence surface)",
+      "must_write_sections": "Workload / Method / Environment / How to reproduce",
+      "page_form": "reference",
+      "focused_check": "Environment is stated precisely enough to reproduce"
+    },
+    "reference": {
+      "job": "The lookup surface for external or current facts: APIs, configuration, specifications",
+      "does_not_belong": "A teaching sequence (method), and arguments for a position (design or adr)",
+      "must_write_sections": "Lookup scope / Current behavior / Version pin / Source",
+      "page_form": "reference",
+      "focused_check": "Every fact carries a source, a version pin, or both"
+    },
+    "adr": {
+      "job": "One long-lived decision: its verdict and its reasons",
+      "does_not_belong": "How the decision was executed (process material), and the state of the world after it (architecture-*)",
+      "must_write_sections": "Context / Decision / Consequences / Status",
+      "page_form": "reference",
+      "focused_check": "An implemented decision is written in the present tense about reality"
+    },
+    "plan": {
+      "job": "Work in progress: scope, steps, and the next checkpoint",
+      "does_not_belong": "Conclusions after the work ends (process closeout), and anything durable (method, architecture-*)",
+      "must_write_sections": "Scope / Steps / Checkpoints",
+      "page_form": "either",
+      "focused_check": "There is a stated end condition, not just a task list"
+    },
+    "retro": {
+      "job": "What one piece of finished work produced: findings and next actions",
+      "does_not_belong": "Work still in motion (plan), and general practice (method)",
+      "must_write_sections": "What happened / Findings / Next actions",
+      "page_form": "reference",
+      "focused_check": "Findings are separated from next actions"
+    },
+    "fixture-documentation": {
+      "job": "Why one fixture exists and which invariant it pins",
+      "does_not_belong": "The fixture's own data and results (evidence surface)",
+      "must_write_sections": "What it pins / Why / How to regenerate",
+      "page_form": "reference",
+      "focused_check": "It names the invariant, not just the files"
+    }
+  }
+}

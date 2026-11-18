@@ -36,7 +36,7 @@
       "id": "1-1",
       "uid": "01a1ee858152-549259ac6c",
       "label": "P0 Ruling 1：canonical-preset 单一源与双层参照系",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -59,55 +59,80 @@
       "id": "1-1-1",
       "uid": "01a1ee858285-c9d773100b",
       "label": "新建 canonical-preset.json 并将两张值域表降为指针",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "",
-      "layer": "plan"
+      "decisions": [
+        {
+          "q": "1-1-1 canonical-preset 单一源首切片的四个实现层裁决？",
+          "answer": "切片边界严格按 roadmap 标签：本节点仅建 references/canonical-preset.json + 两张 Markdown 表降指针，不删 docs_governance.py 的 LONG_LIVED/PROCESS 硬编码(那是 1-1-3)、不写诊断码(1-1-3/4)，JSON 暂无人读是安全中间态；JSON 覆盖 categories(long_lived 10 含 ontology/process 2) + kinds(17 行×6列 job/does_not_belong/must_write_sections/page_form/focused_check)，doc_kinds 从 kinds keys 派生、authorities 不在两表内不进 JSON；指针=一行 path+JSON key 替换整张数据表行、保留周边 prose(ontology ZAgentic-local 注/kind 表用法)；数据逐字迁移自两表(fresh migration 非 schema seed，DECISIONS line79 migrated)",
+          "note": "dangling checker 只扫 docs/ 下 md，两张表在 skills/ 下不受约束，指针写法自由；ontology 测试基线 89/89 绿；canonical-preset.json 是 ontology-private 语义载荷，与 1-2 的共享 core skill-conventions.json distinct(SCOPED-CONTEXT 376/470/494)"
+        }
+      ],
+      "notes": "新建 skills/codebase-docs/zj-docs-ontology/references/canonical-preset.json(status=normative, provenance=migration)：categories(long_lived 10 含 ontology/process 2) + kinds(17 行×5字段 job/does_not_belong/must_write_sections/page_form/focused_check)；doc_kinds 从 kinds keys 派生、authorities 不在两表内不进 JSON。两张 Markdown 表降为指针(governance-contract.md Categories→canonical-preset.json#/categories；kind-templates.md 17行→#/kinds)，保留周边 prose，修正 2 处交叉引用措辞(1:1 below / Page form 记录位置)。切片边界严格按 roadmap：不删 docs_governance.py 的 LONG_LIVED/PROCESS 硬编码(1-1-3)、不写诊断码(1-1-3/4)，JSON 暂无人读是安全中间态。测试迁移：KindTemplateTest.rows() 改读 JSON(等价6列形状，5项检查保持)、新增 test_markdown_tables_are_pointers_not_data_mirrors 钉死无数据副本回流。验证：ontology 90/90(原89+新1)、三道检查 OK、closure 0/0、frontmatter 69/69、ontology validate 无阻断、根 tests 342 全绿。已知噪声：裁决文本的相对路径被 dangling 误判 1 prose WARN(非ERROR/未required/仅过程产物，CLI remove-decision 软 retract 无法消除，同 1-2-4 教训不再折腾)。",
+      "layer": "plan",
+      "rounds": 1
     },
     "1-1-2": {
       "id": "1-1-2",
       "uid": "01a1ee8583ae-e4ce169535",
       "label": "编写 P1a 红测：首启空 HEAD、词表违反、合法分歧、单一源、rename 三组",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-1-2 作为 P1a 红测节点，为何按 red→green 一体执行、如何与 1-1-4 分工？",
+          "answer": "用户选 a 时的菜单语义是把 1-1-3 未接的 4 个码写实，故本节点按 TDD red→green：先写 P1a 9 组红测并确认红态证据，再在 docs_governance.py 实现 Ruling 1 真实 emit 转绿。9 组判据逐条照 DECISIONS line84/98：first-run-empty-head(空HEAD+preset→bootstrap proposal+BASELINE_NOT_APPLICABLE signal+无UNDECLARED_RETIREMENT)、preset-vocabulary-violation(doc-kind越17集/kind无模板行/primary authority-id≠1→ERROR指名违规值与JSON key)、preset-divergence(缺long_lived类别/覆写Must-write sections→signal exit0指名preset key不自动修复)、undeclared-retirement(已提交页在working tree消失无声明→ERROR指名两者)、preset-single-source(两md仅pointer+无硬编码词表)、preset-unavailable(缺JSON→signal exit0无回退)、undeclared-rename(git mv无moves→UNDECLARED_RETIREMENT+remedy hint)、declared-rename(同moves+confirmation_id→exit0)、hash-identical-deletion(删与现存页hash相同的已提交页无moves→仍ERROR)。+ exit-code allowlist(5 ERROR+6 signal逐码断言)。实现判据：HEAD roster 用 git ls-tree -r --name-only HEAD 仅做消失检测不做质量判断；词表检测读页面 front matter(doc-kind/authority/authority-id)——read_paths 会扩大但 mutations:[] 只读不变、与 zj-docs-architecture 声明层不重叠(本工具只对照preset枚举与map绑定，不改页面)；rename moves 从 confirmed proposal 派生、hash-pairing 明确拒绝；所有词表枚举从 canonical-preset.json 派生不硬编码(ERROR/SIGNAL allowlist 本身是 exit-code seam 显式清单属例外)。1-1-4 保留为独立 exit-code seam 逐码断言+gate 规则一致性验证，不重复实现。",
+          "note": "P0 DECISIONS sequencing P1a=red tests/P2=implement，但 roadmap 无独立实现节点且 1-1-3 已实现消费侧，故实现归 1-1-2 red→green；Ruling 2/3/4 红测(test_checklist/test_gate/test_governance ArchitectureWitnessTest)已随 #265/#266 落地且绿，仅 Ruling 1 空白。1-1-3 decide 明确 read boundary 不读页面 front matter，本节点为接 PRESET_VOCABULARY_VIOLATION 必须扩大到读页面(DECISIONS line66 要求)，这是裁决要求非自创，mutations:[] 与不读 evidence/process 边界保持。"
+        }
+      ],
+      "notes": "按 red→green 一体执行：新增 tests/test_ruling1_preset.py 23 项(红态 13fail+2error+11 正当绿→全绿)，覆盖 P1a 9 组 fixture(first-run-empty-head/preset-vocabulary-violation/preset-divergence/undeclared-retirement/preset-single-source/preset-unavailable/undeclared-rename/declared-rename/hash-identical-deletion)+exit-code allowlist。实现：doc-kind(17)/authority(5)值域从 ontology SKILL.md 内联共享 core 读、kind→模板映射从 canonical-preset.json 读(双权威源分工，不硬编码)；HEAD roster 用 git ls-tree -r --name-only HEAD 做消失检测，首启空 HEAD→bootstrap proposal+BASELINE_NOT_APPLICABLE signal、无 UNDECLARED_RETIREMENT 误报；4 码真实 emit(PRESET_VOCABULARY_VIOLATION/DIVERGENCE/BASELINE_NOT_APPLICABLE/UNDECLARED_RETIREMENT)；rename moves 仅从 confirmed proposal 派生、hash-pairing 明确拒绝；declared retirement 用 tombstone(页面保留)语义。read_paths 扩大到 living page front matter 但 mutations 只读、不读 evidence/process；同步 governance-contract.md line82-89 澄清 binding 检查只读 map、vocabulary 检查读页面但不越界到 architecture 声明层。修正一处测试 fixture 设计错误(declared retirement 原删页+声明矛盾→改为保留 tombstone)。验证：ontology 123/123(原100+新23)、根 tests 342/342、共享约定三检查/closure/frontmatter69/dangling0 全绿、ontology validate 0ERROR(1 预期 PRESET_DIVERGENCE WARN：真实仓库缺 benchmarks/methods/references/testing 四类，属 permitted divergence signal 不篡改真实仓库)、CLI seam 实测两 ERROR 码 exit1+干净 HEAD exit0、真实仓库端到端 baseline=head-roster 无误报。边界：1-1-4 保留为独立 exit-code seam 逐码断言+gate 规则一致性验证，不重复实现。",
       "layer": "plan"
     },
     "1-1-3": {
       "id": "1-1-3",
       "uid": "01a1ee8584d4-3dc3d4ee76",
       "label": "实现诊断码接线并删除 LONG_LIVED/PROCESS 硬编码常量",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-1-3 诊断码接线与删硬编码的五个实现层裁决？",
+          "answer": "删除 LONG_LIVED/PROCESS 硬编码改为从 references/canonical-preset.json 的 categories 派生；路径按 runtime closure 用 skill root sibling(Path(__file__).parent.parent)，非 CWD/非 repo root；preset 缺失发 PRESET_UNAVAILABLE signal(exit 0)且 inventory 不给 long_lived/process 类别、绝不回退硬编码常量；EVIDENCE_NAMES 不属预设类别保留原样；本节点接线仅限 preset 消费侧(加载失败 signal + categories 派生 inventory/retirement 跳过集 + report 公开 preset 元数据)，PRESET_VOCABULARY_VIOLATION/DIVERGENCE/BASELINE_NOT_APPLICABLE/UNDECLARED_RETIREMENT 的真实 emit 触发依赖页面 doc-kind/authority 扫描与 git HEAD roster，属 1-1-2 P1a 红测 + 1-1-4 逐码断言切片，本节点不越界不空喊。",
+          "note": "P0 DECISIONS v4 line79/80 明确删常量+缺JSON发PRESET_UNAVAILABLE不回退；allowlist 已含5 ERROR+6 signal(line472-486)，本节点只是让 JSON 真正被消费。canonical-preset.json 是 ontology-private 载荷，categories long_lived 10(含 ontology)+process 2。test_doc_quality_contract 已钉两表为指针，本节点补 docs_governance.py 无硬编码回归测试；read boundary(mutations空/不读页面frontmatter)不变。"
+        }
+      ],
+      "notes": "删除 docs_governance.py 的 LONG_LIVED(9)/PROCESS(2) 硬编码常量，改从 skill-root sibling 的 references/canonical-preset.json 加载 categories。新增 load_preset()(纯加载返回 dict|None)+preset_unavailable_diagnostic()+preset_categories()，inventory()/scan_retirement() 改吃 preset 派生类别，report() 公开 canonical_preset 元数据(available/path/schema_version/两类别列表)，CLI 加 --preset 旗标。缺 preset → PRESET_UNAVAILABLE signal(exit 0)+empty inventory+无硬编码回退；EVIDENCE_NAMES 非预设类别保留原样。新增 tests/test_preset_consumption.py 10 项(红态5fail+5error→绿)：钉死无硬编码常量/默认 sibling 加载含 ontology/缺 preset 两态/元数据/CLI exit0。边界：PRESET_VOCABULARY_VIOLATION/DIVERGENCE/BASELINE_NOT_APPLICABLE/UNDECLARED_RETIREMENT 的真实 emit 需页面 doc-kind 扫描+git HEAD roster，属 1-1-2 P1a 红测+1-1-4 逐码断言，本节点不越界。验证：ontology 100/100(原90+新10)、根 tests 342/342、三道检查 OK、closure 0/0、frontmatter 69/69、dangling 0/0、ontology validate 0ERROR(3预存警告)、CLI 默认/缺 preset 双态实测通过。",
       "layer": "plan"
     },
     "1-1-4": {
       "id": "1-1-4",
       "uid": "01a1ee858613-61fb54e439",
       "label": "验证 5 ERROR + 6 signal 逐码退出码断言",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-1-4 作为验证节点，逐码退出码断言的判定对象、硬编码策略与 canary 红态如何定？",
+          "answer": "本节点是纯验证/补测节点，不实现新 emit（1-1-2 已落地 4 码真实 emit）。裁决 line163 要求逐码断言每个 ERROR 码 exit 非零、每个 signal 码 exit 零——判定对象是 docs_governance.py 的 has_error()（main() 的唯一 exit 决定函数：return 1 if has_error(payload) else 0），逐码构造 payload 调 has_error 断言。硬编码期望全集(5 ERROR: UNDECLARED_RETIREMENT/UNCONFIRMED_MUTATION/EXEC_STEP5_ARTIFACT_MISSING/EXEC_CHECKLIST_STEP_UNBACKED/PRESET_VOCABULARY_VIOLATION；6 signal: BASELINE_NOT_APPLICABLE/CONFIRMATION_BASELINE_LOST/PRESET_DIVERGENCE/PRESET_UNAVAILABLE/EXEC_STEP5_FINGERPRINT_MISMATCH/EXEC_CHECKLIST_NOT_DECLARED)，绝不从 TOOL.ERROR_CODES 动态取集合遍历——否则 allowlist 删一码后测试跟着变小假绿。另测 MAP_/RETIRE_ 前缀家族逐码与 greenfield 短路(exit 0)。补 CLI subprocess 代表码(clean→0/vocabulary-violation→1/undeclared-retirement→1/preset-divergence-signal→0)钉死 main() 真调 has_error。裁决点名的两组 strength-collapse fixture(preset-vocabulary-violation 非零 vs preset-divergence 零；step5-artifact-missing+skip-honest 非零 vs artifact-mismatch 零)的 code 级断言已分别由 test_ruling1_preset/test_governance/test_checklist 覆盖，本节点只补 code→exit seam 不重复造 fixture。非假绿证据：临时副本从 allowlist 删一 ERROR 码后逐码测试必须转红(canary)。",
+          "note": "现有 ExitCodeAllowlistTest 与 RuleConsistencyTest 只断言集合相等+少数样例 CLI exit，缺逐码穷举，正是 line163 的 fake-green 防线(新 ERROR 忘进 allowlist 静默 exit 0)。逐码 payload 须带 map_origin=existing 绕过 greenfield 短路。与 1-1-2 分工：1-1-2=emit 实现，1-1-4=exit seam 逐码钉死。signal 从裁决 v6 的 5 码演进到 6 码(+EXEC_CHECKLIST_NOT_DECLARED, issue#264)，节点 label 已写 6，按 6 走。"
+        }
+      ],
+      "notes": "纯验证/补测节点，不实现新 emit(1-1-2 已落地)。裁决 line163 缺的是逐码 exit-code 穷举——现有 ExitCodeAllowlistTest/RuleConsistencyTest 只断言 allowlist 集合相等+少数样例 CLI exit。新增 tests/test_exit_code_seam.py 12 项：冻结硬编码 5 ERROR + 6 signal 全集(绝不从 TOOL.ERROR_CODES 动态取，防 allowlist 删码后测试跟着缩小假绿)，逐码构造 payload(map_origin=existing 绕 greenfield 短路)钉死 has_error()：每 ERROR→True(exit1)、每 signal→False(exit0)、MAP_/RETIRE_ 前缀家族逐码→True、greenfield 短路→False、未列名裸码→False 但 RETIRE_ 新码→True、两集合 disjoint + 与冻结集全等；加 CLI subprocess 4 态(clean→0/vocabulary-violation→1/undeclared-retirement→1/preset-divergence signal→0)钉死 main() 真调 has_error。裁决点名的两组 strength-collapse fixture(vocab-violation 非零 vs divergence 零；step5-artifact-missing 非零 vs artifact-mismatch 零)的 code 级断言已由 test_ruling1_preset/test_governance/test_checklist 覆盖，本节点只补 code→exit seam 不重复造。非假绿 canary 实测：临时副本从 allowlist 删 UNDECLARED_RETIREMENT 后 has_error 转 False、冻结集仍含该码→逐码测试必红，RED 确认。坑：测试 fixture 页面名从 1-1-2 抄成 payment.md 但 make_repo 建的是 p.md→首跑 1 error，改常量后绿。验证：seam 12/12、ontology 全量 135/135(123+12)、根 tests 342/342、四门禁(shared conventions canary PASS/closure 0ERROR0WARN/frontmatter 69/dangling 0)全绿、临时目录无残留。",
       "layer": "plan"
     },
     "1-2": {
       "id": "1-2",
       "uid": "01a1ee858740-24e8aa3841",
       "label": "共享规则单一权威源与发布期 inline 机制",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -273,12 +298,18 @@
       "id": "1-2-7",
       "uid": "01a1ee858fdc-d815d7f7df",
       "label": "将一致性 gate 作为 job 并入 skill-closure-lint",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-2",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "一致性 gate 并入 skill-closure-lint 的落位、required 定位与 CI-wiring 守卫如何定？",
+          "answer": "父裁决 1-2 已定'一致性 gate 并入 skill-closure-lint'。落位：把 check-shared-conventions.py --root . 作为新 step 加入现有 required job closure-lint（在 pip install 之后、frontmatter 校验附近），不新建 job——新 job 若设 required 需改 branch protection contexts(锁库/UI-contract 同类风险)，若非 required 则三道检查可能被绕过。closure-lint 本身 unfiltered on:[push,pull_request]，新 step 继承无条件触发，无 #211 锁库风险。脚本纯 stdlib(~1s，含临时副本 canary)、不读外部产物、无需 fetch-depth，与现有 5 guard 同 job 安全。CI-wiring 守卫：在 tests/test_shared_conventions_checks.py 新增类，纯文本断言 workflow 的 closure-lint job block 内含 check-shared-conventions.py 调用 + head 无 paths:(防 path-filtered 锁库)+ 三道检查名可见；红绿双态——移除 workflow 调用行则守卫转红(canary)。脚本自身红态三检查已由同文件 RedStateTest 钉死，CI 只需证明'被调用'这一 seam。",
+          "note": "现有 workflow 三个 job：closure-lint(required/unfiltered)、docs-dangling-refs 与 docs-ontology(非 required)。memory 教训：required check 必须无条件触发，path-filtered 未上报=BLOCKED(#211/#212)；required contexts 当前 contexts:[ui-contract,closure-lint]，不扩。test_roadmap_visual_review_governance.py 有同款 workflow 文本守卫(test_required_job_stays_unfiltered + required job 含脚本列表)，沿用该模式避免另造解析依赖。branch protection 不动。"
+        }
+      ],
+      "notes": "父裁决 1-2 已定'一致性 gate 并入 skill-closure-lint'。落位：check-shared-conventions.py --root . 作为新 step 加入现有 required/unfiltered 的 closure-lint job(pip install 之后、frontmatter 校验之前)，不新建 job(新 required job 需改 branch protection contexts 有锁库风险；非 required 则检查可被绕过)。脚本纯 stdlib、~1s、canary 临时副本，继承 unfiltered 无 #211 风险；branch protection 不动。CI-wiring 守卫：tests/test_shared_conventions_checks.py 新增 CIWiringContract 4 项——纯文本解析 closure-lint job block 断言含 check-shared-conventions.py --root .、三检查名可见、head 无 paths:(防 path-filtered 锁库)。TDD 红态 3fail(未接入+无显式root+检查名不可见)+1pass(unfiltered)→改 workflow 后全绿。非假绿 canary：临时副本移除 workflow 调用行→守卫断言转 false→RED 确认。脚本自身红态三检查已由 RedStateTest 钉死，本节点只钉'被调用'seam。验证：CI-wiring 4/4、shared-conv 全量 10/10、脚本 e2e 三检查 PASS、视觉治理守卫 14/14、YAML 合法(3 jobs/closure 14 steps)、dangling 0、根 tests 346/346(342+4新)。workflow +11 行、测试 +41 行。",
       "layer": "plan"
     },
     "1-3": {
@@ -381,7 +412,7 @@
   },
   "metadata": {
     "created": "2026-11-18 19:57:45",
-    "updated": "2026-11-18 20:28:32",
+    "updated": "2026-11-19 00:09:24",
     "md_file": "ROADMAP.md"
   },
   "edges": [
