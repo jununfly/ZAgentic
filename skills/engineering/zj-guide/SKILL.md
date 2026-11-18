@@ -18,7 +18,7 @@ A **flow** is a path through the skills. Most paths run along one **main flow**,
 `zj-guide` is user-only, so it chooses a route for the Human; it does not
 silently invoke another user-only skill. The other user-only routes are
 `zj-caveman`, `zj-composer`, `zj-debrief`, `zj-docs-ontology`, `zj-dry-run`,
-`zj-grill-with-docs`, `zj-implement`, `zj-improve-codebase-architecture`,
+`zj-implement`, `zj-improve-codebase-architecture`,
 `zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-repo-init`,
 `zj-show-me`, `zj-steelman`, `zj-teach`, `zj-to-questionnaire`, `zj-to-spec`,
 `zj-to-tickets`, `zj-triage`, `zj-wait-what`, and `zj-wayfinder`.
@@ -32,7 +32,7 @@ public router.
 
 The route most work travels. You have an idea and want it built.
 
-1. **`/zj-grill-with-docs`** — sharpen the idea by interview. Start here whenever you are **working in a working directory**: it's stateful, retaining what it learns in `ZJ-CONTEXT.md` and ADRs. For a standalone session with no working directory, invoke **`/zj-grilling`** directly; it is the stateless primitive and leaves no paper trail.
+1. **`/zj-grilling`** — sharpen the idea by interview; it is the stateless primitive and leaves no paper trail. When you are **working in a working directory**, pair it with **`/zj-domain-modeling`** so what you learn is retained in `ZJ-CONTEXT.md` and ADRs.
 2. **Branch — can you settle every question in conversation?** If a question needs a runnable answer (state, business logic, a UI you have to see), detour through a prototype, bridged by **`/zj-handoff`** in both directions (a prototype lives in its own directory, which is exactly what `/zj-handoff` is for — see Phase boundaries):
    - **`/zj-handoff`** out, then open a fresh session against that file,
    - **`/zj-prototype`** to answer the question with throwaway code,
@@ -57,7 +57,7 @@ These are user-only guardrails around the main flow, not replacement flows:
 - **After tickets, before implementation** — **`/zj-dry-run`** rehearses the ticket order, dependencies, and friction. Re-cut with `/zj-to-spec` or `/zj-grilling` if the plan cannot run as written.
 - **After the task** — **`/zj-debrief`** checks drift against the plan and records process material plus next actions. A later explicit `/zj-docs-ontology` pass extracts any durable value into its long-lived authority and proposes retro deletion.
 
-Use these at their named phase; they complement `/zj-grill-with-docs`,
+Use these at their named phase; they complement `/zj-grilling`,
 `/zj-to-tickets`, `/zj-implement`, and `/zj-code-review` rather than adding a
 second implementation path.
 
@@ -71,7 +71,7 @@ A starting situation that generates work, then merges onto the main flow.
 
 - **Something's broken** → **`/zj-diagnosing-bugs`**. For the hard ones: the bug that resists a first glance, the intermittent flake, the regression that crept in between two known-good states. It refuses to theorise until it has a **tight feedback loop** — one command that already goes red on *this* bug — then fixes with a regression test. Its post-mortem hands off to **`/zj-improve-codebase-architecture`** when the real finding is that there's no good seam to lock the bug down.
 
-- **A huge, foggy effort — a greenfield project or a huge feature build, too big for one session** → **`/zj-wayfinder`**, the most cognitively demanding flow here. When the way from here to the destination isn't visible yet, it charts a **shared map** of **decision tickets** on the issue tracker and resolves them one at a time — producing **decisions, not deliverables** — until the fog is pushed back and the way is clear. Where **`/zj-grill-with-docs`** sharpens an idea you can hold in one session, wayfinder is for the idea you can't — and it's slower and denser, so save it for exactly that, never a well-scoped feature.
+- **A huge, foggy effort — a greenfield project or a huge feature build, too big for one session** → **`/zj-wayfinder`**, the most cognitively demanding flow here. When the way from here to the destination isn't visible yet, it charts a **shared map** of **decision tickets** on the issue tracker and resolves them one at a time — producing **decisions, not deliverables** — until the fog is pushed back and the way is clear. Where **`/zj-grilling`** sharpens an idea you can hold in one session, wayfinder is for the idea you can't — and it's slower and denser, so save it for exactly that, never a well-scoped feature.
 
   When the map clears, **it hands off, it doesn't build**: merge onto the main flow at **`/zj-to-spec`**, which collapses the map's linked decisions into a buildable plan, then `/zj-to-tickets` and `/zj-implement` as usual. Looping the map straight into `/zj-implement` skips that collapse and throws the linked detail away — go straight to `/zj-implement` only when the effort turned out genuinely small.
 
@@ -104,7 +104,7 @@ system owner.
 
 Not feature work — upkeep.
 
-- **`/zj-improve-codebase-architecture`** — run whenever you have a spare moment to keep the codebase good for agents to operate in. It surfaces **deepening opportunities**; picking one _generates an idea_ you can take into the main flow at `/zj-grill-with-docs`. It's the survey that finds the candidates; **`/zj-codebase-design`** (below) is the bench you design the chosen one on.
+- **`/zj-improve-codebase-architecture`** — run whenever you have a spare moment to keep the codebase good for agents to operate in. It surfaces **deepening opportunities**; picking one _generates an idea_ you can take into the main flow at `/zj-grilling`. It's the survey that finds the candidates; **`/zj-codebase-design`** (below) is the bench you design the chosen one on.
 
 ## Research and design
 
@@ -153,7 +153,7 @@ For a problem too complex for flat chat: decompose it, discuss it in parallel, t
 
 Two model-invoked references that run *beneath* the other skills — each the single source of truth for its vocabulary. Reach for them directly when the **words**, not the process, are the problem; or let the skills above pull them in.
 
-- **`/zj-domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline `/zj-grill-with-docs` drives to keep `ZJ-CONTEXT.md` a clean glossary.
+- **`/zj-domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline that keeps `ZJ-CONTEXT.md` a clean glossary.
 - **`/zj-codebase-design`** — the deep-module vocabulary (module, interface, depth, seam, adapter, leverage, locality) for designing a module's *shape*: a lot of behaviour behind a small interface at a clean seam. `/zj-tdd` and `/zj-improve-codebase-architecture` both speak it.
 
 ## Skill maintenance and broad repository closeout
@@ -181,15 +181,15 @@ Read PHASE-BOUNDARIES.md for the ordered tree — the five questions, the reason
 
 Off the main flow entirely.
 
-- **`/zj-grilling`** — the interview primitive itself: rounds, the frontier, facts are the agent's job and decisions are yours. `/zj-grill-with-docs` is the repository-aware entry point; reach for `/zj-grilling` directly when you want a stateless interview with no wrapper around it. `/zj-triage`, `/zj-wayfinder` and `/zj-improve-codebase-architecture` all run it internally.
+- **`/zj-grilling`** — the interview primitive itself: rounds, the frontier, facts are the agent's job and decisions are yours. In a working directory, pair it with `/zj-domain-modeling` to retain vocabulary and ADRs. `/zj-triage`, `/zj-wayfinder` and `/zj-improve-codebase-architecture` all run it internally.
 - **`/zj-resolving-merge-conflicts`** — work an in-progress merge or rebase conflict hunk by hunk, resolving by **intent** traced to each side's primary source rather than by picking lines, then finish the operation. It never runs `--abort`. Standalone and off every flow: reach for it when you are already mid-conflict.
 - **`/zj-prototype`** — a small, throwaway program that answers one design question: does this state model feel right, or what should this UI look like. Throwaway is a constraint on how the code is written, not a promise to destroy it: the answer folds into the real code, and the prototype itself is kept as a **primary source** on a `prototype/<name>` branch out of main, pointed at from the implementation issue. It's the detour in step 2 of the main flow, but reach for it any time a design question is hard to settle on paper.
-- **`/zj-research`** — delegate primary-source reading to a **background agent**, or compile commit-pinned evidence for a multi-repository technical comparison. It leaves cited findings and, for technical comparisons, a sealed ledger in the repo. Keep working while it reads. Take those facts into `/zj-grill-with-docs`; research feeds the thinking, it doesn't replace it.
+- **`/zj-research`** — delegate primary-source reading to a **background agent**, or compile commit-pinned evidence for a multi-repository technical comparison. It leaves cited findings and, for technical comparisons, a sealed ledger in the repo. Keep working while it reads. Take those facts into `/zj-grilling`; research feeds the thinking, it doesn't replace it.
 - **`/zj-code-research`** — build a Repository Map and use it to select a bounded Architecture Study. Hand technical decision questions to `/zj-tech-research-report` rather than putting recommendations into the map.
 - **`/zj-tech-research-report`** — turn technical findings into a cited solution research report. Technical comparisons compile through the sealed ledger and Report IR.
-- **`/zj-to-questionnaire`** — when the thing blocking you isn't in your head or the codebase but in **someone else's**, this writes them a questionnaire to fill in. It's the inverse of `/zj-grilling`: instead of interviewing you about the subject, it interviews you about the **send** — who it's going to, what you need back — and aims the questions at the gap. What comes back is material for `/zj-grill-with-docs` or `/zj-to-spec`.
+- **`/zj-to-questionnaire`** — when the thing blocking you isn't in your head or the codebase but in **someone else's**, this writes them a questionnaire to fill in. It's the inverse of `/zj-grilling`: instead of interviewing you about the subject, it interviews you about the **send** — who it's going to, what you need back — and aims the questions at the gap. What comes back is material for `/zj-grilling` or `/zj-to-spec`.
 - **`/zj-wizard`** — for the steps only a **human** can take: provisioning infrastructure, setting up credentials or CI secrets, clicking through an unfamiliar third-party dashboard, running a one-off migration or cutover. It generates an interactive bash script that opens each URL, captures each value, and writes it into `.env` and GitHub secrets — so the procedure stops being something you re-explain to an agent every time. Model-invoked, so the agent reaches for it the moment it hits a wall only you can pass. If the agent could just do it itself, it should; this is for where a human is genuinely in the loop.
-- **`/zj-wait-what`** — the corrective for a message that didn't land. Use it mid-conversation, inside any other skill, and the agent re-pitches what it just said with the context you were missing, in plain English, using the `ZJ-CONTEXT.md` vocabulary. It works after the fact; `/zj-grill-with-docs` is the upfront cure, because a shared language agreed early is what stops the jargon arriving at all.
+- **`/zj-wait-what`** — the corrective for a message that didn't land. Use it mid-conversation, inside any other skill, and the agent re-pitches what it just said with the context you were missing, in plain English, using the `ZJ-CONTEXT.md` vocabulary. It works after the fact; `/zj-grilling` with `/zj-domain-modeling` is the upfront cure, because a shared language agreed early is what stops the jargon arriving at all.
 - **`/zj-teach`** — learn a concept over multiple sessions, using the current directory as a stateful workspace.
 - **`/zj-show-me`** — explain the current topic visually with concise inline sketches (pseudocode, call trees, Mermaid, diffs) and focused HTML artifacts.
 - **`/zj-writing-for-agents`** — reference for writing documents agents consume: skills, AGENTS.md, pointed-at docs.

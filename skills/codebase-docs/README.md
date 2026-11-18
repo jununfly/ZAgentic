@@ -10,7 +10,6 @@ deletions.
 - **[zj-doc-health](./zj-doc-health/SKILL.md)** — Opt-in, report-only documentation health metering: line budgets, Source-map freshness, orphan and zero-indegree pages.
 - **[zj-debrief](./zj-debrief/SKILL.md)** — Close out a task as process material and route durable conclusions for later synthesis.
 - **[zj-domain-modeling](./zj-domain-modeling/SKILL.md)** — Maintain a project's domain language and glossary.
-- **[zj-grill-with-docs](./zj-grill-with-docs/SKILL.md)** — Conduct repository-aware grilling with documentation updates.
 - **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — Reconcile codebase knowledge and governance drift.
 - **[zj-roadmap-driven](./zj-roadmap-driven/SKILL.md)** — Maintain a decision-carrying execution roadmap.
 - **[zj-wayfinder](./zj-wayfinder/SKILL.md)** — Maintain a shared map of large-work planning decisions.

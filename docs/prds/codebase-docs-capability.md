@@ -153,14 +153,13 @@ Owns the architecture-handbook layer, formerly proposed as `zj-architecture-docs
 - end-to-end flows;
 - cross-cutting concerns.
 
-It routes readers by question, names a unique owner for each durable rule, validates source-map targets and keeps target architecture, implemented behavior, inference and unknowns distinct. It delegates undefined terms to `zj-domain-modeling` and hard-to-reverse trade-offs to `zj-grill-with-docs` / ADR work.
+It routes readers by question, names a unique owner for each durable rule, validates source-map targets and keeps target architecture, implemented behavior, inference and unknowns distinct. It delegates undefined terms to `zj-domain-modeling` and hard-to-reverse trade-offs to ADR work.
 
 ### Existing skills moved to `skills/codebase-docs/`
 
 These commands retain their established names; the bucket expresses their shared codebase-documentation capability:
 
 - `zj-domain-modeling`
-- `zj-grill-with-docs`
 - `zj-debrief`
 - `zj-neat-freak`
 - `zj-wayfinder`
@@ -184,6 +183,29 @@ docs/agreements/agent-workflow/
 ```
 
 `AGENTS.md` or `CLAUDE.md` remains the immediate Agent rule surface and links to these agreements rather than duplicating them.
+
+### Portability boundary — bucket-external base skills
+
+Two base skills live outside `skills/codebase-docs/` and are deliberately left
+unchanged by this redesign: `zj-ui-core` (`skills/ui/`, the S0 UI contract base)
+and `zj-doc-collab` (`skills/productivity/`, the document-collaboration
+substrate). Both carry shared executable machinery that consumers reach by
+**runtime import** — `zj-ui-core/scripts/` for the UI stages, and
+`skills/productivity/zj-doc-collab/scripts/gate_core.py` and `launch_pack_core.py` for `zj-discuss`.
+
+This is exactly the cross-skill import that the ontology governance contract
+flags as breaking under a single-skill install: a skill is installed by copying
+its directory, so these two assume their bucket is installed together and have
+no publish-time inlining. The portability caveat is **documented, not
+migrated**: this redesign bounds itself to shared *rules*, and the new
+inline-rules generation does not cover shared executable code. Neither base is
+moved, merged, or inlined.
+
+Both are contract-governed precedents, not unguarded ones: `zj-ui-core` is
+pinned by `tests/test_ui_agent_skills_layout.py` and the required
+`scripts/run_ui_skills_gate.sh` job. The new shared-rules gate learns from that
+discipline — assert published artifacts actually contain the rules and fail
+loud when a dependency is missing — not from the runtime-import mechanism.
 
 ### Retirement
 

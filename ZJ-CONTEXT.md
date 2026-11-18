@@ -1,7 +1,7 @@
 # ZJ-CONTEXT.md
 
-Project domain glossary for `jununfly/ZAgentic`. Owned by `zj-grill-with-docs` /
-`zj-domain-modeling`. Updated inline as decisions crystallise, per the format in
+Project domain glossary for `jununfly/ZAgentic`. Owned by `zj-domain-modeling`.
+Updated inline as decisions crystallise, per the format in
 `skills/codebase-docs/zj-domain-modeling/CONTEXT-FORMAT.md`.
 
 ## Language
@@ -623,7 +623,9 @@ stage: `metadata.status=implemented`, `owner_scope=read`, an empty `writes` list
 and `precedence` below the first stage. It exists because the bucket layout
 forbids a shared `_lib/` (every immediate child of `skills/<bucket>/` must hold a
 `SKILL.md`), and because two implementations of "unknown" is how the quartet
-silently becomes a nullable string. `zj-ui-core` is the only one today.
+silently becomes a nullable string. Today: `zj-ui-core` (UI contract base) and
+`zj-doc-collab` (document-collaboration substrate); both are consumed by runtime
+import and stay bucket-installed.
 _Avoid_: helper skill, lib skill, utility folder
 
 **AdapterBoundary**:
