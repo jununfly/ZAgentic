@@ -17,6 +17,43 @@ against the map, because the contract puts the binding on the map. Being a
 failure to settle, not a signal to note and move on. Detection lives entirely in
 the map text, so it costs no extra reads.
 
+## Architecture witness (Step 5 composition)
+
+`--validate --arch-witness PATH [--arch-fingerprint SHA256]` records a witness
+for the Step 5 `/zj-docs-architecture` composition. The artifact is a
+caller-supplied path to saved architecture-validator output; this tool never
+imports or invokes that skill, and it hashes the file's bytes without opening,
+parsing, or adding the path to `read_paths`. The report gains an
+`architecture_witness` field with `status` (`not-declared` / `declared`),
+`artifact`, `exists`, `fingerprint`, and `expected_fingerprint`.
+
+The two checks keep different strengths (P0 ruling 3):
+
+| Condition | Diagnostic | Exit |
+| --- | --- | --- |
+| Declared artifact does not exist | `EXEC_STEP5_ARTIFACT_MISSING` | non-zero (mechanical fact) |
+| Artifact exists, fingerprint differs from expected | `EXEC_STEP5_FINGERPRINT_MISMATCH` | zero (in-pass self-certification) |
+
+No declaration → `not-declared`, no diagnostic: the tool cannot tell a
+full-governance pass from a shape-only check. Scope boundary: the declaration
+is a caller-supplied CLI value, **not** yet P0 ruling 4's tool-derived checklist
+(`tmp/skills-outputs/zj-docs-ontology/<topic>/`, whose topic convention is still
+open). A caller that omits `--arch-witness` is therefore not mechanically
+caught; that gap closes when the checklist lands. A green witness means the
+declared file existed and matched, never that the architecture content is
+correct — that stays Human review.
+
+`--proposal` never runs the witness check; it is a `--validate` concern, like
+the other mechanical diagnostics.
+
+## Exit codes
+
+ERROR codes are an explicit allowlist in `main()` (`ERROR_CODES`), with the
+current `MAP_*` / `RETIRE_*` families kept alongside it until the four P0
+rulings land in full. A new gate must be added by name or it will silently exit
+zero — the fake-green pattern this allowlist exists to prevent. Signal codes
+(`SIGNAL_CODES`) stay exit zero.
+
 Run regression coverage with:
 
 ```sh
