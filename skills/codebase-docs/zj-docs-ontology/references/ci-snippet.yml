@@ -1,0 +1,57 @@
+# Consumer-side gate template for zj-docs-ontology (issue #264 platform layer C).
+#
+# Copy this job into the TARGET repository's .github/workflows/. The skill does
+# not install workflows (link-skills copies skill directories only), so wiring
+# the gate is a deliberate act by that repository's owner — which is correct:
+# branch protection is a repository decision, not a skill capability.
+#
+# Three constraints are load-bearing here:
+#   1. Unconditional trigger. A path-filtered REQUIRED check leaves unrelated
+#      PRs BLOCKED when the check is not reported (ZAgentic #211/#212). If you
+#      make this required, keep `on: [push, pull_request]` with no `paths:`.
+#   2. Parse JSON, never trust the validator's exit code alone. The tool's
+#      ERRORs are a subset of what a consumer may gate; its signals exit zero
+#      by design. `check_gate.py` applies the shipped criteria instead.
+#   3. --escalate is opt-in per signal. Pick only signals whose absence should
+#      block THIS repository. The example escalates the bare-validate signal:
+#      it demands that a governance pass actually produce a checklist.
+#
+# Adjust SKILL_DIR to where this target installs the skill (the install root
+# is the CWD of the validated repository; paths below are relative to it).
+
+name: Docs governance gate
+
+on: [push, pull_request]  # REQUIRED checks must report on every PR — no paths filter
+
+jobs:
+  docs-governance-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate documentation governance (emit facts as JSON)
+        id: validate
+        # `|| true` is intentional: the validator's non-zero exit is a fact in
+        # the JSON, and the gate — not the shell step — decides the verdict.
+        # A full pass uses --topic so the checklist is actually checked; a
+        # shape-only check omits it and is then caught by the escalation below.
+        run: |
+          python3 "$SKILL_DIR/scripts/docs_governance.py" . --validate \
+            --topic "$DOCS_PASS_TOPIC" > governance-report.json || true
+        env:
+          SKILL_DIR: .workbuddy/skills/zj-docs-ontology
+          DOCS_PASS_TOPIC: docs-governance-ci
+
+      - name: Apply gate criteria
+        # The rules file ships inside the skill and travels with it. A signal
+        # marked never-gate (self-certification / permitted divergence) is
+        # rejected by check_gate.py even if listed in --escalate.
+        run: |
+          python3 "$SKILL_DIR/scripts/check_gate.py" \
+            --escalate EXEC_CHECKLIST_NOT_DECLARED \
+            < governance-report.json
+        env:
+          SKILL_DIR: .workbuddy/skills/zj-docs-ontology
