@@ -10,7 +10,7 @@ source: zagentic
 Keep one architecture map that routes readers to complementary views; never use
 the map to repeat those views. This skill owns handbook shape, not domain
 terminology (`/zj-domain-modeling`), hard-to-reverse decisions
-(`/zj-grill-with-docs` and ADR work), or a repository's whole documentation
+(`/zj-grilling` and ADR work), or a repository's whole documentation
 governance (`/zj-docs-ontology`).
 
 ## Shared Conventions

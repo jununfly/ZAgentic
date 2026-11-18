@@ -94,8 +94,6 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
   is Flow 2's stage-6 validator.
 - [zj-domain-modeling](../../skills/codebase-docs/zj-domain-modeling/SKILL.md) —
   glossary and domain-model maintenance.
-- [zj-grill-with-docs](../../skills/codebase-docs/zj-grill-with-docs/SKILL.md) —
-  repository-aware grilling that produces ADRs.
 - [zj-debrief](../../skills/codebase-docs/zj-debrief/SKILL.md) — the
   process-material closeout.
 - [zj-neat-freak](../../skills/codebase-docs/zj-neat-freak/SKILL.md) —

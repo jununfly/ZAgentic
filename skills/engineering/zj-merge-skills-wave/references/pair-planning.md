@@ -10,7 +10,7 @@ Compare each source skill against `base-skills-list` using name and description 
 |---|---|---|
 | `pair(base, source)` | `pair(zj-triage, triage)` | same intent, different name → absorb/采纳/micro/严格对齐 |
 | `pair(null, source)` | `pair(null, code-review)` | new to base → adopt-as-is or adopt-with-modifications |
-| `pair(base, null)` | `pair(zj-grill-with-docs, null)` | base-only → flag for deprecation if redundant |
+| `pair(base, null)` | `pair(zj-implement, null)` | base-only → flag for deprecation if redundant |
 | `unrelated(source)` | `unrelated(wait-what)` | source has no matching base concept → evaluate as B-unique |
 
 ## Strategy enum

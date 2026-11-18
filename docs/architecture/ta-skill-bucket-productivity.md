@@ -63,7 +63,7 @@ The bucket covers:
 | --- | --- |
 | Inbound | Human prompts for communication help, capability composition, structured discussion, handoff, teaching, questionnaires, or skill writing. |
 | Outbound | Session responses, reviewable Composer Plans, zj-discuss process-document groups, handoff documents, teaching plans, questionnaires, and skill drafts. |
-| Cross-bucket | Composer reads the recursive public-skill catalog without taking semantic ownership; zj-discuss hands completed process material to `zj-docs-ontology`; repository-aware grilling may route to `zj-grill-with-docs`. |
+| Cross-bucket | Composer reads the recursive public-skill catalog without taking semantic ownership; zj-discuss hands completed process material to `zj-docs-ontology`; repository-aware grilling may route to `zj-grilling` with `zj-domain-modeling`. |
 | External | Reads `ZJ-CONTEXT.md` for vocabulary. Writes skill drafts into `skills/` or `personal/`, or promotes process material into durable docs, only through the applicable Human-confirmed workflow. |
 
 ## Failure behavior

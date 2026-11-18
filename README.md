@@ -98,7 +98,8 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - **Documentation system** — `/zj-docs-ontology` discovers and proposes;
   `/zj-docs-architecture` owns architecture views. Migrations and deletions
   require explicit Human confirmation.
-- **Feature delivery** — use `/zj-grill-with-docs` or `/zj-grilling` to align,
+- **Feature delivery** — use `/zj-grilling` to align, and `/zj-domain-modeling`
+  to keep `ZJ-CONTEXT.md` and ADRs current,
   then `/zj-to-spec` → `/zj-to-tickets` → `/zj-implement` as the work needs.
   `/zj-steelman`, `/zj-dry-run`, and `/zj-debrief` are the pre-plan,
   pre-implementation, and post-task checkpoints.
@@ -161,7 +162,6 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-doc-health](./skills/codebase-docs/zj-doc-health/SKILL.md) — Opt-in, report-only documentation health metering: budgets, Source-map freshness, orphan and zero-indegree pages.
 - [zj-debrief](./skills/codebase-docs/zj-debrief/SKILL.md) — Close out a task as process material and route durable conclusions for later synthesis.
 - [zj-domain-modeling](./skills/codebase-docs/zj-domain-modeling/SKILL.md) — Maintain a project's domain language and glossary.
-- [zj-grill-with-docs](./skills/codebase-docs/zj-grill-with-docs/SKILL.md) — Conduct repository-aware grilling with documentation updates.
 - [zj-neat-freak](./skills/codebase-docs/zj-neat-freak/SKILL.md) — Reconcile codebase knowledge and governance drift.
 - [zj-roadmap-driven](./skills/codebase-docs/zj-roadmap-driven/SKILL.md) — Maintain a decision-carrying execution roadmap.
 - [zj-wayfinder](./skills/codebase-docs/zj-wayfinder/SKILL.md) — Maintain a shared map of large-work planning decisions.
