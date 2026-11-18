@@ -13,6 +13,22 @@ terminology (`/zj-domain-modeling`), hard-to-reverse decisions
 (`/zj-grill-with-docs` and ADR work), or a repository's whole documentation
 governance (`/zj-docs-ontology`).
 
+## Shared Conventions
+
+```json
+{
+  "rule_source": "docs/skill-conventions/skill-conventions.json",
+  "authority_id": "reference.skill-conventions",
+  "consumes": ["naming-syntax-core", "doc-kind", "authority"],
+  "extensions": ["page-prefix:ta-/ba-/pa-"]
+}
+```
+
+This is a human-authored build-time declaration, not a runtime load. `consumes`
+selects which shared core keys the release generator inlines into this skill;
+`extensions` lists private terms that must never leak into the shared source or an
+inlined block. The generated `BASE_RULES_*` block is a separate, generated section.
+
 ## Workflow
 
 1. **Discover, read-only.** Run the discovery command below. Follow an explicit
@@ -77,3 +93,122 @@ Finish a handbook slice only when its selected map routes to the intended
 views, each primary view has one mapped `authority-id`, source-map targets
 exist, and the validator exits successfully. A migration stays a proposal until
 the Human confirms its named moves, rewrites, and deletions.
+
+<!-- BASE_RULES_START -->
+<!-- GENERATED from docs/skill-conventions/skill-conventions.json -- do not edit by hand; re-run the generator. -->
+```json
+{
+  "$generated": {
+    "source": "docs/skill-conventions/skill-conventions.json",
+    "schema_version": "skill-conventions/v1",
+    "consumes": [
+      "naming-syntax-core",
+      "doc-kind",
+      "authority"
+    ]
+  },
+  "core": {
+    "naming-syntax-core": {
+      "summary": "Lowercase, hyphen-separated names that encode what a thing is — never when it was written, which revision it is, or how current it is.",
+      "applies_to": "any skill-owned artifact name that a second skill constrains (architecture view page stems, ontology <topic> keys, kebab-case audits)",
+      "rules": [
+        {
+          "id": "shape",
+          "statement": "name must be lowercase and hyphen-separated (alphanumeric segments joined by single hyphens)",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "match": "full-string"
+        },
+        {
+          "id": "no-date",
+          "statement": "name must not encode a date, bare year, or commit sha",
+          "pattern": "(?:^|[-.])(?:\\d{4}-\\d{1,2}-\\d{1,2}|\\d{4}-\\d{2}|\\d{8}|(?:19|20)\\d{2})(?:[-.]|$)",
+          "sha-segment-pattern": "^[0-9a-f]{7,40}$"
+        },
+        {
+          "id": "no-version",
+          "statement": "name must not encode a version number or trailing bare revision number",
+          "pattern": "^(?:v\\d+(?:\\.\\d+)*|\\d+(?:\\.\\d+)+|r\\d+)$",
+          "trailing-bare-number": true
+        },
+        {
+          "id": "no-status",
+          "statement": "name must not encode a temporary-status token",
+          "tokens": [
+            "draft",
+            "wip",
+            "todo",
+            "tmp",
+            "temp",
+            "temporary",
+            "new",
+            "old",
+            "latest",
+            "final",
+            "current",
+            "deprecated",
+            "scratch",
+            "backup",
+            "copy",
+            "obsolete",
+            "stale"
+          ],
+          "match": "whole-segment"
+        }
+      ],
+      "notes": "Prefix families and topic-scoped private tokens are consumer-private extensions declared per skill; they must not be injected into this shared source (closed-schema check 1). One cause per name; a date finding suppresses the version finding for that name."
+    },
+    "doc-kind": {
+      "summary": "The closed vocabulary of frontmatter doc-kind values.",
+      "closed": true,
+      "values": [
+        "method",
+        "prd",
+        "architecture-map",
+        "architecture-overview",
+        "architecture-layers",
+        "architecture-subsystem",
+        "architecture-flow",
+        "architecture-cross-cutting",
+        "agreement",
+        "design",
+        "testing",
+        "benchmark",
+        "reference",
+        "adr",
+        "plan",
+        "retro",
+        "fixture-documentation"
+      ]
+    },
+    "authority": {
+      "summary": "The closed vocabulary of frontmatter authority values and its primary binding semantics.",
+      "closed": true,
+      "values": [
+        "primary",
+        "supporting",
+        "historical",
+        "process",
+        "external"
+      ],
+      "binding": {
+        "id": "primary-has-exactly-one-authority-id",
+        "statement": "a page declaring authority: primary must declare exactly one authority-id, and the doc-map must bind that id to exactly one page",
+        "layers": [
+          {
+            "layer": "map-binding",
+            "owner": "zj-docs-ontology",
+            "checks": "one authority-id bound to one page (MAP layer)"
+          },
+          {
+            "layer": "page-declaration",
+            "owner": "zj-docs-architecture",
+            "checks": "no duplicate id across pages; primary carries an id; map and page agree"
+          }
+        ],
+        "notes": "These two layers can both fire on one id as two distinct defects. Diagnostic codes stay in the owning skill; only the binding semantics are shared."
+      }
+    }
+  }
+}
+```
+<!-- BASE_RULES_END -->

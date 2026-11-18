@@ -25,6 +25,19 @@ source: zagentic
 
 你是知识库编辑、规范审计员和收尾者。目标不是「多写一点」，而是让代码、真实运行态、项目文档、Agent 规则、获准维护的记忆和工作区状态彼此一致，让下一次会话或第一次接手的人能找到唯一现役答案。
 
+## Shared Conventions
+
+```json
+{
+  "rule_source": "docs/skill-conventions/skill-conventions.json",
+  "authority_id": "reference.skill-conventions",
+  "consumes": ["naming-syntax-core"],
+  "extensions": []
+}
+```
+
+这是 human-authored 的构建期声明，不是运行时加载。`consumes` 指明发布期生成器内联哪些共享 core key（本技能只审计 kebab-case，故只消费 naming-syntax-core）；`extensions` 是本技能私有词项列表，不得泄漏进共享源或内联块。生成的 `BASE_RULES_*` 块是另一段生成内容，与此声明分离。
+
 ## 完成合同
 
 一次洁癖收尾只有在相关事实面都得到明确状态后才算完成：
@@ -210,3 +223,69 @@ source: zagentic
 - [references/governance.md](references/governance.md)：可机械核验规则的提取与处置。
 - [references/sync-matrix.md](references/sync-matrix.md)：改动类型到知识面的双向路由。
 - [references/verification.md](references/verification.md)：证据层级、真相矩阵和发布终态。
+
+<!-- BASE_RULES_START -->
+<!-- GENERATED from docs/skill-conventions/skill-conventions.json -- do not edit by hand; re-run the generator. -->
+```json
+{
+  "$generated": {
+    "source": "docs/skill-conventions/skill-conventions.json",
+    "schema_version": "skill-conventions/v1",
+    "consumes": [
+      "naming-syntax-core"
+    ]
+  },
+  "core": {
+    "naming-syntax-core": {
+      "summary": "Lowercase, hyphen-separated names that encode what a thing is — never when it was written, which revision it is, or how current it is.",
+      "applies_to": "any skill-owned artifact name that a second skill constrains (architecture view page stems, ontology <topic> keys, kebab-case audits)",
+      "rules": [
+        {
+          "id": "shape",
+          "statement": "name must be lowercase and hyphen-separated (alphanumeric segments joined by single hyphens)",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "match": "full-string"
+        },
+        {
+          "id": "no-date",
+          "statement": "name must not encode a date, bare year, or commit sha",
+          "pattern": "(?:^|[-.])(?:\\d{4}-\\d{1,2}-\\d{1,2}|\\d{4}-\\d{2}|\\d{8}|(?:19|20)\\d{2})(?:[-.]|$)",
+          "sha-segment-pattern": "^[0-9a-f]{7,40}$"
+        },
+        {
+          "id": "no-version",
+          "statement": "name must not encode a version number or trailing bare revision number",
+          "pattern": "^(?:v\\d+(?:\\.\\d+)*|\\d+(?:\\.\\d+)+|r\\d+)$",
+          "trailing-bare-number": true
+        },
+        {
+          "id": "no-status",
+          "statement": "name must not encode a temporary-status token",
+          "tokens": [
+            "draft",
+            "wip",
+            "todo",
+            "tmp",
+            "temp",
+            "temporary",
+            "new",
+            "old",
+            "latest",
+            "final",
+            "current",
+            "deprecated",
+            "scratch",
+            "backup",
+            "copy",
+            "obsolete",
+            "stale"
+          ],
+          "match": "whole-segment"
+        }
+      ],
+      "notes": "Prefix families and topic-scoped private tokens are consumer-private extensions declared per skill; they must not be injected into this shared source (closed-schema check 1). One cause per name; a date finding suppresses the version finding for that name."
+    }
+  }
+}
+```
+<!-- BASE_RULES_END -->

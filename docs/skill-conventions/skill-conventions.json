@@ -1,0 +1,154 @@
+{
+  "$schema": "https://zagentic.local/schemas/skill-conventions/v1",
+  "schema_version": "skill-conventions/v1",
+  "id": "zagentic-shared-skill-conventions",
+  "title": "ZAgentic shared skill naming & documentation value-domain conventions",
+  "status": "authoritative",
+  "authored": "2026-11-18",
+  "authority_claim": {
+    "role": "single repo-side authority for the shared core",
+    "doc_map_target": "reference.skill-conventions",
+    "note": "doc-map binding (authority-id reference.skill-conventions) and ADR 0007 / ontology.schema.json pointers are landed in roadmap 1-2-2; this file is the source those pointers name. Self-declaration only — extract.py does not parse JSON, so no MAP binding is created by this file itself; the binding lives on docs/README.md."
+  },
+  "provenance": {
+    "method": "fresh-author",
+    "not_seeded_from": [
+      "docs/ontology/ontology.schema.json",
+      "canonical-preset.json"
+    ],
+    "rationale": "Authored from verified consumer obligations (SCOPED-CONTEXT Q3/Q4/Q5 取证), never derived from a prior docs artifact. The existing schema is an artifact of the docs system under governance and may carry its own defects; seeding from it repeats the case-2 baseline error and propagates defects forward.",
+    "sources": [
+      {
+        "layer": "naming-syntax-core",
+        "evidence": "skills/codebase-docs/zj-docs-architecture/references/architecture-contract.md:57-75; skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py:42-64,175-205; skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py:22-33"
+      },
+      {
+        "layer": "doc-kind / authority value domains + binding",
+        "evidence": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md:52-82; skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py:20-31,270-291"
+      }
+    ]
+  },
+  "scope": {
+    "shared_layers": [
+      "naming-syntax-core",
+      "doc-kind",
+      "authority"
+    ],
+    "boundary_rule": "a value a second skill uses to constrain its own output is shared; a value only the owner consumes is private",
+    "excluded_layers": {
+      "semantic_payload": "per-kind Job / Does NOT belong there / Must-write sections (kind-templates.md, canonical-preset.json) — private to zj-docs-ontology; architecture has its own View table, so a single ruler would be a self-made-ruler trap",
+      "process_and_diagnostics": "category set, lifecycle, tombstone, MAP_* / PAGE_* / AUTHORITY_* / SOURCE_* / ADR_* diagnostic codes — private to their owning skill; never in the shared core"
+    }
+  },
+  "core_keys": [
+    "naming-syntax-core",
+    "doc-kind",
+    "authority"
+  ],
+  "core": {
+    "naming-syntax-core": {
+      "summary": "Lowercase, hyphen-separated names that encode what a thing is — never when it was written, which revision it is, or how current it is.",
+      "applies_to": "any skill-owned artifact name that a second skill constrains (architecture view page stems, ontology <topic> keys, kebab-case audits)",
+      "rules": [
+        {
+          "id": "shape",
+          "statement": "name must be lowercase and hyphen-separated (alphanumeric segments joined by single hyphens)",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "match": "full-string"
+        },
+        {
+          "id": "no-date",
+          "statement": "name must not encode a date, bare year, or commit sha",
+          "pattern": "(?:^|[-.])(?:\\d{4}-\\d{1,2}-\\d{1,2}|\\d{4}-\\d{2}|\\d{8}|(?:19|20)\\d{2})(?:[-.]|$)",
+          "sha-segment-pattern": "^[0-9a-f]{7,40}$"
+        },
+        {
+          "id": "no-version",
+          "statement": "name must not encode a version number or trailing bare revision number",
+          "pattern": "^(?:v\\d+(?:\\.\\d+)*|\\d+(?:\\.\\d+)+|r\\d+)$",
+          "trailing-bare-number": true
+        },
+        {
+          "id": "no-status",
+          "statement": "name must not encode a temporary-status token",
+          "tokens": [
+            "draft",
+            "wip",
+            "todo",
+            "tmp",
+            "temp",
+            "temporary",
+            "new",
+            "old",
+            "latest",
+            "final",
+            "current",
+            "deprecated",
+            "scratch",
+            "backup",
+            "copy",
+            "obsolete",
+            "stale"
+          ],
+          "match": "whole-segment"
+        }
+      ],
+      "notes": "Prefix families and topic-scoped private tokens are consumer-private extensions declared per skill; they must not be injected into this shared source (closed-schema check 1). One cause per name; a date finding suppresses the version finding for that name."
+    },
+    "doc-kind": {
+      "summary": "The closed vocabulary of frontmatter doc-kind values.",
+      "closed": true,
+      "values": [
+        "method",
+        "prd",
+        "architecture-map",
+        "architecture-overview",
+        "architecture-layers",
+        "architecture-subsystem",
+        "architecture-flow",
+        "architecture-cross-cutting",
+        "agreement",
+        "design",
+        "testing",
+        "benchmark",
+        "reference",
+        "adr",
+        "plan",
+        "retro",
+        "fixture-documentation"
+      ]
+    },
+    "authority": {
+      "summary": "The closed vocabulary of frontmatter authority values and its primary binding semantics.",
+      "closed": true,
+      "values": [
+        "primary",
+        "supporting",
+        "historical",
+        "process",
+        "external"
+      ],
+      "binding": {
+        "id": "primary-has-exactly-one-authority-id",
+        "statement": "a page declaring authority: primary must declare exactly one authority-id, and the doc-map must bind that id to exactly one page",
+        "layers": [
+          {
+            "layer": "map-binding",
+            "owner": "zj-docs-ontology",
+            "checks": "one authority-id bound to one page (MAP layer)"
+          },
+          {
+            "layer": "page-declaration",
+            "owner": "zj-docs-architecture",
+            "checks": "no duplicate id across pages; primary carries an id; map and page agree"
+          }
+        ],
+        "notes": "These two layers can both fire on one id as two distinct defects. Diagnostic codes stay in the owning skill; only the binding semantics are shared."
+      }
+    }
+  },
+  "extension_reservation": {
+    "statement": "Per-skill private terms (e.g. an architecture view prefix family, a topic batch token) are extensions, declared by each consuming skill. Any extension term appearing in this shared source or in an inlined generated block is a closed-schema violation (non-zero).",
+    "reason": "core/extension split — extension must never leak into the shared ruler"
+  }
+}

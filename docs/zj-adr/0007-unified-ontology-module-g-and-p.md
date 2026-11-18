@@ -64,3 +64,37 @@ the same knowledge graph. They are two *concern modules* of one graph.
   truth. Freshness is preserved by regenerating the graph on every run.
 - Goal (1) is now satisfied by the single vocabulary; the earlier naming collision
   is removed by design.
+
+## Amendment (2026-11-18): shared naming/value-domain rules move to a repo-side authority
+
+The 2026-10-24 decision above stands: one ontology, one validator, Module G rules
+owned and enforced by the portable skill, Module P owned by `docs/ontology/`. This
+amendment does not reverse that split; it records one refinement forced by the
+codebase-docs contract work.
+
+Decision 1 called `docs/ontology/ontology.schema.json` the single source defining
+all rules. That was accurate for the *deployment split* question it answered, but a
+later governance pass separated two concerns that decision had conflated:
+
+- **Ownership of the naming syntax core and the `doc-kind` / `authority` value
+  domains** now lives in a freshly authored repo-side authority,
+  `docs/skill-conventions/skill-conventions.json` (doc-map authority-id
+  `reference.skill-conventions`). The schema models that vocabulary and points to
+  the authority via `modules.G_governance.shared_rules_authority`; it does not
+  derive from, seed, or restate the authority's rules.
+- **Enforcement of the Module G `MAP_*` rules** remains exactly as decided: owned
+  by `zj-docs-ontology`, composed into `validate.py` via `check_governance_module`.
+  Nothing in this amendment moves enforcement.
+
+Why a fresh authority rather than promoting the existing schema: the schema is an
+artifact of the very docs system under governance, so seeding the shared rules from
+it would inherit its defects forward (a prior flawed state becoming the bar). The
+authority is authored from verified consumer obligations; overlap with the schema
+is reconciled deliberately, never inherited. The installed skill carries an
+inlined copy at release time, preserving the "no runtime dependency on `docs/`"
+property from the deployment split.
+
+Net effect: Decision 1's "single source of truth" now reads as a *single authority
+per rule* — the schema is that authority for Module P, the portable skill owns
+Module G enforcement, and `docs/skill-conventions/` owns the shared core that both
+consume by pointer. One-owner-per-rule (`rule.one-owner-per-rule`) is preserved.
