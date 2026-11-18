@@ -389,13 +389,20 @@
       "id": "1-4-1",
       "uid": "01a1ee8595f9-3af838aea3",
       "label": "处置 issue #264 状态",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
-      "notes": "",
-      "layer": "plan"
+      "decisions": [
+        {
+          "q": "1-4-1 处置 issue #264 的 scope gate 与关闭证据如何定？",
+          "answer": "scope gate=Product execution（roadmap 根已锁定，close-out 属目标项目收尾）。取证：issue #264 OPEN/enhancement，三层修复已全部落地——A 层 SKILL.md 用 workflow 必产出物+green-run≠content-right+deletion-is-last-stage 硬约束（无字面 Hard Gates 标题但语义等价）；B 层 --validate 机械制门 UNDECLARED_RETIREMENT(1-1-2/1-1-3)+execution checklist/confirmation(PR #266)；C 层 consumer gate disclosure EXEC_CHECKLIST_NOT_DECLARED signal(PR #266)。验收标准=「跳过 Step5+直接删页的 pass 应非零退出并点名两类缺失」：实测组合场景同时触发 UNDECLARED_RETIREMENT+EXEC_STEP5_ARTIFACT_MISSING、has_error=True、CLI exit 1，功能完全满足。缺口：两个码各有独立持久化测试(test_ruling1_preset/test_checklist)，但 issue 字面要求的『一个组合 fixture』仅靠一次性脚本验证、未持久化。裁决：补一个持久化组合回归测试(test_issue264_combined.py，复用两测试 helper 的真实 git repo+checklist，断言双码共存+exit非零)作为关闭证据，再更新 issue 评论+状态；不为关 issue 伪造证据、不放宽验收标准。",
+          "note": "组合场景实测 codes=[EXEC_STEP5_ARTIFACT_MISSING, MAP_LINK_BROKEN, PRESET_DIVERGENCE, UNDECLARED_RETIREMENT]，CLI exit=1。补测试走分支+PR（代码改动）。"
+        }
+      ],
+      "notes": "1-4-1 处置 issue #264：取证确认三层修复已全部落地（A SKILL.md 硬约束 / B UNDECLARED_RETIREMENT+checklist 机械制门 / C consumer gate disclosure，PR #265/#266 + 1-1 子树），issue 验收标准（跳过 Step5+直接删页→非零退出+点名双缺失）功能完全满足——实测组合场景同时触发两 ERROR、has_error=True、CLI exit 1。缺口：issue 字面要求的『一个组合 fixture』此前仅一次性脚本验证、未持久化。补 test_issue264_combined.py（4 测试：双码共存 + CLI 非零 + 两个可证伪对照），ontology 139/139 绿、四门禁绿、authority clean。本节点只补关闭证据、不放宽验收标准、不伪造声明。issue #264 评论+状态更新留待本 PR 合并后执行（避免 roadmap 权威边界：节点完成≠issue 已关）。branch feat/issue264-combined-gate。",
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4-2": {
       "id": "1-4-2",
@@ -424,7 +431,7 @@
   },
   "metadata": {
     "created": "2026-11-18 19:57:45",
-    "updated": "2026-11-19 00:41:50",
+    "updated": "2026-11-19 01:19:26",
     "md_file": "ROADMAP.md"
   },
   "edges": [
