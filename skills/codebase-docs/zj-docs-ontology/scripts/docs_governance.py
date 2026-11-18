@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -204,8 +205,62 @@ def scan_retirement(root: Path, map_path: Path) -> tuple[dict[str, object] | Non
     return {"entries": entries, "scanned_files": scanned}, diagnostics
 
 
-def report(root: Path, validate_links: bool) -> dict[str, object]:
+def architecture_witness(
+    root: Path,
+    artifact: str | None,
+    fingerprint: str | None,
+) -> tuple[dict[str, object], list[dict[str, str]]]:
+    """Witness for the Step 5 `/zj-docs-architecture` composition (P0 ruling 3).
+
+    Existence is an external mechanical fact → ERROR. Fingerprint equality is
+    in-pass self-certification → signal. The artifact is caller-supplied: this
+    tool never imports or invokes the architecture skill, and it records only
+    a file's digest — it does not open, parse, or inventory the artifact.
+    A call with no declaration is not an error: the tool cannot know whether
+    this pass was a full governance pass.
+    """
+    if artifact is None:
+        return ({"status": "not-declared", "artifact": None, "exists": False, "fingerprint": None, "expected_fingerprint": None}, [])
+    declared = artifact
+    target = Path(artifact)
+    if not target.is_absolute():
+        target = root / target
+    exists = target.is_file()
+    actual = hashlib.sha256(target.read_bytes()).hexdigest() if exists else None
+    witness: dict[str, object] = {
+        "status": "declared",
+        "artifact": declared,
+        "exists": exists,
+        "fingerprint": actual,
+        "expected_fingerprint": fingerprint,
+    }
+    diagnostics: list[dict[str, str]] = []
+    if not exists:
+        diagnostics.append({
+            "code": "EXEC_STEP5_ARTIFACT_MISSING",
+            "path": declared,
+            "message": f"declared architecture-witness artifact does not exist: {declared}",
+        })
+    elif fingerprint is not None and fingerprint != actual:
+        diagnostics.append({
+            "code": "EXEC_STEP5_FINGERPRINT_MISMATCH",
+            "path": declared,
+            "message": f"architecture-witness fingerprint mismatch: expected {fingerprint}, got {actual}",
+        })
+    return witness, diagnostics
+
+
+def report(
+    root: Path,
+    validate_links: bool,
+    arch_witness: str | None = None,
+    arch_fingerprint: str | None = None,
+) -> dict[str, object]:
     selected, origin, diagnostics, reads = discover(root)
+    witness, witness_diagnostics = architecture_witness(
+        root.resolve(), arch_witness, arch_fingerprint
+    ) if validate_links else ({"status": "not-declared", "artifact": None, "exists": False, "fingerprint": None, "expected_fingerprint": None}, [])
+    diagnostics.extend(witness_diagnostics)
     proposal: dict[str, object] = {
         "repository": str(root.resolve()),
         "mode": "read-only-proposal",
@@ -216,6 +271,7 @@ def report(root: Path, validate_links: bool) -> dict[str, object]:
         "proposed_actions": [],
         "mutations": [],
         "read_paths": reads,
+        "architecture_witness": witness,
     }
     if selected is None:
         if origin == "greenfield":
@@ -237,15 +293,61 @@ def report(root: Path, validate_links: bool) -> dict[str, object]:
     return proposal
 
 
+# P0 ruling "Exit-code whitelist": ERROR codes are explicit, not a prefix
+# guess that silently exits 0 for a newly added gate. Signal codes stay exit 0.
+ERROR_CODES = frozenset({
+    "UNDECLARED_RETIREMENT",
+    "UNCONFIRMED_MUTATION",
+    "EXEC_STEP5_ARTIFACT_MISSING",
+    "EXEC_CHECKLIST_STEP_UNBACKED",
+    "PRESET_VOCABULARY_VIOLATION",
+})
+SIGNAL_CODES = frozenset({
+    "BASELINE_NOT_APPLICABLE",
+    "CONFIRMATION_BASELINE_LOST",
+    "PRESET_DIVERGENCE",
+    "PRESET_UNAVAILABLE",
+    "EXEC_STEP5_FINGERPRINT_MISMATCH",
+})
+# Mechanical codes emitted by the current tool (prefix families), plus the
+# explicit allowlist above. Kept as families so a new MAP_/RETIRE_ gate cannot
+# be forgotten while the four P0 rulings are being landed slice by slice.
+ERROR_PREFIXES = ("MAP_", "RETIRE_")
+
+
+def has_error(payload: dict[str, object]) -> bool:
+    if payload["map_origin"] == "greenfield":
+        return False
+    return any(
+        item["code"] in ERROR_CODES or item["code"].startswith(ERROR_PREFIXES)
+        for item in payload["diagnostics"]  # type: ignore[union-attr]
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repo", type=Path)
     parser.add_argument("--proposal", action="store_true")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument(
+        "--arch-witness",
+        metavar="PATH",
+        help="declared path to the saved architecture-validator output (Step 5 witness)",
+    )
+    parser.add_argument(
+        "--arch-fingerprint",
+        metavar="SHA256",
+        help="expected fingerprint of the witness artifact; mismatch is a signal, not a gate",
+    )
     args = parser.parse_args()
-    payload = report(args.repo.resolve(), validate_links=args.validate)
+    payload = report(
+        args.repo.resolve(),
+        validate_links=args.validate,
+        arch_witness=args.arch_witness,
+        arch_fingerprint=args.arch_fingerprint,
+    )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
-    return 1 if any(item["code"].startswith(("MAP_", "RETIRE_")) for item in payload["diagnostics"]) and payload["map_origin"] != "greenfield" else 0
+    return 1 if has_error(payload) else 0
 
 
 if __name__ == "__main__":

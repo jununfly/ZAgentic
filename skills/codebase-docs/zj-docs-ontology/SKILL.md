@@ -44,6 +44,22 @@ python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --pro
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate
 ```
 
+For a full governance pass, capture the Step 5 `/zj-docs-architecture`
+validator output to a file and pass it as the witness:
+
+```sh
+python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate \
+  --arch-witness tmp/skills-outputs/zj-docs-ontology/<topic>/architecture-validator.txt \
+  --arch-fingerprint <sha256-of-that-file>
+```
+
+A declared witness whose artifact is missing is a mechanical failure
+(`EXEC_STEP5_ARTIFACT_MISSING`, non-zero). A fingerprint mismatch is a signal
+(`EXEC_STEP5_FINGERPRINT_MISMATCH`, exit zero) — it never proves the
+architecture content is right. Omitting `--arch-witness` produces no witness
+diagnostic; always declare it on a full pass so the composition is observable.
+See [proposal-tool-contract.md](references/proposal-tool-contract.md).
+
 Read [governance-contract.md](references/governance-contract.md) before a
 proposal or confirmed execution. Read
 [proposal-tool-contract.md](references/proposal-tool-contract.md) before

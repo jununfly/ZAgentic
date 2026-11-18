@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import subprocess
 import sys
@@ -176,6 +177,120 @@ class RetirementTest(unittest.TestCase):
             import shutil
 
             shutil.rmtree(plans)
+
+
+class ArchitectureWitnessTest(unittest.TestCase):
+    """Q7: the `/zj-docs-architecture` composition at ontology Step 5 gains a
+    mechanical witness. Reuses P0 Ruling 3's two codes — no new diagnostic code:
+    existence is an external fact (ERROR); fingerprint is in-pass (signal).
+
+    The witness is caller-supplied: the tool never imports or invokes the
+    architecture skill (portability boundary). A report that declares no
+    witness stays valid — the tool cannot know whether this pass was a full
+    governance pass; that declaration is the caller's responsibility.
+    """
+
+    ROOT = FIXTURES / "existing-map"
+
+    def payload(self, **kwargs: object) -> dict:
+        return TOOL.report(self.ROOT, validate_links=True, **kwargs)
+
+    def artifact(self) -> Path:
+        """A real file stands in for saved architecture-validator stdout: the
+        witness only checks existence + fingerprint, never content semantics."""
+        path = self.ROOT / "AGENTS.md"
+        self.assertTrue(path.is_file())
+        return path
+
+    def codes(self, payload: dict) -> set[str]:
+        return {item["code"] for item in payload["diagnostics"]}
+
+    def test_undeclared_witness_keeps_existing_report_shape(self) -> None:
+        payload = self.payload()
+        witness = payload["architecture_witness"]
+        self.assertEqual("not-declared", witness["status"])
+        self.assertFalse(witness["exists"])
+        self.assertNotIn("EXEC_STEP5_ARTIFACT_MISSING", self.codes(payload))
+        self.assertEqual([], payload["mutations"])
+
+    def test_declared_but_missing_artifact_is_a_mechanical_error(self) -> None:
+        payload = self.payload(arch_witness="tmp/no-such-artifact.json")
+        self.assertIn("EXEC_STEP5_ARTIFACT_MISSING", self.codes(payload))
+        witness = payload["architecture_witness"]
+        self.assertEqual("declared", witness["status"])
+        self.assertFalse(witness["exists"])
+        self.assertIn("tmp/no-such-artifact.json", witness["artifact"])
+
+    def test_existing_artifact_records_fingerprint_without_error(self) -> None:
+        payload = self.payload(arch_witness=str(self.artifact()))
+        witness = payload["architecture_witness"]
+        self.assertTrue(witness["exists"])
+        self.assertNotIn("EXEC_STEP5_ARTIFACT_MISSING", self.codes(payload))
+        digest = hashlib.sha256(self.artifact().read_bytes()).hexdigest()
+        self.assertEqual(digest, witness["fingerprint"])
+
+    def test_fingerprint_mismatch_is_a_signal_not_an_error(self) -> None:
+        payload = self.payload(
+            arch_witness=str(self.artifact()),
+            arch_fingerprint="0" * 64,
+        )
+        self.assertIn("EXEC_STEP5_FINGERPRINT_MISMATCH", self.codes(payload))
+        self.assertNotIn("EXEC_STEP5_ARTIFACT_MISSING", self.codes(payload))
+
+    def test_matching_fingerprint_emits_no_signal(self) -> None:
+        digest = hashlib.sha256(self.artifact().read_bytes()).hexdigest()
+        payload = self.payload(arch_witness=str(self.artifact()), arch_fingerprint=digest)
+        self.assertNotIn("EXEC_STEP5_FINGERPRINT_MISMATCH", self.codes(payload))
+        self.assertNotIn("EXEC_STEP5_ARTIFACT_MISSING", self.codes(payload))
+
+    def test_witness_does_not_expand_the_read_boundary(self) -> None:
+        """The tool hashes bytes at a caller-supplied path; declaring a witness
+        must not add that path to the tool's own read_paths inventory."""
+        before = self.payload()["read_paths"]
+        after = self.payload(arch_witness=str(self.artifact()))["read_paths"]
+        self.assertEqual(before, after)
+
+
+class ArchitectureWitnessCommandLineTest(unittest.TestCase):
+    """Strength separation lives at the exit-code seam."""
+
+    ROOT = FIXTURES / "existing-map"
+
+    def exit_code(self, *args: str) -> int:
+        return subprocess.run(
+            [sys.executable, str(SKILL_ROOT / "scripts" / "docs_governance.py"), *args],
+            capture_output=True,
+            text=True,
+        ).returncode
+
+    def test_missing_artifact_exits_nonzero(self) -> None:
+        self.assertNotEqual(
+            0,
+            self.exit_code(str(self.ROOT), "--validate", "--arch-witness", "tmp/no-such-artifact.json"),
+        )
+
+    def test_matching_witness_exits_zero(self) -> None:
+        artifact = self.ROOT / "AGENTS.md"
+        digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        self.assertEqual(
+            0,
+            self.exit_code(
+                str(self.ROOT), "--validate",
+                "--arch-witness", str(artifact),
+                "--arch-fingerprint", digest,
+            ),
+        )
+
+    def test_fingerprint_mismatch_still_exits_zero(self) -> None:
+        artifact = self.ROOT / "AGENTS.md"
+        self.assertEqual(
+            0,
+            self.exit_code(
+                str(self.ROOT), "--validate",
+                "--arch-witness", str(artifact),
+                "--arch-fingerprint", "0" * 64,
+            ),
+        )
 
 
 class CommandLineTest(unittest.TestCase):
