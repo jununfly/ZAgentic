@@ -207,9 +207,9 @@ merged into one skill?
 composition, not evidence of a duplicate boundary. Three 取证 reasons:
 
 1. **The boundary is deliberate and documented on both sides**, not an
-   accidental split. `zj-docs-architecture/SKILL.md:11-14` explicitly disclaims
-   "a repository's whole documentation governance (`/zj-docs-ontology`)";
-   `zj-docs-ontology/SKILL.md:13` says it "is not a shared-knowledge publisher
+   accidental split. The architecture skill's SKILL.md (L11-14) explicitly
+   disclaims "a repository's whole documentation governance (`/zj-docs-ontology`)";
+   the ontology skill's SKILL.md (L13) says it "is not a shared-knowledge publisher
    or an automatic closeout handler". `governance-contract.md:242-256` has a
    dedicated section "What overlaps with `zj-docs-architecture`, and who owns
    it": the three shared `MAP_*` codes are "one condition seen twice",
@@ -279,6 +279,43 @@ CLI value, **not** P0 Ruling 4's tool-derived checklist (topic convention still
 open at `DECISIONS.md` open item 1); a caller that omits `--arch-witness` is not
 mechanically caught yet. Changes are uncommitted, in the skill's own files,
 pending the bucket-redesign landing slice.
+
+**Ruling 2 + 4 landed (2026-11-18, working tree):** zj ruled (a) topic reuses
+the Q3 naming-syntax core (lowercase-hyphen, no date/sha/version/status),
+closing `DECISIONS.md` open item 1; (b) Rulings 2+4 ship together per `P1b`;
+(c) the checklist is the **sole** Step 5 witness source — `--arch-witness`
+becomes a no-checklist fallback. Implemented red-green in `docs_governance.py`
+(`valid_topic`, `confirmation_id`, `emit_checklist`, `inspect_checklist`,
+`--topic` / `--emit-checklist` / `--out`) + a new dedicated checklist test module
+(15 tests). `confirmation_id` is tool-computed from the canonical proposal —
+no `--confirm` self-certification; the confirmed proposal *is* the ledger.
+Step 5's artifact path is tool-declared so an honest `skipped` still fires the
+existence ERROR (issue #264's real case).
+
+**Platform-layer C tool slice landed (2026-11-18, same working tree):** zj
+chose tool-layer signal留痕 for the residual boundary. A bare `--validate`
+(no `--topic`) now emits `EXEC_CHECKLIST_NOT_DECLARED` (**signal**, exit zero),
+sets `checklist.status = "not-declared"`, and states a green run is not evidence
+a full pass ran or content is correct. `CONFIRMATION_BASELINE_LOST` keeps the
+"declared but missing" case; the two are branch-mutually-exclusive. `SIGNAL_CODES`
+5→6, `ERROR_CODES` unchanged. Red (4 fail + 1 error) → green: 24 checklist tests.
+Honest ceiling recorded in `DECISIONS.md` v9: an executor that never invokes
+`--validate` is outside tool observation; escalating the signal to a gate is a
+**platform consumer** decision (CI rule / step-gated authorization), not a
+skill-level ERROR.
+
+**Wildcard consumer gate landed (2026-11-18, same working tree):** zj asked
+what the publisher can ship so ANY target repository gates on the signal.
+Resolution: mechanism ships, gate does not. Added a gate-rules JSON (closed
+criteria, locked to the tool's allowlists by a dedicated test module), a
+check-gate script (stdin report → 0/1/2; `--escalate` opt-in; never-gate codes
+rejected), and a copyable CI snippet (unconditional trigger, parse JSON not
+exit code). Workflows are not auto-installed — skill copy never touches the
+workflows directory; each repository owns its branch protection. Recorded in
+`DECISIONS.md` v10. Red (module missing) → green: 18 gate tests.
+
+89 skill tests + 34 root tests green; closure gate 0/0; dangling-refs 0/0.
+Uncommitted.
 
 **If zj still prefers a merge despite this:** it must be filed as an ADR that
 overrides the PRD's "without absorbing" clause and the governance-contract's

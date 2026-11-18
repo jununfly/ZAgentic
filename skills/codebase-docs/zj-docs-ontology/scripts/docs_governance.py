@@ -18,6 +18,154 @@ RETIRED_RE = re.compile(r"retired-to:\s*`?([^`\s]+)`?", re.I)
 LONG_LIVED = ("methods", "prds", "architecture", "agreements", "designs", "testing", "benchmarks", "references", "zj-adr")
 PROCESS = ("plans", "zj-retros")
 EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "skills-outputs", "test-results"}
+DEFAULT_OUT = Path("tmp/skills-outputs/zj-docs-ontology")
+TOPIC_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
+TOPIC_BANNED = re.compile(r"(?:\d{4}-\d{2}-\d{2}|\d{8}|[0-9a-f]{7,40}|-v\d+|-done$|-draft$|-active$)", re.I)
+
+
+def valid_topic(topic: str) -> bool:
+    """Q3 naming-syntax core: lowercase-hyphen, no date/sha/version/status.
+
+    A pass key is stable; a repeated pass on the same topic reuses its output
+    directory. The caller supplies the topic explicitly — the tool never
+    guesses one from the repository or the clock.
+    """
+    return bool(TOPIC_RE.fullmatch(topic)) and TOPIC_BANNED.search(topic) is None
+
+
+def confirmation_id(payload: dict[str, object]) -> str:
+    """Deterministic id of the confirmed proposal (Ruling 2).
+
+    Hash of the canonical proposal JSON, computed by the tool — never supplied
+    by the executor. A `--confirm` flag would be self-certification and is
+    rejected. The Human confirmation itself remains an external human fact;
+    this id records *which* proposal was confirmed, not that the Human was
+    truthful.
+    """
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def ensure_dir(path: Path) -> None:
+    """mkdir that tolerates an existing dir under the local sitecustomize shim."""
+    if path.is_dir():
+        return
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        if not path.is_dir():
+            raise
+
+
+def emit_checklist(payload: dict[str, object], base: Path, topic: str) -> dict[str, object]:
+    """Write the confirmed-proposal ledger + tool-derived checklist to the
+    gitignored ADR 0010 output zone. No target-repo mutation (`mutations: []`)."""
+    case_dir = base / topic
+    ensure_dir(case_dir)
+    (case_dir / "proposal.json").write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    cid = confirmation_id(payload)
+    steps: list[dict[str, object]] = [
+        {"step": number, "status": "pending", "artifact": None, "confirmation_id": cid}
+        for number in (1, 2, 3, 4)
+    ]
+    steps.append({
+        "step": 5,
+        "status": "pending",
+        "artifact": str(case_dir / "architecture-validator.txt"),
+        "fingerprint": None,
+        "confirmation_id": cid,
+    })
+    for index, action in enumerate(payload.get("proposed_actions", []), start=1):  # type: ignore[arg-type]
+        steps.append({
+            "step": f"action-{index}",
+            "status": "pending",
+            "artifact": None,
+            "confirmation_id": cid,
+            "action": action,
+        })
+    checklist = {"topic": topic, "confirmation_id": cid, "steps": steps}
+    (case_dir / "checklist.json").write_text(
+        json.dumps(checklist, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return checklist
+
+
+def inspect_checklist(
+    base: Path,
+    topic: str,
+    arch_witness: str | None = None,
+) -> dict[str, object]:
+    """Cross-check the checklist against the confirmed proposal (Rulings 2+4).
+
+    When a checklist is supplied it is the *only* source for the Step 5
+    witness — `arch_witness` is accepted for compatibility but never overrides
+    it. Two live declaration sources for one fact is the drift this removes.
+    """
+    case_dir = base / topic
+    proposal_path = case_dir / "proposal.json"
+    checklist_path = case_dir / "checklist.json"
+    unwitnessed: dict[str, object] = {
+        "status": "not-declared", "artifact": None, "exists": False,
+        "fingerprint": None, "expected_fingerprint": None,
+    }
+    diagnostics: list[dict[str, str]] = []
+    if not proposal_path.is_file() or not checklist_path.is_file():
+        diagnostics.append({
+            "code": "CONFIRMATION_BASELINE_LOST",
+            "path": str(case_dir),
+            "message": "confirmed proposal or checklist missing; checklist claims are not made",
+        })
+        return {"witness": unwitnessed, "diagnostics": diagnostics, "status": "lost"}
+    proposal = json.loads(proposal_path.read_text(encoding="utf-8"))
+    checklist = json.loads(checklist_path.read_text(encoding="utf-8"))
+    expected = confirmation_id(proposal)
+    if checklist.get("confirmation_id") != expected:
+        diagnostics.append({
+            "code": "UNCONFIRMED_MUTATION",
+            "path": str(checklist_path),
+            "message": "checklist confirmation_id does not match the confirmed proposal",
+        })
+    witness = unwitnessed
+    for step in checklist.get("steps", []):
+        artifact = step.get("artifact")
+        target = Path(str(artifact)) if artifact else None
+        if target is not None and not target.is_absolute():
+            target = case_dir / target
+        exists = target is not None and target.is_file()
+        if step.get("step") == 5:
+            # Tool-declared path: existence is checked regardless of the
+            # executor's status, so an honest `skipped` is still exposed.
+            if not exists:
+                diagnostics.append({
+                    "code": "EXEC_STEP5_ARTIFACT_MISSING",
+                    "path": str(artifact),
+                    "message": "declared Step 5 architecture-witness artifact does not exist",
+                })
+            else:
+                actual = hashlib.sha256(target.read_bytes()).hexdigest()  # type: ignore[union-attr]
+                expected_fp = step.get("fingerprint")
+                if expected_fp is not None and expected_fp != actual:
+                    diagnostics.append({
+                        "code": "EXEC_STEP5_FINGERPRINT_MISMATCH",
+                        "path": str(artifact),
+                        "message": f"Step 5 witness fingerprint mismatch: expected {expected_fp}, got {actual}",
+                    })
+                witness = {
+                    "status": "checklist",
+                    "artifact": str(artifact),
+                    "exists": True,
+                    "fingerprint": actual,
+                    "expected_fingerprint": expected_fp,
+                }
+        elif step.get("status") == "done" and not exists:
+            diagnostics.append({
+                "code": "EXEC_CHECKLIST_STEP_UNBACKED",
+                "path": str(step.get("step")),
+                "message": f"step {step.get('step')} marked done with no existing artifact",
+            })
+    return {"witness": witness, "diagnostics": diagnostics, "status": "checked"}
 
 
 def relative(root: Path, path: Path) -> str:
@@ -255,12 +403,34 @@ def report(
     validate_links: bool,
     arch_witness: str | None = None,
     arch_fingerprint: str | None = None,
+    topic: str | None = None,
+    out: Path | None = None,
 ) -> dict[str, object]:
     selected, origin, diagnostics, reads = discover(root)
-    witness, witness_diagnostics = architecture_witness(
-        root.resolve(), arch_witness, arch_fingerprint
-    ) if validate_links else ({"status": "not-declared", "artifact": None, "exists": False, "fingerprint": None, "expected_fingerprint": None}, [])
-    diagnostics.extend(witness_diagnostics)
+    checklist_result: dict[str, object] | None = None
+    if validate_links and topic is not None:
+        # Checklist is the sole witness source when a pass topic is supplied.
+        # CLI witness values are ignored, never merged — two sources for one
+        # fact is the drift this design removes.
+        checklist_result = inspect_checklist(out or DEFAULT_OUT, topic)
+        witness = checklist_result["witness"]
+        diagnostics.extend(checklist_result["diagnostics"])  # type: ignore[index]
+    elif validate_links:
+        # Platform-layer C disclosure (issue #264): with no pass topic the tool
+        # cannot check a checklist. It cannot tell a shape-only check from a
+        # full pass that skipped its checklist, so this stays a signal (exit 0)
+        # for a CI / step-gate consumer to escalate — never an ERROR here.
+        diagnostics.append({
+            "code": "EXEC_CHECKLIST_NOT_DECLARED",
+            "path": str(root.resolve()),
+            "message": "validate ran with no pass topic: no execution checklist was checked; a green run here is not evidence that a full governance pass ran or that content is correct",
+        })
+        witness, witness_diagnostics = architecture_witness(
+            root.resolve(), arch_witness, arch_fingerprint
+        )
+        diagnostics.extend(witness_diagnostics)
+    else:
+        witness = {"status": "not-declared", "artifact": None, "exists": False, "fingerprint": None, "expected_fingerprint": None}
     proposal: dict[str, object] = {
         "repository": str(root.resolve()),
         "mode": "read-only-proposal",
@@ -272,6 +442,10 @@ def report(
         "mutations": [],
         "read_paths": reads,
         "architecture_witness": witness,
+        "checklist": {
+            "topic": topic,
+            "status": checklist_result["status"] if checklist_result else ("not-declared" if validate_links else None),
+        },
     }
     if selected is None:
         if origin == "greenfield":
@@ -308,6 +482,7 @@ SIGNAL_CODES = frozenset({
     "PRESET_DIVERGENCE",
     "PRESET_UNAVAILABLE",
     "EXEC_STEP5_FINGERPRINT_MISMATCH",
+    "EXEC_CHECKLIST_NOT_DECLARED",
 })
 # Mechanical codes emitted by the current tool (prefix families), plus the
 # explicit allowlist above. Kept as families so a new MAP_/RETIRE_ gate cannot
@@ -337,15 +512,45 @@ def main() -> int:
     parser.add_argument(
         "--arch-fingerprint",
         metavar="SHA256",
-        help="expected fingerprint of the witness artifact; mismatch is a signal, not a gate",
+        help="compatibility fallback: expected witness fingerprint when no checklist is supplied",
+    )
+    parser.add_argument(
+        "--topic",
+        metavar="NAME",
+        help="pass key for the checklist (lowercase-hyphen; no date/sha/version/status)",
+    )
+    parser.add_argument(
+        "--emit-checklist",
+        action="store_true",
+        help="with --proposal --topic: write proposal.json + checklist.json to the output zone",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        metavar="DIR",
+        help=f"checklist base directory (default: {DEFAULT_OUT} under CWD)",
     )
     args = parser.parse_args()
+    if args.topic is not None and not valid_topic(args.topic):
+        print(
+            json.dumps({
+                "error": "INVALID_TOPIC",
+                "message": f"topic must be lowercase-hyphen with no date/sha/version/status token: {args.topic}",
+            }, indent=2),
+            file=sys.stderr,
+        )
+        return 2
+    base = args.out or DEFAULT_OUT
     payload = report(
         args.repo.resolve(),
         validate_links=args.validate,
         arch_witness=args.arch_witness,
         arch_fingerprint=args.arch_fingerprint,
+        topic=args.topic,
+        out=base,
     )
+    if args.proposal and args.topic and args.emit_checklist:
+        emit_checklist(payload, base, args.topic)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 1 if has_error(payload) else 0
 

@@ -44,28 +44,65 @@ python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --pro
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate
 ```
 
-For a full governance pass, capture the Step 5 `/zj-docs-architecture`
-validator output to a file and pass it as the witness:
+A bare `--validate` (no `--topic`) is a shape-only check: the report emits
+`EXEC_CHECKLIST_NOT_DECLARED` (exit zero) and states that a green run is not
+evidence a full pass ran or that content is correct. It is a signal for a CI
+rule or step-gated authorization to escalate — the tool cannot tell a shape-only
+check from a skipped pass, and an executor that never calls `--validate` at all
+is outside its observation boundary. Use a topic below for a full pass.
+
+For a full governance pass, use a **pass topic** and an execution checklist.
+The topic is lowercase-hyphen with no date/sha/version/status token (e.g.
+`docs-redesign`). Emit the checklist from the read-only proposal, then run the
+architecture validator and save its output at the declared Step 5 path:
+
+```sh
+python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --proposal \
+  --topic docs-redesign --emit-checklist
+python3 skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py . \
+  > tmp/skills-outputs/zj-docs-ontology/docs-redesign/architecture-validator.txt
+python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate \
+  --topic docs-redesign
+```
+
+The checklist is emitted to `tmp/skills-outputs/zj-docs-ontology/<topic>/`
+(gitignored, pass-scoped). Its `confirmation_id` is the tool-computed hash of
+the confirmed proposal — never an agent-supplied "I confirmed" claim. Steps
+marked done must be backed by an existing artifact; a missing one is
+`EXEC_CHECKLIST_STEP_UNBACKED` (non-zero). Step 5's artifact path is declared
+by the tool, so a `skipped` status still fires `EXEC_STEP5_ARTIFACT_MISSING`.
+A fingerprint mismatch is a signal (`EXEC_STEP5_FINGERPRINT_MISMATCH`, exit
+zero) — it never proves the architecture content is right.
+
+`--arch-witness` / `--arch-fingerprint` remain as a compatibility fallback
+for callers with no checklist; when `--topic` is supplied the checklist is the
+sole witness source and CLI witness values are ignored. See
+[proposal-tool-contract.md](references/proposal-tool-contract.md).
+
+To turn a report into a merge gate in **any** target repository, pipe it into
+the consumer-side gate. The tool emits facts; the repository decides which
+signals block a merge:
 
 ```sh
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate \
-  --arch-witness tmp/skills-outputs/zj-docs-ontology/<topic>/architecture-validator.txt \
-  --arch-fingerprint <sha256-of-that-file>
+  --topic docs-redesign | \
+  python3 skills/codebase-docs/zj-docs-ontology/scripts/check_gate.py \
+  --escalate EXEC_CHECKLIST_NOT_DECLARED
 ```
 
-A declared witness whose artifact is missing is a mechanical failure
-(`EXEC_STEP5_ARTIFACT_MISSING`, non-zero). A fingerprint mismatch is a signal
-(`EXEC_STEP5_FINGERPRINT_MISMATCH`, exit zero) — it never proves the
-architecture content is right. Omitting `--arch-witness` produces no witness
-diagnostic; always declare it on a full pass so the composition is observable.
-See [proposal-tool-contract.md](references/proposal-tool-contract.md).
+`check_gate.py` applies `references/gate-rules.json` (which travels with the
+skill): ERRORs always gate, signals pass unless escalated, and never-gate
+signals are rejected even if requested. See `references/ci-snippet.yml` for a
+copyable workflow job — it must trigger unconditionally (no `paths:` on a
+required check) and parse the JSON rather than trust the validator's exit code.
+The skill never auto-installs workflows; each repository wires its own gate.
 
 Read [governance-contract.md](references/governance-contract.md) before a
 proposal or confirmed execution. Read
 [proposal-tool-contract.md](references/proposal-tool-contract.md) before
-interpreting a report, changing the tool, or adding a fixture. Read
-[kind-templates.md](references/kind-templates.md) when classifying a page or
-deciding where a fact belongs, and
+interpreting a report, changing the tool, adding a fixture, or wiring a gate.
+Read [kind-templates.md](references/kind-templates.md) when classifying a page
+or deciding where a fact belongs, and
 [doc-slop-checklist.md](references/doc-slop-checklist.md) when auditing page
 health — both are audit material, neither adds a diagnostic to the tool.
 

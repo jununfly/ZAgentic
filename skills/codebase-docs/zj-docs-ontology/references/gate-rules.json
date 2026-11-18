@@ -1,0 +1,29 @@
+{
+  "schema": "zj-docs-ontology/gate-rules/v1",
+  "description": "Consumer-side gate criteria for docs_governance.py reports. The tool emits facts and gates only on mechanical ERRORs; a consumer (CI rule, platform step-gate) decides which signals to escalate. This file travels inside the skill so any target repository uses the same criteria.",
+  "error_codes": [
+    "UNDECLARED_RETIREMENT",
+    "UNCONFIRMED_MUTATION",
+    "EXEC_STEP5_ARTIFACT_MISSING",
+    "EXEC_CHECKLIST_STEP_UNBACKED",
+    "PRESET_VOCABULARY_VIOLATION"
+  ],
+  "error_prefixes": ["MAP_", "RETIRE_"],
+  "escalatable_signals": {
+    "BASELINE_NOT_APPLICABLE": "first run has no tracked roster; a consumer that requires an established docs system may gate",
+    "CONFIRMATION_BASELINE_LOST": "declared pass but proposal/checklist missing; an audit-trail-requiring consumer may gate",
+    "PRESET_UNAVAILABLE": "canonical preset absent; a consumer that requires the preset may gate",
+    "EXEC_CHECKLIST_NOT_DECLARED": "validate ran with no pass topic; a consumer that requires a full pass may gate (issue #264)"
+  },
+  "never_gate_signals": {
+    "PRESET_DIVERGENCE": "permitted target-repo divergence; escalating would punish legitimate customisation",
+    "EXEC_STEP5_FINGERPRINT_MISMATCH": "in-pass self-certification; evidence is not external to the executor (P0 invariant)"
+  },
+  "never_gate_reason": "These are either explicitly permitted deviations or self-certified values. Escalation requests for them are rejected and reported, never silently applied.",
+  "usage": {
+    "default": "gate on error_codes + error_prefixes; all signals pass",
+    "escalate": "--escalate CODE repeats for each signal the consumer chooses to gate",
+    "input": "report JSON on stdin (pipe docs_governance.py --validate output directly)",
+    "exit": "0 = pass, 1 = fail"
+  }
+}
