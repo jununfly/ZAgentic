@@ -409,13 +409,20 @@
       "id": "1-4-2",
       "uid": "01a1ee85975d-c726b561ae",
       "label": "归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
-      "notes": "",
-      "layer": "plan"
+      "decisions": [
+        {
+          "q": "1-4-2 归档 durable conclusions 的范围与四个目标的落位如何裁决？",
+          "answer": "scope gate=Product execution。归档=审计+补缺，不重复已落位内容。逐目标核对：ADR：ADR 0007 的 2026-11-18 amendment 已完整记录『共享规则单一权威源→docs/skill-conventions/ + 安装期 inline 无运行时依赖』，不重复；唯一未归档的 durable 架构决策=Ruling 1『Two references, not one baseline』（normative canonical-preset.json 词表权威 vs observed git HEAD roster 消失检测基线，经 v1-v5 修订、含 first-setup/mis-filed 两 case 与 ERROR/signal 拆分）——只在 process(DECISIONS.md)+代码+测试里，process 将被 1-4-3 清理，故新建 ADR 0013 归档，遵循 docs/zj-adr 纪律（不推翻旧判决、新 ADR 只记 long-lived 决策、引用实物不手填 SHA）。bucket README：1-3-1 已删 zj-grill-with-docs 条目、计数 8，无新增结论；SKILL.md：各 skill Shared Conventions 块+BASE_RULES 已由 1-2 落地；ZJ-CONTEXT.md：1-3-2 已纠正 Base skill 两实例，无新术语（canonical-preset/HEAD roster 属工具内部概念非项目领域词汇，不进 glossary）。裁决：本节点只做一件事=新建 ADR 0013 归档 Ruling 1 双层参照系；其余三目标审计确认已落位、不改；不移动/合并/重写已合并代码与文档；写 ADR 前先跑 docs/ontology 测试钉节点类型齐全，写完跑 check-adrs.py + check-docs-dangling-refs.py + ontology validate + docs 重建 graph。",
+          "note": "ADR 只记 durable 架构决策；Ruling 1 经 4 次修订是 Human 裁决，符合门槛。ADR 0007 amendment 已覆盖 shared authority，不重复。新建 ADR 走分支+PR。"
+        }
+      ],
+      "notes": "1-4-2 归档 durable conclusions（审计+补缺，不重复已落位）：四目标逐个审计——(1) ADR：ADR 0007 的 2026-11-18 amendment 已覆盖『共享规则单一权威源→docs/skill-conventions/+安装期 inline 无运行时依赖』不重复；唯一未归档 durable 决策=Ruling 1『两个参照系而非一个 baseline』（normative canonical-preset.json 词表权威 vs observed git HEAD roster 消失检测基线，经 v1-v5 四次修订的 Human 裁决，含首启/mis-filed 两 case 与 ERROR/signal 拆分），此前只在 gitignored process(DECISIONS.md)+代码+测试 → 新建 ADR 0013 (docs/zj-adr/0013-two-references-not-one-baseline.md) 归档为长期权威。(2) bucket README：1-3-1 已删 grill-with-docs 条目、计数 8，审计 0 引用无改动。(3) SKILL.md：3 个消费 skill 的 Shared Conventions + BASE_RULES 块由 1-2 落地，审计 3/3 在位无改动。(4) ZJ-CONTEXT.md：1-3-2 已纠正 Base skill 两实例（zj-ui-core+zj-doc-collab），审计在位；canonical-preset/HEAD roster 属工具内部概念非项目领域词汇，不进 glossary。验证：改 docs 前 docs/ontology tests 4/4 绿；新 ADR 后 check-adrs.py 0 bad commit ref（1 条预存 0012 skill-name WARN 不改历史 ADR）、dangling 0/0（3 条初写相对路径 WARN 补全 repo-root 路径后归零）、ontology validate 0 ERROR（4 预存 WARN 无新增）、extract 重建 graph 0013 入图（gitignored 不提交）。本节点只补 ADR、不放宽标准、不手填 SHA。branch feat/archive-ruling1-adr。",
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4-3": {
       "id": "1-4-3",
@@ -432,7 +439,7 @@
   },
   "metadata": {
     "created": "2026-11-18 19:57:45",
-    "updated": "2026-11-19 01:22:29",
+    "updated": "2026-11-19 01:27:30",
     "md_file": "ROADMAP.md"
   },
   "edges": [

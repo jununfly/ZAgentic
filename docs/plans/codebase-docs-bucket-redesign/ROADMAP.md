@@ -7,7 +7,7 @@ durable-citation: forbidden
 promote-via: ADR|design|contract|runtime-evidence
 -->
 
-> 数据文件: `roadmap.json` | 最后更新: 2026-11-19 01:22:29
+> 数据文件: `roadmap.json` | 最后更新: 2026-11-19 01:27:30
 
 [~][X+] 1. codebase-docs 契约可执行性与 bucket 重构
 ├── [x][X+] 1-1. P0 Ruling 1：canonical-preset 单一源与双层参照系
@@ -28,16 +28,10 @@ promote-via: ADR|design|contract|runtime-evidence
 │   └── [x][X+] 1-3-2. 记录 bucket 外两个 base skill 的 portability caveat
 └── [~][X+] 1-4. 收尾与 close-out
     ├── [x][X+] 1-4-1. 处置 issue #264 状态
-    ├── [ ][X+] 1-4-2. 归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md
-    └── [!][X+] 1-4-3. 清理 docs/plans/ 过程材料
-<details><summary>阻塞链：1 个节点被阻塞</summary>
-
-- 1-4-3. 清理 docs/plans/ 过程材料 ← e9: 1-4-2. 归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md [ ]
-
-</details>
-
+    ├── [x][X+] 1-4-2. 归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md
+    └── [ ][X+] 1-4-3. 清理 docs/plans/ 过程材料
 
 ### 下一步可开工（ready 前 3）
 
-- 1-4-2. 归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md [ ]
+- 1-4-3. 清理 docs/plans/ 过程材料 [ ]
 <!-- ROADMAP_SECTION_END -->
