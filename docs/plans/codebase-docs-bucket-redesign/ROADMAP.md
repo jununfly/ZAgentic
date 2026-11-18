@@ -7,7 +7,7 @@ durable-citation: forbidden
 promote-via: ADR|design|contract|runtime-evidence
 -->
 
-> 数据文件: `roadmap.json` | 最后更新: 2026-11-19 01:19:26
+> 数据文件: `roadmap.json` | 最后更新: 2026-11-19 01:22:29
 
 [~][X+] 1. codebase-docs 契约可执行性与 bucket 重构
 ├── [x][X+] 1-1. P0 Ruling 1：canonical-preset 单一源与双层参照系
@@ -26,7 +26,7 @@ promote-via: ADR|design|contract|runtime-evidence
 ├── [x][X+] 1-3. bucket 重排裁决落地
 │   ├── [x][X+] 1-3-1. 删除 zj-grill-with-docs 及 skills-list 条目
 │   └── [x][X+] 1-3-2. 记录 bucket 外两个 base skill 的 portability caveat
-└── [ ][X+] 1-4. 收尾与 close-out
+└── [~][X+] 1-4. 收尾与 close-out
     ├── [x][X+] 1-4-1. 处置 issue #264 状态
     ├── [ ][X+] 1-4-2. 归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md
     └── [!][X+] 1-4-3. 清理 docs/plans/ 过程材料
@@ -39,6 +39,5 @@ promote-via: ADR|design|contract|runtime-evidence
 
 ### 下一步可开工（ready 前 3）
 
-- 1-4. 收尾与 close-out [ ]
 - 1-4-2. 归档 durable conclusions 到 ADR、bucket README、SKILL.md、ZJ-CONTEXT.md [ ]
 <!-- ROADMAP_SECTION_END -->

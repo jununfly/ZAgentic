@@ -373,7 +373,7 @@
       "id": "1-4",
       "uid": "01a1ee8594c4-36ff6ec6d8",
       "label": "收尾与 close-out",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -382,8 +382,9 @@
         "1-4-3"
       ],
       "decisions": [],
-      "notes": "",
-      "layer": "plan"
+      "notes": "1-4 close-out 子树启动：1-4-1 已完成（issue #264 已 CLOSED/COMPLETED，PR #271 固化组合验收 fixture 139/139），1-4-2（归档 durable conclusions）与 1-4-3（清理过程材料，blocked by e9）仍 open。父节点随子节点开工转 in_progress。",
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4-1": {
       "id": "1-4-1",
@@ -431,7 +432,7 @@
   },
   "metadata": {
     "created": "2026-11-18 19:57:45",
-    "updated": "2026-11-19 01:19:26",
+    "updated": "2026-11-19 01:22:29",
     "md_file": "ROADMAP.md"
   },
   "edges": [
