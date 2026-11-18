@@ -316,7 +316,7 @@
       "id": "1-3",
       "uid": "01a1ee859117-204d5f01e5",
       "label": "bucket 重排裁决落地",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -337,24 +337,36 @@
       "id": "1-3-1",
       "uid": "01a1ee85924f-0cc127e8a1",
       "label": "删除 zj-grill-with-docs 及 skills-list 条目",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-3",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "删除 zj-grill-with-docs 时，全仓 19 处引用如何分类处理、计数与测试防线如何定？",
+          "answer": "父裁决 1-3 已定删 zj-grill-with-docs（纯 wrapper，SKILL.md 仅一行 Run a /zj-grilling session using /zj-domain-modeling skill），9 skill 不移位指删后剩 8 仍在原位、不新增、不合并 ontology/architecture。删除范围：skills/codebase-docs/zj-grill-with-docs 整目录（SKILL.md + agents/openai.yaml）+ scripts/zagentic-skills-list 第28行条目。引用分三类：A 机械清单/链接必须同步否则 dangling 或计数红——README.md 顶层列表行 + zj-guide user-only 路由列表、skills/codebase-docs/README.md 条目、docs/architecture/ta-skill-bucket-codebase-docs.md 条目、docs/architecture/ta-zagentic-overview.md 桶计数 codebase-docs 9→8（validate.py check_bucket_inventory_consistent 从 graph 实际数 Skill 节点，删后活树 8，文档写 9 必 ERROR）。B 活动散文引用统一替换为 wrapper 实质调用链：所有 /zj-grill-with-docs 改为 /zj-grilling，在强调 repo-aware/stateful 保留 ZJ-CONTEXT 与 ADR 的少数处（zj-guide main flow step1、ZJ-CONTEXT 所有权、zj-domain-modeling 描述）显式补 /zj-domain-modeling，避免留下指向已删技能的死引用；涉及 README.md:101、ZJ-CONTEXT.md:3、docs/architecture/ta-skill-bucket-productivity.md:66 cross-bucket、docs/prds/codebase-docs-capability.md:156/163 能力清单删该项、skills/codebase-docs/zj-docs-architecture/SKILL.md:13、skills/engineering/zj-guide/SKILL.md 10 处、skills/engineering/zj-triage/A-ONLY.md:46、skills/engineering/zj-merge-skills-wave/references/pair-planning.md:13 示例改为别的 base-only 技能。C 历史事实陈述保留不改——docs/zj-adr/0012 line10 判决来自一次会话是真实历史事件、docs/plans 过程是裁决记录。SCOPED-CONTEXT line169 曾估成本 only list entry no test rewrites，但实测全仓 19 处引用，本节点按不留死引用原则完整修复。测试防线：不新增测试（纯删除+文档同步），靠现有门禁（dangling 0 / bucket 计数 / frontmatter 68 / closure / ontology validate 0 ERROR）+ 根 tests + ontology tests 全绿证明无回归；删后 git grep 全仓零活动引用（仅历史 C 类残留）。",
+          "note": "AGENTS.md 无引用已确认。1-3-2 是 portability caveat 属另一节点，不越界。personal 不进公共索引，副本同步属安装态操作不在本节点源码改动内。首次 decide 因 zsh 把 ASCII 括号当 glob 解析未落盘，改用文件传参绕开。"
+        }
+      ],
+      "notes": "按父裁决 1-3 的「删 zj-grill-with-docs」落地。删除 skills/codebase-docs/zj-grill-with-docs 整目录（SKILL.md 仅一行 wrapper：Run a /zj-grilling session using /zj-domain-modeling）+ scripts/zagentic-skills-list 条目。全仓 19 处引用分三类处理：A 机械清单/链接（顶层 README 列表、bucket README、架构 bucket 页、overview 计数 codebase-docs 9→8）同步；B 活动散文引用统一替换为 wrapper 实质调用链 /zj-grilling，repo-aware/stateful 处显式补 /zj-domain-modeling（README:101、ZJ-CONTEXT:3、productivity:66、PRD:156/163、architecture SKILL.md:13、zj-guide 10 处、zj-triage A-ONLY:46、pair-planning 示例改为 zj-implement）；C 历史事实（docs/zj-adr/0012 会话出处、docs/plans 过程记录）保留不改。SCOPED-CONTEXT 曾估成本仅 list entry，实测 19 处引用，按不留死引用原则完整修复。计数非假绿：graph 活树 codebase-docs=8 == overview 声明 8，validate.py check_bucket_inventory_consistent 在写 9 时会 ERROR，规则实测确认。验证：根 tests 346/346、ontology 135/135、四门禁全绿（shared 3 check/closure 0E0W/frontmatter 68/dangling 0）、ontology validate 0 ERROR、graph 重建后计数一致、活动引用 git grep 归零。诚实记录 1 条新 WARN：UNDECLARED_RETIREMENT（被删两文件无 retirement 声明）——根因是 scan_head_disappearance 扫 HEAD 所有消失 tracked 文件只排除 process/evidence、不排除 skills/，而 retirement 契约（governance-contract.md:185）语义针对 docs 页面（page leaves service + map binding released），skill 删除不在其列。属 permitted signal（exit 0，docs-ontology 非 required job），本节点不伪造 doc retirement 声明（会污染 map、违反 roadmap 权威边界）、不改 1-1-2 已合并工具语义；追踪留给 1-4 close-out 或独立 issue 评估是否给 retirement 扫描加 skills/ 排除。未新增测试（纯删除+文档同步）。branch feat/drop-grill-with-docs，未提交。",
       "layer": "plan"
     },
     "1-3-2": {
       "id": "1-3-2",
       "uid": "01a1ee859391-a13f203e7c",
       "label": "记录 bucket 外两个 base skill 的 portability caveat",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-3",
       "children": [],
-      "decisions": [],
-      "notes": "",
+      "decisions": [
+        {
+          "q": "1-3-2 的 portability caveat 记录到哪里、记录什么、如何遵守词汇表实现细节禁令与 plan-coupling 约束？",
+          "answer": "裁决来源 Q6 8th revision + SCOPED-CONTEXT 178-184/340-346：两个 bucket 外 base skill 是 zj-ui-core（skills/ui/，UI 链 S0 contract base，共享可执行机器 ui_skill_core.py/hard_gates.py）与 zj-doc-collab（skills/productivity/，文档协作通用 substrate，gate_core.py/launch_pack_core.py，被 zj-discuss 运行时 import）。二者通过 runtime import 消费共享可执行代码，不在 Q2 inline-rules generator 覆盖范围。裁决：stay as-is + documented caveat，不迁移不 relocate；redesign 只 bound 规则不 bound 共享可执行代码。落位双点：1 ZJ-CONTEXT.md 的 Base skill 术语实例纠正——现值写 zj-ui-core is the only one today 是事实错误（漏 zj-doc-collab），改为两个都列，这是词汇表实例维护不塞实现细节（遵守 zj-domain-modeling SKILL.md:66 devoid of implementation details 约束）；2 PRD docs/prds/codebase-docs-capability.md 的 Skill Topology 段新增 Portability boundary 小节承载 caveat 正文（本 redesign 的产品权威、doc-map 已登记 line93、doc-kind prd/authority supporting），内容含两 base 的 runtime-import 消费机制、单装断裂风险、无 publish-time inlining、各有 CI gate（ui-core 由 tests/test_ui_agent_skills_layout.py + scripts/run_ui_skills_gate.sh required CI 钉死）、新一致性 gate 学其纪律不学其 runtime import、本 redesign 不迁移。不落 governance-contract（ontology-private 讲 map 治理非跨 bucket 边界）、不新建文档（Occam）。严格避 ADR 0010 plan-coupling：PRD 正文不出现 docs/plans/ 下任何带 .md 的具体页路径，只用政策句描述裁决，引用长期权威用真实存在路径。验证靠 dangling 0 / ontology validate 0 ERROR / 四门禁 / 根 tests / ontology tests 全绿；不新增测试（纯文档记录）。",
+          "note": "见 SCOPED-CONTEXT 178-184/340-346 原始裁决；Q2 publish-time inline 机制只覆盖 rules 不覆盖 shared executable code。"
+        }
+      ],
+      "notes": "按 Q6 8th revision 与 SCOPED-CONTEXT 178-184/340-346 裁决，记录两个 bucket 外 base skill 的 portability caveat，落位两处长期权威。1 ZJ-CONTEXT.md 纠正 Base skill 术语实例错误：原写 zj-ui-core is the only one today 漏了 zj-doc-collab（与裁决明确两 base 矛盾），改为列两者并注明 both consumed by runtime import and stay bucket-installed——只改实例不塞实现细节，遵守 zj-domain-modeling SKILL.md:66 的 devoid of implementation details 约束。2 PRD docs/prds/codebase-docs-capability.md 的 Skill Topology 新增 Portability boundary 小节：zj-ui-core（skills/ui/ S0 UI contract base）与 zj-doc-collab（skills/productivity/ 文档协作 substrate）通过 runtime import 消费共享可执行代码（ui_core scripts / gate_core.py+launch_pack_core.py），正是 ontology 契约警告的 cross-skill import——单装时断裂、无 publish-time inlining；裁决 documented not migrated、不 move/merge/inline，redesign 只 bound 规则不覆盖共享可执行代码；二者是 contract-governed precedents（ui-core 由 tests/test_ui_agent_skills_layout.py + required scripts/run_ui_skills_gate.sh 钉死），新 gate 学其纪律不学 runtime import。不落 governance-contract（ontology-private 讲 map 治理）、不新建文档（Occam）。踩坑：初写 prose 路径 zj-doc-collab/scripts/gate_core.py 触发 dangling 1 WARN（checker 以 repo_root 为 base 解析不到，实际在 skills/productivity/ 下），改完整路径 skills/productivity/zj-doc-collab/scripts/gate_core.py 后回 0；zj-ui-core/scripts/ 带尾斜杠未被识别故未报。严格避 ADR 0010 plan-coupling：PRD 正文未出现 docs/plans/ 下带 .md 的具体页路径。验证：dangling 0/0、ontology validate 0 ERROR（3 G-gov WARN 含 1-3-1 已记录 UNDECLARED_RETIREMENT + 2 预存 doc-kind，无新增）、frontmatter 68、closure 0E0W、shared 3 check PASS、authority-check clean、根 tests 346/346、ontology 135/135。不新增测试（纯文档记录）。1-3 子树全绿。branch feat/drop-grill-with-docs，未提交。",
       "layer": "plan"
     },
     "1-4": {
@@ -412,7 +424,7 @@
   },
   "metadata": {
     "created": "2026-11-18 19:57:45",
-    "updated": "2026-11-19 00:09:24",
+    "updated": "2026-11-19 00:41:50",
     "md_file": "ROADMAP.md"
   },
   "edges": [
