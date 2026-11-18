@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import contextlib
 import importlib.util
+import json
+import re
 import shutil
 import subprocess
 import sys
@@ -327,6 +329,57 @@ class CommandLineTest(unittest.TestCase):
         if repo is None:
             self.skipTest("no repo with a docs/ tree above this skill copy")
         self.assertEqual(0, self.exit_code(str(repo)))
+
+
+class InlinedConventionsBindingTest(unittest.TestCase):
+    """The validator's value domains must come from the inlined block, not a
+    hardcoded copy. These assertions pin the read→use wiring so a hardcoded
+    enum cannot creep back in unnoticed."""
+
+    def test_domains_match_inlined_block(self) -> None:
+        text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"<!-- BASE_RULES_START -->.*?```json\n(.*?)\n```.*?<!-- BASE_RULES_END -->",
+            text, re.S,
+        )
+        self.assertIsNotNone(match, "BASE_RULES block missing from SKILL.md")
+        core = json.loads(match.group(1))["core"]
+        expected_kinds = {k for k in core["doc-kind"]["values"] if k.startswith("architecture-")}
+        expected_maps = {k for k in core["doc-kind"]["values"] if k == "architecture-map"}
+        self.assertEqual(expected_kinds, VALIDATOR.VALID_ARCHITECTURE_KINDS)
+        self.assertEqual(expected_maps, VALIDATOR.MAP_KINDS)
+        self.assertEqual(set(core["authority"]["values"]), VALIDATOR.VALID_AUTHORITIES)
+        rules = {r["id"]: r for r in core["naming-syntax-core"]["rules"]}
+        self.assertEqual(set(rules["no-status"]["tokens"]), VALIDATOR.NAME_STATUS_TOKENS)
+
+    def test_canary_kind_in_inline_block_is_accepted(self) -> None:
+        """A fake architecture kind present in the domain must be accepted —
+        the only way that happens is the validator reading the inline block."""
+        text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"<!-- BASE_RULES_START -->.*?```json\n(.*?)\n```.*?<!-- BASE_RULES_END -->",
+            text, re.S,
+        )
+        payload = json.loads(match.group(1))
+        payload["core"]["doc-kind"]["values"].append("architecture-canary-test")
+        rendered = (
+            "<!-- BASE_RULES_START -->\n```json\n"
+            + json.dumps(payload, ensure_ascii=False, indent=2)
+            + "\n```\n<!-- BASE_RULES_END -->"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            tmp_skill = Path(td) / "skill"
+            scripts = tmp_skill / "scripts"
+            scripts.mkdir(parents=True)
+            (tmp_skill / "SKILL.md").write_text(rendered, encoding="utf-8")
+            shutil.copy(MODULE_PATH, scripts / MODULE_PATH.name)
+            code = (
+                "import sys; sys.path.insert(0, r'" + str(scripts) + "'); "
+                "import validate_architecture_docs as v; "
+                "print('CANARY_OK' if 'architecture-canary-test' in v.VALID_ARCHITECTURE_KINDS else 'CANARY_MISS')"
+            )
+            result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+            self.assertIn("CANARY_OK", result.stdout, result.stderr)
 
 
 if __name__ == "__main__":

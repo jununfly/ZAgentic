@@ -17,18 +17,46 @@ LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 INLINE_PATH_RE = re.compile(r"`([A-Za-z0-9_./-]+(?:\.[A-Za-z0-9_-]+)?)`")
 AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
 HEADING_RE = re.compile(r"^(#{2,6})\s+(.+?)\s*$", re.M)
-ARCHITECTURE_KINDS = {
-    "architecture-overview",
-    "architecture-layers",
-    "architecture-subsystem",
-    "architecture-flow",
-    "architecture-cross-cutting",
-}
-# A navigation map is a legitimate architecture page but not a view: it owns
-# bound authorities, categories and pointer rules, not one bounded question.
-# Exemption is keyed on the declared kind, never on the filename.
-MAP_KINDS = {"architecture-map"}
-VALID_ARCHITECTURE_KINDS = ARCHITECTURE_KINDS | MAP_KINDS
+
+# Shared value domains and the naming syntax core are NOT defined here. They
+# are read from this skill's own inlined BASE_RULES block (generated from the
+# repo-side authority docs/skill-conventions/skill-conventions.json). An
+# installed skill carries that block, so this stays runtime-closure compliant:
+# no read of docs/ or any external path at runtime. If the block is missing or
+# malformed, import fails loud — there is deliberately no hardcoded fallback,
+# because a silent fallback is exactly the "hardcoded enum still in force"
+# fake-green this redesign removes.
+_RULES_RE = re.compile(r"<!-- BASE_RULES_START -->.*?```json\n(.*?)\n```.*?<!-- BASE_RULES_END -->", re.S)
+
+
+def _load_inline_conventions() -> dict:
+    skill_md = Path(__file__).resolve().parent.parent / "SKILL.md"
+    text = skill_md.read_text(encoding="utf-8")
+    match = _RULES_RE.search(text)
+    if match is None:
+        raise RuntimeError(f"BASE_RULES block missing or malformed in {skill_md}")
+    payload = json.loads(match.group(1))
+    core = payload["core"]
+    for key in ("naming-syntax-core", "doc-kind", "authority"):
+        if key not in core:
+            raise RuntimeError(f"BASE_RULES block missing required core key: {key}")
+    return core
+
+
+_INLINE_CORE = _load_inline_conventions()
+
+# Architecture kind vocabulary is derived from the inlined doc-kind domain,
+# filtered to the architecture family. Keeping the architecture-* prefix filter
+# preserves the private constraint "an architecture page must be an architecture
+# view or map" without hardcoding the enumeration: a canary kind injected into
+# the shared domain and re-rendered here is accepted, proving the read is wired.
+MAP_KINDS = {k for k in _INLINE_CORE["doc-kind"]["values"] if k == "architecture-map"}
+VALID_ARCHITECTURE_KINDS = {k for k in _INLINE_CORE["doc-kind"]["values"] if k.startswith("architecture-")}
+# Authority values and naming core rules come from the inlined shared domain.
+VALID_AUTHORITIES = set(_INLINE_CORE["authority"]["values"])
+_NAME_RULES = {rule["id"]: rule for rule in _INLINE_CORE["naming-syntax-core"]["rules"]}
+
+# Semantic payload (per-kind must-write sections) stays architecture-private.
 COMMON_HEADINGS = {"question", "scope", "boundaries", "source map", "related authority"}
 VIEW_HEADINGS = {
     "architecture-overview": {"system boundary", "major parts"},
@@ -38,30 +66,14 @@ VIEW_HEADINGS = {
     "architecture-cross-cutting": {"shared rule", "consumers"},
 }
 PROCESS_HEADINGS = {"status", "progress", "daily log", "execution log"}
+# Page-prefix families are an architecture-private extension (declared in this
+# skill's Shared Conventions); they are deliberately absent from the shared core.
 NAME_PREFIXES = ("ta", "ba", "pa")
-NAME_SHAPE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-NAME_DATE_RE = re.compile(r"(?:^|[-.])(?:\d{4}-\d{1,2}-\d{1,2}|\d{4}-\d{2}|\d{8}|(?:19|20)\d{2})(?:[-.]|$)")
-NAME_COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$")
-NAME_VERSION_RE = re.compile(r"^(?:v\d+(?:\.\d+)*|\d+(?:\.\d+)+|r\d+)$")
-NAME_STATUS_TOKENS = {
-    "draft",
-    "wip",
-    "todo",
-    "tmp",
-    "temp",
-    "temporary",
-    "new",
-    "old",
-    "latest",
-    "final",
-    "current",
-    "deprecated",
-    "scratch",
-    "backup",
-    "copy",
-    "obsolete",
-    "stale",
-}
+NAME_SHAPE_RE = re.compile(_NAME_RULES["shape"]["pattern"])
+NAME_DATE_RE = re.compile(_NAME_RULES["no-date"]["pattern"])
+NAME_COMMIT_RE = re.compile(_NAME_RULES["no-date"]["sha-segment-pattern"])
+NAME_VERSION_RE = re.compile(_NAME_RULES["no-version"]["pattern"])
+NAME_STATUS_TOKENS = set(_NAME_RULES["no-status"]["tokens"])
 
 
 @dataclass(frozen=True)
@@ -271,7 +283,7 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
         is_navigation = kind in MAP_KINDS
         if kind not in VALID_ARCHITECTURE_KINDS:
             diagnostics.append(Diagnostic("PAGE_KIND_INVALID", relative, "doc-kind must be an architecture view or map"))
-        if authority not in {"primary", "supporting", "historical", "process", "external"}:
+        if authority not in VALID_AUTHORITIES:
             diagnostics.append(Diagnostic("PAGE_AUTHORITY_INVALID", relative, "authority is missing or invalid"))
         if not is_navigation:
             for code, message in naming_diagnostics(entry.target.stem):

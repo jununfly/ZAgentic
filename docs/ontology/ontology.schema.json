@@ -3,14 +3,15 @@
   "ontology": "ZAgentic Unified Codebase Documentation Ontology",
   "version": "2.0.0",
   "generated_for": "docs/ — the codebase documentation system of jununfly/ZAgentic",
-  "description": "统一本体（实体/属性/关联/规则）+ 结构索引图主干，服务于 docs/ 文档化系统。本 schema 是 Module P（产品域层）规则与领域词汇的【单一真相源】；Module G（治理层）的领域词汇在此建模，但其约束规则由可移植技能 zj-docs-ontology 单一拥有与强制（见 governance_module_rules）。校验器 docs/ontology/validate.py 一次性组合执行：本地强制的 P 规则 + 经 check_governance_module 组合的 G 规则。",
+  "description": "统一本体（实体/属性/关联/规则）+ 结构索引图主干，服务于 docs/ 文档化系统。本 schema 是 Module P（产品域层）规则与领域词汇的【单一真相源】；Module G（治理层）的领域词汇在此建模，但其约束规则由可移植技能 zj-docs-ontology 单一拥有与强制（见 governance_module_rules）；其中命名语法核心与 doc-kind/authority 值域已上提到仓库侧单一权威 docs/skill-conventions/skill-conventions.json（见 shared_rules_authority），schema 与技能只指向它、不从它派生或重建。校验器 docs/ontology/validate.py 一次性组合执行：本地强制的 P 规则 + 经 check_governance_module 组合的 G 规则。",
   "modules": {
     "G_governance": {
       "name": "治理层 (Documentation Governance)",
       "purpose": "文档系统自身的分类、权威与生命周期契约：doc-kind 词表、authority 层级、生命周期类别、doc-map 绑定契约（领域词汇在此建模，约束规则由 owner 单一拥有）。",
       "owner": "skills/codebase-docs/zj-docs-ontology (可移植，装到任意代码库)",
       "source": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md",
-      "note": "Module G 的约束规则不在此 schema 定义；由其 owner 单一拥有与强制，经 validate.py 的 check_governance_module 组合进统一报告，避免双头漂移。"
+      "shared_rules_authority": "docs/skill-conventions/skill-conventions.json",
+      "note": "Module G 的约束规则不在此 schema 定义；由其 owner 单一拥有与强制，经 validate.py 的 check_governance_module 组合进统一报告，避免双头漂移。命名语法核心与 doc-kind/authority 值域（本 schema entities.DocPage 中建模的词汇）现由 shared_rules_authority 指向的仓库侧权威单一拥有；本 schema 只建模词汇并指向该权威，不从其派生或重述其规则（见 ADR 0007 Amendment 2026-11-18）。"
     },
     "P_product": {
       "name": "产品域层 (Product Domain)",
@@ -190,6 +191,6 @@
   "governance_module_rules": {
     "owner": "skills/codebase-docs/zj-docs-ontology (可移植，装到任意代码库)",
     "reference": "skills/codebase-docs/zj-docs-ontology/references/governance-contract.md",
-    "note": "Module G（治理层）的约束规则——doc-kind 词表、authority 层级、doc-map 绑定契约、生命周期类别——由可移植技能 zj-docs-ontology 单一拥有与强制，经 validate.py 的 check_governance_module 组合进统一校验报告（MAP_* 诊断码映射回 G 规则 id）。本 schema 不重复定义 G 规则，仅建模其领域词汇（见 entities/relations 中 module=G_governance 的条目），以消除规则定义的双头漂移。"
+    "note": "Module G（治理层）的约束规则——doc-kind 词表、authority 层级、doc-map 绑定契约、生命周期类别——由可移植技能 zj-docs-ontology 单一拥有与强制，经 validate.py 的 check_governance_module 组合进统一校验报告（MAP_* 诊断码映射回 G 规则 id）。本 schema 不重复定义 G 规则，仅建模其领域词汇（见 entities/relations 中 module=G_governance 的条目），以消除规则定义的双头漂移。其中命名语法核心与 doc-kind/authority 值域已上提到仓库侧单一权威 docs/skill-conventions/skill-conventions.json（见 modules.G_governance.shared_rules_authority）：本 schema 与该技能都只指向它、不从它派生，任何重叠按权威裁决而非继承（ADR 0007 Amendment 2026-11-18）。"
   }
 }
