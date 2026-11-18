@@ -5,10 +5,12 @@ authority: process
 
 # Scoped context: codebase-docs bucket redesign
 
-> Status: **DRAFT — Human is actively refining this context.** Do not act on it
-> yet. It is process material under ADR 0010 (`docs/plans/`, git-tracked,
-> cleaned at close-out). At task close-out, its durable conclusions are to be
-> archived into the long-lived authority docs by the updated `zj-docs-ontology`.
+> Status: **DESIGN RESOLVED — ready-for-develop as of 2026-11-18 (8th revision).**
+> Q1–Q7 and all four generator/gate sub-questions are ruled below; implementation
+> slices may start. It remains process material under ADR 0010 (`docs/plans/`,
+> git-tracked, cleaned at close-out). At task close-out, its durable conclusions
+> are to be archived into the long-lived authority docs by the updated
+> `zj-docs-ontology`.
 > Created 2026-11-18. Revision 2026-11-18 (zj, 2nd): the shared-rule authority
 > is a **new** docs directory, freshly authored — reusing or seeding from the
 > existing `docs/ontology/ontology.schema.json` is rejected as the case-2
@@ -29,6 +31,11 @@ authority: process
 > unmechanised composition step). Revision 2026-11-18 (zj, 7th): Q7 RULED —
 > accept **no merge + witness field**; implementation reuses P0 Ruling 3's
 > existing codes, no new diagnostic code.
+> Revision 2026-11-18 (zj, 8th): Q1–Q5 implementation sub-questions RULED —
+> generated block inline in SKILL.md (A), rule source JSON machine-first,
+> generator at repo-root `scripts/`, consistency gate as a job in
+> `skill-closure-lint`. ADR 0007/schema conflict is a confirmed execution item,
+> not an open question. Six stale status markers cleared; ready-for-develop.
 
 ## Question
 
@@ -135,13 +142,14 @@ Note: `zj-triage` / `zj-discuss` naming rules live in **other** buckets — out 
 the "docs-system related" scope zj defined; ignore unless a dependency is
 later proven.
 
-## Re-sort analysis — Q6 (取证 landed 2026-11-18; per-skill rulings OPEN)
+## Re-sort analysis — Q6 (取证 + per-skill rulings both landed 2026-11-18)
 
 Per task item 3, each of the 9 skills is classified by the Repo-context method
 (one skill solves it → keep; else split by scope). Source: each SKILL.md's own
 stated boundaries + the cross-skill `/zj-*` references + `git log` + root tests.
-Three tiers emerge. **Nothing here is applied** — these are evidence-backed
-recommendations for zj to rule on.
+Three tiers emerged; zj has ruled on all nine (see "Summary of recommendations
+— RULED" below). The per-skill rows here are the evidence base; the RULED table
+is authoritative. The delete itself is not yet applied to the repo.
 
 ### Tier A — docs-system core (keep; Q1–Q5 restructuring applies)
 
@@ -158,7 +166,7 @@ recommendations for zj to rule on.
 | `zj-debrief` | Task closeout → `docs/zj-retros/`; Step 2 invokes `/zj-domain-modeling`. ADR 0011:74 — "zj-neat-freak (drift reconcile) and zj-debrief (retro) still own the process layer; this ADR does not change their boundary." | **Keep**. Consumes domain-modeling; not a docs-governance duplicate. |
 | `zj-neat-freak` | Six-fact-surface closeout (code/runtime/docs/rules/memory/workspace); governance.md:11 audits kebab-case. ADR 0003:46 records it was *deliberately* moved engineering → codebase-docs by later governance. ADR 0011:74 locks its process-layer role. | **Keep**. Its kebab-case audit becomes a **consumer** of the shared naming syntax core (Q3); it is not the rule owner. |
 | `zj-domain-modeling` | Owns `ZJ-CONTEXT.md` + `docs/zj-adr/` format; SKILL.md stresses it is the *active* discipline (changing the model), distinct from merely reading vocabulary. Composed by debrief, grill-with-docs, wayfinder. | **Keep**. Glossary/ADR format stays its own private authority — do **not** fold into the shared naming source. |
-| `zj-grill-with-docs` | SKILL.md body is **one line**: "Run a `/zj-grilling` session, using the `/zj-domain-modeling` skill." `/zj-grilling` lives in `productivity/`. No tests/gates pin it (only a `scripts/zagentic-skills-list:28` entry). | **Merge candidate → delete**: it is a pure wrapper composing two existing skills. Cost: remove the list entry; no test/CI rewrites. Alternative: keep as a discoverable alias if zj values the named entry point. **zj to rule.** |
+| `zj-grill-with-docs` | SKILL.md body is **one line**: "Run a `/zj-grilling` session, using the `/zj-domain-modeling` skill." `/zj-grilling` lives in `productivity/`. No tests/gates pin it (only a `scripts/zagentic-skills-list:28` entry). | **RULED: DELETE** — a pure wrapper composing two existing skills. Cost: remove the list entry; no test/CI rewrites. (Rejected alternative: keep as a discoverable alias.) Not yet applied to the repo. |
 
 ### Tier C — planning / tracking (归属存疑; move cost proven high)
 
@@ -180,7 +188,7 @@ shared executable code. Document the portability caveat rather than migrate.
 | # | Skill | Rec | zj ruling | Consequence |
 | --- | --- | --- | --- | --- |
 | 1 | zj-docs-ontology | Keep (base) | **Keep** | Q1–Q5 changes only |
-| 2 | zj-docs-architecture | Keep | **Keep** (Q7 merge question still open) | validator enum → inlined read (Q3) + canary (Q5) |
+| 2 | zj-docs-architecture | Keep | **Keep** (Q7 RESOLVED: NO MERGE) | validator enum → inlined read (Q3) + canary (Q5) |
 | 3 | zj-doc-health | Keep | **Keep** | none |
 | 4 | zj-debrief | Keep | **Keep** | none |
 | 5 | zj-neat-freak | Keep | **Keep** | kebab-case rule → shared syntax consumer |
@@ -263,7 +271,7 @@ validator path, the shared-rule canary, 7+ root tests, CI, the bucket README,
 `docs/README.md`, the pipeline doc, three install copies, and re-litigate
 ADR 0003/0011).
 
-**Implementation correction + status (2026-11-18, landed in working tree):**
+**Implementation correction + status (2026-11-18, LANDED — PR #265, merged):**
 the analysis above proposed a new code `EXEC_ARCH_VALIDATION_MISSING`; that was
 wrong — P0 Ruling 3's **Step 5 is `/zj-docs-architecture`**, so its existing
 `EXEC_STEP5_ARTIFACT_MISSING` (ERROR) + `EXEC_STEP5_FINGERPRINT_MISMATCH`
@@ -276,11 +284,10 @@ explicit `ERROR_CODES` allowlist. 29 governance tests + 18 quality tests + 34
 root `test_*zj*` tests green; closure gate 0 ERROR / 0 WARN. Scope boundary
 recorded in `proposal-tool-contract.md`: the declaration is a caller-supplied
 CLI value, **not** P0 Ruling 4's tool-derived checklist (topic convention still
-open at `DECISIONS.md` open item 1); a caller that omits `--arch-witness` is not
-mechanically caught yet. Changes are uncommitted, in the skill's own files,
-pending the bucket-redesign landing slice.
+closed in P0 v8); a caller that omits `--arch-witness` is not
+mechanically caught yet. PR #265 is merged into main.
 
-**Ruling 2 + 4 landed (2026-11-18, working tree):** zj ruled (a) topic reuses
+**Ruling 2 + 4 landed (2026-11-18, PR #266, merged):** zj ruled (a) topic reuses
 the Q3 naming-syntax core (lowercase-hyphen, no date/sha/version/status),
 closing `DECISIONS.md` open item 1; (b) Rulings 2+4 ship together per `P1b`;
 (c) the checklist is the **sole** Step 5 witness source — `--arch-witness`
@@ -292,7 +299,7 @@ no `--confirm` self-certification; the confirmed proposal *is* the ledger.
 Step 5's artifact path is tool-declared so an honest `skipped` still fires the
 existence ERROR (issue #264's real case).
 
-**Platform-layer C tool slice landed (2026-11-18, same working tree):** zj
+**Platform-layer C tool slice landed (2026-11-18, PR #266, merged):** zj
 chose tool-layer signal留痕 for the residual boundary. A bare `--validate`
 (no `--topic`) now emits `EXEC_CHECKLIST_NOT_DECLARED` (**signal**, exit zero),
 sets `checklist.status = "not-declared"`, and states a green run is not evidence
@@ -304,7 +311,7 @@ Honest ceiling recorded in `DECISIONS.md` v9: an executor that never invokes
 **platform consumer** decision (CI rule / step-gated authorization), not a
 skill-level ERROR.
 
-**Wildcard consumer gate landed (2026-11-18, same working tree):** zj asked
+**Wildcard consumer gate landed (2026-11-18, PR #266, merged):** zj asked
 what the publisher can ship so ANY target repository gates on the signal.
 Resolution: mechanism ships, gate does not. Added a gate-rules JSON (closed
 criteria, locked to the tool's allowlists by a dedicated test module), a
@@ -314,8 +321,8 @@ exit code). Workflows are not auto-installed — skill copy never touches the
 workflows directory; each repository owns its branch protection. Recorded in
 `DECISIONS.md` v10. Red (module missing) → green: 18 gate tests.
 
-89 skill tests + 34 root tests green; closure gate 0/0; dangling-refs 0/0.
-Uncommitted.
+89 skill tests + 34 root tests green at merge time; closure gate 0/0;
+dangling-refs 0/0. All three slices merged into main via PR #265/#266.
 
 **If zj still prefers a merge despite this:** it must be filed as an ADR that
 overrides the PRD's "without absorbing" clause and the governance-contract's
@@ -333,11 +340,12 @@ publish-time inline mechanism Q2 chose.
 | `zj-ui-core` (`skills/ui/`) | S0 base skill of the UI chain; owns shared **executable machinery** (`ui_skill_core.py`, `hard_gates.py`, …), `writes: []`, `precedence` below stage 1. Glossary term `Base skill` is defined from it (`ZJ-CONTEXT.md:620`). | Stage skills import/call its scripts at runtime. Contract pinned by root `tests/test_ui_agent_skills_layout.py` + `scripts/run_ui_skills_gate.sh` (required CI). | Assumes **bucket-installed together**; runtime import breaks if single-installed. No publish-time inlining. |
 | `zj-doc-collab` (`skills/productivity/`) | Generic substrate for document-backed multi-agent collaboration; `zj-discuss` is a specialization. Owns parameterized engines `gate_core.py` / `launch_pack_core.py`. | Consumer `zj-discuss` **imports base scripts** at runtime (`skills/productivity/zj-discuss/SKILL.md:276-277`); base file says consumers specialise it. | Exactly the cross-skill import `governance-contract.md:253-256` warns breaks at install time under single install. No inlining. |
 
-Implication: the new design must decide whether to (a) introduce publish-time
-inlining as a **third** mechanism and leave these two alone, or (b) migrate
-them to it too. zj flagged "可能需要一并调整" — this is an open sub-question,
-not yet a ruling. Note that UI's base is a *contract-governed* precedent with a
-required CI gate; whatever is built here should learn from its gate discipline
+Implication (RULED, Q6 "不移" + 8th revision): introduce publish-time inlining
+as a **third** mechanism and **leave these two alone** — they are outside the
+`codebase-docs/` bucket and consume shared *executable code*, which this
+redesign explicitly bounds itself away from. Their runtime-import caveat is
+documented, not migrated. Note that UI's base is a *contract-governed*
+precedent with a required CI gate; the new gate learns from its discipline
 (assert generated artifacts actually contain the rules; fail loud when a
 dependency is missing) rather than from its runtime import.
 
@@ -393,13 +401,22 @@ mechanism re-interprets it, and the context should carry the corrected form:
 - This is exactly the Q2 guarantee (runtime independence from Harness and from
   siblings) while keeping one authoritative source at development time.
 
-### Open sub-questions introduced by this mechanism
+### Implementation sub-questions — RULED 2026-11-18 (zj, 8th revision)
 
-- **Block location**: inline into `SKILL.md` directly, or into a sibling
-  `references/` file that SKILL.md points at? `SKILL.md` guarantees visibility
-  to the Harness; a reference file keeps SKILL.md short. **Still open** — Q4/Q5
-  closed the *declaration* location (fenced JSON in SKILL.md body) but not this
-  generated-block location.
+These were the four remaining decisions that blocked a red-green landing. All
+four are now closed; Q4/Q5's declaration ruling is unchanged.
+
+| # | Question | Ruling | Rationale / accepted cost |
+| --- | --- | --- | --- |
+| 1 | Generated-block location | **Inline into `SKILL.md`** (option A) | Harness reads SKILL.md unconditionally → executor sees rules with no extra read; marker replacement + byte-equal gate stay single-file (repo precedent: `roadmap.py:4503-4531`). Accepted cost: each consuming SKILL.md grows by the shared rule body. If that body later grows large, re-open rather than drift. |
+| 2 | Rule-source format | **JSON, machine-first** | Generator parse + closed-schema check + byte-equal re-render all want a stable machine form; consistent with P0 Ruling 1's Option B (`canonical-preset.json`). Human readability handled by the generated block, not the source. |
+| 3 | Generator ownership | **Repo-root `scripts/`** (dev-time tool) | Not shipped inside any skill — the installed unit carries only the inlined block, so users never get an unusable generator; runtime closure scans installed skills only, so a repo-root tool is legitimate. |
+| 4 | Consistency gate placement | **Add a job to `skill-closure-lint`** | It already triggers unconditionally and owns a required job; adding a job avoids reconfiguring branch protection and the path-filtered-required-check BLOCKED-PR trap (#211/#212). The job re-renders and asserts byte equality. |
+
+Note on #1: the *declaration* location (fenced JSON in SKILL.md body, Q4/Q5) and
+the *generated-block* location (this ruling) are distinct decisions; both now
+resolve to SKILL.md but for different reasons — declaration is human-authored
+metadata, block is generated content.
 - **Rule source directory + doc-map registration (zj ruling 2026-11-18,
   2nd revision)**: RESOLVED in principle — a **new dedicated directory**, never
   a reuse of `docs/ontology/`. Rejected: seeding the authority from the existing
@@ -415,10 +432,9 @@ mechanism re-interprets it, and the context should carry the corrected form:
   defines base skill as carrying "shared executable machinery" — the name would
   misread as reusable *code*, the exact runtime-import mechanism Q2 rejects.
   Also rejected bare `docs/conventions/` as too vague about whose conventions.
-  Still open: the format (JSON machine-first vs Markdown-with-markers
-  human-first — choose on merit, not to match a legacy schema). It is a
-  long-lived authority needing a doc-map `authority-id` and an ontology
-  `doc-kind`; never under `docs/plans/` (plan-coupling ERROR).
+  **Format CLOSED 2026-11-18 (8th ruling): JSON, machine-first** (see the ruled
+  table above). It is a long-lived authority needing a doc-map `authority-id`
+  and an ontology `doc-kind`; never under `docs/plans/` (plan-coupling ERROR).
 - **ADR 0007 / ontology.schema.json conflict (introduced by the zj revision;
   sharpened in the 2nd revision)**: `docs/ontology/ontology.schema.json:8-13`
   G_governance states the G-layer *vocabulary* is modelled there but the
@@ -433,12 +449,10 @@ mechanism re-interprets it, and the context should carry the corrected form:
   Take the opportunity to reconcile the model with the Q3 取证 facts explicitly
   rather than inheriting its current content. Do not leave the two representations
   to drift.
-- **Generator ownership**: repo root `scripts/` (dev-time tool, not shipped in
-  any skill) vs inside the base skill. Runtime closure only scans installed
-  skills, so a repo-root dev tool is legitimate — confirm before building.
-- **Gate placement**: add to `skill-closure-lint` (has a required job) or a new
-  required workflow? Must be **unconditionally triggered** (path-filtered
-  required checks caused past BLOCKED PRs).
+- **Generator ownership / gate placement**: both RULED in the 8th revision
+  table above (repo-root `scripts/`; add a job to `skill-closure-lint`). The gate
+  job must be **unconditionally triggered** — path-filtered required checks
+  caused past BLOCKED PRs (#211/#212).
 - **Relationship to Q3**: RESOLVED below — the rule source carries the naming
   **syntax core** plus the `doc-kind` / `authority` **value domains + binding
   semantics**; it does not carry semantic payload or lifecycle/diagnostic codes.
@@ -605,10 +619,11 @@ answers. Ordered by dependency.
    (zj): NO MERGE + add a witness field.** The two skills stay separate; the
    composition gap is fixed inside ontology's report contract, not by moving
    skill boundaries. See "Merge question" section below.
-8. **Relationship to issue #264 P0.** The `<topic>` naming open item becomes a
-   dependency of this task, not an independent ruling. Decide whether to close
-   that item as "deferred to bucket redesign" and how to cross-link without
-   creating a durable-doc → plan-coupling ERROR.
+8. ~~**Relationship to issue #264 P0.**~~ **RESOLVED 2026-11-18:** the `<topic>`
+   naming item was **not** deferred — it was closed in P0 v8 by reusing the Q3
+   naming-syntax core. This bucket redesign is where that shared core gets its
+   single authoritative home; cross-linking stays in process material only, so
+   no durable-doc → plan-coupling ERROR arises.
 
 ## Close-out plan (not now)
 
