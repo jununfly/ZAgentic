@@ -7,7 +7,7 @@
       "id": "1",
       "uid": "01a1ee8525c6-0838e15fa0",
       "label": "codebase-docs 契约可执行性与 bucket 重构",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": null,
       "children": [
@@ -28,7 +28,7 @@
           "note": "目标项目 ZAgentic；节点执行可在项目规则内修改目标项目（本任务只产 roadmap 过程产物，落 docs/plans/）"
         }
       ],
-      "notes": "",
+      "notes": "codebase-docs 契约可执行性与 bucket 重构全部完成（1-1 canonical-preset 单一源+双层参照系 / 1-2 共享规则单一权威源+发布期 inline+三检查+CI / 1-3 bucket 重排：删 zj-grill-with-docs + portability caveat / 1-4 close-out：issue #264 关闭 + ADR 0013 归档 + 过程材料清理）。四子树全 completed，根闭合。长期权威落位：ADR 0007 amendment（共享源）、ADR 0013（Ruling 1）、docs/skill-conventions/（共享 core）、PRD portability boundary、bucket README counts、ZJ-CONTEXT base skill 实例。PR #268/#269/#270/#271/#272 已合入 main。",
       "layer": "plan",
       "rounds": 1
     },
@@ -373,7 +373,7 @@
       "id": "1-4",
       "uid": "01a1ee8594c4-36ff6ec6d8",
       "label": "收尾与 close-out",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -382,7 +382,7 @@
         "1-4-3"
       ],
       "decisions": [],
-      "notes": "1-4 close-out 子树启动：1-4-1 已完成（issue #264 已 CLOSED/COMPLETED，PR #271 固化组合验收 fixture 139/139），1-4-2（归档 durable conclusions）与 1-4-3（清理过程材料，blocked by e9）仍 open。父节点随子节点开工转 in_progress。",
+      "notes": "1-4 close-out 子树全部完成：1-4-1 issue #264 CLOSED/COMPLETED（PR#271 固化组合验收 fixture）、1-4-2 归档 durable conclusions（ADR 0013 双层参照系，另三目标审计已落位）、1-4-3 清理过程材料（删 SCOPED-CONTEXT.md、保留 roadmap envelope）。全子节点 completed，父节点随闭合转 completed。",
       "layer": "plan",
       "rounds": 1
     },
@@ -428,18 +428,25 @@
       "id": "1-4-3",
       "uid": "01a1ee85988b-8a46831e1e",
       "label": "清理 docs/plans/ 过程材料",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
-      "notes": "",
-      "layer": "plan"
+      "decisions": [
+        {
+          "q": "1-4-3 清理 docs/plans/ 过程材料的范围与 envelope 保留如何裁决？",
+          "answer": "scope gate=Product execution（roadmap close-out 子树最后节点）。清理范围=仅删 SCOPED-CONTEXT.md，保留 roadmap.json(SoT)+ROADMAP.md(zj-roadmap-authority/v1 信封载体)作为执行档案。依据：①原始规划 Close-out plan 第4条明确『Clean up this docs/plans/ file per ADR 0010 once its content is absorbed』——this file 指 SCOPED-CONTEXT.md；②ADR 0010 定 docs/plans/ 为 Process 暂存区、close-out 后清理、语义写入 ontology；③上一轮给用户的方向预告明确『保留 roadmap 权威 envelope』。删除前 gating 取证：durable conclusions 已由 1-4-2 归档（ADR 0013 Ruling1 / ADR 0007 amendment 共享源 / PRD portability / bucket README / ZJ-CONTEXT）；zj verbatim 方法论属 user memory 既有非本 redesign 独有；doc-map 与 ontology 页未登记该页（仅 gitignored graph.json 有节点，重 extract 消失）；dangling 0/0（SCOPED-CONTEXT 提及在 skill-conventions.json rationale 里是历史 provenance 非路径，不报且按历史事实保留不改）；roadmap.json 内部 notes 对 SCOPED-CONTEXT 行号的引用是过程态历史记录、self-contained 不改写。验证链：删后重 extract graph（0013 保留、SCOPED-CONTEXT 节点消失）+ dangling/authority-check/closure/shared3check/ontology validate + 根 tests + ontology tests 全绿。不新增测试（纯清理）。",
+          "note": "删除 tracked 文件用 git rm（可从 git 历史恢复，非不可逆）。branch feat/closeout-cleanup。"
+        }
+      ],
+      "notes": "1-4-3 清理 docs/plans/ 过程材料完成。范围裁决：仅删 SCOPED-CONTEXT.md（原始规划 Close-out 第4条 this file；内容已由 1-4-2 全部归档到长期权威），保留 roadmap.json(SoT)+ROADMAP.md(zj-roadmap-authority/v1 信封载体)作执行档案——承接上一轮『保留 roadmap 权威 envelope』预告，不删 SoT。gating 取证：doc-map/ontology 页未登记该页、zj verbatim 方法论属 user memory 既有、dangling 0/0、skill-conventions.json rationale 的历史 provenance 非路径按历史事实保留不改、roadmap.json 内部对 SCOPED-CONTEXT 的行号引用是过程态历史 self-contained 不改写。执行：git rm SCOPED-CONTEXT.md（可从 git 历史恢复）+ 重 extract graph（节点 139→138、SCOPED-CONTEXT 消失、ADR0013 保留）。验证：五门禁全绿（dangling 0/0、authority clean、closure 0E0W、shared 3check PASS、ontology validate 0 ERROR 且 WARN 4→3 少一条 SCOPED-CONTEXT doc-kind 预本体期项）；根 tests 346/346、ontology 139/139；worktree 无测试残留。不新增测试（纯清理）。branch feat/closeout-cleanup。",
+      "layer": "plan",
+      "rounds": 1
     }
   },
   "metadata": {
     "created": "2026-11-18 19:57:45",
-    "updated": "2026-11-19 01:27:30",
+    "updated": "2026-11-19 01:42:31",
     "md_file": "ROADMAP.md"
   },
   "edges": [
