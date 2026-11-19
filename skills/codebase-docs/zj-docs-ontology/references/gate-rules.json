@@ -14,7 +14,8 @@
     "CONFIRMATION_BASELINE_LOST": "declared pass but proposal/checklist missing; an audit-trail-requiring consumer may gate",
     "PRESET_UNAVAILABLE": "canonical preset absent; a consumer that requires the preset may gate",
     "EXEC_CHECKLIST_NOT_DECLARED": "validate ran with no pass topic; a consumer that requires a full pass may gate (issue #264)",
-    "RENAME_AWAITING_CONFIRMATION": "git-detected rename not yet confirmed in the proposal's moves; a consumer that requires Human-confirmed renames may gate (issue #275)"
+    "RENAME_AWAITING_CONFIRMATION": "git-detected rename not yet confirmed in the proposal's moves; a consumer that requires Human-confirmed renames may gate (issue #275)",
+    "CAPABILITY_NOT_COVERED": "the declared object requests docs-system ontology decomposition/recomposition, which this skill does not cover; a consumer that forbids green-masked uncovered requests may gate (issue #275)"
   },
   "never_gate_signals": {
     "PRESET_DIVERGENCE": "permitted target-repo divergence; escalating would punish legitimate customisation",

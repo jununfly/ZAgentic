@@ -291,7 +291,11 @@ class RenameTest(Ruling1Case):
 
 
 class ExitCodeAllowlistTest(Ruling1Case):
-    """Cross-cutting line 163: 5 ERROR + 7 signal, explicit allowlists."""
+    """Cross-cutting line 163: 5 ERROR + 8 signal, explicit allowlists.
+
+    The eighth signal is CAPABILITY_NOT_COVERED (issue #275 Fix 1b): the
+    uncovered-request declaration. Signal-only by the same ruling — a
+    capability statement is not a mechanical fact."""
 
     def test_five_error_codes_are_explicit(self) -> None:
         self.assertEqual(
@@ -303,10 +307,11 @@ class ExitCodeAllowlistTest(Ruling1Case):
             TOOL.ERROR_CODES,
         )
 
-    def test_seven_signal_codes_are_explicit(self) -> None:
+    def test_signal_codes_are_explicit(self) -> None:
         self.assertEqual(
             frozenset({
-                "BASELINE_NOT_APPLICABLE", "CONFIRMATION_BASELINE_LOST",
+                "BASELINE_NOT_APPLICABLE", "CAPABILITY_NOT_COVERED",
+                "CONFIRMATION_BASELINE_LOST",
                 "PRESET_DIVERGENCE", "PRESET_UNAVAILABLE",
                 "EXEC_STEP5_FINGERPRINT_MISMATCH", "EXEC_CHECKLIST_NOT_DECLARED",
                 "RENAME_AWAITING_CONFIRMATION",

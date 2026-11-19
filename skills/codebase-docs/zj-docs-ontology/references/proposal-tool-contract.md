@@ -17,6 +17,37 @@ against the map, because the contract puts the binding on the map. Being a
 failure to settle, not a signal to note and move on. Detection lives entirely in
 the map text, so it costs no extra reads.
 
+## Object of governance and capability boundary (issue #275 Fix 1)
+
+`--object <declaration>` is the first-class statement of what the pass
+governs: a directory relative to the governed repo root, or the Human's
+declaration text. With no flag the report carries the default `docs` under
+the repo root with `source: "derived"` — derivable, but never silent. The
+report splits the old ambiguous word "scope" into two top-level fields:
+
+- `object_of_governance` — the governed object boundary, its source
+  (`declared` / `derived`), the raw declaration text, and whether it
+  resolves to an existing directory. A declared object that does not exist
+  is reported as a fact (`exists: false`); the tool does not guess a better
+  object.
+- `pass_topic` — the checklist output key (`--topic`), unchanged in
+  meaning.
+
+Every report also carries a `capability_boundary` block: this skill covers
+the governance layer only; product-domain ontology modelling and
+decomposing/recomposing the docs system into entity/attribute/relation/rule
+models are **not** covered, with the owning alternatives named
+(`zj-codebase-design` or a dedicated ontology-design skill).
+
+When the declaration text carries the request features of that uncovered
+class (heuristic: an ontology-modelling term and a decomposition/recomposition
+action term co-occurring), the report emits `CAPABILITY_NOT_COVERED` —
+**signal** (exit zero), listed in `gate-rules.json` `escalatable_signals`.
+The heuristic is deliberately signal-only: it is a request-classifier, not a
+mechanical fact, so it must never gate the tool's own exit code. Its purpose
+is that a green governance run cannot silently stand in for the uncovered
+request (issue #275 Acceptance 2).
+
 ## Execution checklist and confirmation ledger (Rulings 2 + 4)
 
 A full governance pass is keyed by an explicit **topic**:
