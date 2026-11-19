@@ -68,6 +68,11 @@ class RuleConsistencyTest(unittest.TestCase):
     def test_the_new_bare_validate_signal_is_escalatable(self) -> None:
         self.assertIn("EXEC_CHECKLIST_NOT_DECLARED", self.rules["escalatable_signals"])
 
+    def test_rename_awaiting_confirmation_is_escalatable(self) -> None:
+        """Issue #275 defect B: an unconfirmed rename is a signal a consumer
+        may gate on; confirming it in the proposal's moves clears it."""
+        self.assertIn("RENAME_AWAITING_CONFIRMATION", self.rules["escalatable_signals"])
+
     def test_fingerprint_signal_is_never_gate(self) -> None:
         self.assertIn("EXEC_STEP5_FINGERPRINT_MISMATCH", self.rules["never_gate_signals"])
 

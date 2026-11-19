@@ -31,7 +31,7 @@
       "id": "1-1",
       "uid": "01a1f344d2ae-636a16c36d",
       "label": "PR1 工具正确性：Fix 2+3+6（witness 单基准 / moves 可注入 / 输出锚定）",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -41,7 +41,8 @@
       ],
       "decisions": [],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-2": {
       "id": "1-2",
@@ -95,7 +96,7 @@
       "id": "1-1-1",
       "uid": "01a1f344d65b-8c5a771783",
       "label": "Fix 2 witness 路径单基准：emit 写纯文件名、inspect 统一 case_dir、删 root 基准（TDD 红→绿，修 L1/L2 断言）",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
@@ -104,16 +105,22 @@
           "q": "witness 路径用哪个解析基准？",
           "answer": "单一基准 = case_dir。emit 只写纯文件名 architecture-validator.txt，inspect 相对路径一律 case_dir 解析，删 architecture_witness 的 root 基准分支；同步修 L1（test_checklist.py:146 错断言）与 L2（双基准）",
           "note": ""
+        },
+        {
+          "q": "无 topic 的 --validate 分支（--arch-witness）相对路径基准？",
+          "answer": "case_dir 的等价物 = out zone base（out or DEFAULT_OUT）：无 topic 时不存在 case_dir，witness 相对路径按 checklist 输出区解析，与有 topic 分支同一基准族",
+          "note": ""
         }
       ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-1-2": {
       "id": "1-1-2",
       "uid": "01a1f344d74d-d4774e39f8",
       "label": "Fix 3 moves 注入 + rename 三级判定：git 原生检测→pending_moves(signal)→确认豁免；删 stub workaround",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
@@ -122,16 +129,22 @@
           "q": "moves 如何注入、rename 如何豁免？",
           "answer": "git 原生证据（porcelain=v1 -z + diff -M）自动检出进 pending_moves（signal: RENAME_AWAITING_CONFIRMATION），Human 在 proposal 确认后豁免；无任何 rename 证据的消失仍 UNDECLARED_RETIREMENT(ERROR)；Ruling v7 修订——git 原生证据不是 hash-pairing；删 stub workaround（L3/L8）",
           "note": ""
+        },
+        {
+          "q": "unstaged 文件系统 mv（未暂存）如何判定？",
+          "answer": "保持 fail-closed：新路径 untracked，porcelain 与 diff -M 均无法配对，git 本身无 rename 证据 → UNDECLARED_RETIREMENT(ERROR) 直到 git add 暂存后降级为 signal。git 原生声明是唯一采信证据，不做自行内容配对。另：合规 rename 须同步修 map 链接，MAP_LINK_BROKEN 独立成立",
+          "note": ""
         }
       ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-1-3": {
       "id": "1-1-3",
       "uid": "01a1f344d83d-a57f83b65a",
       "label": "Fix 6 DEFAULT_OUT 锚定 {repo-root}/tmp/skills-outputs/zj-docs-ontology",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-1",
       "children": [],
@@ -140,10 +153,21 @@
           "q": "checklist 输出区锚在哪？",
           "answer": "锚定 {repo-root}/tmp/skills-outputs/zj-docs-ontology，消掉 CWD 隐变量；SKILL.md 声明路径不再随启动目录漂移",
           "note": ""
+        },
+        {
+          "q": "相对 --out 是否也锚 repo-root（而非只改默认值）？",
+          "answer": "是。只锚默认值会留半条 CWD 隐变量（默认与显式相对 out 语义分叉）；统一 resolve_out_base(root, out)：绝对 out 原样、其余 root 锚定。1-1-1 的 relative-out 用例按新契约改写（CWD 由输入降级为无关变量）；fixture 卫生同步补 tearDown 清理（相对 out 会写进 fixture 根）",
+          "note": ""
+        },
+        {
+          "q": "1-1-3 两个过程发现的根因处置？",
+          "answer": "① fixture 卫生：根因修复 = 写型测试跑 fixture 一次性克隆（copytree 含 .git），tracked fixture 永不被写，删除 tearDown 擦除补丁；② CWD 隐变量：全脚本清扫证实无 getcwd/Path.cwd、DEFAULT_OUT 唯一相对字面量且只流经 resolve_out_base/help，新增 source-level 回归钉（函数 span 判定）防未来绕过",
+          "note": ""
         }
       ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-2-1": {
       "id": "1-2-1",
@@ -286,7 +310,7 @@
   },
   "metadata": {
     "created": "2026-11-19 18:05:15",
-    "updated": "2026-11-19 18:07:09",
+    "updated": "2026-11-19 21:12:19",
     "md_file": "ROADMAP.md"
   },
   "edges": [

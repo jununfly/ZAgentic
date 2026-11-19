@@ -23,11 +23,12 @@ source: zagentic
 
 ```bash
 # carrier 落在 docs/plans/（ADR 0010：过程/计划类产物区）；ROADMAP.md 与之同目录。
-python3 "$SKILL_ROOT/scripts/roadmap_cli.py" init docs/plans/roadmap.json --title "项目名" --md-file "ROADMAP.md"
-python3 "$SKILL_ROOT/scripts/roadmap_cli.py" add docs/plans/roadmap.json 1 "第一步" --status in_progress
-python3 "$SKILL_ROOT/scripts/roadmap_cli.py" decide docs/plans/roadmap.json 1 "后端用什么？" "Python + FastAPI"
-python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update docs/plans/roadmap.json 1-1 --status completed
-python3 "$SKILL_ROOT/scripts/roadmap_cli.py" render docs/plans/roadmap.json   # 每次实质工作后必跑：md 是 Human 唯一窗口
+# 示例行引用过程产物路径属 skill 用法展示，逐行登记 authority 豁免（allow 不跨行）。
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" init docs/plans/roadmap.json --title "项目名" --md-file "ROADMAP.md"  # roadmap-authority-allow: governance-example
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" add docs/plans/roadmap.json 1 "第一步" --status in_progress  # roadmap-authority-allow: governance-example
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" decide docs/plans/roadmap.json 1 "后端用什么？" "Python + FastAPI"  # roadmap-authority-allow: governance-example
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" update docs/plans/roadmap.json 1-1 --status completed  # roadmap-authority-allow: governance-example
+python3 "$SKILL_ROOT/scripts/roadmap_cli.py" render docs/plans/roadmap.json   # 每次实质工作后必跑：md 是 Human 唯一窗口；roadmap-authority-allow: governance-example
 ```
 
 > 落盘约定（ADR 0010）：carrier + `ROADMAP.md` 留在 `docs/plans/`（git 跟踪、计划 close-out 后清理）；

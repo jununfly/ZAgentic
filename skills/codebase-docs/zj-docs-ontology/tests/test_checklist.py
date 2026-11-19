@@ -16,6 +16,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -143,7 +144,9 @@ class EmitChecklistTest(unittest.TestCase):
         self.assertEqual(TOOL.confirmation_id(proposal), checklist["confirmation_id"])
         self.assertEqual([1, 2, 3, 4, 5], [s["step"] for s in checklist["steps"]])
         step5 = checklist["steps"][4]
-        self.assertEqual(str(case_dir / "architecture-validator.txt"), step5["artifact"])
+        # Single basis (issue #275 defect A): the declared artifact is a bare
+        # filename; inspect resolves it against the case dir.
+        self.assertEqual("architecture-validator.txt", step5["artifact"])
         self.assertIsNone(step5["fingerprint"])
 
 
@@ -313,6 +316,81 @@ class BareValidateCommandLineTest(unittest.TestCase):
                 "--arch-witness", str(MAP_FIXTURE / "AGENTS.md"),
             ),
         )
+
+
+class WitnessPathBasisTest(unittest.TestCase):
+    """Issue #275 defect A: the emit-declared Step 5 path and the
+    inspect-resolved path must be the same path (single basis: case_dir).
+
+    The declared artifact is a bare filename resolved against the case dir.
+    Regression covers both bases end-to-end: with an absolute `--out` the old
+    double-join bug was invisible (absolute paths skip the join), while the
+    documented relative workflow (SKILL.md:77-82) always reported
+    `EXEC_STEP5_ARTIFACT_MISSING` with the witness sitting at the declared
+    path. Falsifiable: remove the witness and the missing ERROR must return.
+    """
+
+    TOPIC_X = "witness-path-basis"
+
+    def setUp(self) -> None:
+        # Root-cause test hygiene (issue #275 follow-up): the CLI writes its
+        # output zone under the governed repo root, so runs against the
+        # tracked fixture would mutate it. Every run here targets a
+        # throwaway clone; the shared fixture is never written.
+        self._tmp = Path(tempfile.mkdtemp(prefix="witness-basis-"))
+        self.fixture = self._tmp / "existing-map"
+        shutil.copytree(MAP_FIXTURE, self.fixture)
+
+    def tearDown(self) -> None:
+        if TMP.exists():
+            shutil.rmtree(TMP)
+        shutil.rmtree(self._tmp, ignore_errors=True)
+
+    def run_cli(self, *args: str, cwd: Path) -> tuple[int, dict]:
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT), *args],
+            capture_output=True, text=True, cwd=str(cwd),
+        )
+        self.assertTrue(proc.stdout.strip(), proc.stderr)
+        return proc.returncode, json.loads(proc.stdout)
+
+    def _roundtrip(self, out_arg: str, work: Path) -> tuple[int, str]:
+        self.run_cli(
+            str(self.fixture), "--proposal", "--topic", self.TOPIC_X,
+            "--emit-checklist", "--out", out_arg, cwd=work,
+        )
+        # Fix 6 (issue #275): a relative --out anchors to the repo root, not
+        # the launch directory (work). The absolute case is unchanged.
+        out_base = Path(out_arg) if Path(out_arg).is_absolute() else self.fixture / out_arg
+        case_dir = out_base / self.TOPIC_X
+        checklist = json.loads(
+            (case_dir / "checklist.json").read_text(encoding="utf-8")
+        )
+        declared = [s["artifact"] for s in checklist["steps"] if s["step"] == 5][0]
+        # Executor side, single basis: the declared artifact resolves against
+        # the case dir — the same basis inspect uses — so emit-declared path
+        # and inspect-resolved path are the same path by construction.
+        witness = Path(declared) if Path(declared).is_absolute() else case_dir / declared
+        witness.write_text("validator output\n", encoding="utf-8")
+        code, report = self.run_cli(
+            str(MAP_FIXTURE), "--validate", "--topic", self.TOPIC_X,
+            "--out", out_arg, cwd=work,
+        )
+        return code, declared
+
+    def test_relative_out_declared_path_is_found(self) -> None:
+        work = TMP / "witness-basis-rel"
+        work.mkdir(parents=True)
+        code, declared = self._roundtrip("out-rel", work)
+        self.assertEqual("architecture-validator.txt", declared)
+        self.assertEqual(0, code, "witness at the declared path must validate clean")
+
+    def test_absolute_out_declared_path_is_found(self) -> None:
+        work = TMP / "witness-basis-abs"
+        work.mkdir(parents=True)
+        code, declared = self._roundtrip(str(work / "out-abs"), work)
+        self.assertEqual("architecture-validator.txt", declared)
+        self.assertEqual(0, code, "witness at the declared path must validate clean")
 
 
 if __name__ == "__main__":
