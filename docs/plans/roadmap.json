@@ -7,7 +7,7 @@
       "id": "1",
       "uid": "01a1f34480ef-23c975bcd3",
       "label": "Issue #275 一步到位修复（zj-docs-ontology / zj-docs-architecture）",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": null,
       "children": [
@@ -93,7 +93,7 @@
       "id": "1-4",
       "uid": "01a1f344d57d-768bdec3ab",
       "label": "收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -358,11 +358,17 @@
       "id": "1-4-3",
       "uid": "01a1f344e06c-69c41ca659",
       "label": "CI 门禁双向验 + issue #275 验收对照报告并关闭",
-      "status": "in_progress",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "关闭方式与门禁证据？",
+          "answer": "本地双向验（ontology 195 + architecture 38 测试、closure 0 ERROR）+ main ddab5d3 CI 双 workflow 绿；PR #280 合并后贴验收报告，issue 随修复 PR 自动关闭（报告评论 issuecomment-7015465360）",
+          "note": ""
+        }
+      ],
       "notes": "",
       "layer": "plan",
       "rounds": 1
@@ -370,7 +376,7 @@
   },
   "metadata": {
     "created": "2026-11-19 18:05:15",
-    "updated": "2026-11-20 00:25:27",
+    "updated": "2026-11-20 00:37:28",
     "md_file": "ROADMAP.md"
   },
   "edges": [
