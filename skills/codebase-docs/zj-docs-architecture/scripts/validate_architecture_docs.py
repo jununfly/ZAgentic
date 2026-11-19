@@ -16,6 +16,10 @@ POINTER_RE = re.compile(r"(?im)^\s*docs-map:\s*([^\s`]+)\s*$")
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 INLINE_PATH_RE = re.compile(r"`([A-Za-z0-9_./-]+(?:\.[A-Za-z0-9_-]+)?)`")
 AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
+# issue #275 Fix 4 (L4): the contract entry is the map entry's explicit role
+# declaration. The lookbehind keeps `page-role:` (a page-side residue) from
+# matching here — map entry level is the only legal declaration position.
+ROLE_RE = re.compile(r"(?<![\w-])role:\s*`?(primary|supporting)`?", re.I)
 HEADING_RE = re.compile(r"^(#{2,6})\s+(.+?)\s*$", re.M)
 
 # Shared value domains and the naming syntax core are NOT defined here. They
@@ -88,6 +92,10 @@ class Diagnostic:
 class MapEntry:
     target: Path
     authority_id: str | None
+    # issue #275 Fix 4: "primary" applies the full primary contract,
+    # "supporting" is fully exempt, and the declaration lives only on the map
+    # entry — never inferred from a path substring.
+    role: str
 
 
 # A Source map may cite a stable external reference, so "path_from() returned
@@ -217,16 +225,34 @@ def naming_diagnostics(stem: str) -> list[tuple[str, str]]:
     return found
 
 
-def map_entries(root: Path, map_path: Path, text: str) -> list[MapEntry]:
+def map_entries(root: Path, map_path: Path, text: str) -> tuple[list[MapEntry], list[Path]]:
+    """Collect declared map entries and undeclared architecture links.
+
+    issue #275 Fix 4 (L4): an entry is a link whose map block carries an
+    explicit `role:` declaration — the path substring judgment is gone. A
+    link without a declaration is not an entry (fail-open: no contract is
+    applied), but if it points into the repository's architecture root it is
+    reported back so the validator can emit a `PAGE_ROLE_UNDECLARED` signal.
+    That detection is zero-read: opening undeclared pages to inspect them
+    would break the bounded-read contract the read-boundary fixture pins.
+    """
     entries: list[MapEntry] = []
+    undeclared: set[Path] = set()
+    architecture_root = root / "docs" / "architecture"
     blocks = re.split(r"(?m)^(?=-\s+)", text)
     for block in blocks:
         authority = AUTHORITY_RE.search(block)
+        role_match = ROLE_RE.search(block)
+        role = role_match.group(1).lower() if role_match else None
         for value in LINK_RE.findall(block):
             target = path_from(root, value, map_path.parent)
-            if target and "/architecture/" in target.as_posix():
-                entries.append(MapEntry(target, authority.group(1) if authority else None))
-    return entries
+            if target is None:
+                continue
+            if role is not None:
+                entries.append(MapEntry(target, authority.group(1) if authority else None, role))
+            elif target == architecture_root or architecture_root in target.parents:
+                undeclared.add(target)
+    return entries, sorted(undeclared)
 
 
 def source_paths(root: Path, page_path: Path, text: str) -> Iterable[tuple[str, Path | None]]:
@@ -256,7 +282,19 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
             return diagnostics, reader.paths, {"origin": origin}
 
     map_text = reader.text(map_path)
-    entries = map_entries(root, map_path, map_text)
+    entries, undeclared_targets = map_entries(root, map_path, map_text)
+    # issue #275 Fix 4: an undeclared page inside the architecture root gets
+    # one reminder signal (declaration-missing = signal, per the severity
+    # carve-out) and no contract. The signal is emitted before the empty-entry
+    # early return so a legacy map with zero role declarations still shows
+    # what to migrate.
+    for target in undeclared_targets:
+        diagnostics.append(Diagnostic(
+            "PAGE_ROLE_UNDECLARED",
+            target.relative_to(root).as_posix(),
+            "linked architecture page has no role declaration in the map; declare role: primary or role: supporting on the map entry (fail-open: no contract is applied)",
+            signal=True,
+        ))
     if not entries:
         architecture_root = root / "docs" / "architecture"
         has_unmapped_page = architecture_root.is_dir() and any(architecture_root.rglob("*.md"))
@@ -281,6 +319,19 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
         kind = meta.get("doc-kind")
         authority = meta.get("authority")
         is_navigation = kind in MAP_KINDS
+        # issue #275 Fix 4: a page-side `page-role:` residue is a second
+        # declaration source; only the map entry may declare the role.
+        if "page-role" in meta:
+            diagnostics.append(Diagnostic(
+                "ROLE_DECLARATION_OUT_OF_MAP",
+                relative,
+                "page-side page-role is not a legal declaration position; declare role on the map entry instead",
+                signal=True,
+            ))
+        # A declared supporting view is fully exempt from the primary
+        # contract (issue #275 Fix 4): existence above is the only check.
+        if entry.role == "supporting":
+            continue
         if kind not in VALID_ARCHITECTURE_KINDS:
             diagnostics.append(Diagnostic("PAGE_KIND_INVALID", relative, "doc-kind must be an architecture view or map"))
         if authority not in VALID_AUTHORITIES:

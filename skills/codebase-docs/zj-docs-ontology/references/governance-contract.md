@@ -50,6 +50,31 @@ package code, and `docs/` carries what crosses packages. When a fact could sit
 in two places, the tie-breaker is which page a reader would blame when the fact
 goes stale.
 
+The rule also has a mechanical signal (issue #275 Fix 5). The governance
+report carries a `duplicate_fact_scan` block with two coarse filters, both
+signal-only — they never become ERRORs and never change exit semantics (the
+same boundary the doc-slop audit holds: a scan is an audit surface, not a
+gate; a consumer escalates via `gate-rules.json` if it wants one to gate):
+
+- `FACT_NO_SINGLE_HOME` — map-covered pages share one normalized heading and
+  no page in the cluster declares `authority: primary`. One signal per
+  cluster, naming the pages; the remedy is to pick or declare the single
+  home, not to delete either page on the signal alone.
+- `PARALLEL_ONTOLOGY_SUSPECTED` — an active page (untracked or modified per
+  `git status`; with no git repository the scan has no activity evidence and
+  skips) outside the map coverage whose headings overlap the covered heading
+  pool. This is the mechanical trace of the failure mode where new documents
+  pile up in an unmapped directory until a parallel second docs system
+  exists: the remedy is to map it, derive it, or retire it.
+
+Both filters are deliberately coarse and report the duplicated fact plus the
+pages holding it — never a similarity percentage. Two noise guards came out of
+a real run on this repository's own docs system: the map itself is never a
+candidate (it is not inside its own coverage, and its navigation headings
+overlap the pool by construction), and ADR pages are exempt from the heading
+cluster scan (their headings are shaped by the ADR template, so template reuse
+across ADRs is not fact drift).
+
 ## Page and authority contract
 
 `doc-kind` is one of `method`, `prd`, `architecture-map`,

@@ -1,6 +1,6 @@
 # Documentation map
 
-- [System overview](architecture/ta-overview.md) — bounded-read fixture; authority-id: architecture.overview.system
+- [System overview](architecture/ta-overview.md) — bounded-read fixture; role: primary; authority-id: architecture.overview.system
 
 ## Process
 

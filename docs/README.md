@@ -29,18 +29,18 @@ doc-kind: doc-map
 `Agreement` / `CapabilitySpec` / `Contract` / `DocMap`）。地图把每个 `authority-id` 绑到一页。
 
 ### ArchitectureView（架构手册主视图，authority: primary）
-- [architecture/README.md](architecture/README.md) — 当前架构是什么、哪页答哪问？; authority-id: `architecture.map.zagentic`
-- [architecture/ta-zagentic-overview.md](architecture/ta-zagentic-overview.md) — ZAgentic 是什么/不是什么？; authority-id: `architecture.overview.zagentic`
-- [architecture/ta-zagentic-layers.md](architecture/ta-zagentic-layers.md) — 层间允许/禁止哪些依赖？; authority-id: `architecture.layers.zagentic`
-- [architecture/ta-zagentic-pipelines.md](architecture/ta-zagentic-pipelines.md) — 安装/校验/治理流程端到端？; authority-id: `architecture.flow.install-and-docs-governance`
-- [architecture/ta-skill-bucket-boundary.md](architecture/ta-skill-bucket-boundary.md) — 单一共享桶纪律是什么？; authority-id: `architecture.cross-cutting.bucket-discipline`
-- [architecture/ta-skill-bucket-engineering.md](architecture/ta-skill-bucket-engineering.md) — engineering 桶拥有什么？; authority-id: `architecture.subsystem.bucket.engineering`
-- [architecture/ta-skill-bucket-codebase-docs.md](architecture/ta-skill-bucket-codebase-docs.md) — codebase-docs 桶拥有什么？; authority-id: `architecture.subsystem.bucket.codebase-docs`
-- [architecture/ta-skill-bucket-productivity.md](architecture/ta-skill-bucket-productivity.md) — productivity 桶拥有什么？; authority-id: `architecture.subsystem.bucket.productivity`
-- [architecture/ta-skill-bucket-misc.md](architecture/ta-skill-bucket-misc.md) — misc 桶拥有什么？; authority-id: `architecture.subsystem.bucket.misc`
-- [architecture/ta-skill-bucket-research.md](architecture/ta-skill-bucket-research.md) — research 桶拥有什么？; authority-id: `architecture.subsystem.bucket.research`
-- [architecture/ta-skill-bucket-ui.md](architecture/ta-skill-bucket-ui.md) — ui 桶拥有什么？（2026-10-23 新增，见 ADR 0006）; authority-id: `architecture.subsystem.bucket.ui`
-- [architecture/ta-zagentic-personal-tree.md](architecture/ta-zagentic-personal-tree.md) — personal 树拥有什么？; authority-id: `architecture.subsystem.personal-tree`
+- [architecture/README.md](architecture/README.md) — 当前架构是什么、哪页答哪问？; role: primary; authority-id: `architecture.map.zagentic`
+- [architecture/ta-zagentic-overview.md](architecture/ta-zagentic-overview.md) — ZAgentic 是什么/不是什么？; role: primary; authority-id: `architecture.overview.zagentic`
+- [architecture/ta-zagentic-layers.md](architecture/ta-zagentic-layers.md) — 层间允许/禁止哪些依赖？; role: primary; authority-id: `architecture.layers.zagentic`
+- [architecture/ta-zagentic-pipelines.md](architecture/ta-zagentic-pipelines.md) — 安装/校验/治理流程端到端？; role: primary; authority-id: `architecture.flow.install-and-docs-governance`
+- [architecture/ta-skill-bucket-boundary.md](architecture/ta-skill-bucket-boundary.md) — 单一共享桶纪律是什么？; role: primary; authority-id: `architecture.cross-cutting.bucket-discipline`
+- [architecture/ta-skill-bucket-engineering.md](architecture/ta-skill-bucket-engineering.md) — engineering 桶拥有什么？; role: primary; authority-id: `architecture.subsystem.bucket.engineering`
+- [architecture/ta-skill-bucket-codebase-docs.md](architecture/ta-skill-bucket-codebase-docs.md) — codebase-docs 桶拥有什么？; role: primary; authority-id: `architecture.subsystem.bucket.codebase-docs`
+- [architecture/ta-skill-bucket-productivity.md](architecture/ta-skill-bucket-productivity.md) — productivity 桶拥有什么？; role: primary; authority-id: `architecture.subsystem.bucket.productivity`
+- [architecture/ta-skill-bucket-misc.md](architecture/ta-skill-bucket-misc.md) — misc 桶拥有什么？; role: primary; authority-id: `architecture.subsystem.bucket.misc`
+- [architecture/ta-skill-bucket-research.md](architecture/ta-skill-bucket-research.md) — research 桶拥有什么？; role: primary; authority-id: `architecture.subsystem.bucket.research`
+- [architecture/ta-skill-bucket-ui.md](architecture/ta-skill-bucket-ui.md) — ui 桶拥有什么？（2026-10-23 新增，见 ADR 0006）; role: primary; authority-id: `architecture.subsystem.bucket.ui`
+- [architecture/ta-zagentic-personal-tree.md](architecture/ta-zagentic-personal-tree.md) — personal 树拥有什么？; role: primary; authority-id: `architecture.subsystem.personal-tree`
 
 > **保鲜提示**：架构视图的桶清单由 `ontology/validate.py` 自动核对活树 `skills/`；桶计数以 `ta-zagentic-overview.md` 为唯一真相源，其余页面只链接、不复述。
 

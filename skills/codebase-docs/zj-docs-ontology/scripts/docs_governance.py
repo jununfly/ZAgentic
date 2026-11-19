@@ -707,6 +707,215 @@ def files_under(root: Path, directory: Path) -> list[str]:
     return sorted(relative(root, path) for path in directory.rglob("*") if path.is_file())
 
 
+PAGE_HEADING_RE = re.compile(r"(?m)^#{1,6}\s+(.+?)\s*$")
+
+
+def normalize_heading(text: str) -> str:
+    """Case/punctuation-insensitive heading form; \\w keeps CJK headings intact."""
+    return re.sub(r"[^\w]+", " ", text.lower(), flags=re.UNICODE).strip()
+
+
+def heading_tokens(text: str) -> set[str]:
+    return {token for token in normalize_heading(text).split() if token}
+
+
+def _page_declares_primary(text: str) -> bool:
+    if not text.startswith("---\n"):
+        return False
+    end = text.find("\n---", 4)
+    if end < 0:
+        return False
+    for line in text[4:end].splitlines():
+        key, _, value = line.partition(":")
+        if key.strip() == "authority" and value.strip().strip("\"'").lower() == "primary":
+            return True
+    return False
+
+
+def _page_doc_kind(text: str) -> str | None:
+    if not text.startswith("---\n"):
+        return None
+    end = text.find("\n---", 4)
+    if end < 0:
+        return None
+    for line in text[4:end].splitlines():
+        key, _, value = line.partition(":")
+        if key.strip() == "doc-kind":
+            return value.strip().strip("\"'").lower() or None
+    return None
+
+
+def duplicate_fact_scan(
+    root: Path,
+    map_path: Path,
+    links: list[dict[str, str]],
+    process_names: list[str],
+    reads: list[str],
+) -> tuple[dict[str, object], list[dict[str, str]]]:
+    """One-home-per-fact mechanical signal (issue #275 Fix 5, Acceptance 3).
+
+    Two signal-only surfaces, both deliberately coarse filters that name the
+    duplicated fact and the pages holding it — never a similarity percentage:
+
+      - ``FACT_NO_SINGLE_HOME``: map-covered pages sharing one normalized
+        heading where no page in the cluster declares ``authority: primary``.
+        One signal per cluster.
+      - ``PARALLEL_ONTOLOGY_SUSPECTED``: a ``docs/`` page the map does not
+        cover, with git-native activity evidence (untracked or modified per
+        ``git status --porcelain``), whose headings overlap the covered
+        heading pool (a full heading match, or ≥ 2 shared distinct words).
+        One signal per suspect page. Without a git repository there is no
+        activity evidence and the parallel half of the scan skips.
+
+    Both are declaration-missing signals (L7): they never become ERRORs and
+    never change exit semantics — a consumer escalates via gate-rules.json if
+    it wants the coarse filter to gate. Reads stay bounded: covered pages and
+    active candidates only; process-material and evidence surfaces are never
+    opened.
+    """
+    diagnostics: list[dict[str, str]] = []
+
+    def skip(path_parts: list[str]) -> bool:
+        return any(part in EVIDENCE_NAMES or part in process_names for part in path_parts)
+
+    covered: list[tuple[str, Path, str]] = []  # (rel, path, text)
+    covered_rels: set[str] = set()
+    map_rel = relative(root, map_path)
+    for link in links:
+        target_value = link.get("target", "")
+        if link.get("exists") != "true" or not target_value.endswith(".md"):
+            continue
+        page = root / target_value
+        if not page.is_file() or skip(target_value.split("/")):
+            continue
+        reads.append(target_value)
+        covered.append((target_value, page, page.read_text(encoding="utf-8")))
+        covered_rels.add(target_value)
+
+    # FACT_NO_SINGLE_HOME — identical normalized headings across covered
+    # pages with no primary authority in the cluster. ADRs are exempt: their
+    # headings are shaped by the ADR template, so template reuse across ADRs
+    # is not fact drift (found on a real run: every two-ADR repository would
+    # otherwise report a permanent conflict).
+    clusters: dict[str, list[tuple[str, bool]]] = {}
+    for rel, _page, text in covered:
+        primary = _page_declares_primary(text)
+        if _page_doc_kind(text) == "adr":
+            continue
+        for match in PAGE_HEADING_RE.finditer(text):
+            norm = normalize_heading(match.group(1))
+            if norm:
+                cluster = clusters.setdefault(norm, [])
+                if (rel, primary) not in cluster:
+                    cluster.append((rel, primary))
+    no_home: list[dict[str, object]] = []
+    for norm in sorted(clusters):
+        members = clusters[norm]
+        if len({rel for rel, _ in members}) < 2 or any(primary for _, primary in members):
+            continue
+        pages = sorted({rel for rel, _ in members})
+        no_home.append({"heading": norm, "pages": pages})
+        diagnostics.append({
+            "code": "FACT_NO_SINGLE_HOME",
+            "path": relative(root, map_path),
+            "message": f"no single home for fact '{norm}': {', '.join(pages)} share the heading and none declares authority: primary",
+            "signal": True,
+        })
+
+    # PARALLEL_ONTOLOGY_SUSPECTED — active uncovered pages overlapping the
+    # covered heading pool.
+    pool_tokens: set[str] = set()
+    pool_headings: set[str] = set()
+    for _rel, _page, text in covered:
+        if _page_doc_kind(text) == "adr":
+            continue
+        for match in PAGE_HEADING_RE.finditer(text):
+            norm = normalize_heading(match.group(1))
+            if norm:
+                pool_headings.add(norm)
+                pool_tokens.update(norm.split())
+
+    candidates: list[str] = []
+    git_available = False
+    try:
+        env = {k: v for k, v in os.environ.items() if k != "NODE_OPTIONS"}
+        proc = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z"],
+            cwd=root, env=env, capture_output=True, text=True,
+        )
+        if proc.returncode == 0:
+            git_available = True
+            fields = proc.stdout.split("\0")
+            index = 0
+            while index < len(fields):
+                entry = fields[index]
+                index += 1
+                if len(entry) < 4:
+                    continue
+                status = entry[:2]
+                path_value = entry[3:]
+                if status[0] in ("R", "C"):
+                    index += 1  # -z renames carry the original path next
+                # An untracked directory is reported as the directory itself,
+                # not as per-file records — expand it, or a brand-new docs
+                # subdirectory (the #275 repro) would be invisible here.
+                expanded: list[str] = []
+                if status == "??" and path_value.endswith("/"):
+                    directory = root / path_value
+                    if directory.is_dir():
+                        expanded = sorted(
+                            p.relative_to(root).as_posix()
+                            for p in directory.rglob("*.md")
+                            if p.is_file()
+                        )
+                else:
+                    expanded = [path_value]
+                for md_path in expanded:
+                    if md_path not in covered_rels and md_path.endswith(".md") and md_path.startswith("docs/"):
+                        candidates.append(md_path)
+    except OSError:
+        pass
+    active: list[str] = []
+    parallel: list[dict[str, object]] = []
+    for candidate in sorted(set(candidates)):
+        if candidate == map_rel:
+            # The map is the declaration surface, never a suspect: it is not
+            # inside its own coverage (a map does not link itself), so it
+            # would otherwise surface as an uncovered active page whose
+            # navigation headings overlap the pool by construction (found on
+            # a real run).
+            continue
+        page = root / candidate
+        if not page.is_file() or skip(candidate.split("/")):
+            continue
+        active.append(candidate)
+        text = page.read_text(encoding="utf-8")
+        page_headings = [normalize_heading(m.group(1)) for m in PAGE_HEADING_RE.finditer(text)]
+        page_headings = [norm for norm in page_headings if norm]
+        if not page_headings:
+            continue
+        shared_headings = sorted({norm for norm in page_headings if norm in pool_headings})
+        shared_words = set().union(*(heading_tokens(norm) for norm in page_headings)) & pool_tokens if page_headings else set()
+        if len(shared_headings) >= 1 or len(shared_words) >= 2:
+            overlap = ", ".join(shared_headings) if shared_headings else ", ".join(sorted(shared_words))
+            parallel.append({"page": candidate, "overlap": overlap})
+            diagnostics.append({
+                "code": "PARALLEL_ONTOLOGY_SUSPECTED",
+                "path": candidate,
+                "message": f"active page outside the map coverage overlaps covered headings ({overlap}); a parallel docs system may be forming — map it, derive it, or retire it",
+                "signal": True,
+            })
+
+    block: dict[str, object] = {
+        "covered_scanned": len(covered),
+        "active_candidates": len(active),
+        "git_activity_evidence": git_available,
+        "no_single_home": no_home,
+        "parallel_suspects": parallel,
+    }
+    return block, diagnostics
+
+
 def inventory(root: Path, long_lived_names: list[str], process_names: list[str]) -> dict[str, object]:
     """Inventory the docs tree against preset-derived category names.
 
@@ -946,6 +1155,13 @@ def report(
         links, link_diagnostics = map_links(root, selected, reads)
         proposal["map_links"] = links
         proposal["diagnostics"].extend(link_diagnostics)  # type: ignore[index]
+        # Issue #275 Fix 5: one-home-per-fact mechanical signal — signal-only
+        # (L7), never an ERROR, never a gate by itself.
+        scan_block, scan_diagnostics = duplicate_fact_scan(
+            root, selected, links, process_names, reads
+        )
+        proposal["duplicate_fact_scan"] = scan_block
+        proposal["diagnostics"].extend(scan_diagnostics)  # type: ignore[index]
         retirement, retire_diagnostics = scan_retirement(root, selected, process_names)
         if retirement is not None:
             proposal["retirement"] = retirement
@@ -1014,6 +1230,8 @@ SIGNAL_CODES = frozenset({
     "EXEC_STEP5_FINGERPRINT_MISMATCH",
     "EXEC_CHECKLIST_NOT_DECLARED",
     "RENAME_AWAITING_CONFIRMATION",
+    "FACT_NO_SINGLE_HOME",
+    "PARALLEL_ONTOLOGY_SUSPECTED",
 })
 # Mechanical codes emitted by the current tool (prefix families), plus the
 # explicit allowlist above. Kept as families so a new MAP_/RETIRE_ gate cannot
