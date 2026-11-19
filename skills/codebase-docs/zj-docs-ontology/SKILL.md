@@ -183,8 +183,9 @@ concrete entity types and vocabulary — is the repository's own.
 - Model instance, receipts, and the open-questions ledger live in the
   pass-scoped output zone (`tmp/skills-outputs/zj-docs-ontology/<topic>/`,
   gitignored, ADR 0010). Whether the model instance is also checked into the
-  repository (for example a `docs/ontology/` home) is the repository's own
-  decision — the skill recommends, never forces.
+  repository (a repository-local ontology home) is the repository's own
+  decision — the skill recommends, never forces, and never names a
+  repo-specific path here.
 - Recomposed pages are the docs tree itself (tracked).
 
 ### Mechanical face
