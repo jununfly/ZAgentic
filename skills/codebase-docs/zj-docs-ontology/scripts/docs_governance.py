@@ -517,6 +517,99 @@ def inspect_checklist(
     return {"witness": witness, "diagnostics": diagnostics, "status": "checked"}
 
 
+def resolve_object(root: Path, declaration: str | None) -> dict[str, object]:
+    """First-class object-of-governance declaration (issue #275 Fix 1a, L6).
+
+    ``scope`` used to mean only the pass topic; the boundary of *what is being
+    governed* was inferred from prompt wording. Now it is declared: a
+    declaration that resolves to a directory under the repo root is recorded
+    with ``source: "declared"``; with no declaration the default ``docs`` under
+    the governed repo root is reported with ``source: "derived"`` — derivable,
+    but never silent. A declaration that does not resolve to an existing
+    directory is still recorded (``exists: false``): the tool reports the fact,
+    it does not guess a better object.
+    """
+    if declaration is None:
+        return {
+            "object": "docs",
+            "source": "derived",
+            "declared_by_default": True,
+            "declaration": None,
+            "exists": (root / "docs").is_dir(),
+        }
+    return {
+        "object": declaration,
+        "source": "declared",
+        "declared_by_default": False,
+        "declaration": declaration,
+        "exists": (root / declaration).is_dir(),
+    }
+
+
+# Issue #275 Fix 1b: heuristic request-feature detection for the one request
+# class this skill explicitly does NOT cover. Two term families must co-occur
+# in the object declaration: ontology-modelling terms and decomposition/
+# recomposition action terms. Heuristic only — it produces a signal and never
+# participates in acceptance judgment.
+ONTOLOGY_MODEL_TERMS = (
+    "entity", "attribute", "relation", "rule", "ontology",
+    "实体", "属性", "关系", "规则", "本体",
+)
+DECOMPOSITION_ACTION_TERMS = (
+    "decompos", "recompos", "reorganiz", "restructur",
+    "拆解", "重组", "重构",
+)
+
+
+def capability_boundary_block() -> dict[str, object]:
+    """The declared capability boundary of this skill (issue #275 Fix 1b).
+
+    The governance layer is what this tool checks; product-domain ontology
+    modelling and docs-system decomposition/recomposition are explicitly NOT
+    covered, with the capabilities that do own that work named — so a green
+    governance report can never mask an uncovered request.
+    """
+    return {
+        "covers": (
+            "governance layer: doc-kind vocabulary, authority bindings, "
+            "lifecycle categories, map integrity, drift validation, safe "
+            "migration proposals"
+        ),
+        "does_not_cover": [
+            "product-domain ontology modelling for the consuming repository",
+            "decomposing and recomposing the docs system into entity / "
+            "attribute / relation / rule models (ontology design)",
+        ],
+        "alternatives": [
+            "zj-codebase-design",
+            "a dedicated ontology-design capability (proposed new skill)",
+        ],
+    }
+
+
+def capability_not_covered(declaration: str) -> dict[str, str] | None:
+    """CAPABILITY_NOT_COVERED signal when the declaration requests the
+    uncovered decomposition/recomposition class. Heuristic keyword match:
+    both an ontology-modelling term and a decomposition action term must
+    appear. Signal-only by design — see ERROR_CODES / SIGNAL_CODES."""
+    lowered = declaration.lower()
+    has_model_term = any(term in lowered for term in ONTOLOGY_MODEL_TERMS)
+    has_action_term = any(term in lowered for term in DECOMPOSITION_ACTION_TERMS)
+    if not (has_model_term and has_action_term):
+        return None
+    return {
+        "code": "CAPABILITY_NOT_COVERED",
+        "path": "object_of_governance",
+        "message": (
+            "the declared object requests docs-system ontology decomposition/"
+            "recomposition, which this skill does not cover — the governance "
+            "layer staying green is NOT evidence that this request was served; "
+            "use or build the dedicated capability instead "
+            "(alternatives: zj-codebase-design, a dedicated ontology-design skill)"
+        ),
+    }
+
+
 def relative(root: Path, path: Path) -> str:
     return path.resolve().relative_to(root.resolve()).as_posix()
 
@@ -768,6 +861,7 @@ def report(
     out: Path | None = None,
     preset_path: Path | None = None,
     proposal: dict[str, object] | None = None,
+    object: str | None = None,
 ) -> dict[str, object]:
     selected, origin, diagnostics, reads = discover(root)
     preset = load_preset(preset_path)
@@ -806,6 +900,12 @@ def report(
     proposal: dict[str, object] = {
         "repository": str(root.resolve()),
         "mode": "read-only-proposal",
+        # Fix 1a (issue #275): the governed object and the pass topic are two
+        # facts — the old single word "scope" meant both, so neither could be
+        # checked.
+        "object_of_governance": resolve_object(root, object),
+        "pass_topic": topic,
+        "capability_boundary": capability_boundary_block(),
         "map": relative(root, selected) if selected else None,
         "map_origin": origin,
         "inventory": inventory(root, long_lived_names, process_names),
@@ -828,6 +928,14 @@ def report(
             "status": checklist_result["status"] if checklist_result else ("not-declared" if validate_links else None),
         },
     }
+    # Fix 1b (issue #275): an uncovered request is surfaced as a signal on the
+    # declared object text — the report runs the heuristic even in proposal
+    # mode, because "the tool stayed green" is exactly the failure to prevent.
+    object_declaration = proposal["object_of_governance"].get("declaration")  # type: ignore[union-attr]
+    if object_declaration:
+        uncovered = capability_not_covered(str(object_declaration))
+        if uncovered is not None:
+            proposal["diagnostics"].append(uncovered)  # type: ignore[union-attr,index]
     if selected is None:
         if origin == "greenfield":
             proposal["proposed_actions"] = [{"action": "create-map", "target": "docs/README.md", "confirmation": "Human confirms the proposed map and lazy category creation"}]
@@ -899,6 +1007,7 @@ ERROR_CODES = frozenset({
 })
 SIGNAL_CODES = frozenset({
     "BASELINE_NOT_APPLICABLE",
+    "CAPABILITY_NOT_COVERED",
     "CONFIRMATION_BASELINE_LOST",
     "PRESET_DIVERGENCE",
     "PRESET_UNAVAILABLE",
@@ -953,6 +1062,15 @@ def main() -> int:
         help=f"checklist base directory (default: {DEFAULT_OUT} under the repo root; a relative value also anchors to the repo root)",
     )
     parser.add_argument(
+        "--object",
+        metavar="DECLARATION",
+        help=(
+            "first-class declaration of the governed object (issue #275): a "
+            "directory relative to the repo root, or the Human's declaration "
+            "text; default 'docs' under the repo root, reported as derived"
+        ),
+    )
+    parser.add_argument(
         "--preset",
         type=Path,
         metavar="PATH",
@@ -977,6 +1095,7 @@ def main() -> int:
         topic=args.topic,
         out=base,
         preset_path=args.preset,
+        object=args.object,
     )
     if args.proposal and args.topic and args.emit_checklist:
         emit_checklist(payload, base, args.topic)

@@ -1,6 +1,6 @@
 ---
 name: zj-docs-ontology
-description: "Human-invoked governance of one codebase's documentation system: discover, classify, propose safe migration, validate drift, and report lifecycle work."
+description: "Governance of the documentation governance layer: doc-kind vocabulary, authority bindings, lifecycle categories, map integrity, drift validation, and safe migration proposals. Does NOT cover product-domain ontology modelling or decomposing/recomposing the docs system into entity/attribute/relation/rule models — use zj-codebase-design or a dedicated ontology-design capability for that."
 disable-model-invocation: true
 source: zagentic
 
@@ -63,6 +63,20 @@ inlined block. The generated `BASE_RULES_*` block is a separate, generated secti
 ```sh
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --proposal
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate
+```
+
+**Declare the governed object.** `--object <declaration>` is the first-class
+statement of what this pass governs — a directory relative to the repo root
+or the Human's declaration text. With no flag the tool reports
+`object_of_governance` with `source: "derived"` (default `docs` under the
+repo root); a declared directory is recorded with `source: "declared"`. The
+report always answers "what is the governed object?": `object_of_governance`
+(the boundary) and `pass_topic` (the checklist output key) are two separate
+fields — `scope` no longer means both.
+
+```sh
+python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate \
+  --object docs --topic docs-redesign
 ```
 
 A bare `--validate` (no `--topic`) is a shape-only check: the report emits
@@ -144,6 +158,16 @@ specific to that repo). Such a model is *that repository's* concern and is
 documentation ontologies, not inside the installed skill. The two layers share
 one vocabulary, so there is no naming collision; this skill only ever owns the
 governance layer.
+
+**Capability boundary (declared, not implied).** Every report carries a
+`capability_boundary` block: this pass covers the governance layer only;
+product-domain ontology modelling and decomposing/recomposing the docs system
+into entity/attribute/relation/rule models are **not** covered by this skill.
+When the declared object's text requests that uncovered class, the report
+emits `CAPABILITY_NOT_COVERED` — a signal (exit stays zero) that names the
+alternatives (`zj-codebase-design` or a dedicated ontology-design skill). A
+green governance run is never evidence that such a request was served; the
+signal exists so the governance layer cannot mask it.
 
 ## Completion
 
