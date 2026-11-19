@@ -93,7 +93,7 @@
       "id": "1-4",
       "uid": "01a1f344d57d-768bdec3ab",
       "label": "收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -103,7 +103,8 @@
       ],
       "decisions": [],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-1-1": {
       "id": "1-1-1",
@@ -314,7 +315,7 @@
       "id": "1-4-1",
       "uid": "01a1f344de97-83f59b87d7",
       "label": "L3/L8 Ruling v7 修订 + tombstone 语义回归：ADR amendment 留痕",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
@@ -323,39 +324,53 @@
           "q": "Ruling 修订如何留痕？",
           "answer": "ADR amendment（## Amendment + 日期）记录 v7 修订与 tombstone 语义回归；只修事实不推翻判决，避免'已修复缺陷仍写成现状'腐化",
           "note": ""
+        },
+        {
+          "q": "Amendment 落在哪个 ADR？",
+          "answer": "ADR 0013（two-references-not-one-baseline）——它是 Ruling 系列（v1-v5 baseline）与 rename fail-closed 规则（Ruling v7）的长期权威；加 ## Amendment (2026-11-20) 记录三级判定修订 + tombstone stub workaround 删除，旧 Consequences 条目加内联指针，不推翻原判决",
+          "note": ""
         }
       ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4-2": {
       "id": "1-4-2",
       "uid": "01a1f344df83-0ba4eee685",
       "label": "docs 桶描述同步 + 三副本 git archive+rsync 删重装",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "docs 桶描述是否需要同步？",
+          "answer": "无需同步——ta-skill-bucket-codebase-docs.md 与 ta-zagentic-overview.md 均无旧机制（路径子串/Ruling v7/scope 二义）陈述，桶计数 8 不变（无增删 skill）；直接进三副本删重装",
+          "note": ""
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4-3": {
       "id": "1-4-3",
       "uid": "01a1f344e06c-69c41ca659",
       "label": "CI 门禁双向验 + issue #275 验收对照报告并关闭",
-      "status": "pending",
+      "status": "in_progress",
       "mode": "explore",
       "parent": "1-4",
       "children": [],
       "decisions": [],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     }
   },
   "metadata": {
     "created": "2026-11-19 18:05:15",
-    "updated": "2026-11-19 23:38:25",
+    "updated": "2026-11-20 00:25:27",
     "md_file": "ROADMAP.md"
   },
   "edges": [
