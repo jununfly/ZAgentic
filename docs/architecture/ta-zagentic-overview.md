@@ -27,10 +27,6 @@ decisions behind the bucket layout.
   delivered artefact is a set of `SKILL.md` files plus the helpers that make
   them discoverable, installable, and validatable on Agent platforms. There
   is no product runtime, no shipped binary, and no runtime service.
-- The exterior boundary is the supported Agent platforms it ships to:
-  `claude`, `codex`, and `workbuddy`. Beyond those, the recursive plugin
-  discovery, the frontmatter contract, and the installer preset all assume
-  the platform resolves `SKILL.md` through standard scanning.
 - The 6 + 1 skill model is the deliberate shape of the collection, not a
   side effect of file layout. Reorganising buckets is an ADR-bearing change.
 
