@@ -1,6 +1,6 @@
 ---
 name: zj-docs-ontology
-description: "Governance of the documentation governance layer: doc-kind vocabulary, authority bindings, lifecycle categories, map integrity, drift validation, and safe migration proposals. Does NOT cover product-domain ontology modelling or decomposing/recomposing the docs system into entity/attribute/relation/rule models — use zj-codebase-design or a dedicated ontology-design capability for that."
+description: "Governance and ontology design for a codebase's documentation system. Governance layer: doc-kind vocabulary, authority bindings, lifecycle categories, map integrity, drift validation, safe migration proposals. Ontology design layer (Module D): entity/attribute/relation/rule modelling with decomposition and recomposition of the docs system. Does NOT cover ontologies whose object is not a documentation system — use a domain-specific capability for those."
 disable-model-invocation: true
 source: zagentic
 
@@ -116,6 +116,89 @@ for callers with no checklist; when `--topic` is supplied the checklist is the
 sole witness source and CLI witness values are ignored. See
 [proposal-tool-contract.md](references/proposal-tool-contract.md).
 
+### Relations layer and graph snapshot (issue #275 Fix 7)
+
+The map is the ontology declaration surface: each entry is a graph node
+(`role` / `authority-id` are node attributes), and an entry may declare typed
+edges with an optional `relations:` clause — `derived-from`, `supersedes`,
+`supports` (a closed set, so the map never becomes an unmaintained decoration),
+each target being another entry's `authority-id` or a repo-relative page path:
+
+```markdown
+- [Overview](designs/overview.md) — what the subsystem is; role: primary; authority-id: `a.b`; relations: supports: c.d, derived-from: designs/detail.md
+```
+
+Validation is two-tier: a declared edge that resolves to neither a map
+authority-id nor an existing page is `MAP_RELATION_DANGLING` (ERROR — an
+explicit declaration that does not match reality); an unknown relation type is
+`MAP_RELATION_TYPE_INVALID` (ERROR). A map entry declaring a non-primary role
+with no inbound edge is `ORPHAN_PAGE` (signal — the remedy is declaring an
+edge, not deleting the page; undeclared-role entries stay the architecture
+layer's `PAGE_ROLE_UNDECLARED` concern). Every report also carries a
+`graph_snapshot` block: nodes = map entries, edges = declared relations,
+constraints as a separate block, `schema_version: graph-snapshot/v1`. The
+snapshot is derived from the map alone — never a second declaration source —
+and is machine-loadable for AI navigation (follow `supersedes` to the current
+authority, `derived-from` to sources); Human-side rendering is a consumer
+concern.
+
+## Ontology design (Module D): decompose and recompose the docs system
+
+The request this skill exists for: treat the whole docs system as one scoped
+object, decompose every long-lived page's content into entity / attribute /
+relation / rule elements, and recompose the long-lived docs so each one is
+traceable to the model. Two layers share the work: the meta-schema
+(`references/ontology-meta-schema.json`) is owned here; the model instance —
+concrete entity types and vocabulary — is the repository's own.
+
+### Modes
+
+- **bootstrap** — first decomposition of the scoped object: build the model
+  draft from the map inventory, then decompose page by page.
+- **incremental** — an existing model instance plus target pages (a new page,
+  or a page whose content changed): decompose the target against the model,
+  extending it only by declared, confirmed elements.
+
+### Workflow (Human-owned gates in bold)
+
+1. Declare the object (`--object`) — the whole docs system, a directory, or
+   the Human's declaration text. Mis-scoping has no silent path.
+2. Inventory and classify (proposal tool, read-only).
+3. Draft or extend the model instance (AI work). Every unclear detail goes
+   into the **open-questions ledger** first — batch the questions to the
+   Human and wait; never silently assume.
+4. **Human settles the open questions and confirms the model.**
+5. Decompose: write a per-page receipt (page → model elements) for every
+   map-covered page.
+6. **Human confirms the recomposition plan per page** before any page is
+   rewritten.
+7. Recompose: rewrite the long-lived pages so their claims trace to model
+   elements; meaning is preserved by default.
+8. Validate both layers: `validate_ontology_model.py` (meta-schema +
+   coverage) and `docs_governance.py --validate` (map/authority/lifecycle).
+   Green is a floor, not a verdict; semantic correctness stays with review.
+
+### Artifacts
+
+- Model instance, receipts, and the open-questions ledger live in the
+  pass-scoped output zone (`tmp/skills-outputs/zj-docs-ontology/<topic>/`,
+  gitignored, ADR 0010). Whether the model instance is also checked into the
+  repository (a repository-local ontology home) is the repository's own
+  decision — the skill recommends, never forces, and never names a
+  repo-specific path here.
+- Recomposed pages are the docs tree itself (tracked).
+
+### Mechanical face
+
+`scripts/validate_ontology_model.py <repo> --model <path>` validates an
+instance against the meta-schema: required fields (read from the meta-schema
+file — never hard-coded a second time), id uniqueness across classes,
+attribute owners, relation endpoints, rule traces, receipt integrity — all
+ERRORs, because they are explicit declarations that do not match the model's
+own facts — plus the coverage invariant: every map-covered page needs a
+receipt, and a missing one is `CONTENT_UNCOVERED` (signal; declare the
+receipt, never delete the page on this signal).
+
 To turn a report into a merge gate in **any** target repository, pipe it into
 the consumer-side gate. The tool emits facts; the repository decides which
 signals block a merge:
@@ -145,29 +228,37 @@ health — both are audit material, neither adds a diagnostic to the tool.
 
 ## Portability boundary
 
-This skill owns the **governance layer** of a documentation system: the
-`doc-kind` vocabulary, `authority` levels, lifecycle categories, and the
-`docMapBinds` 1:1 rule that drives `MAP_AUTHORITY_CONFLICT`. That contract is
-fully contained here (this file, `references/`, and `scripts/docs_governance.py`),
-so the skill installs and runs unchanged in any target repository.
+This skill owns two layers of a documentation system, both fully contained
+here (this file, `references/`, and `scripts/`), so the skill installs and
+runs unchanged in any target repository:
 
-A consuming repository may layer a **product-domain model** on top of this
-governance layer (for example platform / bucket / skill / pipeline entities
-specific to that repo). Such a model is *that repository's* concern and is
-**not** shipped with this skill — it lives wherever that repo keeps its own
-documentation ontologies, not inside the installed skill. The two layers share
-one vocabulary, so there is no naming collision; this skill only ever owns the
-governance layer.
+- **Governance layer (Module G)**: the `doc-kind` vocabulary, `authority`
+  levels, lifecycle categories, and the `docMapBinds` 1:1 rule that drives
+  `MAP_AUTHORITY_CONFLICT`.
+- **Ontology design layer (Module D)**: the *meta*-schema for entity /
+  attribute / relation / rule models and the methodology that decomposes and
+  recomposes a docs system against it. The skill owns the meta-schema and its
+  validator only.
 
-**Capability boundary (declared, not implied).** Every report carries a
-`capability_boundary` block: this pass covers the governance layer only;
-product-domain ontology modelling and decomposing/recomposing the docs system
-into entity/attribute/relation/rule models are **not** covered by this skill.
-When the declared object's text requests that uncovered class, the report
-emits `CAPABILITY_NOT_COVERED` — a signal (exit stays zero) that names the
-alternatives (`zj-codebase-design` or a dedicated ontology-design skill). A
-green governance run is never evidence that such a request was served; the
-signal exists so the governance layer cannot mask it.
+A consuming repository instantiates **its own model** — the concrete entity
+types (for example platform / bucket / skill / pipeline) and their instances
+are *that repository's* concern and are **not** shipped with this skill; they
+live wherever the repo keeps its documentation ontology (instance layer). The
+meta-schema and the instance share one vocabulary, so there is no naming
+collision; this skill never carries a repo's instance model.
+
+**Capability boundary (declared, not implied; amended 2026-11-20).** Every
+report carries a `capability_boundary` block. It declares two covered layers —
+the governance layer and the ontology design layer (Module D: entity /
+attribute / relation / rule modelling with decomposition and recomposition of
+a docs system) — and one residual uncovered class: ontologies whose declared
+object is not a documentation system (a database schema, a runtime data
+model), which domain-specific capabilities own. The original
+`CAPABILITY_NOT_COVERED` signal for decomposition/recomposition requests is
+**retracted**: that request class is this skill's own job, so flagging it as
+uncovered would be false; mis-scoping defense is the explicit `--object`
+declaration itself. The retraction is recorded here and in the tests so the
+history stays readable.
 
 ## Completion
 

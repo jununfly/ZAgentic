@@ -1,0 +1,51 @@
+{
+  "schema_version": "ontology-meta-schema/v1",
+  "description": "Module D meta-schema (amended 2026-11-20, issue #275 continuation): the structural legality rules every per-repository ontology model instance must satisfy. The skill owns THIS file — the meta layer; each repository instantiates its own model (instance layer) with its own entity types and vocabulary. validate_ontology_model.py reads this file as the single source of the required-field contract; hard-coding the contract a second time is the drift this design removes.",
+  "classes": {
+    "entity": {
+      "collection": "entities",
+      "required": ["id", "name", "bounded_question"],
+      "identity": "id",
+      "notes": "an entity is a type of thing the docs system talks about, declared with the one bounded question it answers"
+    },
+    "attribute": {
+      "collection": "attributes",
+      "required": ["id", "name", "owner"],
+      "identity": "id",
+      "notes": "an attribute belongs to exactly one entity (owner references an entity id); an entity may declare its attribute ids"
+    },
+    "relation": {
+      "collection": "relations",
+      "required": ["id", "type", "from", "to"],
+      "identity": "id",
+      "notes": "a typed edge between two entities; type vocabulary is the instance's own (declared per repository)"
+    },
+    "rule": {
+      "collection": "rules",
+      "required": ["id", "statement", "traces"],
+      "identity": "id",
+      "notes": "a rule the docs system asserts; traces are repo-relative page paths the rule derives from — a rule with no trace is an unsourced claim"
+    }
+  },
+  "page_receipt": {
+    "required": ["path", "elements"],
+    "notes": "per-page decomposition receipt: the model elements (entity/attribute/relation/rule ids) the page's content decomposes into; every referenced id must exist"
+  },
+  "coverage": {
+    "invariant": "every page covered by the repository's doc map must appear in pages[]",
+    "diagnostic": "CONTENT_UNCOVERED (signal — declare the receipt; never delete the page on this signal)"
+  },
+  "exit_semantics": {
+    "error_codes": [
+      "ONTOLOGY_MODEL_UNREADABLE",
+      "ONTOLOGY_MODEL_SCHEMA_UNSUPPORTED",
+      "ONTOLOGY_REQUIRED_FIELD_MISSING",
+      "ONTOLOGY_ID_DUPLICATE",
+      "ONTOLOGY_ATTRIBUTE_ORPHAN",
+      "ONTOLOGY_RELATION_ENDPOINT_MISSING",
+      "ONTOLOGY_RULE_TRACE_MISSING",
+      "ONTOLOGY_PAGE_RECEIPT_BROKEN"
+    ],
+    "signal_codes": ["CONTENT_UNCOVERED"]
+  }
+}

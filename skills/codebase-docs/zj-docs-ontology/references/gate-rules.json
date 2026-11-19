@@ -15,9 +15,9 @@
     "PRESET_UNAVAILABLE": "canonical preset absent; a consumer that requires the preset may gate",
     "EXEC_CHECKLIST_NOT_DECLARED": "validate ran with no pass topic; a consumer that requires a full pass may gate (issue #264)",
     "RENAME_AWAITING_CONFIRMATION": "git-detected rename not yet confirmed in the proposal's moves; a consumer that requires Human-confirmed renames may gate (issue #275)",
-    "CAPABILITY_NOT_COVERED": "the declared object requests docs-system ontology decomposition/recomposition, which this skill does not cover; a consumer that forbids green-masked uncovered requests may gate (issue #275)",
     "FACT_NO_SINGLE_HOME": "map-covered pages share one heading and none declares authority: primary; a consumer that enforces one-home-per-fact may gate (issue #275 Fix 5). Coarse filter: verify the duplication is a real fact conflict before acting",
-    "PARALLEL_ONTOLOGY_SUSPECTED": "an active page outside the map coverage overlaps covered headings; a parallel docs system may be forming (issue #275 Fix 5). Coarse filter: the remedy is to map, derive, or retire the page, not to delete it on this signal alone"
+    "PARALLEL_ONTOLOGY_SUSPECTED": "an active page outside the map coverage overlaps covered headings; a parallel docs system may be forming (issue #275 Fix 5). Coarse filter: the remedy is to map, derive, or retire the page, not to delete it on this signal alone",
+    "ORPHAN_PAGE": "a map entry declaring a non-primary role receives no inbound relation edge (issue #275 Fix 7). Fail-open by design: undeclared-role entries are the architecture layer's PAGE_ROLE_UNDECLARED concern; a consumer that requires full graph navigation may gate"
   },
   "never_gate_signals": {
     "PRESET_DIVERGENCE": "permitted target-repo divergence; escalating would punish legitimate customisation",
