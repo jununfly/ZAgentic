@@ -173,6 +173,50 @@ prose outside the marked region. A derived file that is not checked in is
 not documentation at all, and a governance pass names it as an evidence
 surface rather than a page.
 
+## Relations: the map as ontology declaration surface
+
+The map's entry list is also the type layer of the repository's documentation
+ontology: an entry's `role` types the page (primary = authority node,
+supporting = derived view node), and an optional `relations:` clause declares
+typed instance edges. The vocabulary is a closed set — `derived-from`,
+`supersedes`, `supports` — kept small on purpose: a rich vocabulary nobody
+maintains is worse than a small one everyone does. An edge target resolves to
+another entry's `authority-id` or to a repo-relative page path; a target that
+resolves to neither is a declaration that does not match reality and is an
+ERROR (`MAP_RELATION_DANGLING`), as is an unknown relation type
+(`MAP_RELATION_TYPE_INVALID`). A declared non-primary entry that receives no
+inbound edge is an `ORPHAN_PAGE` signal — a navigation gap to fill, never a
+deletion justification.
+
+The report's `graph_snapshot` block is the instance layer derived from that
+surface: nodes = map entries (with `role` / `authority-id` attributes), edges
+= declared relations, and a separate `constraints` block for rules (the
+authority 1:1 rule is a constraint, not an edge — mixing rules into edges
+makes a graph consumer unable to tell relations from rules). `schema_version`
+pins the snapshot shape; consumers key on it. The snapshot is derived from the
+map alone: it is a view, never a second place where the same fact is declared.
+Knowledge-graph instance layers grow from here, not from a parallel ontology
+directory — the same defense `PARALLEL_ONTOLOGY_SUSPECTED` enforces.
+
+## Ontology design layer (Module D, added 2026-11-20)
+
+The skill covers two layers of one lifecycle. Module G (governance) declares
+and checks the map; Module D (ontology design) decomposes the scoped object's
+pages into entity / attribute / relation / rule elements and recomposes the
+long-lived docs against that model. The **meta-schema** — what a legal
+element is (entity identity + bounded question, attribute owned by exactly
+one entity, typed relation with existing endpoints, rule traceable to pages)
+— is owned by the skill (`references/ontology-meta-schema.json`); the model
+instance with its concrete types and vocabulary is the repository's own.
+
+Coverage is an invariant, not a wish: every map-covered page carries a
+decomposition receipt, and a page the model does not cover is
+`CONTENT_UNCOVERED` (signal — declare the receipt; deletion is never the
+remedy). Unclear details are not silently assumed: they enter an open-
+questions ledger and are settled by the Human before the recomposition plan
+is confirmed. Meaning is preserved by default; a recomposition that changes
+what a page says is a named, separately confirmed action.
+
 ## Migration and lifecycle
 
 Every migration has two stages:

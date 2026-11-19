@@ -310,12 +310,12 @@ class ExitCodeAllowlistTest(Ruling1Case):
     def test_signal_codes_are_explicit(self) -> None:
         self.assertEqual(
             frozenset({
-                "BASELINE_NOT_APPLICABLE", "CAPABILITY_NOT_COVERED",
-                "CONFIRMATION_BASELINE_LOST",
+                "BASELINE_NOT_APPLICABLE", "CONFIRMATION_BASELINE_LOST",
                 "PRESET_DIVERGENCE", "PRESET_UNAVAILABLE",
                 "EXEC_STEP5_FINGERPRINT_MISMATCH", "EXEC_CHECKLIST_NOT_DECLARED",
                 "RENAME_AWAITING_CONFIRMATION",
                 "FACT_NO_SINGLE_HOME", "PARALLEL_ONTOLOGY_SUSPECTED",
+                "ORPHAN_PAGE",
             }),
             TOOL.SIGNAL_CODES,
         )

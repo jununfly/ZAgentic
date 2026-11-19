@@ -17,6 +17,15 @@ POINTER_RE = re.compile(r"(?im)^\s*docs-map:\s*([^\s`]+)\s*$")
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
 RETIRED_RE = re.compile(r"retired-to:\s*`?([^`\s]+)`?", re.I)
+# Issue #275 Fix 7: the map is the ontology declaration surface. Entries are
+# graph nodes (``role`` / ``authority-id`` are node attributes); an optional
+# ``relations:`` clause per entry declares typed edges. The vocabulary is a
+# closed set (start small so the map never becomes an unmaintained decoration).
+ROLE_RE = re.compile(r"\brole:\s*(primary|supporting)\b", re.I)
+RELATIONS_RE = re.compile(r"relations:\s*([^;]+)", re.I)
+EDGE_RE = re.compile(r"^([A-Za-z][\w-]*)\s*:\s*(.+?)$")
+RELATION_TYPES = ("derived-from", "supersedes", "supports")
+GRAPH_SNAPSHOT_SCHEMA_VERSION = "graph-snapshot/v1"
 EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "skills-outputs", "test-results"}
 # Output-zone default, relative to the GOVERNED REPO ROOT (issue #275 Fix 6):
 # resolve through resolve_out_base, never against CWD.
@@ -546,67 +555,46 @@ def resolve_object(root: Path, declaration: str | None) -> dict[str, object]:
     }
 
 
-# Issue #275 Fix 1b: heuristic request-feature detection for the one request
-# class this skill explicitly does NOT cover. Two term families must co-occur
-# in the object declaration: ontology-modelling terms and decomposition/
-# recomposition action terms. Heuristic only — it produces a signal and never
-# participates in acceptance judgment.
-ONTOLOGY_MODEL_TERMS = (
-    "entity", "attribute", "relation", "rule", "ontology",
-    "实体", "属性", "关系", "规则", "本体",
-)
-DECOMPOSITION_ACTION_TERMS = (
-    "decompos", "recompos", "reorganiz", "restructur",
-    "拆解", "重组", "重构",
-)
+# Issue #275 Fix 1b, amended 2026-11-20 (Module D merge): the heuristic
+# request-feature detector and the CAPABILITY_NOT_COVERED signal were
+# RETRACTED. Docs-system decomposition/recomposition is this skill's own
+# Module D — the request class it exists for. Mis-scoping defense is the
+# explicit --object declaration itself; the capability_boundary block
+# declares the residual uncovered class (non-docs-system objects).
 
 
 def capability_boundary_block() -> dict[str, object]:
-    """The declared capability boundary of this skill (issue #275 Fix 1b).
+    """The declared capability boundary of this skill (issue #275 Fix 1b,
+    amended 2026-11-20 by the Module D merge).
 
-    The governance layer is what this tool checks; product-domain ontology
-    modelling and docs-system decomposition/recomposition are explicitly NOT
-    covered, with the capabilities that do own that work named — so a green
-    governance report can never mask an uncovered request.
+    Two covered layers: the governance layer (what this tool checks) and the
+    ontology design layer — entity/attribute/relation/rule decomposition and
+    recomposition of a docs system, the request class this skill exists for.
+    The old ``CAPABILITY_NOT_COVERED`` signal for that class is RETRACTED:
+    a decomposition declaration names the skill's own job, and mis-scoping
+    defense is the explicit ``--object`` declaration itself. What remains
+    uncovered: ontologies whose declared object is not a documentation
+    system (a database schema, a runtime data model) — domain-specific
+    capabilities own those. zj-codebase-design is code-module vocabulary and
+    is not the pointer for anything here.
     """
     return {
         "covers": (
             "governance layer: doc-kind vocabulary, authority bindings, "
             "lifecycle categories, map integrity, drift validation, safe "
-            "migration proposals"
+            "migration proposals; ontology design layer (Module D): "
+            "entity/attribute/relation/rule modelling with decomposition "
+            "and recomposition of a docs system"
         ),
         "does_not_cover": [
-            "product-domain ontology modelling for the consuming repository",
-            "decomposing and recomposing the docs system into entity / "
-            "attribute / relation / rule models (ontology design)",
+            "ontologies whose declared object is not a documentation "
+            "system (e.g. a database schema, a runtime data model) — "
+            "domain-specific capabilities own those",
         ],
         "alternatives": [
-            "zj-codebase-design",
-            "a dedicated ontology-design capability (proposed new skill)",
+            "a domain-specific ontology capability, selected by the Human "
+            "when the declared object is not a documentation system",
         ],
-    }
-
-
-def capability_not_covered(declaration: str) -> dict[str, str] | None:
-    """CAPABILITY_NOT_COVERED signal when the declaration requests the
-    uncovered decomposition/recomposition class. Heuristic keyword match:
-    both an ontology-modelling term and a decomposition action term must
-    appear. Signal-only by design — see ERROR_CODES / SIGNAL_CODES."""
-    lowered = declaration.lower()
-    has_model_term = any(term in lowered for term in ONTOLOGY_MODEL_TERMS)
-    has_action_term = any(term in lowered for term in DECOMPOSITION_ACTION_TERMS)
-    if not (has_model_term and has_action_term):
-        return None
-    return {
-        "code": "CAPABILITY_NOT_COVERED",
-        "path": "object_of_governance",
-        "message": (
-            "the declared object requests docs-system ontology decomposition/"
-            "recomposition, which this skill does not cover — the governance "
-            "layer staying green is NOT evidence that this request was served; "
-            "use or build the dedicated capability instead "
-            "(alternatives: zj-codebase-design, a dedicated ontology-design skill)"
-        ),
     }
 
 
@@ -701,6 +689,147 @@ def map_links(root: Path, path: Path, reads: list[str]) -> tuple[list[dict[str, 
                 "message": f"authority-id {authority_id} is bound to more than one page: {', '.join(pages)}",
             })
     return links, diagnostics
+
+
+def map_graph(root: Path, path: Path, reads: list[str]) -> tuple[list[dict[str, object]], list[dict[str, str]], list[dict[str, str]]]:
+    """Parse map entries and declared relation edges (issue #275 Fix 7).
+
+    Targets resolve here — id-first (a declared authority-id), then as a
+    repo-relative path — because resolution is derivation, not validation.
+    A target that resolves neither way stays raw; validate mode turns it
+    into MAP_RELATION_DANGLING. Parse is shared by proposal and validate
+    modes (the snapshot is derived from the map alone); diagnostics stay in
+    validate mode, matching MAP_LINK_BROKEN's gate placement.
+    """
+    map_read = relative(root, path)
+    if map_read not in reads:
+        reads.append(map_read)
+    text = path.read_text(encoding="utf-8")
+    entries: list[dict[str, object]] = []
+    edges: list[dict[str, str]] = []
+    parse_diagnostics: list[dict[str, str]] = []
+    for block in re.split(r"(?m)^(?=-\s+)", text):
+        # An entry is a list block whose FIRST line carries the markdown link.
+        # A link in the preamble (blockquote/table) or in trailing prose after
+        # a linkless list item is a mention, not an entry — derived files and
+        # prose references are not pages (Q7 regression, 2026-11-20).
+        first_line = block.splitlines()[0] if block else ""
+        link = LINK_RE.search(first_line)
+        if link is None:
+            continue
+        target = resolve(root, link.group(1), path.parent)
+        if target is None or not target.exists():
+            continue  # MAP_LINK_BROKEN owns the broken-link case
+        page = relative(root, target)
+        role = ROLE_RE.search(block)
+        authority = AUTHORITY_RE.search(block)
+        if not any(entry["path"] == page for entry in entries):
+            entries.append({
+                "path": page,
+                "role": role.group(1).lower() if role else None,
+                "authority-id": authority.group(1) if authority else None,
+            })
+        clause = RELATIONS_RE.search(block)
+        if clause is None:
+            continue
+        for piece in clause.group(1).split(","):
+            piece = piece.strip()
+            if not piece:
+                continue
+            edge = EDGE_RE.match(piece)
+            if edge is None or edge.group(1).lower() not in RELATION_TYPES:
+                parse_diagnostics.append({
+                    "code": "MAP_RELATION_TYPE_INVALID",
+                    "path": map_read,
+                    "message": f"relation type must be one of {', '.join(RELATION_TYPES)}: {piece!r}",
+                })
+                continue
+            edges.append({"from": page, "type": edge.group(1).lower(), "to": edge.group(2).strip()})
+    # Resolve after the full pass: an edge may target an authority-id declared
+    # in a later entry, so bindings must be complete before any resolution.
+    bindings = {
+        entry["authority-id"]: str(entry["path"])  # type: ignore[arg-type]
+        for entry in entries
+        if entry["authority-id"] is not None
+    }
+    for item in edges:
+        raw = item["to"]
+        if raw in bindings:
+            item["via"] = "authority-id"
+            item["resolved"] = bindings[raw]
+        else:
+            candidate = resolve(root, raw, path.parent)
+            if candidate is not None and candidate.exists():
+                item["via"] = "path"
+                item["resolved"] = relative(root, candidate)
+            else:
+                item["via"] = None
+    return entries, edges, parse_diagnostics
+
+
+def graph_snapshot(entries: list[dict[str, object]], edges: list[dict[str, str]]) -> dict[str, object]:
+    """Derived view of the map as a graph (issue #275 Fix 7).
+
+    Nodes = map entries; edges = declared relations. Constraints are rules,
+    not edges — they stay a separate block so a graph consumer can tell
+    relations from rules. schema_version pins the shape; a shape change is
+    a deliberate contract change, never a silent drift.
+    """
+    return {
+        "schema_version": GRAPH_SNAPSHOT_SCHEMA_VERSION,
+        "nodes": [
+            {"path": e["path"], "role": e["role"], "authority-id": e["authority-id"]}
+            for e in entries
+        ],
+        "edges": [
+            {
+                "from": e["from"],
+                "type": e["type"],
+                "to": e.get("resolved", e["to"]),
+                "via": e.get("via"),
+            }
+            for e in edges
+        ],
+        "constraints": [
+            "authority-1:1: one authority-id binds to exactly one page (MAP_AUTHORITY_CONFLICT)",
+            "relation-vocabulary: closed set derived-from|supersedes|supports (MAP_RELATION_TYPE_INVALID)",
+            "edge-target: resolves to a map authority-id or an existing page (MAP_RELATION_DANGLING)",
+            "derived-only: nodes and edges come from the map; the snapshot is never a second declaration source",
+        ],
+    }
+
+
+def dangling_edges(edges: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Declared edges whose target resolved neither to a map authority-id nor
+    to an existing page — an explicit declaration that does not match reality.
+    ERROR (MAP_ prefix), not a signal."""
+    return [
+        {
+            "code": "MAP_RELATION_DANGLING",
+            "path": e["from"],
+            "message": f"relation {e['type']} target does not resolve: {e['to']}",
+        }
+        for e in edges
+        if "resolved" not in e
+    ]
+
+
+def orphan_pages(entries: list[dict[str, object]], edges: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Orphan signal (issue #275 Fix 7): a map entry that declares a non-
+    primary role but receives no inbound edge. Fail-open by design: entries
+    with no role declaration are the architecture layer's PAGE_ROLE_UNDECLARED
+    concern, and primary entries are graph entry points by definition. The
+    remedy is to declare an edge, not to delete the page on this signal."""
+    inbound = {e["resolved"] for e in edges if "resolved" in e}
+    return [
+        {
+            "code": "ORPHAN_PAGE",
+            "path": str(entry["path"]),
+            "message": f"map entry declares role {entry['role']} but has no inbound relation edge and is not a primary entry",
+        }
+        for entry in entries
+        if entry["role"] not in (None, "primary") and str(entry["path"]) not in inbound
+    ]
 
 
 def files_under(root: Path, directory: Path) -> list[str]:
@@ -1137,21 +1266,26 @@ def report(
             "status": checklist_result["status"] if checklist_result else ("not-declared" if validate_links else None),
         },
     }
-    # Fix 1b (issue #275): an uncovered request is surfaced as a signal on the
-    # declared object text — the report runs the heuristic even in proposal
-    # mode, because "the tool stayed green" is exactly the failure to prevent.
-    object_declaration = proposal["object_of_governance"].get("declaration")  # type: ignore[union-attr]
-    if object_declaration:
-        uncovered = capability_not_covered(str(object_declaration))
-        if uncovered is not None:
-            proposal["diagnostics"].append(uncovered)  # type: ignore[union-attr,index]
+    # Fix 1b (issue #275), amended 2026-11-20 (Module D merge): the
+    # CAPABILITY_NOT_COVERED heuristic is retracted — a decomposition/
+    # recomposition declaration is this skill's own job now, not an
+    # uncovered request to flag.
     if selected is None:
         if origin == "greenfield":
             proposal["proposed_actions"] = [{"action": "create-map", "target": "docs/README.md", "confirmation": "Human confirms the proposed map and lazy category creation"}]
         else:
             proposal["proposed_actions"] = [{"action": "resolve-map", "confirmation": "Human selects one map before any writes"}]
         return proposal
+    # Issue #275 Fix 7: parse and resolution are derivation shared by both
+    # modes (the snapshot comes from the map alone, never a second declaration
+    # source); relation diagnostics stay in validate mode, matching
+    # MAP_LINK_BROKEN's placement.
+    entries, edges, parse_diagnostics = map_graph(root, selected, reads)
+    proposal["graph_snapshot"] = graph_snapshot(entries, edges)
     if validate_links:
+        proposal["diagnostics"].extend(parse_diagnostics)  # type: ignore[index]
+        proposal["diagnostics"].extend(dangling_edges(edges))  # type: ignore[index]
+        proposal["diagnostics"].extend(orphan_pages(entries, edges))  # type: ignore[index]
         links, link_diagnostics = map_links(root, selected, reads)
         proposal["map_links"] = links
         proposal["diagnostics"].extend(link_diagnostics)  # type: ignore[index]
@@ -1223,7 +1357,6 @@ ERROR_CODES = frozenset({
 })
 SIGNAL_CODES = frozenset({
     "BASELINE_NOT_APPLICABLE",
-    "CAPABILITY_NOT_COVERED",
     "CONFIRMATION_BASELINE_LOST",
     "PRESET_DIVERGENCE",
     "PRESET_UNAVAILABLE",
@@ -1232,6 +1365,7 @@ SIGNAL_CODES = frozenset({
     "RENAME_AWAITING_CONFIRMATION",
     "FACT_NO_SINGLE_HOME",
     "PARALLEL_ONTOLOGY_SUSPECTED",
+    "ORPHAN_PAGE",
 })
 # Mechanical codes emitted by the current tool (prefix families), plus the
 # explicit allowlist above. Kept as families so a new MAP_/RETIRE_ gate cannot

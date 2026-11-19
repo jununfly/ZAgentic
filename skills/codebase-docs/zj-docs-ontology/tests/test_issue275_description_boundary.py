@@ -36,13 +36,25 @@ class DescriptionCapabilityBoundaryTest(unittest.TestCase):
         lowered = description().lower()
         self.assertRegex(lowered, r"does not cover|not covered")
 
-    def test_description_names_the_uncovered_request_class(self) -> None:
+    def test_description_names_the_residual_uncovered_class(self) -> None:
+        # Amended 2026-11-20 (Module D merge): the uncovered class is no
+        # longer docs-system decomposition — it is ontologies whose object
+        # is not a documentation system.
         lowered = description().lower()
-        self.assertIn("entity", lowered)
+        self.assertIn("not a documentation system", lowered)
+
+    def test_description_names_the_ontology_design_layer(self) -> None:
+        # Amended 2026-11-20 (Module D merge): decomposition/recomposition of
+        # a docs system is this skill's own job — the description must claim
+        # it instead of disclaiming it.
+        lowered = description().lower()
+        self.assertIn("ontology", lowered)
         self.assertIn("recompos", lowered)
 
-    def test_description_points_to_the_alternative_capability(self) -> None:
-        self.assertIn("zj-codebase-design", description())
+    def test_description_points_to_the_residual_boundary_not_a_skill_name(self) -> None:
+        # zj-codebase-design is code-module vocabulary, not the pointer here
+        # (zj 纠偏 2026-11-20); the residual boundary is non-docs-system objects.
+        self.assertNotIn("zj-codebase-design", description())
 
     def test_no_unqualified_whole_system_claim(self) -> None:
         # The overpromise being removed (L5): unqualified "governance of one
@@ -58,9 +70,12 @@ class SkillBodyDocumentsTheBoundary(unittest.TestCase):
         text = SKILL_MD.read_text(encoding="utf-8")
         self.assertIn("--object", text)
 
-    def test_body_documents_the_capability_signal(self) -> None:
+    def test_body_documents_the_retracted_signal(self) -> None:
+        # Amended 2026-11-20: the body documents the RETRACTION — why the
+        # old signal no longer fires — so the history is readable, not lost.
         text = SKILL_MD.read_text(encoding="utf-8")
         self.assertIn("CAPABILITY_NOT_COVERED", text)
+        self.assertIn("retract", text.lower())
 
     def test_body_states_the_boundary_in_prose(self) -> None:
         text = SKILL_MD.read_text(encoding="utf-8")

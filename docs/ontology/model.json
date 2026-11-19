@@ -1,0 +1,564 @@
+{
+ "schema_version": "ontology-model/v1",
+ "object": "whole docs system of ZAgentic (bootstrap, Module D)",
+ "entities": [
+  {
+   "id": "entity.skill",
+   "name": "Skill",
+   "bounded_question": "仓库里有哪些技能、各自做什么？"
+  },
+  {
+   "id": "entity.skill-bucket",
+   "name": "SkillBucket",
+   "bounded_question": "技能按什么分类归桶、桶边界是什么？"
+  },
+  {
+   "id": "entity.platform",
+   "name": "Platform",
+   "bounded_question": "技能安装到哪些平台副本根？"
+  },
+  {
+   "id": "entity.docpage",
+   "name": "DocPage",
+   "bounded_question": "每个文档页是什么类型、回答什么有界问题？"
+  },
+  {
+   "id": "entity.docmap",
+   "name": "DocMap",
+   "bounded_question": "文档地图怎么声明绑定与导航？"
+  },
+  {
+   "id": "entity.architecture-view",
+   "name": "ArchitectureView",
+   "bounded_question": "架构当前是什么、哪页答哪问？"
+  },
+  {
+   "id": "entity.design",
+   "name": "Design",
+   "bounded_question": "设计决策的权威表述在哪？"
+  },
+  {
+   "id": "entity.adr",
+   "name": "ADR",
+   "bounded_question": "不易逆转决策的史据在哪？"
+  },
+  {
+   "id": "entity.agreement",
+   "name": "Agreement",
+   "bounded_question": "方法论 SSOT 在哪？"
+  },
+  {
+   "id": "entity.capability-spec",
+   "name": "CapabilitySpec",
+   "bounded_question": "能力边界由哪页声明？"
+  },
+  {
+   "id": "entity.contract",
+   "name": "Contract",
+   "bounded_question": "机器可读契约随谁安装、约束什么？"
+  },
+  {
+   "id": "entity.validator",
+   "name": "Validator",
+   "bounded_question": "谁机械校验什么？"
+  },
+  {
+   "id": "entity.pipeline",
+   "name": "Pipeline",
+   "bounded_question": "安装/校验/治理流程怎么端到端跑？"
+  },
+  {
+   "id": "entity.process-material",
+   "name": "ProcessMaterial",
+   "bounded_question": "过程材料的生命周期是什么？"
+  },
+  {
+   "id": "entity.evidence-surface",
+   "name": "EvidenceSurface",
+   "bounded_question": "证据面在哪、什么永不入库？"
+  },
+  {
+   "id": "entity.ontology-home",
+   "name": "OntologyHome",
+   "bounded_question": "统一本体的概念主干与机械抽取/校验住在哪？"
+  }
+ ],
+ "attributes": [
+  {
+   "id": "attr.skill.name",
+   "name": "name",
+   "owner": "entity.skill"
+  },
+  {
+   "id": "attr.skill.bucket",
+   "name": "bucket",
+   "owner": "entity.skill"
+  },
+  {
+   "id": "attr.skill.source",
+   "name": "source",
+   "owner": "entity.skill"
+  },
+  {
+   "id": "attr.bucket.name",
+   "name": "name",
+   "owner": "entity.skill-bucket"
+  },
+  {
+   "id": "attr.bucket.entry-count",
+   "name": "entry-count",
+   "owner": "entity.skill-bucket"
+  },
+  {
+   "id": "attr.docpage.doc-kind",
+   "name": "doc-kind",
+   "owner": "entity.docpage"
+  },
+  {
+   "id": "attr.docpage.authority",
+   "name": "authority",
+   "owner": "entity.docpage"
+  },
+  {
+   "id": "attr.docpage.authority-id",
+   "name": "authority-id",
+   "owner": "entity.docpage"
+  },
+  {
+   "id": "attr.docmap.binds",
+   "name": "docMapBinds",
+   "owner": "entity.docmap"
+  },
+  {
+   "id": "attr.adr.status",
+   "name": "status",
+   "owner": "entity.adr"
+  },
+  {
+   "id": "attr.validator.scope",
+   "name": "scope",
+   "owner": "entity.validator"
+  },
+  {
+   "id": "attr.pipeline.stage",
+   "name": "stage",
+   "owner": "entity.pipeline"
+  },
+  {
+   "id": "attr.process-material.lifecycle",
+   "name": "lifecycle",
+   "owner": "entity.process-material"
+  },
+  {
+   "id": "attr.evidence-surface.location",
+   "name": "location",
+   "owner": "entity.evidence-surface"
+  }
+ ],
+ "relations": [
+  {
+   "id": "rel.skill-belongs-to-bucket",
+   "type": "belongsTo",
+   "from": "entity.skill",
+   "to": "entity.skill-bucket"
+  },
+  {
+   "id": "rel.bucket-installed-to-platform",
+   "type": "installedTo",
+   "from": "entity.skill-bucket",
+   "to": "entity.platform"
+  },
+  {
+   "id": "rel.archview-routes-to-design",
+   "type": "routesTo",
+   "from": "entity.architecture-view",
+   "to": "entity.design"
+  },
+  {
+   "id": "rel.archview-routes-to-adr",
+   "type": "routesTo",
+   "from": "entity.architecture-view",
+   "to": "entity.adr"
+  },
+  {
+   "id": "rel.archview-routes-to-capability-spec",
+   "type": "routesTo",
+   "from": "entity.architecture-view",
+   "to": "entity.capability-spec"
+  },
+  {
+   "id": "rel.design-references-adr",
+   "type": "references",
+   "from": "entity.design",
+   "to": "entity.adr"
+  },
+  {
+   "id": "rel.contract-validated-by-validator",
+   "type": "validatedBy",
+   "from": "entity.contract",
+   "to": "entity.validator"
+  },
+  {
+   "id": "rel.pipeline-uses-validator",
+   "type": "uses",
+   "from": "entity.pipeline",
+   "to": "entity.validator"
+  },
+  {
+   "id": "rel.capabilityspec-constrains-pipeline",
+   "type": "constrains",
+   "from": "entity.capability-spec",
+   "to": "entity.pipeline"
+  },
+  {
+   "id": "rel.docmap-binds-docpage",
+   "type": "docMapBinds",
+   "from": "entity.docmap",
+   "to": "entity.docpage"
+  },
+  {
+   "id": "rel.adr-supersedes-adr",
+   "type": "supersedes",
+   "from": "entity.adr",
+   "to": "entity.adr"
+  }
+ ],
+ "rules": [
+  {
+   "id": "rule.authority-1to1",
+   "statement": "每个 authority-id 恰好绑定到一页（治理契约 rule.G1-docmap-binding）",
+   "traces": [
+    "docs/README.md"
+   ]
+  },
+  {
+   "id": "rule.bucket-count-single-source",
+   "statement": "桶计数以 ta-zagentic-overview.md 为唯一真相源，其余架构页只链接不复述",
+   "traces": [
+    "docs/README.md",
+    "docs/architecture/ta-zagentic-overview.md"
+   ]
+  },
+  {
+   "id": "rule.plan-material-temporary",
+   "statement": "docs/plans/ 下页面为临时过程材料，持久文档不引用（ADR 0010 plan-coupling）",
+   "traces": [
+    "docs/README.md"
+   ]
+  },
+  {
+   "id": "rule.evidence-never-committed",
+   "statement": "skills-outputs/ 证据缓存永不入库（gitignored）",
+   "traces": [
+    "docs/README.md"
+   ]
+  },
+  {
+   "id": "rule.lazy-categories",
+   "statement": "空类目（methods/testing/benchmarks/references）仅在有对应有界问题文档时惰性创建",
+   "traces": [
+    "docs/README.md"
+   ]
+  },
+  {
+   "id": "rule.golden-immutable",
+   "statement": "三个 golden 夹具由契约测试钉死，永不静默删除",
+   "traces": [
+    "docs/README.md"
+   ]
+  },
+  {
+   "id": "rule.ontology-two-modules",
+   "statement": "统一本体分 Module G 治理层与 Module P 产品域层",
+   "traces": [
+    "docs/README.md",
+    "docs/zj-adr/0007-unified-ontology-module-g-and-p.md"
+   ]
+  },
+  {
+   "id": "rule.skill-closure",
+   "statement": "skill 运行期自包含，安装态不依赖源仓路径",
+   "traces": [
+    "docs/designs/zj-skill-runtime-closure.md"
+   ]
+  },
+  {
+   "id": "rule.term-into-zj-context",
+   "statement": "新增领域术语先加入 ZJ-CONTEXT.md 再合并",
+   "traces": [
+    "AGENTS.md"
+   ]
+  },
+  {
+   "id": "rule.git-via-zj-git",
+   "statement": "所有 git 操作走 scripts/zj-git 或 env -u NODE_OPTIONS git",
+   "traces": [
+    "AGENTS.md"
+   ]
+  },
+  {
+   "id": "rule.process-review-per-pass",
+   "statement": "过程材料由治理 pass 逐项审阅，抽取/删除需显式确认",
+   "traces": [
+    "docs/README.md"
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "path": "docs/architecture/README.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-zagentic-overview.md",
+   "elements": [
+    "entity.architecture-view",
+    "rule.bucket-count-single-source"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-zagentic-layers.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-zagentic-pipelines.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-boundary.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-engineering.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-codebase-docs.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-productivity.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-misc.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-research.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-skill-bucket-ui.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/architecture/ta-zagentic-personal-tree.md",
+   "elements": [
+    "entity.architecture-view"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-cross-stage-skills.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-skill-frontmatter-schema.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-wayfinder-roadmap-dual-mode.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-concurrency-model.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-execution-graph.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-reconciliation.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-discuss/product.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-discuss/architecture.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-discuss/design.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-composer-plan-product-form.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-skill-runtime-closure.md",
+   "elements": [
+    "entity.design",
+    "rule.skill-closure"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-docs-convention-distillation-playbook.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-visual-review-product.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-visual-review-technical.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/skill-conventions/skill-conventions.json",
+   "elements": [
+    "entity.contract"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0002-stage-skill-pair-key-decisions.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0003-khazix-wave-absorb-key-decisions.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0004-research-report-improvement-scope.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0005-composer-authority-and-plan-contract.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0006-ui-public-bucket-addition.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0007-unified-ontology-module-g-and-p.md",
+   "elements": [
+    "entity.adr",
+    "rule.ontology-two-modules"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0008-ui-agent-skills-graduation-verdict.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0009-ui-agent-skills-discussion-retirement.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0010-local-file-persistence-convention.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/zj-adr/0012-scene-anchored-cross-project-alignment.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
+   "path": "docs/agreements/open-source-capability-fit-decision-model.md",
+   "elements": [
+    "entity.agreement"
+   ]
+  },
+  {
+   "path": "docs/agreements/product-project-graphical-cross-comparison-model.md",
+   "elements": [
+    "entity.agreement"
+   ]
+  },
+  {
+   "path": "docs/prds/codebase-docs-capability.md",
+   "elements": [
+    "entity.capability-spec"
+   ]
+  }
+ ]
+}

@@ -19,6 +19,17 @@ the map text, so it costs no extra reads.
 
 ## Object of governance and capability boundary (issue #275 Fix 1)
 
+> **Amendment (2026-11-20, Module D merge).** The `CAPABILITY_NOT_COVERED`
+> signal described below was **retracted**: docs-system
+> decomposition/recomposition is now this skill's own Module D, so a
+> decomposition declaration no longer fires anything — mis-scoping defense is
+> the explicit `--object` declaration itself. The `capability_boundary` block
+> remains and now declares two covered layers (governance + ontology design)
+> and one residual uncovered class (ontologies whose object is not a
+> documentation system). The gate-rules entry for the retracted signal is
+> removed with it; `zj-codebase-design` is no longer named anywhere as a
+> pointer.
+
 `--object <declaration>` is the first-class statement of what the pass
 governs: a directory relative to the governed repo root, or the Human's
 declaration text. With no flag the report carries the default `docs` under

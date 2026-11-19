@@ -7,14 +7,16 @@
       "id": "1",
       "uid": "01a1f34480ef-23c975bcd3",
       "label": "Issue #275 一步到位修复（zj-docs-ontology / zj-docs-architecture）",
-      "status": "completed",
+      "status": "in_progress",
       "mode": "explore",
       "parent": null,
       "children": [
         "1-1",
         "1-2",
         "1-3",
-        "1-4"
+        "1-4",
+        "1-5",
+        "1-6"
       ],
       "decisions": [
         {
@@ -372,11 +374,49 @@
       "notes": "",
       "layer": "plan",
       "rounds": 1
+    },
+    "1-5": {
+      "id": "1-5",
+      "uid": "01a1f4deb35d-4ed174ff7a",
+      "label": "PR4 Fix 7 关系层：map relations 三类边（derived-from/supersedes/supports）+ graph_snapshot 图快照（nodes/edges/constraints 分离 + schema_version）+ MAP_RELATION_DANGLING/MAP_RELATION_TYPE_INVALID ERROR + ORPHAN_PAGE signal",
+      "status": "in_progress",
+      "mode": "explore",
+      "parent": "1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "PR4 为何缺席原始 roadmap 与 issue 关闭的 gap 如何处置",
+          "answer": "zj 2026-11-20 复盘发现：plan §4 排了 PR4 但 roadmap 构建时未建节点、无 commit、issue #275 已关闭——属构建遗漏非显式 descope。zj 拍板：补建 1-5 节点补实现（本节点），不重开 issue，PR4 完成后在收尾说明中记录 gap 处置",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan",
+      "rounds": 1
+    },
+    "1-6": {
+      "id": "1-6",
+      "uid": "01a1f4f3309d-83ead5aadf",
+      "label": "PR5 Module D 本体设计层合并进 zj-docs-ontology：元 schema + validate_ontology_model.py 机械校验（结构 ERROR + CONTENT_UNCOVERED signal 覆盖度不变量）+ bootstrap/incremental 双模式方法论 + open-questions 主动询问台账 + 拆解回执；撤回 CAPABILITY_NOT_COVERED",
+      "status": "in_progress",
+      "mode": "explore",
+      "parent": "1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "ontology 设计能力独立 skill 还是合并",
+          "answer": "zj 2026-11-20 拍板合并：拆解重组是该 skill 的存在目的（issue #275 标题即此），与治理层共享 map/词汇表/对象声明基础设施、不构成真实 seam；CAPABILITY_NOT_COVERED 是能力缺位期的止血装置，合并后撤回（记录于 SKILL.md/tests/proposal-tool-contract）；zj-codebase-design 与文档治理无关，从所有出口移除；ZKC 悬置材料不作依据",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan",
+      "rounds": 1
     }
   },
   "metadata": {
     "created": "2026-11-19 18:05:15",
-    "updated": "2026-11-20 00:37:28",
+    "updated": "2026-11-20 01:55:41",
     "md_file": "ROADMAP.md"
   },
   "edges": [

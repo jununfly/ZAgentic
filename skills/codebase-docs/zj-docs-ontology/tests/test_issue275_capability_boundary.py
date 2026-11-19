@@ -1,28 +1,28 @@
-"""Issue #275 Fix 1b: the capability boundary is declared, not implied.
+"""Issue #275 Fix 1b, amended 2026-11-20 (Module D merge): the capability
+boundary is declared, not implied — and now covers ontology design.
 
-Legacy behavior (L5): the SKILL.md description promised "governance of one
-codebase's documentation system", so a Human asking for "decompose the docs
-system into entities / attributes / relations / rules and recompose it"
-walked away with a green governance report and an untouched problem — the
-tool cannot cover that request, and nothing in the report said so.
+History: the original contract declared docs-system decomposition/recomposition
+as NOT covered and routed it to an alternative. That was a stopgap honesty
+device while the capability did not exist. zj 2026-11-20 ratified the merge:
+ontology design (entity/attribute/relation/rule decomposition and
+recomposition of a docs system) is this skill's Module D — the request class
+the skill exists for. Therefore:
 
-Fixed contract:
-  - every report carries a ``capability_boundary`` block: what this pass
-    covers (the governance layer) and what it explicitly does not cover
-    (product-domain ontology modelling; entity/attribute/relation/rule
-    decomposition & recomposition of the docs system), plus the pointer to
-    the capabilities that do own that work.
-  - when the object declaration itself carries the request features of an
-    ontology decomposition/recomposition, the report emits
-    ``CAPABILITY_NOT_COVERED`` — a signal (never an ERROR, exit stays 0) so
-    the green governance layer cannot mask the uncovered request. Detection
-    is heuristic keyword matching on the declaration text; it produces a
-    signal only and never participates in acceptance judgment.
+  - ``CAPABILITY_NOT_COVERED`` for decomposition/recomposition requests is
+    RETRACTED: such a declaration now names the skill's own job, and
+    mis-scoping defense is the explicit ``--object`` declaration itself.
+  - the ``capability_boundary`` block stays: it now declares the two covered
+    layers (governance + ontology design) and the residual uncovered class —
+    ontologies whose declared object is not a documentation system (a
+    database schema, a runtime data model), which belong to domain-specific
+    capabilities. zj-codebase-design is code-module design vocabulary and is
+    NOT the pointer for anything here.
 """
 
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -43,65 +43,67 @@ def codes(payload: dict) -> set[str]:
     return {item["code"] for item in payload["diagnostics"]}
 
 
+DECOMPOSITION_DECLARATIONS = (
+    "docs system decomposition into entities/attributes/relations/rules and recomposition",
+    "把 docs system 按实体/属性/关系/规则拆解重组",
+    "docs 按实体/规则拆解重组",
+    "docs 实体/关系 拆解重组",
+)
+
+
 class CapabilityBoundaryBlockTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.block = TOOL.report(MAP, validate_links=True)["capability_boundary"]
+
     def test_every_report_carries_the_boundary_block(self) -> None:
-        payload = TOOL.report(MAP, validate_links=True)
-        block = payload["capability_boundary"]
-        self.assertIn("governance", block["covers"])
-        self.assertTrue(block["does_not_cover"])
-        self.assertTrue(block["alternatives"])
+        self.assertIn("governance", self.block["covers"])
+        self.assertTrue(self.block["does_not_cover"])
+        self.assertTrue(self.block["alternatives"])
 
-    def test_boundary_names_the_uncovered_request_class(self) -> None:
-        block = TOOL.report(MAP, validate_links=True)["capability_boundary"]
-        joined = " ".join(block["does_not_cover"]).lower()
-        self.assertIn("entity", joined)
-        self.assertIn("recompos", joined)
+    def test_boundary_names_both_covered_layers(self) -> None:
+        joined = self.block["covers"].lower()
+        self.assertIn("governance", joined)
+        self.assertIn("ontology design", joined)
 
-    def test_boundary_names_an_alternative_capability(self) -> None:
-        block = TOOL.report(MAP, validate_links=True)["capability_boundary"]
-        self.assertTrue(any("zj-codebase-design" in alt for alt in block["alternatives"]))
+    def test_boundary_no_longer_names_decomposition_as_uncovered(self) -> None:
+        joined = " ".join(self.block["does_not_cover"]).lower()
+        self.assertNotIn("recompos", joined)
+        self.assertNotIn("拆解重组", joined)
+
+    def test_uncovered_class_is_non_docs_system_objects(self) -> None:
+        joined = " ".join(self.block["does_not_cover"]).lower()
+        self.assertIn("not a documentation system", joined)
+
+    def test_alternatives_do_not_point_to_zj_codebase_design(self) -> None:
+        self.assertFalse(
+            any("zj-codebase-design" in alt for alt in self.block["alternatives"])
+        )
 
 
-class CapabilityNotCoveredSignalTest(unittest.TestCase):
+class CapabilityNotCoveredRetractedTest(unittest.TestCase):
     def payload(self, **kwargs) -> dict:
         return TOOL.report(MAP, validate_links=True, **kwargs)
 
-    def test_decomposition_declaration_triggers_the_signal(self) -> None:
-        payload = self.payload(
-            object="docs system decomposition into entities/attributes/relations/rules and recomposition"
-        )
-        self.assertIn("CAPABILITY_NOT_COVERED", codes(payload))
-        item = next(i for i in payload["diagnostics"] if i["code"] == "CAPABILITY_NOT_COVERED")
-        self.assertTrue(item["message"])
+    def test_decomposition_declarations_trigger_nothing(self) -> None:
+        for declaration in DECOMPOSITION_DECLARATIONS:
+            self.assertNotIn(
+                "CAPABILITY_NOT_COVERED",
+                codes(self.payload(object=declaration)),
+                msg=f"retracted signal fired for: {declaration}",
+            )
 
-    def test_signal_points_to_the_alternative_capability(self) -> None:
-        payload = self.payload(object="把 docs system 按实体/属性/关系/规则拆解重组")
-        item = next(i for i in payload["diagnostics"] if i["code"] == "CAPABILITY_NOT_COVERED")
-        self.assertIn("zj-codebase-design", item["message"])
-
-    def test_chinese_declaration_triggers_the_signal(self) -> None:
-        self.assertIn(
-            "CAPABILITY_NOT_COVERED",
-            codes(self.payload(object="docs 按实体/规则拆解重组")),
-        )
-
-    def test_plain_directory_declaration_does_not_trigger(self) -> None:
+    def test_plain_and_derived_declarations_stay_clean(self) -> None:
         self.assertNotIn("CAPABILITY_NOT_COVERED", codes(self.payload(object="docs")))
-
-    def test_derived_default_does_not_trigger(self) -> None:
         self.assertNotIn("CAPABILITY_NOT_COVERED", codes(self.payload()))
 
-    def test_signal_never_changes_the_exit_semantics(self) -> None:
+    def test_signal_removed_from_allowlists(self) -> None:
         self.assertNotIn("CAPABILITY_NOT_COVERED", TOOL.ERROR_CODES)
-        self.assertIn("CAPABILITY_NOT_COVERED", TOOL.SIGNAL_CODES)
-        payload = self.payload(object="docs 实体/关系 拆解重组")
-        self.assertFalse(TOOL.has_error(payload))
+        self.assertNotIn("CAPABILITY_NOT_COVERED", TOOL.SIGNAL_CODES)
 
-    def test_signal_is_registered_as_escalatable_in_gate_rules(self) -> None:
-        import json
-
+    def test_signal_removed_from_gate_rules(self) -> None:
         rules = json.loads(GATE_RULES.read_text(encoding="utf-8"))
-        self.assertIn("CAPABILITY_NOT_COVERED", rules["escalatable_signals"])
+        self.assertNotIn("CAPABILITY_NOT_COVERED", rules["escalatable_signals"])
+        self.assertNotIn("CAPABILITY_NOT_COVERED", rules["never_gate_signals"])
 
 
 if __name__ == "__main__":

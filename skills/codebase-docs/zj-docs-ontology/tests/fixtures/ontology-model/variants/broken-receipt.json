@@ -1,0 +1,66 @@
+{
+ "schema_version": "ontology-model/v1",
+ "object": "docs",
+ "entities": [
+  {
+   "id": "entity.thing",
+   "name": "Thing",
+   "bounded_question": "What is a thing?",
+   "attributes": [
+    "attr.thing.name"
+   ]
+  },
+  {
+   "id": "entity.other",
+   "name": "Other",
+   "bounded_question": "What is other?"
+  }
+ ],
+ "attributes": [
+  {
+   "id": "attr.thing.name",
+   "name": "name",
+   "owner": "entity.thing"
+  }
+ ],
+ "relations": [
+  {
+   "id": "rel.thing-of-other",
+   "type": "derivedFrom",
+   "from": "entity.thing",
+   "to": "entity.other"
+  }
+ ],
+ "rules": [
+  {
+   "id": "rule.things-exist",
+   "statement": "Every thing has a name.",
+   "traces": [
+    "docs/designs/rules.md"
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "path": "docs/designs/overview.md",
+   "elements": [
+    "entity.thing",
+    "attr.thing.name",
+    "entity.ghost"
+   ]
+  },
+  {
+   "path": "docs/designs/detail.md",
+   "elements": [
+    "entity.other",
+    "rel.thing-of-other"
+   ]
+  },
+  {
+   "path": "docs/designs/rules.md",
+   "elements": [
+    "rule.things-exist"
+   ]
+  }
+ ]
+}
