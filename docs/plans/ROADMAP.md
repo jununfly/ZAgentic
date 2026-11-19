@@ -7,7 +7,7 @@ durable-citation: forbidden
 promote-via: ADR|design|contract|runtime-evidence
 -->
 
-> 数据文件: `roadmap.json` | 最后更新: 2026-11-19 21:47:56
+> 数据文件: `roadmap.json` | 最后更新: 2026-11-19 23:38:25
 
 [~][X+] 1. Issue #275 一步到位修复（zj-docs-ontology / zj-docs-architecture）
 ├── [x][X+] 1-1. PR1 工具正确性：Fix 2+3+6（witness 单基准 / moves 可注入 / 输出锚定）
@@ -18,24 +18,18 @@ promote-via: ADR|design|contract|runtime-evidence
 │   ├── [x][X+] 1-2-1. Fix 1a --object 作用对象声明 + report 拆 object_of_governance / pass_topic 两字段
 │   ├── [x][X+] 1-2-2. Fix 1b capability_boundary 块 + CAPABILITY_NOT_COVERED（signal，指向替代能力）
 │   └── [x][X+] 1-2-3. Fix 1c SKILL.md description 重写为能力边界声明（L5）
-├── [ ][X+] 1-3. PR3 跨 skill：Fix 4+5（role 显式声明 / one-home 信号）
-│   ├── [ ][X+] 1-3-1. Fix 4 map 条目 role: primary|supporting 替代路径子串判定；删 /architecture/ 子串；fail-open + PAGE_ROLE_UNDECLARED（L4）
-│   ├── [ ][X+] 1-3-2. Fix 5 duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED（signal-only，n-gram 粗筛不评分）
-│   └── [ ][X+] 1-3-3. L7 边界钉住：扫描只产 signal 不改 exit 语义，测试显式断言（对齐 doc-slop 非门禁裁决）
-└── [!][X+] 1-4. 收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验
+├── [x][X+] 1-3. PR3 跨 skill：Fix 4+5（role 显式声明 / one-home 信号）
+│   ├── [x][X+] 1-3-1. Fix 4 map 条目 role: primary|supporting 替代路径子串判定；删 /architecture/ 子串；fail-open + PAGE_ROLE_UNDECLARED（L4）
+│   ├── [x][X+] 1-3-2. Fix 5 duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED（signal-only，n-gram 粗筛不评分）
+│   └── [x][X+] 1-3-3. L7 边界钉住：扫描只产 signal 不改 exit 语义，测试显式断言（对齐 doc-slop 非门禁裁决）
+└── [ ][X+] 1-4. 收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验
     ├── [ ][X+] 1-4-1. L3/L8 Ruling v7 修订 + tombstone 语义回归：ADR amendment 留痕
     ├── [ ][X+] 1-4-2. docs 桶描述同步 + 三副本 git archive+rsync 删重装
     └── [ ][X+] 1-4-3. CI 门禁双向验 + issue #275 验收对照报告并关闭
-<details><summary>阻塞链：1 个节点被阻塞</summary>
-
-- 1-4. 收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验 ← e4: 1-3. PR3 跨 skill：Fix 4+5（role 显式声明 / one-home 信号） [ ]
-
-</details>
-
 
 ### 下一步可开工（ready 前 3）
 
-- 1-3. PR3 跨 skill：Fix 4+5（role 显式声明 / one-home 信号） [ ]
-- 1-3-1. Fix 4 map 条目 role: primary|supporting 替代路径子串判定；删 /architecture/ 子串；fail-open + PAGE_ROLE_UNDECLARED（L4） [ ]
-- 1-3-2. Fix 5 duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED（signal-only，n-gram 粗筛不评分） [ ]
+- 1-4. 收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验 [ ]
+- 1-4-1. L3/L8 Ruling v7 修订 + tombstone 语义回归：ADR amendment 留痕 [ ]
+- 1-4-2. docs 桶描述同步 + 三副本 git archive+rsync 删重装 [ ]
 <!-- ROADMAP_SECTION_END -->
