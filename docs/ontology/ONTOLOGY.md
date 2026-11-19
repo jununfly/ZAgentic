@@ -93,7 +93,7 @@
 
 - **`SkillBucket.kind`** ∈ {`public`, `personal`} —— 决定是否被插件发现/根 README 注册。
 - **`Skill.bucket`** —— 强制且唯一（`belongsTo` 基数 exactly-one），杜绝"技能归属不清"。
-- **`DocPage.doc_kind`** ∈ {`method`, `prd`, `architecture-map`, `architecture-overview`, `architecture-layers`, `architecture-flow`, `architecture-subsystem`, `architecture-cross-cutting`, `agreement`, `design`, `testing`, `benchmark`, `reference`, `adr`, `plan`, `retro`, `fixture-documentation`, `doc-map`} —— 固定文档语义角色。
+- **`DocPage.doc_kind`** ∈ {`method`, `prd`, `architecture-map`, `architecture-overview`, `architecture-layers`, `architecture-flow`, `architecture-subsystem`, `architecture-cross-cutting`, `agreement`, `design`, `testing`, `benchmark`, `reference`, `adr`, `plan`, `retro`, `fixture-documentation`} —— 固定文档语义角色（17 值；权威词表见 `docs/skill-conventions/skill-conventions.json` 与 `skills/codebase-docs/zj-docs-ontology/references/canonical-preset.json`）。`docs/README.md` 的 `doc-kind: doc-map` 属独立索引实体 `DocMap`（见 §1），不在 `DocPage` 词表内；`validate.py` 对该值单独豁免。
 - **`DocPage.authority`** ∈ {`primary`, `supporting`, `historical`, `process`, `external`} —— 文档权威层级。
 - **`DocPage.authority_id`** —— 仅 primary 页（架构视图/设计/协议）拥有；全局唯一，是推理与校验的稳定锚点；`DocMap` 与 `ADR` 不拥有。
 - **`ADR.status`** ∈ {`accepted`, `proposed`, `superseded`}。

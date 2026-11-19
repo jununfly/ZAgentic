@@ -71,11 +71,6 @@ authority elsewhere (both are mechanical failures the validator surfaces).
 | Each bucket subsystem page | Owns its skill set, points to this page for the discovery and installation boundary. |
 | [Personal tree subsystem page](ta-zagentic-personal-tree.md) | Restates the "parallel path" clause. |
 
-The bucket discipline is a cross-cutting concern because every view either
-applies it or restates it; no view can ignore it. A view that ignores it
-either encodes a hidden assumption or duplicates an authority elsewhere
-(both are mechanical failures the validator surfaces).
-
 ## Exceptions and additions
 
 The rule admits no inheritance-based exceptions and no implicit additions.

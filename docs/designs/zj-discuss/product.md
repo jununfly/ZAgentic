@@ -63,6 +63,9 @@ authority-id: design.zj-discuss-product
 最终决策分类 = **C（选择性复用）**：外部范式作结构借鉴，zj-discuss 方法体系为自有主体；
 **否决** 运行时编排器 / suite-化（会触发约束 1 → D，且让适配层拥有主体状态）。
 
+> 分类模型的规范陈述见 `docs/agreements/open-source-capability-fit-decision-model.md`（SSOT）；
+> 集成边界（R5）与度量 schema（R4）的细化见 `design.md` §8 / §9，此处不重复。
+
 ## 5. 两阶段生命周期（产品级）
 
 - **阶段 1（求解期）**：`discussions/<slug>/` 文件夹整体保留，作为复杂问题

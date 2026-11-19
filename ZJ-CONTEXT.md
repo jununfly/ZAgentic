@@ -107,15 +107,15 @@ _Avoid_: bare skill name, unresolvable path, evidence payload
 **Bucket discipline**:
 The cross-cutting rule that a skill's discoverability depends on exactly three
 things: its bucket is its public entry, the root-level `personal/` tree is a
-parallel path rather than a sixth bucket, and no architecture page duplicates a
+parallel path rather than a seventh bucket, and no architecture page duplicates a
 design or ADR authority. Every architecture view consumes this rule.
 _Avoid_: bucket policy, folder convention
 
-**5 + 1 model**:
-The shape of the ZAgentic skills collection: five public purpose-based buckets
+**6 + 1 model**:
+The shape of the ZAgentic skills collection: six public purpose-based buckets
 under `skills/` plus one root-level `personal/` tree that is installable but
 outside plugin discovery and public indexes.
-_Avoid_: six buckets, personal bucket
+_Avoid_: five buckets, personal bucket
 
 **Repository collaboration setup**:
 The tracker, triage-vocabulary, and Agent-entrypoint configuration established
