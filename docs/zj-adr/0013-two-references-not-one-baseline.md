@@ -81,6 +81,8 @@ issue #264 要求把 `zj-docs-ontology` 的执行协议从"靠 agent 自觉报�
   豁免是已确认 proposal 中的 `moves` 条目（携带同一 `confirmation_id`）；验证时从
   `(HEAD − current)` 减去被点名的旧路径。不做哈希配对。未点名的消失一律触发
   `UNDECLARED_RETIREMENT` 非零，并提示若为 rename 则补 `moves` 重跑。
+  （该规则即后续口头称呼的 "Ruling v7"；2026-11-20 已由 issue #275 修订为三级判定——
+  git 原生 rename 证据进 `pending_moves` 降级 signal，见文末 Amendment。）
 - **范围边界**：roster 看不见未跟踪文件，报告须声明该边界；`docs/plans/`、`docs/zj-retros/`
   等过程目录豁免。
 - **持久化**：本决策此前只存活于 gitignored 的 process material 与代码/测试；该 process 在
@@ -88,3 +90,32 @@ issue #264 要求把 `zj-docs-ontology` 的执行协议从"靠 agent 自觉报�
   `skills/codebase-docs/zj-docs-ontology/references/governance-contract.md`、
   `skills/codebase-docs/zj-docs-ontology/references/proposal-tool-contract.md` 与
   `zj-docs-ontology/tests/` 中的回归测试持有；本页不复述其实现细节。
+
+## Amendment (2026-11-20)：rename fail-closed 规则修订 + tombstone 语义回归（issue #275）
+
+issue #275（PR #277/#278/#279，merge `ddab5d3`）实证了上文 Consequences「rename 的
+fail-closed 规则」（Ruling v7）的一条执行裂缝：CLI 没有任何 `moves` 注入途径，
+`UNDECLARED_RETIREMENT` 的修复提示指向一条不存在的路——合规 `git mv` 在机械层面无法豁免，
+执行者只能靠"留一个无内容的 stub 让原路径存在"过门禁。stub 既非 tombstone 也无
+`retired-to:`，不是 rename 的准确表达，只是满足观察边界的空壳。
+
+修订如下（只改 rename 豁免的证据来源集；本页 Decision——两个参照系、消失检测用 HEAD roster
+的收窄边界、不做哈希配对——全部维持）：
+
+1. **三级判定**替代"proposal-named moves only"：
+   - 消失路径命中已确认 proposal 的 `moves` → 完全豁免（原路径不变）；
+   - 命中 git 原生 rename 证据（`git status --porcelain=v1 -z` 的 staged rename +
+     `git diff --name-status -M HEAD` 的 unstaged rename）→ 进报告 `pending_moves`，降级为
+     signal `RENAME_AWAITING_CONFIRMATION`（退出零），等 Human 在 proposal 中确认；
+   - 无任何 rename 证据的消失 → `UNDECLARED_RETIREMENT` 仍为 ERROR，不变。
+   证据来源是 git 自己的两类声明，不是内容哈希配对——v7 反对 hash-pairing 的理由
+   （内容相同≠移动）继续成立，且更彻底。
+2. **tombstone 语义回归**（legacy 冲突表 L8）：删除"无内容 stub 过门禁"的 workaround 语义。
+   rename 不再需要任何 tombstone stub；tombstone 回归 Retirement 生命周期本义——
+   内容被一个指认新位置的短页替代，属 retire 阶段在"留旧页"与"断链"之间的第三选项，
+   不是为了让观察边界通过而存在的空壳。现行陈述见
+   `zj-docs-ontology` SKILL.md lifecycle 第 4 条与 `governance-contract.md` Retirement 节。
+
+机械语义由 `docs_governance.py` 的 `detect_pending_moves` 与
+`skills/codebase-docs/zj-docs-ontology/tests/test_issue275_moves.py` 持有；
+本页不再复述实现细节。
