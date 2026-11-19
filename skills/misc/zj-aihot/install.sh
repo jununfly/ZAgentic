@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # AIHOT Agent Skill installer.
-# Downloads and validates the complete runtime package before one directory swap.
+# Downloads and validates the complete runtime package before one directory swap. The package
+# (SKILL.md, LICENSE, agents/openai.yaml) is the last one: AIHOT's abilities live on its server.
 
 set -euo pipefail
 
-SITE="https://aihot.virxact.com"
+SITE="https://aihot.news"
 TARGET=""
 INSTALL_DIR=""
 ACTOR_ID=""
@@ -38,7 +39,7 @@ Targets:
 
 Examples:
   bash install.sh --target codex
-  # Optional: copy your own Actor UUID from https://aihot.virxact.com/agent
+  # Optional: copy your own Actor UUID from https://aihot.news/agent
   bash install.sh --target codex --actor <uuid-v4-from-agent-page>
   bash install.sh --target codex --no-actor
   bash install.sh --target agents --migrate-legacy
@@ -48,7 +49,7 @@ The installer never uses sudo. It downloads the complete runtime package,
 validates every SHA-256, then replaces one explicit target directory.
 
 If an older AIHOT Skill ran this script without a target, do not guess or
-retry with sudo. Open https://aihot.virxact.com/aihot-skill/README.md and give
+retry with sudo. Open https://aihot.news/aihot-skill/README.md and give
 its recommended update prompt to the Agent that owns the current Skill folder.
 EOF
 }
@@ -316,6 +317,9 @@ if [[ "$SHARED_TARGET" -eq 1 ]]; then
       skill_frontmatter_has_line "$legacy/SKILL.md" "name: aihot" || {
         fail "legacy path contains a different Skill and will not be touched: $legacy"
       }
+      if [[ "$MIGRATE_LEGACY" -eq 1 && "$legacy" == "$HOME/.claude/skills/aihot" ]]; then
+        CLAUDE_COMPAT_LINK="$legacy"
+      fi
       LEGACY_PATHS[$LEGACY_COUNT]="$legacy"
       LEGACY_COUNT=$((LEGACY_COUNT + 1))
     fi
@@ -358,7 +362,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     fail "unsafe package path: $relative_path"
   }
   case "$relative_path" in
-    SKILL.md|LICENSE|agents/openai.yaml|references/api.md|references/sync.md|references/errors.md) ;;
+    SKILL.md|LICENSE|agents/openai.yaml) ;;
     *) fail "unexpected non-runtime package path: $relative_path" ;;
   esac
   [[ "$SEEN_FILES" != *$'\n'"$relative_path"$'\n'* ]] || fail "duplicate manifest path: $relative_path"
@@ -376,15 +380,12 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   chmod 0644 "$output_path"
 done < "$MANIFEST_FILE"
 
-[[ "$FILE_COUNT" -eq 6 ]] || fail "runtime package must contain exactly 6 files"
+[[ "$FILE_COUNT" -eq 3 ]] || fail "runtime package must contain exactly 3 files"
 
 for required in \
   SKILL.md \
   LICENSE \
-  agents/openai.yaml \
-  references/api.md \
-  references/sync.md \
-  references/errors.md
+  agents/openai.yaml
 do
   [[ -f "$PACKAGE_DIR/$required" ]] || fail "runtime package is missing $required"
 done
