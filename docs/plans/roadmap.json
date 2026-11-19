@@ -1,0 +1,319 @@
+{
+  "title": "Issue #275 一步到位修复（zj-docs-ontology / zj-docs-architecture）",
+  "description": "",
+  "version": 1,
+  "nodes": {
+    "1": {
+      "id": "1",
+      "uid": "01a1f34480ef-23c975bcd3",
+      "label": "Issue #275 一步到位修复（zj-docs-ontology / zj-docs-architecture）",
+      "status": "in_progress",
+      "mode": "explore",
+      "parent": null,
+      "children": [
+        "1-1",
+        "1-2",
+        "1-3",
+        "1-4"
+      ],
+      "decisions": [
+        {
+          "q": "是否延续 legacy 判例？",
+          "answer": "不延续。9 项 legacy 冲突（L1-L9：错断言/双基准/Ruling v7/前缀契约/过度承诺/scope 二义/doc-slop 边界/stub workaround/CWD 相对）随本修复一并处理（zj 2026-11-19 拍板：一步到位）",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan",
+      "rounds": 1
+    },
+    "1-1": {
+      "id": "1-1",
+      "uid": "01a1f344d2ae-636a16c36d",
+      "label": "PR1 工具正确性：Fix 2+3+6（witness 单基准 / moves 可注入 / 输出锚定）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-1-1",
+        "1-1-2",
+        "1-1-3"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-2": {
+      "id": "1-2",
+      "uid": "01a1f344d3af-0402b9b218",
+      "label": "PR2 CLI 表面积 + SKILL.md：Fix 1（作用对象一等声明 / 能力边界）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-2-1",
+        "1-2-2",
+        "1-2-3"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-3": {
+      "id": "1-3",
+      "uid": "01a1f344d498-c654602d72",
+      "label": "PR3 跨 skill：Fix 4+5（role 显式声明 / one-home 信号）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-3-1",
+        "1-3-2",
+        "1-3-3"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-4": {
+      "id": "1-4",
+      "uid": "01a1f344d57d-768bdec3ab",
+      "label": "收尾：legacy 裁决记录 + docs 同步 + 三副本删重装 + 门禁双向验",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1",
+      "children": [
+        "1-4-1",
+        "1-4-2",
+        "1-4-3"
+      ],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-1-1": {
+      "id": "1-1-1",
+      "uid": "01a1f344d65b-8c5a771783",
+      "label": "Fix 2 witness 路径单基准：emit 写纯文件名、inspect 统一 case_dir、删 root 基准（TDD 红→绿，修 L1/L2 断言）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "witness 路径用哪个解析基准？",
+          "answer": "单一基准 = case_dir。emit 只写纯文件名 architecture-validator.txt，inspect 相对路径一律 case_dir 解析，删 architecture_witness 的 root 基准分支；同步修 L1（test_checklist.py:146 错断言）与 L2（双基准）",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-1-2": {
+      "id": "1-1-2",
+      "uid": "01a1f344d74d-d4774e39f8",
+      "label": "Fix 3 moves 注入 + rename 三级判定：git 原生检测→pending_moves(signal)→确认豁免；删 stub workaround",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "moves 如何注入、rename 如何豁免？",
+          "answer": "git 原生证据（porcelain=v1 -z + diff -M）自动检出进 pending_moves（signal: RENAME_AWAITING_CONFIRMATION），Human 在 proposal 确认后豁免；无任何 rename 证据的消失仍 UNDECLARED_RETIREMENT(ERROR)；Ruling v7 修订——git 原生证据不是 hash-pairing；删 stub workaround（L3/L8）",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-1-3": {
+      "id": "1-1-3",
+      "uid": "01a1f344d83d-a57f83b65a",
+      "label": "Fix 6 DEFAULT_OUT 锚定 {repo-root}/tmp/skills-outputs/zj-docs-ontology",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-1",
+      "children": [],
+      "decisions": [
+        {
+          "q": "checklist 输出区锚在哪？",
+          "answer": "锚定 {repo-root}/tmp/skills-outputs/zj-docs-ontology，消掉 CWD 隐变量；SKILL.md 声明路径不再随启动目录漂移",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-2-1": {
+      "id": "1-2-1",
+      "uid": "01a1f344d924-03b89bce2d",
+      "label": "Fix 1a --object 作用对象声明 + report 拆 object_of_governance / pass_topic 两字段",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "作用对象如何成为一等声明？",
+          "answer": "CLI --object（缺省 derived docs-system:{repo-root} 并在报告注明）；report 拆 object_of_governance 与 pass_topic 两字段，消除 scope 二义（L6）",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-2-2": {
+      "id": "1-2-2",
+      "uid": "01a1f344da02-84d258edb2",
+      "label": "Fix 1b capability_boundary 块 + CAPABILITY_NOT_COVERED（signal，指向替代能力）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [
+        {
+          "q": "拆解重组类请求如何处置？",
+          "answer": "CAPABILITY_NOT_COVERED 为 signal（非 ERROR），报告显式声明不覆盖并指向替代能力（zj-codebase-design 或新建 ontology-design skill）；escalation 交 consumer，同 #264 platform-layer C 模式",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-2-3": {
+      "id": "1-2-3",
+      "uid": "01a1f344daeb-be5cbbbc98",
+      "label": "Fix 1c SKILL.md description 重写为能力边界声明（L5）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-2",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-3-1": {
+      "id": "1-3-1",
+      "uid": "01a1f344dbde-6bdffef808",
+      "label": "Fix 4 map 条目 role: primary|supporting 替代路径子串判定；删 /architecture/ 子串；fail-open + PAGE_ROLE_UNDECLARED（L4）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "页面角色判定入口用什么？",
+          "answer": "map 条目级 role: primary|supporting 显式声明（map 是判定真相源，不用 frontmatter）；整体删除 /architecture/ 子串判定；无声明 = PAGE_ROLE_UNDECLARED signal 且不套契约（fail-open）；ta-/ba-/pa- 前缀降级为 primary 命名惯例（L4）",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-3-2": {
+      "id": "1-3-2",
+      "uid": "01a1f344dcc3-da1705b755",
+      "label": "Fix 5 duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED（signal-only，n-gram 粗筛不评分）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [
+        {
+          "q": "one-home-per-fact 信号强度？",
+          "answer": "signal-only：duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED 只产 signal 不改 exit 语义；n-gram 粗筛报重复事实对与指向页，不做百分比评分（规避 doc-slop 统计口径坑）",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-3-3": {
+      "id": "1-3-3",
+      "uid": "01a1f344ddb0-5c6c93df6c",
+      "label": "L7 边界钉住：扫描只产 signal 不改 exit 语义，测试显式断言（对齐 doc-slop 非门禁裁决）",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-3",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-4-1": {
+      "id": "1-4-1",
+      "uid": "01a1f344de97-83f59b87d7",
+      "label": "L3/L8 Ruling v7 修订 + tombstone 语义回归：ADR amendment 留痕",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [
+        {
+          "q": "Ruling 修订如何留痕？",
+          "answer": "ADR amendment（## Amendment + 日期）记录 v7 修订与 tombstone 语义回归；只修事实不推翻判决，避免'已修复缺陷仍写成现状'腐化",
+          "note": ""
+        }
+      ],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-4-2": {
+      "id": "1-4-2",
+      "uid": "01a1f344df83-0ba4eee685",
+      "label": "docs 桶描述同步 + 三副本 git archive+rsync 删重装",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    },
+    "1-4-3": {
+      "id": "1-4-3",
+      "uid": "01a1f344e06c-69c41ca659",
+      "label": "CI 门禁双向验 + issue #275 验收对照报告并关闭",
+      "status": "pending",
+      "mode": "explore",
+      "parent": "1-4",
+      "children": [],
+      "decisions": [],
+      "notes": "",
+      "layer": "plan"
+    }
+  },
+  "metadata": {
+    "created": "2026-11-19 18:05:15",
+    "updated": "2026-11-19 18:07:09",
+    "md_file": "ROADMAP.md"
+  },
+  "edges": [
+    {
+      "id": "e1",
+      "from": "01a1f344d2ae-636a16c36d",
+      "to": "01a1f344d3af-0402b9b218",
+      "type": "blocks"
+    },
+    {
+      "id": "e2",
+      "from": "01a1f344d2ae-636a16c36d",
+      "to": "01a1f344d57d-768bdec3ab",
+      "type": "blocks"
+    },
+    {
+      "id": "e3",
+      "from": "01a1f344d3af-0402b9b218",
+      "to": "01a1f344d57d-768bdec3ab",
+      "type": "blocks"
+    },
+    {
+      "id": "e4",
+      "from": "01a1f344d498-c654602d72",
+      "to": "01a1f344d57d-768bdec3ab",
+      "type": "blocks"
+    }
+  ],
+  "edge_seq": 4
+}
