@@ -245,18 +245,30 @@ class PresetUnavailableTest(Ruling1Case):
 
 
 class RenameTest(Ruling1Case):
-    """Ruling v7 line 88/98: proposal-named moves only; hash-pairing rejected."""
+    """Three-level rename adjudication (issue #275 defect B, revising Ruling
+    v7's "proposal-named moves only"): git-native rename evidence downgrades
+    the unconfirmed case to a signal; hash-pairing is still not evidence."""
 
     def _moved_repo(self, name: str) -> Path:
         repo = make_repo(name)
         git(repo, "mv", PAGE, "docs/prds/renamed.md")
         return repo
 
-    def test_undeclared_rename_fires_with_remedy_hint(self) -> None:
-        repo = self._moved_repo("undeclared-rename")
+    def test_unconfirmed_rename_is_a_signal_not_an_error(self) -> None:
+        repo = self._moved_repo("unconfirmed-rename")
         payload = report(repo)
-        self.assertIn("UNDECLARED_RETIREMENT", codes(payload))
-        self.assertIn("moves", code_item(payload, "UNDECLARED_RETIREMENT")["message"])
+        self.assertNotIn("UNDECLARED_RETIREMENT", codes(payload))
+        self.assertIn("RENAME_AWAITING_CONFIRMATION", codes(payload))
+
+    def test_confirmed_rename_is_fully_exempt(self) -> None:
+        repo = self._moved_repo("declared-rename")
+        proposal = {
+            "moves": [{"from": PAGE, "to": "docs/prds/renamed.md"}],
+            "confirmation_id": "a" * 64,
+        }
+        payload = report(repo, proposal=proposal)
+        self.assertNotIn("UNDECLARED_RETIREMENT", codes(payload))
+        self.assertNotIn("RENAME_AWAITING_CONFIRMATION", codes(payload))
 
     def test_declared_rename_with_matching_confirmation_exits_zero(self) -> None:
         repo = self._moved_repo("declared-rename")
@@ -279,7 +291,7 @@ class RenameTest(Ruling1Case):
 
 
 class ExitCodeAllowlistTest(Ruling1Case):
-    """Cross-cutting line 163: 5 ERROR + 6 signal, explicit allowlists."""
+    """Cross-cutting line 163: 5 ERROR + 7 signal, explicit allowlists."""
 
     def test_five_error_codes_are_explicit(self) -> None:
         self.assertEqual(
@@ -291,12 +303,13 @@ class ExitCodeAllowlistTest(Ruling1Case):
             TOOL.ERROR_CODES,
         )
 
-    def test_six_signal_codes_are_explicit(self) -> None:
+    def test_seven_signal_codes_are_explicit(self) -> None:
         self.assertEqual(
             frozenset({
                 "BASELINE_NOT_APPLICABLE", "CONFIRMATION_BASELINE_LOST",
                 "PRESET_DIVERGENCE", "PRESET_UNAVAILABLE",
                 "EXEC_STEP5_FINGERPRINT_MISMATCH", "EXEC_CHECKLIST_NOT_DECLARED",
+                "RENAME_AWAITING_CONFIRMATION",
             }),
             TOOL.SIGNAL_CODES,
         )

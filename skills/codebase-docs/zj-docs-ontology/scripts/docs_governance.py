@@ -18,7 +18,22 @@ LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 AUTHORITY_RE = re.compile(r"authority-id:\s*`?([A-Za-z0-9._-]+)`?", re.I)
 RETIRED_RE = re.compile(r"retired-to:\s*`?([^`\s]+)`?", re.I)
 EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "skills-outputs", "test-results"}
+# Output-zone default, relative to the GOVERNED REPO ROOT (issue #275 Fix 6):
+# resolve through resolve_out_base, never against CWD.
 DEFAULT_OUT = Path("tmp/skills-outputs/zj-docs-ontology")
+
+
+def resolve_out_base(root: Path, out: Path | None) -> Path:
+    """Output-zone base directory. The launch directory is not an input.
+
+    The default and any relative ``--out`` anchor to the governed repo root,
+    so the SKILL.md-declared checklist path cannot drift with where the CLI
+    was started. An absolute ``--out`` is honored as given.
+    """
+    base = out if out is not None else DEFAULT_OUT
+    if base.is_absolute():
+        return base
+    return root / base
 # Ruling 1 (v4): the category set ships inside the skill as a sibling of this
 # script's parent — never CWD, never the target repo root. Runtime closure.
 DEFAULT_PRESET = Path(__file__).resolve().parents[1] / "references" / "canonical-preset.json"
@@ -236,17 +251,77 @@ def bootstrap_from_preset(preset: dict | None) -> dict[str, object] | None:
     }
 
 
+def detect_pending_moves(root: Path) -> list[dict[str, str]]:
+    """Git-native rename evidence (issue #275 defect B, revising Ruling v7).
+
+    Two sources, both git's own declarations — never content-hash pairing:
+      - `git status --porcelain=v1 -z`: staged renames (`git mv`);
+      - `git diff --name-status -M HEAD`: unstaged worktree renames.
+    Orientation is normalized by worktree existence: the "from" side is the
+    HEAD-tracked path that vanished, so field-order differences across git
+    versions cannot flip the meaning.
+    """
+    env = {k: v for k, v in os.environ.items() if k != "NODE_OPTIONS"}
+    pairs: list[tuple[str, str]] = []
+    try:
+        proc = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z"],
+            cwd=root, env=env, capture_output=True, text=True,
+        )
+        if proc.returncode == 0:
+            fields = proc.stdout.split("\0")
+            index = 0
+            while index < len(fields):
+                entry = fields[index]
+                if len(entry) >= 3 and entry[0] in ("R", "C"):
+                    to_path = entry[3:]
+                    from_path = fields[index + 1] if index + 1 < len(fields) else ""
+                    if from_path and to_path:
+                        pairs.append((from_path, to_path))
+                    index += 2
+                else:
+                    index += 1
+        proc = subprocess.run(
+            ["git", "diff", "--name-status", "-M", "HEAD", "--"],
+            cwd=root, env=env, capture_output=True, text=True,
+        )
+        if proc.returncode == 0:
+            for line in proc.stdout.splitlines():
+                parts = line.split("\t")
+                if parts and parts[0].startswith("R") and len(parts) == 3:
+                    pairs.append((parts[1], parts[2]))
+    except OSError:
+        return []
+    normalized: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for first, second in pairs:
+        first_exists = (root / first).exists()
+        second_exists = (root / second).exists()
+        if first_exists == second_exists:
+            continue  # not a worktree disappearance; nothing to adjudicate
+        from_path, to_path = (second, first) if first_exists else (first, second)
+        if from_path in seen:
+            continue
+        seen.add(from_path)
+        normalized.append({"from": from_path, "to": to_path})
+    return normalized
+
+
 def scan_head_disappearance(
     root: Path,
     process_names: list[str],
     moves: list[dict[str, str]] | None = None,
     declared_paths: set[str] | None = None,
+    pending_moves: list[dict[str, str]] | None = None,
 ) -> list[dict[str, str]]:
     """Observed reference: a tracked file that vanished from the working tree
-    without a declaration is UNDECLARED_RETIREMENT (ERROR).
+    is adjudicated at three levels (issue #275 defect B):
 
-    `git mv` shows as delete+add — the only exemption is a `moves` entry in the
-    confirmed proposal (proposal-named, fail-closed). Hash pairing is not used.
+      1. confirmed `moves` entry in the proposal → exempt (Human's decision);
+      2. git-native rename evidence, not yet confirmed →
+         RENAME_AWAITING_CONFIRMATION (signal) — no tombstone stub is needed;
+      3. no rename evidence → UNDECLARED_RETIREMENT (ERROR, fail-closed).
+
     A `retired-to:` declaration in the map is the other legitimate exemption.
     Process/evidence surfaces are exempt. When no HEAD exists, no claim is made.
     """
@@ -256,24 +331,42 @@ def scan_head_disappearance(
     moves = moves or []
     exempt = {item.get("from") for item in moves if isinstance(item, dict)}
     exempt |= declared_paths or set()
+    pending = {
+        item.get("from") for item in (pending_moves or []) if isinstance(item, dict)
+    }
     vanished = sorted(
         path for path in roster
         if not (root / path).exists()
         and path not in exempt
         and not any(part in EVIDENCE_NAMES or part in process_names for part in path.split("/"))
     )
-    if not vanished:
-        return []
-    return [{
-        "code": "UNDECLARED_RETIREMENT",
-        "path": "HEAD",
-        "message": (
-            "tracked path(s) vanished without a retirement declaration: "
-            + ", ".join(vanished)
-            + "; if this was a rename, add a `moves` entry to the confirmed proposal and re-run"
-        ),
-        "paths": vanished,
-    }]
+    undeclared = [path for path in vanished if path not in pending]
+    awaiting = [path for path in vanished if path in pending]
+    diagnostics: list[dict[str, str]] = []
+    if undeclared:
+        diagnostics.append({
+            "code": "UNDECLARED_RETIREMENT",
+            "path": "HEAD",
+            "message": (
+                "tracked path(s) vanished without a retirement declaration: "
+                + ", ".join(undeclared)
+                + "; if this was a rename, add a `moves` entry to the confirmed proposal and re-run"
+            ),
+            "paths": undeclared,
+        })
+    if awaiting:
+        diagnostics.append({
+            "code": "RENAME_AWAITING_CONFIRMATION",
+            "path": "HEAD",
+            "message": (
+                "git-detected rename(s) awaiting Human confirmation: "
+                + ", ".join(awaiting)
+                + "; confirm them in the confirmed proposal's `moves` to exempt — "
+                "unconfirmed rename evidence is a signal, never an exemption"
+            ),
+            "paths": awaiting,
+        })
+    return diagnostics
 
 
 def valid_topic(topic: str) -> bool:
@@ -326,7 +419,10 @@ def emit_checklist(payload: dict[str, object], base: Path, topic: str) -> dict[s
     steps.append({
         "step": 5,
         "status": "pending",
-        "artifact": str(case_dir / "architecture-validator.txt"),
+        # Single basis (issue #275 defect A): the declared artifact is a bare
+        # filename resolved against the case dir — emit and inspect can never
+        # disagree about the path.
+        "artifact": "architecture-validator.txt",
         "fingerprint": None,
         "confirmation_id": cid,
     })
@@ -613,7 +709,7 @@ def scan_retirement(root: Path, map_path: Path, process_names: list[str]) -> tup
 
 
 def architecture_witness(
-    root: Path,
+    base: Path,
     artifact: str | None,
     fingerprint: str | None,
 ) -> tuple[dict[str, object], list[dict[str, str]]]:
@@ -625,13 +721,19 @@ def architecture_witness(
     a file's digest — it does not open, parse, or inventory the artifact.
     A call with no declaration is not an error: the tool cannot know whether
     this pass was a full governance pass.
+    `base` is the checklist output zone: relative witness paths resolve
+    against it (single basis, issue #275 defect A) — never against the repo
+    root.
     """
     if artifact is None:
         return ({"status": "not-declared", "artifact": None, "exists": False, "fingerprint": None, "expected_fingerprint": None}, [])
     declared = artifact
     target = Path(artifact)
     if not target.is_absolute():
-        target = root / target
+        # Single basis (issue #275 defect A): relative witness paths resolve
+        # against the checklist output zone — the same basis the checklist's
+        # Step 5 artifact uses — never against the repo root.
+        target = base / target
     exists = target.is_file()
     actual = hashlib.sha256(target.read_bytes()).hexdigest() if exists else None
     witness: dict[str, object] = {
@@ -682,7 +784,7 @@ def report(
         # Checklist is the sole witness source when a pass topic is supplied.
         # CLI witness values are ignored, never merged — two sources for one
         # fact is the drift this design removes.
-        checklist_result = inspect_checklist(out or DEFAULT_OUT, topic)
+        checklist_result = inspect_checklist(resolve_out_base(root, out), topic)
         witness = checklist_result["witness"]
         diagnostics.extend(checklist_result["diagnostics"])  # type: ignore[index]
     elif validate_links:
@@ -696,7 +798,7 @@ def report(
             "message": "validate ran with no pass topic: no execution checklist was checked; a green run here is not evidence that a full governance pass ran or that content is correct",
         })
         witness, witness_diagnostics = architecture_witness(
-            root.resolve(), arch_witness, arch_fingerprint
+            resolve_out_base(root, out), arch_witness, arch_fingerprint
         )
         diagnostics.extend(witness_diagnostics)
     else:
@@ -763,8 +865,22 @@ def report(
             declared_paths = {
                 entry["page"] for entry in (retirement or {}).get("entries", [])  # type: ignore[union-attr]
             }
+            # Git-native rename evidence (issue #275 defect B): renames the
+            # tool detected itself, minus the ones the Human already confirmed
+            # in the proposal's `moves`. Surfaced in the report so a consumer
+            # sees what awaits confirmation.
+            confirmed_from = {
+                item.get("from") for item in moves if isinstance(item, dict)
+            }
+            pending_moves = [
+                item for item in detect_pending_moves(root)
+                if item.get("from") not in confirmed_from
+            ]
+            proposal["pending_moves"] = pending_moves
             proposal["diagnostics"].extend(  # type: ignore[index]
-                scan_head_disappearance(root, process_names, moves, declared_paths)
+                scan_head_disappearance(
+                    root, process_names, moves, declared_paths, pending_moves
+                )
             )
     process_paths = [path for paths in proposal["inventory"]["process_material"].values() for path in paths]  # type: ignore[index,union-attr]
     if process_paths:
@@ -788,6 +904,7 @@ SIGNAL_CODES = frozenset({
     "PRESET_UNAVAILABLE",
     "EXEC_STEP5_FINGERPRINT_MISMATCH",
     "EXEC_CHECKLIST_NOT_DECLARED",
+    "RENAME_AWAITING_CONFIRMATION",
 })
 # Mechanical codes emitted by the current tool (prefix families), plus the
 # explicit allowlist above. Kept as families so a new MAP_/RETIRE_ gate cannot
@@ -833,7 +950,7 @@ def main() -> int:
         "--out",
         type=Path,
         metavar="DIR",
-        help=f"checklist base directory (default: {DEFAULT_OUT} under CWD)",
+        help=f"checklist base directory (default: {DEFAULT_OUT} under the repo root; a relative value also anchors to the repo root)",
     )
     parser.add_argument(
         "--preset",
@@ -851,7 +968,7 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
-    base = args.out or DEFAULT_OUT
+    base = resolve_out_base(args.repo.resolve(), args.out)
     payload = report(
         args.repo.resolve(),
         validate_links=args.validate,

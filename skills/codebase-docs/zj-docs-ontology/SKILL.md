@@ -46,7 +46,11 @@ inlined block. The generated `BASE_RULES_*` block is a separate, generated secti
    authority merges, and process deletion are separately named actions. Use
    `git mv` for an approved tracked move. A page leaving service retires first
    and tombstones while inbound links remain; deletion is the last stage, never
-   a default.
+   a default. A `git mv` stages git-native rename evidence: the validator
+   reports it as `RENAME_AWAITING_CONFIRMATION` (a signal, exit zero) until
+   the confirmed proposal's `moves` names it — a rename needs no tombstone
+   stub, and a deletion without rename evidence still errors
+   (`UNDECLARED_RETIREMENT`).
 5. **Validate and report.** Run map, link, and authority-binding checks and
    `/zj-docs-architecture` for the architecture layer. One `authority-id` bound
    to two pages is a mechanical failure, not a signal: it exits non-zero and the
@@ -82,8 +86,10 @@ python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --val
   --topic docs-redesign
 ```
 
-The checklist is emitted to `tmp/skills-outputs/zj-docs-ontology/<topic>/`
-(gitignored, pass-scoped). Its `confirmation_id` is the tool-computed hash of
+The checklist is emitted to `<repo-root>/tmp/skills-outputs/zj-docs-ontology/<topic>/`
+(gitignored, pass-scoped). The output zone anchors to the governed repo root —
+the default and any relative `--out` resolve against it, never against the
+directory the CLI was launched from. Its `confirmation_id` is the tool-computed hash of
 the confirmed proposal — never an agent-supplied "I confirmed" claim. Steps
 marked done must be backed by an existing artifact; a missing one is
 `EXEC_CHECKLIST_STEP_UNBACKED` (non-zero). Step 5's artifact path is declared
