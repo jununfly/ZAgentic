@@ -315,6 +315,7 @@ class ExitCodeAllowlistTest(Ruling1Case):
                 "PRESET_DIVERGENCE", "PRESET_UNAVAILABLE",
                 "EXEC_STEP5_FINGERPRINT_MISMATCH", "EXEC_CHECKLIST_NOT_DECLARED",
                 "RENAME_AWAITING_CONFIRMATION",
+                "FACT_NO_SINGLE_HOME", "PARALLEL_ONTOLOGY_SUSPECTED",
             }),
             TOOL.SIGNAL_CODES,
         )

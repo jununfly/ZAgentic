@@ -65,7 +65,7 @@
       "id": "1-3",
       "uid": "01a1f344d498-c654602d72",
       "label": "PR3 跨 skill：Fix 4+5（role 显式声明 / one-home 信号）",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1",
       "children": [
@@ -73,9 +73,21 @@
         "1-3-2",
         "1-3-3"
       ],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "PAGE_ROLE_UNDECLARED 触发范围如何收窄避免全 map 噪声",
+          "answer": "契约入口只认 map 条目显式 role: 声明；未声明链接仅当页面 frontmatter doc-kind 属 architecture-* 时产 PAGE_ROLE_UNDECLARED（signal），其余页面（designs/agreements/prds 等非 architecture 家族）不进验证器视野；/architecture/ 路径子串判定整体删除；9 个 fixture map 与本仓 docs/README.md 的 12 条 architecture 条目同步补 role: primary 声明（canary 依赖 fixture，不迁移则红）",
+          "note": ""
+        },
+        {
+          "q": "未声明链接的 PAGE_ROLE_UNDECLARED 检测是否允许读取页面",
+          "answer": "否。read-boundary fixture 已钉死有界读（永不读 process 材料），读页面判 doc-kind 会破坏该契约。采用零读取方案：未声明链接不读页面，仅当解析目标落在 docs/architecture/ 目录（与既有 MAP_ARCHITECTURE_EMPTY 同一目录锚点）时产 PAGE_ROLE_UNDECLARED signal；page-role 残留检测只在已声明条目（本来就要读）上做",
+          "note": ""
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4": {
       "id": "1-4",
@@ -241,7 +253,7 @@
       "id": "1-3-1",
       "uid": "01a1f344dbde-6bdffef808",
       "label": "Fix 4 map 条目 role: primary|supporting 替代路径子串判定；删 /architecture/ 子串；fail-open + PAGE_ROLE_UNDECLARED（L4）",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-3",
       "children": [],
@@ -259,7 +271,7 @@
       "id": "1-3-2",
       "uid": "01a1f344dcc3-da1705b755",
       "label": "Fix 5 duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED（signal-only，n-gram 粗筛不评分）",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-3",
       "children": [],
@@ -268,22 +280,35 @@
           "q": "one-home-per-fact 信号强度？",
           "answer": "signal-only：duplicate_fact_scan + PARALLEL_ONTOLOGY_SUSPECTED 只产 signal 不改 exit 语义；n-gram 粗筛报重复事实对与指向页，不做百分比评分（规避 doc-slop 统计口径坑）",
           "note": ""
+        },
+        {
+          "q": "Fix 5 两个 signal 的机械判据怎么定",
+          "answer": "FACT_NO_SINGLE_HOME：map 覆盖页面（map_links 已存在目标，跳过 process/evidence 面）按 normalize 后 heading 分簇，簇≥2 页且簇内无 authority: primary 页 → signal 一簇一条。PARALLEL_ONTOLOGY_SUSPECTED：(a) docs/ 树下未被 map 覆盖的 .md 且有 git 原生活跃证据（status porcelain untracked/modified，非 git 环境扫描跳过）；(b) 该页 heading 与覆盖页 heading 池重叠（共享完整 normalize heading 或共享≥2 个不同词）→ signal 按页一条。两码归 SIGNAL_CODES + gate-rules escalatable_signals（consumer 可选升级，默认 pass），exit 语义不动",
+          "note": ""
         }
       ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-3-3": {
       "id": "1-3-3",
       "uid": "01a1f344ddb0-5c6c93df6c",
       "label": "L7 边界钉住：扫描只产 signal 不改 exit 语义，测试显式断言（对齐 doc-slop 非门禁裁决）",
-      "status": "pending",
+      "status": "completed",
       "mode": "explore",
       "parent": "1-3",
       "children": [],
-      "decisions": [],
+      "decisions": [
+        {
+          "q": "真实数据噪声收窄（本仓实跑暴露）",
+          "answer": "两点收窄：①map 文件自身不进扫描——它不在自身链接覆盖集合内，会被误判为未覆盖活跃页且其导航 heading 必然与池重叠（实跑 docs/README.md 恒报 parallel suspect）；②doc-kind: adr 页豁免 FACT_NO_SINGLE_HOME——ADR heading 由模板决定（实跑 0002/0003 共享模板段「写给未来」恒报），是模板性重复而非事实冲突。实跑保留的有效信号：ZJ-CONTEXT.md 与 zj-guide/SKILL.md 共享词汇表 heading（真实重复面提示）。两收窄各加防回归测试",
+          "note": ""
+        }
+      ],
       "notes": "",
-      "layer": "plan"
+      "layer": "plan",
+      "rounds": 1
     },
     "1-4-1": {
       "id": "1-4-1",
@@ -330,7 +355,7 @@
   },
   "metadata": {
     "created": "2026-11-19 18:05:15",
-    "updated": "2026-11-19 21:47:56",
+    "updated": "2026-11-19 23:38:25",
     "md_file": "ROADMAP.md"
   },
   "edges": [

@@ -51,6 +51,69 @@ class ArchitectureValidatorTest(unittest.TestCase):
         self.assertFalse(any(path.endswith("fixtures/payload.json") for path in reads))
 
 
+class RoleDeclarationTest(unittest.TestCase):
+    """issue #275 Fix 4 (L4) — the contract entry is the map's explicit
+    `role:` declaration, never a path substring.
+
+    The old judgment (`"/architecture/" in path`) forced the primary contract
+    onto any page whose path contained the substring, so a supporting derived
+    view landed under an `/architecture/` directory hit an ERROR wall of
+    prefix, doc-kind, and authority-id failures it could not escape. The entry
+    decision now lives where the map already binds authority: on the map entry
+    itself. Undeclared pages fail open with a signal — declaration-missing is
+    "information to add", not an "error fact" — and the signal is detected
+    without reading the page, because the bounded-read contract (the
+    read-boundary fixture) forbids opening pages outside the declared entries.
+    """
+
+    def run_validator(self, fixture: str):
+        return VALIDATOR.validate(FIXTURES / fixture)
+
+    def codes(self, fixture: str) -> set[str]:
+        return {item.code for item in self.run_validator(fixture)[0]}
+
+    def errors(self, fixture: str) -> set[str]:
+        return {item.code for item in self.run_validator(fixture)[0] if not item.signal}
+
+    def signals(self, fixture: str) -> set[str]:
+        return {item.code for item in self.run_validator(fixture)[0] if item.signal}
+
+    def test_a_declared_supporting_view_is_fully_exempt(self) -> None:
+        # Regression for the #275 repro: under the substring judgment this
+        # derived view (no ta- prefix, non-architecture doc-kind) triggered
+        # the primary-contract ERROR wall. With `role: supporting` declared,
+        # nothing fires.
+        self.assertEqual(self.codes("role-supporting"), set())
+
+    def test_an_undeclared_architecture_page_fails_open_with_a_signal(self) -> None:
+        # The undeclared page carries no front matter at all, so applying the
+        # primary contract would produce PAGE_KIND_INVALID and
+        # PAGE_AUTHORITY_INVALID. Fail-open: zero errors, one reminder signal.
+        self.assertEqual(self.errors("role-undeclared"), set())
+        self.assertEqual(self.signals("role-undeclared"), {"PAGE_ROLE_UNDECLARED"})
+
+    def test_the_undeclared_signal_is_detected_without_reading_the_page(self) -> None:
+        reads = self.run_validator("role-undeclared")[1]
+        self.assertFalse(any(path.endswith("ta-legacy-mirror.md") for path in reads))
+
+    def test_a_page_role_in_frontmatter_is_rejected_as_out_of_map(self) -> None:
+        # map entry level is the only legal declaration position; a page-side
+        # `page-role:` residue is a second source of truth and must be named.
+        self.assertIn("ROLE_DECLARATION_OUT_OF_MAP", self.signals("role-out-of-map"))
+        self.assertEqual(self.errors("role-out-of-map"), set())
+        self.assertNotIn("PAGE_ROLE_UNDECLARED", self.codes("role-out-of-map"))
+
+    def test_signal_only_findings_do_not_fail_the_exit_code(self) -> None:
+        # L7 boundary: the role scan is an audit surface, not a gate. A run
+        # whose only finding is a declaration-missing signal must still exit 0.
+        proc = subprocess.run(
+            [sys.executable, str(MODULE_PATH), str(FIXTURES / "role-undeclared")],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("signal PAGE_ROLE_UNDECLARED", proc.stdout)
+
+
 NAMING = "invalid-page-naming"
 STABLE_CONTROL = "docs/architecture/ta-catalog.md"
 EXTERNAL = "valid-external-layout"
@@ -144,7 +207,7 @@ class ExternalLayoutTest(unittest.TestCase):
             map_path = repo / "handbook" / "map.md"
             map_path.write_text(
                 map_path.read_text()
-                + "- [Checkout draft](architecture/drafts/ta-checkout-v2.md) — authority-id: nimbus.flow.checkout\n"
+                + "- [Checkout draft](architecture/drafts/ta-checkout-v2.md) — role: primary; authority-id: nimbus.flow.checkout\n"
             )
             self.assertIn("PAGE_NAME_VERSION_OR_STATUS", self.codes_in(repo))
 
@@ -275,7 +338,7 @@ class ArchitectureMapTest(unittest.TestCase):
         map_path = repo / "docs" / "README.md"
         map_path.write_text(
             map_path.read_text(encoding="utf-8")
-            + "- [Architecture map](architecture/README.md) — authority-id: architecture.map.test\n",
+            + "- [Architecture map](architecture/README.md) — role: primary; authority-id: architecture.map.test\n",
             encoding="utf-8",
         )
 

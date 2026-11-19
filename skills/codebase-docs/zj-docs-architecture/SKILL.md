@@ -90,9 +90,12 @@ confirmation, rather than editing pages in passing. The list is authoritative in
 ## Completion
 
 Finish a handbook slice only when its selected map routes to the intended
-views, each primary view has one mapped `authority-id`, source-map targets
-exist, and the validator exits successfully. A migration stays a proposal until
-the Human confirms its named moves, rewrites, and deletions.
+views with an explicit `role: primary` declaration per primary entry (map
+entry level is the only legal declaration position; `role: supporting` exempts
+derived views from the primary contract), each primary view has one mapped
+`authority-id`, source-map targets exist, and the validator exits successfully.
+A migration stays a proposal until the Human confirms its named moves, rewrites,
+and deletions.
 
 <!-- BASE_RULES_START -->
 <!-- GENERATED from docs/skill-conventions/skill-conventions.json -- do not edit by hand; re-run the generator. -->

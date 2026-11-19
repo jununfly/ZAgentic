@@ -6,9 +6,9 @@ as an accepted authority. It checks source-map targets by path existence, not
 content. `--audit-json` exposes the read set for tests and review.
 
 Mechanical diagnostics have stable codes: `MAP_*`, `PAGE_*`, `AUTHORITY_*`,
-`SOURCE_*`, and `ADR_*`. `SIGNAL_*` diagnostics are Human-review signals and do
-not make the command fail. The command exits nonzero only for mechanical
-diagnostics.
+`SOURCE_*`, and `ADR_*`. A diagnostic flagged as a signal (`signal=True`, which
+includes the `SIGNAL_*` prefix codes) is a Human-review signal and does not make
+the command fail. The command exits nonzero only for non-signal diagnostics.
 
 Page-name stability is mechanical too, reported under `PAGE_NAME_*`:
 `PAGE_NAME_PREFIX` (missing or unknown `ta-` / `ba-` / `pa-` prefix),
@@ -16,6 +16,23 @@ Page-name stability is mechanical too, reported under `PAGE_NAME_*`:
 bare year, or commit sha), and `PAGE_NAME_VERSION_OR_STATUS` (version number or
 temporary-status word). A name is reported once per cause, and a date suppresses
 the version report for the same name.
+
+### The map declares the page role
+
+issue #275 Fix 4 (L4): the contract entry is the map entry's explicit `role:`
+declaration — `role: primary` applies the full primary contract, `role:
+supporting` is fully exempt (only link existence is checked), and the map entry
+is the only legal declaration position. The path substring judgment that
+previously selected entries is gone; a page-role declaration inside page
+frontmatter is not recognized and is reported as `ROLE_DECLARATION_OUT_OF_MAP`
+(signal).
+
+A linked page inside `docs/architecture/` without a role declaration fails
+open: no contract is applied, and one `PAGE_ROLE_UNDECLARED` signal (per page)
+reminds the author to declare. That detection never opens the page — the
+bounded-read contract forbids reading pages outside the declared entries — so
+it is scoped by the same directory anchor the empty-map check uses, not by any
+substring. Declaration-missing is information to add, not an error fact.
 
 A map may defer the architecture category until the repository has a concrete
 architecture page. With no `docs/architecture/` Markdown page, no architecture
@@ -30,8 +47,9 @@ python3 skills/codebase-docs/zj-docs-architecture/tests/test_validator.py
 
 Fixtures prove valid minimal and multi-view handbooks, missing contract fields,
 duplicate authority, source-map drift, unaccepted ADR use, unstable page naming,
-the no-read boundary for process/evidence files, and a repository laid out
-unlike this one.
+role declaration (supporting exemption, undeclared fail-open, out-of-map
+residue), the no-read boundary for process/evidence files, and a repository laid
+out unlike this one.
 
 ### The external-layout fixture
 

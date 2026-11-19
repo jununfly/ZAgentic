@@ -1,0 +1,1 @@
+"""Catalog source-map target."""
