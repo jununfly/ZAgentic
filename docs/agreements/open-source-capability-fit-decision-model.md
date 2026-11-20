@@ -2,6 +2,7 @@
 doc-kind: agreement
 authority: primary
 authority-id: agreement.open-source-capability-fit-decision-model
+model-elements: [entity.agreement]
 ---
 
 # 开源能力拟合决策模型（Open-Source Capability-Fit Decision Model）

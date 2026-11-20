@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.roadmap-concurrency-model
+model-elements: [entity.design]
 ---
 
 # Roadmap 并发与依赖模型（zj-roadmap-driven）

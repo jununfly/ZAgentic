@@ -2,6 +2,7 @@
 doc-kind: agreement
 authority: primary
 authority-id: agreement.product-project-graphical-cross-comparison-model
+model-elements: [entity.agreement]
 ---
 
 # 产品项目图式横比模型（Product-Project Graphical Cross-Comparison Model）

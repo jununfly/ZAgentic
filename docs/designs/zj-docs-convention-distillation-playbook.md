@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.docs-convention-distillation
+model-elements: [entity.design]
 ---
 
 # Docs convention distillation playbook (跨仓文档规范蒸馏)

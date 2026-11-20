@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.skill-frontmatter-schema
+model-elements: [entity.design]
 ---
 
 # Skill frontmatter validation boundary

@@ -2,6 +2,7 @@
 doc-kind: architecture-subsystem
 authority: primary
 authority-id: architecture.subsystem.personal-tree
+model-elements: [entity.architecture-view]
 ---
 
 # Personal skill tree

@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.cross-stage-checkpoints
+model-elements: [entity.design]
 ---
 
 # Cross-stage checkpoints

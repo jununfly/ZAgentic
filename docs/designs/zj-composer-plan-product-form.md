@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.composer-plan-product-form
+model-elements: [entity.design]
 ---
 
 # Composer and Plan product form

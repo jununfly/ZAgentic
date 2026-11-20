@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.zj-discuss-architecture
+model-elements: [entity.design]
 ---
 
 # zj-discuss — 架构文档（Architecture）

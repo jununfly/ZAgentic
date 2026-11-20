@@ -224,6 +224,13 @@ class InstalledCopyExecution(unittest.TestCase):
         argv = shlex.split(command)
         # Which interpreter runs is host-supplied; the seam under test is that
         # the script path resolves from a foreign cwd with the declared basis.
+        # The carrier filename in SKILL.md is an example, not the assertion
+        # target: redirect it to a per-test path so this smoke test stays about
+        # "init lands a carrier", not about one repo instance's filename.
+        if "init" not in argv:
+            self.fail(f"published init command has no init subcommand: {command}")
+        smoke_carrier = "docs/plans/smoke-roadmap.json"
+        argv[argv.index("init") + 1] = smoke_carrier
         argv[0] = PY
         result = subprocess.run(
             argv,
@@ -239,7 +246,7 @@ class InstalledCopyExecution(unittest.TestCase):
             f"published init command failed from a foreign cwd:\n{result.stdout}\n{result.stderr}",
         )
         self.assertTrue(
-            (self.project / "docs" / "plans" / "roadmap.json").is_file(),
+            (self.project / smoke_carrier).is_file(),
             "init reported success but no carrier landed in the target project",
         )
 

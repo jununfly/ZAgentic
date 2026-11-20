@@ -2,6 +2,7 @@
 doc-kind: architecture-subsystem
 authority: primary
 authority-id: architecture.subsystem.bucket.productivity
+model-elements: [entity.architecture-view]
 ---
 
 # Productivity bucket
