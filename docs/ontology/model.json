@@ -565,6 +565,17 @@
    "elements": [
     "entity.capability-spec"
    ]
+  },
+  {
+   "path": "docs/designs/zj-docs-ontology-skill-design.md",
+   "elements": [
+    "entity.design",
+    "entity.docmap",
+    "entity.validator",
+    "entity.contract",
+    "rule.ontology-two-modules",
+    "rule.evidence-never-committed"
+   ]
   }
  ]
 }
