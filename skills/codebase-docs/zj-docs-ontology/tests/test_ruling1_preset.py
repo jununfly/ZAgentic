@@ -315,6 +315,7 @@ class ExitCodeAllowlistTest(Ruling1Case):
                 "EXEC_STEP5_FINGERPRINT_MISMATCH", "EXEC_CHECKLIST_NOT_DECLARED",
                 "RENAME_AWAITING_CONFIRMATION",
                 "FACT_NO_SINGLE_HOME", "PARALLEL_ONTOLOGY_SUSPECTED",
+                "UNMAPPED_PAGE",
                 "ORPHAN_PAGE",
             }),
             TOOL.SIGNAL_CODES,

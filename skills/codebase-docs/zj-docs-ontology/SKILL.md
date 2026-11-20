@@ -51,14 +51,19 @@ inlined block. The generated `BASE_RULES_*` block is a separate, generated secti
    the confirmed proposal's `moves` names it — a rename needs no tombstone
    stub, and a deletion without rename evidence still errors
    (`UNDECLARED_RETIREMENT`).
-5. **Validate and report.** Run map, link, and authority-binding checks and
-   `/zj-docs-architecture` for the architecture layer. One `authority-id` bound
-   to two pages is a mechanical failure, not a signal: it exits non-zero and the
-   Human settles it. A green run means these checks were confirmed consistent
-   on this content, not that the content is right — semantic correctness stays
-   with review. Compose `/zj-domain-modeling`, `/zj-debrief`, and
-   `/zj-neat-freak` only when the Human's governance request needs their
-   specialist work. Report pending durable extraction and deletion proposals.
+5. **Validate and report.** Run map, link, authority-binding, and map-coverage
+   checks and `/zj-docs-architecture` for the architecture layer. One
+   `authority-id` bound to two pages is a mechanical failure, not a signal: it
+   exits non-zero and the Human settles it. `UNMAPPED_PAGE` is the baseline
+   pre-flight: a long-lived page under a category directory that no map link
+   resolves to is invisible to every map-anchored check, so a green validate
+   must not be anchored on before this signal is settled (register,
+   reclassify, or retire — never delete on it). A green run means these checks
+   were confirmed consistent on this content, not that the content is right —
+   semantic correctness stays with review. Compose `/zj-domain-modeling`,
+   `/zj-debrief`, and `/zj-neat-freak` only when the Human's governance request
+   needs their specialist work. Report pending durable extraction and deletion
+   proposals.
 
 ```sh
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --proposal

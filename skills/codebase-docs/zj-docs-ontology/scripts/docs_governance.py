@@ -1045,6 +1045,48 @@ def duplicate_fact_scan(
     return block, diagnostics
 
 
+def scan_unmapped_pages(
+    root: Path,
+    links: list[dict[str, str]],
+    long_lived_names: list[str],
+) -> list[dict[str, str]]:
+    """Map-coverage completeness: the pre-flight the green baseline lacked.
+
+    The proposal inventory is disk-derived, but every other check is
+    map-anchored — so a long-lived page committed under ``docs/<category>/``
+    with no map entry is invisible to all of them and validate exits zero
+    (found on a real run: an ADR sat unmapped under a green validate, and a
+    reorganization anchored on that baseline would have inherited the hole).
+    This closes it by diffing the two sets the tool already holds: preset
+    long-lived category directories on disk vs existing map link targets.
+
+    Deliberate scoping: markdown pages only (code, fixtures, and derived
+    files in a category directory are evidence surfaces, not pages, per the
+    governance contract); process material is exempt (inventoried by name,
+    never map-bound); target-defined categories are the Human's
+    classification call, not an error. Signal-only — the remedy is to
+    register, reclassify, or retire the page, never to delete it.
+    """
+    diagnostics: list[dict[str, str]] = []
+    docs = root / "docs"
+    targets = {link["target"] for link in links if link.get("exists") == "true"}
+    for name in long_lived_names:
+        directory = docs / name
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.rglob("*.md")):
+            page = relative(root, path)
+            if page in targets:
+                continue
+            diagnostics.append({
+                "code": "UNMAPPED_PAGE",
+                "path": page,
+                "message": f"long-lived page under docs/{name}/ is not resolvable from the map; register it, reclassify it, or retire it — never delete on this signal",
+                "signal": True,
+            })
+    return diagnostics
+
+
 def inventory(root: Path, long_lived_names: list[str], process_names: list[str]) -> dict[str, object]:
     """Inventory the docs tree against preset-derived category names.
 
@@ -1289,6 +1331,11 @@ def report(
         links, link_diagnostics = map_links(root, selected, reads)
         proposal["map_links"] = links
         proposal["diagnostics"].extend(link_diagnostics)  # type: ignore[index]
+        # Baseline pre-flight (2026-11-20): disk↔map coverage reconciliation.
+        # Signal-only, like the other declaration-missing surfaces.
+        proposal["diagnostics"].extend(  # type: ignore[index]
+            scan_unmapped_pages(root, links, long_lived_names)
+        )
         # Issue #275 Fix 5: one-home-per-fact mechanical signal — signal-only
         # (L7), never an ERROR, never a gate by itself.
         scan_block, scan_diagnostics = duplicate_fact_scan(
@@ -1365,6 +1412,7 @@ SIGNAL_CODES = frozenset({
     "RENAME_AWAITING_CONFIRMATION",
     "FACT_NO_SINGLE_HOME",
     "PARALLEL_ONTOLOGY_SUSPECTED",
+    "UNMAPPED_PAGE",
     "ORPHAN_PAGE",
 })
 # Mechanical codes emitted by the current tool (prefix families), plus the

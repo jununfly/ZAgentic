@@ -75,6 +75,24 @@ overlap the pool by construction), and ADR pages are exempt from the heading
 cluster scan (their headings are shaped by the ADR template, so template reuse
 across ADRs is not fact drift).
 
+## Map coverage completeness
+
+The proposal inventory is disk-derived, but every other check is map-anchored:
+a long-lived page committed under `docs/<long-lived-category>/` with no map
+entry is invisible to all of them, and validate exits zero. The failure mode
+is a Human anchoring a governance pass or reorganization on that green
+baseline and inheriting the hole (found on a real run: an ADR sat unmapped
+under a green validate). The mechanical signal is `UNMAPPED_PAGE` — one per
+long-lived **markdown** page that no existing map link resolves to, diffing
+the two sets the tool already holds. It is signal-only, with the same
+remedies as the parallel filter: register the page, reclassify it, or retire
+it — never delete on this signal alone. Deliberate scoping: code, fixtures,
+and derived files in a category directory are evidence surfaces, not pages
+(the contract says so above); process material is inventoried by name and
+never map-bound; target-defined categories are the Human's classification
+call, not an error. This is the pre-flight the validate run performs before
+any proposal may anchor on the map as a reliable baseline.
+
 ## Page and authority contract
 
 `doc-kind` is one of `method`, `prd`, `architecture-map`,

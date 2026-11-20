@@ -160,8 +160,11 @@ python3 skills/codebase-docs/zj-docs-ontology/tests/test_governance.py
 ```
 
 The fixtures cover greenfield detection, an existing compatible map, map-link
-drift, an unread process file, and one authority-id bound to two pages. The
-report's `mutations` must remain empty in every case.
+drift, an unread process file, one authority-id bound to two pages, and a
+committed-but-unmapped long-lived page (`unmapped-page/`: the defect fires in
+validate mode, registering the page clears it, and non-markdown files plus
+process material stay exempt — `tests/test_unmapped_page.py` pins both
+directions). The report's `mutations` must remain empty in every case.
 
 The conflicting-authority fixture proves the binding layer alone: its map binds
 `payments.requirement` to two pages, and no page declares an `authority` at all.
