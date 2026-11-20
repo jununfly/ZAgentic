@@ -2,6 +2,7 @@
 doc-kind: architecture-subsystem
 authority: primary
 authority-id: architecture.subsystem.bucket.engineering
+model-elements: [entity.architecture-view]
 ---
 
 # Engineering bucket

@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.wayfinder-roadmap-carrier-seam
+model-elements: [entity.design]
 ---
 
 # Wayfinder and roadmap carrier seam

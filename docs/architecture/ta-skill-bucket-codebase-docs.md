@@ -2,6 +2,7 @@
 doc-kind: architecture-subsystem
 authority: primary
 authority-id: architecture.subsystem.bucket.codebase-docs
+model-elements: [entity.architecture-view]
 ---
 
 # Codebase-docs bucket

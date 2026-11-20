@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 issue: "264"
+model-elements: [entity.adr]
 ---
 > 时点说明：本页记录 2026-11-17 → 2026-11-18 `zj-docs-ontology` 治理制门工作（issue #264，
 > PR #265/#266/#271）形成的一项架构决策。原裁决过程见当时的 process material（已按 ADR 0010

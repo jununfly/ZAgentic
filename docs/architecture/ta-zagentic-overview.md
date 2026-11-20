@@ -2,6 +2,7 @@
 doc-kind: architecture-overview
 authority: primary
 authority-id: architecture.overview.zagentic
+model-elements: [entity.architecture-view, rule.bucket-count-single-source]
 ---
 
 # ZAgentic system overview

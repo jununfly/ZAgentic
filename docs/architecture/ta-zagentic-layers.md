@@ -2,6 +2,7 @@
 doc-kind: architecture-layers
 authority: primary
 authority-id: architecture.layers.zagentic
+model-elements: [entity.architecture-view]
 ---
 
 # ZAgentic layers and allowed dependencies

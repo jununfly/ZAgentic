@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.roadmap-visual-review-product
+model-elements: [entity.design]
 ---
 
 # Roadmap Human 视图：产品设计方案（zj-roadmap-driven）

@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.zj-discuss-product
+model-elements: [entity.design]
 ---
 
 # zj-discuss — 产品文档（Product）

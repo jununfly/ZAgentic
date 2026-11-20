@@ -1,6 +1,7 @@
 ---
 doc-kind: prd
 authority: supporting
+model-elements: [entity.capability-spec]
 ---
 
 # Codebase Docs Capability Spec

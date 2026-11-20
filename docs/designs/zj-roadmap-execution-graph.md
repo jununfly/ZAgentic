@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.roadmap-execution-graph
+model-elements: [entity.design]
 ---
 
 # Roadmap 执行图（trace layer，P5）

@@ -543,6 +543,12 @@
    ]
   },
   {
+   "path": "docs/zj-adr/0013-two-references-not-one-baseline.md",
+   "elements": [
+    "entity.adr"
+   ]
+  },
+  {
    "path": "docs/agreements/open-source-capability-fit-decision-model.md",
    "elements": [
     "entity.agreement"

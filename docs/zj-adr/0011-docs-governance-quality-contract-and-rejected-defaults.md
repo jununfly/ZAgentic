@@ -3,6 +3,7 @@ doc-kind: adr
 authority: historical
 status: accepted
 issue: "224"
+model-elements: [entity.adr]
 ---
 > 时点说明：本页为历史决策记录，所述数量、路径与状态陈述截至 2026-10-28；现行规则以 `AGENTS.md` 与 `docs/architecture/` 为准。
 

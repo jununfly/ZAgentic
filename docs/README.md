@@ -70,7 +70,7 @@ doc-kind: doc-map
 决策收敛（毕业裁定 CONDITIONAL_ADOPTION）：ADR 0008 — `zj-adr/0008-ui-agent-skills-graduation-verdict.md`。
 子契约（含 `adapter-boundary-v1`、`canonical-schema`、`resolver-contract`、`hard-gates`、`verification-receipt`、`fixture-manifest`、`skill-capability-manifest` 等）详见 `skills/ui/zj-ui-core/contracts/`；完整实例见知识图谱。
 
-### ADR（已接受的不易逆转决策，authority: historical）
+### ADR（已接受的不易逆转决策，authority: historical — 史据非冻结快照：数量/路径/状态陈述截至各页时点说明，现行规则以架构与契约为准）
 ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authority-id`。
 - [0001](zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md) — 哪些技能必须要求 `/zj-repo-init` 配置？
 - [0002](zj-adr/0002-stage-skill-pair-key-decisions.md) — 一次跨仓 skill-pair 如何处理/命名/归档？
@@ -128,3 +128,5 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 | spec-speak | agreement 的规范性模态句（`docs/agreements/` 内的「不得 / 必须 / 一律」） | 规范性契约：模态词承载权责与后果，降级为建议语气会改变 primary SSOT 语义 |
 | status-annotation | ADR 历史台账（`docs/zj-adr/` 内的 ✅ 迁移记录） | 史据：记录当时落地项，是 ADR 的证据价值，不是实现进度标注 |
 | status-annotation | PRD 验收清单（`docs/prds/` 内的 `- [ ]`） | 验收标准：未勾选项是可复核的接受条件，不是待办进度 |
+| duplicate-heading | `codebase documentation`：`ZJ-CONTEXT.md` × `skills/engineering/zj-guide/SKILL.md` | 两页 bounded question 不同：前者是词汇定义 SSOT（Codebase docs / Document map / Long-lived document），后者是技能路由表（"该用哪个技能"），不定义词。工具是 coarse filter，remedy 是选 home 而非删页，此处两页皆需保留 |
+| duplicate-heading | `ui delivery`：`ZJ-CONTEXT.md` × `skills/engineering/zj-guide/SKILL.md` | 同上：前者定义词汇（UI delivery chain / Experience Version），后者只路由。合法例外，不删页、不改语义 |

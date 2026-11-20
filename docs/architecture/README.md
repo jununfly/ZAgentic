@@ -2,6 +2,7 @@
 doc-kind: architecture-map
 authority: primary
 authority-id: architecture.map.zagentic
+model-elements: [entity.architecture-view]
 ---
 
 # ZAgentic architecture map

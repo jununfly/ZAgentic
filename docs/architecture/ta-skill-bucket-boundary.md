@@ -2,6 +2,7 @@
 doc-kind: architecture-cross-cutting
 authority: primary
 authority-id: architecture.cross-cutting.bucket-discipline
+model-elements: [entity.architecture-view]
 ---
 
 # Bucket discipline

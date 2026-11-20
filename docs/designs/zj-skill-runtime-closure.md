@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.skill-runtime-closure
+model-elements: [entity.design, rule.skill-closure]
 ---
 
 # Skill runtime closure (运行期闭包自包含)

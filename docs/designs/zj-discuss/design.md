@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.zj-discuss-spec
+model-elements: [entity.design]
 ---
 
 # zj-discuss — 设计文档（Design / 完整规格）

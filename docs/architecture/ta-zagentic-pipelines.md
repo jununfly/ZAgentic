@@ -2,6 +2,7 @@
 doc-kind: architecture-flow
 authority: primary
 authority-id: architecture.flow.install-and-docs-governance
+model-elements: [entity.architecture-view]
 ---
 
 # ZAgentic pipelines

@@ -2,6 +2,7 @@
 doc-kind: design
 authority: primary
 authority-id: design.roadmap-reconciliation
+model-elements: [entity.design]
 ---
 
 # Roadmap reconciliation 与原子 ChangeSet 设计（zj-roadmap-driven）
