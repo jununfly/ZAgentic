@@ -921,6 +921,22 @@ def duplicate_fact_scan(
         covered.append((target_value, page, page.read_text(encoding="utf-8")))
         covered_rels.add(target_value)
 
+    # A map may register a duplicate-heading cluster as an adjudicated
+    # legitimate exception: a line carrying the `duplicate-heading` token whose
+    # first backticked value is the heading. Portable by construction — no
+    # section title or locale is required, and a map with no such line yields
+    # an empty set, so other repositories keep identical behavior. This marks
+    # the signal as reviewed; it never removes it (the owning repo's guard
+    # pins the exact signal set) and never changes severity.
+    adjudicated_headings: set[str] = set()
+    map_text = map_path.read_text(encoding="utf-8")
+    for line in map_text.splitlines():
+        if "duplicate-heading" not in line:
+            continue
+        first_tick = re.search(r"`([^`]+)`", line)
+        if first_tick:
+            adjudicated_headings.add(normalize_heading(first_tick.group(1)))
+
     # FACT_NO_SINGLE_HOME — identical normalized headings across covered
     # pages with no primary authority in the cluster. ADRs are exempt: their
     # headings are shaped by the ADR template, so template reuse across ADRs
@@ -943,13 +959,30 @@ def duplicate_fact_scan(
         if len({rel for rel, _ in members}) < 2 or any(primary for _, primary in members):
             continue
         pages = sorted({rel for rel, _ in members})
-        no_home.append({"heading": norm, "pages": pages})
-        diagnostics.append({
+        adjudicated = norm in adjudicated_headings
+        entry: dict[str, object] = {"heading": norm, "pages": pages}
+        if adjudicated:
+            entry["adjudicated"] = True
+        no_home.append(entry)
+        message = (
+            f"no single home for fact '{norm}': {', '.join(pages)} share the "
+            f"heading and none declares authority: primary"
+        )
+        if adjudicated:
+            message += (
+                "; adjudicated legitimate exception in the doc map "
+                "(distinct bounded questions, e.g. vocabulary SSOT vs route "
+                "table) — keep both pages, this is not a defect to fix"
+            )
+        diagnostic: dict[str, object] = {
             "code": "FACT_NO_SINGLE_HOME",
             "path": relative(root, map_path),
-            "message": f"no single home for fact '{norm}': {', '.join(pages)} share the heading and none declares authority: primary",
+            "message": message,
             "signal": True,
-        })
+        }
+        if adjudicated:
+            diagnostic["adjudicated"] = True
+        diagnostics.append(diagnostic)  # type: ignore[arg-type]
 
     # PARALLEL_ONTOLOGY_SUSPECTED — active uncovered pages overlapping the
     # covered heading pool.

@@ -263,5 +263,58 @@ class L7SignalBoundaryTest(unittest.TestCase):
         self.assertIn("PARALLEL_ONTOLOGY_SUSPECTED", rules["escalatable_signals"])
 
 
+class AdjudicatedDuplicateHeadingTest(unittest.TestCase):
+    """A map may register a duplicate-heading cluster as an adjudicated
+    legitimate exception. The signal stays (guard-pinned signal set), but the
+    diagnostic says so — 'no single home' must not read as a defect to fix."""
+
+    def _repo_with_registration(self, name: str, registered: bool) -> Path:
+        repo = make_repo(
+            name,
+            {
+                "docs/prds/a.md": SUPPORTING + "# Checkout flow\n",
+                "docs/prds/b.md": SUPPORTING + "# Checkout flow\n",
+            },
+            ["prds/a.md", "prds/b.md"],
+        )
+        if registered:
+            map_path = repo / "docs" / "team-map.md"
+            text = map_path.read_text(encoding="utf-8")
+            map_path.write_text(
+                text
+                + "\n## 审计例外\n\n"
+                + "| duplicate-heading | `checkout flow`：词汇 SSOT vs 路由 | 已裁决合法例外 |\n",
+                encoding="utf-8",
+            )
+        return repo
+
+    def _fact_diag(self, repo: Path) -> dict:
+        payload = TOOL.report(repo, validate_links=True)
+        found = [d for d in payload["diagnostics"] if d["code"] == "FACT_NO_SINGLE_HOME"]
+        self.assertEqual(len(found), 1)
+        return found[0]
+
+    def test_registered_heading_is_marked_adjudicated(self) -> None:
+        diag = self._fact_diag(self._repo_with_registration("fact-adjudicated", True))
+        self.assertTrue(diag.get("adjudicated"), diag)
+        self.assertIn("legitimate exception", diag["message"])
+
+    def test_unregistered_heading_has_no_adjudication_flag(self) -> None:
+        diag = self._fact_diag(self._repo_with_registration("fact-unadjudicated", False))
+        self.assertNotIn("adjudicated", diag)
+
+    def test_message_prefix_stays_stable_for_guard(self) -> None:
+        """Root guard extracts the heading via `no single home for fact 'X':`."""
+        for name, registered in (("fact-prefix-y", True), ("fact-prefix-n", False)):
+            with self.subTest(registered=registered):
+                diag = self._fact_diag(self._repo_with_registration(name, registered))
+                self.assertRegex(diag["message"], r"^no single home for fact 'checkout flow':")
+
+    def test_adjudication_never_changes_signal_severity(self) -> None:
+        repo = self._repo_with_registration("fact-adj-severity", True)
+        payload = TOOL.report(repo, validate_links=True)
+        self.assertFalse(TOOL.has_error(payload))
+
+
 if __name__ == "__main__":
     unittest.main()

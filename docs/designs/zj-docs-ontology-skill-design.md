@@ -135,7 +135,10 @@ map 文本按「行首 `- `」切 entry 块，对每块用 `LINK_RE` 找 markdow
 
 - `FACT_NO_SINGLE_HOME`：map 覆盖页间出现同一 normalized heading（`normalize_heading` 大小写/
   标点无关、`\w` 保留 CJK），且簇内无任何页声明 `authority: primary`。**ADR 模板标题豁免**
-  （否则任意两-ADR 仓都会永久报冲突）。
+  （否则任意两-ADR 仓都会永久报冲突）。若 map 某行带 `duplicate-heading` token 且首个反引号值
+  等于该 heading，诊断追加 `adjudicated: true` 与「已裁决合法例外、非缺陷」说明——signal 本身
+  与前缀 `no single home for fact '<norm>':` 不变（拥有仓的守卫钉死 signal 集），只是不再把
+  「经裁决的词汇 SSOT vs 路由表分家」误读成待修缺陷；token 缺失即空集，对其它仓零行为变化。
 - `PARALLEL_ONTOLOGY_SUSPECTED`：`docs/` 下 map 未覆盖、有 git 活动证据（untracked/modified）的页，
   标题与被覆盖标题池重叠（整标题相等或 ≥2 共享词）。无 git 仓则跳过；map 自身豁免。
   读取严格有界：只读覆盖页 + 活动候选；过程材料/证据面永不开。
