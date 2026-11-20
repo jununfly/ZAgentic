@@ -34,6 +34,27 @@ SPEC.loader.exec_module(TOOL)
 CASE = Path("tmp/skills-outputs/zj-docs-ontology/_preset_consumption_case")
 
 
+def write_case_fixture() -> None:
+    """Build the shared governance target fixture.
+
+    Both PresetConsumptionTest and ExitCodeTest run the real tool against this
+    directory. The fixture is owned per-test (created in setUp, removed in
+    tearDown) so neither class can depend on another's setup/teardown ordering.
+    """
+    if CASE.exists():
+        shutil.rmtree(CASE)
+    (CASE / "docs" / "ontology").mkdir(parents=True)
+    (CASE / "docs" / "ontology" / "ONTOLOGY.md").write_text("# Ontology\n", encoding="utf-8")
+    (CASE / "docs" / "plans").mkdir(parents=True)
+    (CASE / "docs" / "plans" / "active.md").write_text("# Plan\n", encoding="utf-8")
+    (CASE / "docs" / "adversarial").mkdir(parents=True)
+
+
+def remove_case_fixture() -> None:
+    if CASE.exists():
+        shutil.rmtree(CASE)
+
+
 class HardcodedVocabularyTest(unittest.TestCase):
     """P0 fixture (e) preset-single-source: no second copy in the script."""
 
@@ -73,17 +94,10 @@ class PresetLoadingTest(unittest.TestCase):
 
 class PresetConsumptionTest(unittest.TestCase):
     def setUp(self) -> None:
-        if CASE.exists():
-            shutil.rmtree(CASE)
-        (CASE / "docs" / "ontology").mkdir(parents=True)
-        (CASE / "docs" / "ontology" / "ONTOLOGY.md").write_text("# Ontology\n", encoding="utf-8")
-        (CASE / "docs" / "plans").mkdir(parents=True)
-        (CASE / "docs" / "plans" / "active.md").write_text("# Plan\n", encoding="utf-8")
-        (CASE / "docs" / "adversarial").mkdir(parents=True)
+        write_case_fixture()
 
     def tearDown(self) -> None:
-        if CASE.exists():
-            shutil.rmtree(CASE)
+        remove_case_fixture()
 
     def test_inventory_categories_follow_the_preset(self) -> None:
         payload = TOOL.report(CASE, validate_links=False)
@@ -113,6 +127,12 @@ class PresetConsumptionTest(unittest.TestCase):
 
 
 class ExitCodeTest(unittest.TestCase):
+    def setUp(self) -> None:
+        write_case_fixture()
+
+    def tearDown(self) -> None:
+        remove_case_fixture()
+
     def exit_code(self, *args: str) -> int:
         import subprocess
 
