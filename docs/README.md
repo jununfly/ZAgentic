@@ -84,6 +84,7 @@ ADR 是历史权威，**不取代**现行架构或规则，也不拥有 `authori
 - [0010](zj-adr/0010-local-file-persistence-convention.md) — 会本地落盘的技能统一用相对路径 + 隔离目录（升华 #169）？
 - [0011](zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md) — 文档质量契约落在治理层而非运行时、被拒默认值显式记录？
 - [0012](zj-adr/0012-scene-anchored-cross-project-alignment.md) — 跨项目对齐单位为何从节点语义等价改为固定场景集（场景锚定）？
+- [0013](zj-adr/0013-two-references-not-one-baseline.md) — 治理基线为何取「canonical preset + HEAD 快照」两个参照系而非单一 baseline（issue #264）？
 
 ### Agreement（方法论 SSOT，authority: primary）
 - [agreements/open-source-capability-fit-decision-model.md](agreements/open-source-capability-fit-decision-model.md) — 开源能力契合决策模型; authority-id: `agreement.open-source-capability-fit-decision-model`

@@ -145,6 +145,19 @@
 
 ---
 
+## 4.5 目录文件职责（docs/ontology/）
+
+| 文件 | 模块 | 角色 | 何时改 |
+| --- | --- | --- | --- |
+| `ONTOLOGY.md` | G+P | 人类可读概念主干（T-Box）：实体/属性/关联/规则，含两层结构说明 | 术语或约束本身演进时 |
+| `ontology.schema.json` | G+P | 机器可读本体 + 规则清单（单一真相源，每条标 `module`） | 与 ONTOLOGY.md 同步 |
+| `extract.py` | P | 从 `skills/`、`personal/`、`docs/` 生成结构索引图（A-Box），支持 `--repo` | 无需手改；随活树自动产出 |
+| `validate.py` | G+P | 推理 + 约束校验（组合治理脚本覆盖 Module G），支持 `--repo` | 无需手改 |
+| `tests/test_ontology.py` | P | 产品域集成测试（结构索引图规模 + Module P 规则） | 改动抽取/校验时 |
+| `graph.json` | — | 生成的结构索引图实例；临时派生缓存，**不提交**，按需再生 | 运行 extract 时产出 |
+
+---
+
 ## 5. 如何使用（工作流）
 
 ```bash
@@ -152,13 +165,17 @@
 python3 docs/ontology/extract.py > docs/ontology/graph.json
 
 # 2) 推理 + 约束校验（一次覆盖 Module G + Module P；CI / pre-commit 钩子）
-python3 docs/ontology/validate.py docs/ontology/graph.json
+python3 docs/ontology/validate.py                      # 无参数：自动从活树生成图谱并校验
+python3 docs/ontology/validate.py docs/ontology/graph.json   # 或校验已落盘图谱
+
+# 3) 产品域集成测试
+python3 docs/ontology/tests/test_ontology.py
 ```
 
 - **新增技能**：放进 `skills/<bucket>/<name>/`，重跑 extract→validate；若缺 frontmatter 或桶未注册，`rule.every-skill-discoverable` 会报红。
 - **新增文档**：frontmatter 声明 `doc-kind`/`authority`/`authority-id`；doc-map 除外。若为主视图则 `rule.stable-authority-id` 强制。
 - **改桶结构**：`rule.bucket-reorg-is-adr-bearing` 要求先有 ADR；否则 `rule.bucket-inventory-consistent` 抓出文档与活树不一致。
-- **改 doc-map**：务必遵守 `rule.G1-docmap-binding`——每个 `authority-id` 用独立 bullet 绑定到恰好一页，不要把 id 放在含多个链接的块里（否则 `MAP_AUTHORITY_CONFLICT`）。
+- **改 doc-map（docs/README.md）**：务必遵守 `rule.G1-docmap-binding`——每个 `authority-id` 用独立 bullet 绑定到恰好一页，且描述性文字/表格中不要夹带 markdown 链接（否则绑定探测器会把游离链接折进前一个 id）。
 - **人工评审项**（契约/夹具）由 reviewer 依据 `docs/zj-adr/0008-ui-agent-skills-graduation-verdict.md`（原决策收敛页 `docs/designs/ui-agent-skills/README.md` 已删除，2026-10-24，结论迁入该 ADR）与 `golden-fixtures-spec` 核对，不进自动校验。
 
 > 设计原则：**结构索引图是派生事实，活代码树是真相源**。本体（本文件）只在术语/约束本身演进时才改；日常增删改只动代码树 + 重跑两脚本，即可保持文档系统高新鲜度。Module G 的治理逻辑由可移植技能 `zj-docs-ontology` 单一拥有，本仓库通过组合调用复用，不重复实现（治理契约明确容忍技能间不跨目录 import 的"私有副本"模式）。
