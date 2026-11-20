@@ -29,7 +29,7 @@ throughout.
 2. **L2 · Propose governance.** List each map addition, `git mv`, link repair,
    authority synthesis, and deletion candidate with its reason; name each
    confirmation and never write while proposing (`mutations: []`).
-3. **Execute the confirmed scope.** Moves, rewrites, merges, and process deletion
+3. **L2 · Execute the confirmed scope.** Moves, rewrites, merges, and process deletion
    are separately named actions; use `git mv` for an approved move. A page leaving
    service retires and tombstones while inbound links remain — drain them, only then
    is deletion a candidate. Deletion is never a default and never fires on a signal.

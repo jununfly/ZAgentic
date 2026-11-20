@@ -343,8 +343,11 @@ skill 自带全部四层（`SKILL.md`、`references/`、`scripts/`），装到�
 meta-schema（L4 元层——**自定义 JSON schema，非 OWL/RDF 形式本体**）与跨页词汇，但**具体模型实例**
 （如 platform/bucket/skill/pipeline 等实体类型
 及实例）是消费仓的，从不随 skill 发布；meta 与实例共用一套词表故无命名冲突。词汇/preset 的
-「不硬编码、缺源即不声明」原则共同保证：portable，且在源仓（ZAgentic）外不泄漏任何源仓专有路径
-（与 `zj-skill-runtime-closure` 闭包约定一致）。
+「不硬编码、缺源即不声明」原则共同保证：portable，且对源仓无**运行时路径依赖**——安装态只按 `__file__`
+sibling 解析 preset / `SKILL.md` / meta-schema，从不读源仓 `docs/`（与 `zj-skill-runtime-closure` 闭包约定一致）。
+`canonical-preset.json` 里的 `zj-adr` / `ontology` / `zj-retros` 与 `zagentic.local` schema URI 是 preset 自带的
+**语义分类名与标识符**，不是运行时读取的源仓路径；目标仓缺这些分类由 `PRESET_DIVERGENCE`（signal）承接，
+而非 vocabulary violation。
 
 ## 12. 关键设计取舍（为何如此实现）
 
