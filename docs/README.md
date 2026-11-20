@@ -59,6 +59,7 @@ doc-kind: doc-map
 - [designs/zj-docs-convention-distillation-playbook.md](designs/zj-docs-convention-distillation-playbook.md) — 跨仓文档规范蒸馏 playbook（不建 skill 的判决 + 五段法）; authority-id: `design.docs-convention-distillation`
 - [designs/zj-roadmap-visual-review-product.md](designs/zj-roadmap-visual-review-product.md) — roadmap Human 视图产品设计方案（四场景锚定 + 同源多投影）; authority-id: `design.roadmap-visual-review-product`
 - [designs/zj-roadmap-visual-review-technical.md](designs/zj-roadmap-visual-review-technical.md) — roadmap Human 视图技术设计方案（由确定性脚本从机器可读 SoT 生成）; authority-id: `design.roadmap-visual-review-technical`
+- [designs/zj-docs-ontology-skill-design.md](designs/zj-docs-ontology-skill-design.md) — zj-docs-ontology skill 设计文档（四层：健康检查→治理→生成知识图谱→遵照 Ontology 设计；既是分层架构也是「做下文档治理」的闭环流程，与实现对齐）; authority-id: `design.docs-ontology-skill`
 
 ### Reference（共享规则单一权威，authority: primary）
 - [skill-conventions/skill-conventions.json](skill-conventions/skill-conventions.json) — 命名语法核心与 doc-kind/authority 值域由谁单一拥有？; authority-id: `reference.skill-conventions`

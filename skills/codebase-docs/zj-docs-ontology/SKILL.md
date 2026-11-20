@@ -1,6 +1,6 @@
 ---
 name: zj-docs-ontology
-description: "Governance and ontology design for a codebase's documentation system. Governance layer: doc-kind vocabulary, authority bindings, lifecycle, map integrity, drift validation, safe migration proposals. Ontology design layer (Module D): entity/attribute/relation/rule modelling with decomposition and recomposition of the docs system. Use when proposing or executing a documentation-map pass, classifying page kinds, resolving authority conflicts, or decomposing/recomposing long-lived docs against an ontology. Does not cover ontologies whose object is not a documentation system (a database schema or runtime data model) — use a domain-specific capability for those."
+description: "Governance and ontology design for a codebase's documentation system, run as four layers. L1 health check and the governance layer: doc-kind vocabulary, authority bindings, lifecycle, map integrity, drift validation, safe migration proposals; L3 adds a map-derived graph_snapshot (a read-only navigation projection, not a reasoning knowledge graph). Ontology design layer (Module D, L4): entity/attribute/relation/rule modelling with decomposition and recomposition of the docs system — a lightweight JSON schema, not a formal OWL/RDF ontology. L1–L3 run in docs_governance.py; Module D validates in a separate process, validate_ontology_model.py. Use when proposing or executing a documentation-map pass, classifying page kinds, resolving authority conflicts, or decomposing/recomposing long-lived docs against the model. Does not cover ontologies whose object is not a documentation system (a database schema or runtime data model) — use a domain-specific capability for those."
 disable-model-invocation: true
 source: zagentic
 
@@ -13,28 +13,45 @@ process material, and evidence boundaries — not a publisher or an automatic cl
 
 ## Workflow
 
-1. **Discover, read-only.** The proposal tool follows a `docs-map:` pointer, then
-   `docs/README.md`, then one compatible candidate; a conflict or greenfield repo
-   stays a proposal until the Human confirms the map and category set.
-2. **Classify.** Separate long-lived docs, process material, external references,
-   fixture documentation, and evidence surfaces; an unfamiliar target-repo category
-   is target-defined, not an error.
-3. **Propose governance.** List each map addition, `git mv`, link repair, authority
-   synthesis, and deletion candidate with its reason; name each confirmation and
-   never write while proposing.
-4. **Execute the confirmed scope.** Preserve meaning by default. Moves, rewrites,
-   merges, and process deletion are separately named actions; use `git mv` for an
-   approved move. A page leaving service retires and tombstones while inbound links
-   remain — deletion is the last stage, never a default.
-5. **Validate and report.** Run map, link, authority-binding, and coverage checks
-   plus `/zj-docs-architecture`. One `authority-id` on two pages is a mechanical
-   failure (non-zero); `UNMAPPED_PAGE` is the pre-flight a green run must settle
-   first. A green run proves the checks were consistent, not that content is right.
-   Compose `/zj-domain-modeling`, `/zj-debrief`, `/zj-neat-freak` only as needed.
+Four layers, named the same as the design spine
+`docs/designs/zj-docs-ontology-skill-design.md` (L1 health check → L2 governance →
+L3 graph projection → L4 ontology design). L1–L3 run in `docs_governance.py`; L4
+validates in a separate process, `validate_ontology_model.py`. Preserve meaning by default
+throughout.
+
+1. **L1 · Health check, read-only.** Follow a `docs-map:` pointer, then
+   `docs/README.md`, then one compatible candidate; classify long-lived docs,
+   process material, external references, fixture documentation, and evidence
+   surfaces (an unfamiliar target-repo category is target-defined, not an error).
+   Diagnose broken links, `UNMAPPED_PAGE` coverage gaps, duplicate-fact and
+   parallel-ontology signals, and closed-vocabulary compliance. A conflict or
+   greenfield repo stays a proposal until the Human confirms the map and category set.
+2. **L2 · Propose governance.** List each map addition, `git mv`, link repair,
+   authority synthesis, and deletion candidate with its reason; name each
+   confirmation and never write while proposing (`mutations: []`).
+3. **Execute the confirmed scope.** Moves, rewrites, merges, and process deletion
+   are separately named actions; use `git mv` for an approved move. A page leaving
+   service retires and tombstones while inbound links remain — drain them, only then
+   is deletion a candidate. Deletion is never a default and never fires on a signal.
+4. **L3 · Graph projection.** The `graph_snapshot` is derived from the map alone — a
+   read-only navigation projection (no TBox, no inference: traverse `supersedes` /
+   `derived-from`, never derive new facts). Enrich, refresh, or create long-lived
+   docs here; a rotten page is routed back to L2 retirement, not deleted in place.
+5. **L4 · Ontology design + validate.** Decompose and recompose long-lived docs
+   against a lightweight entity/attribute/relation/rule schema (not a formal OWL/RDF
+   ontology) with `validate_ontology_model.py`, then run `docs_governance.py
+   --validate` plus `/zj-docs-architecture`. One `authority-id` on two pages is a
+   mechanical failure (non-zero); `UNMAPPED_PAGE` is the pre-flight a green run must
+   settle first. A green run proves the checks were consistent, not that content is
+   right. L4 findings are Human-queued back into the next L2 proposal — the tool does
+   not auto-loop across the two processes. Compose `/zj-domain-modeling`,
+   `/zj-debrief`, `/zj-neat-freak` only as needed.
 
 ```sh
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --proposal
 python3 skills/codebase-docs/zj-docs-ontology/scripts/docs_governance.py . --validate
+# L4 model validation runs in a separate process; <repo> positional + --model are required
+python3 skills/codebase-docs/zj-docs-ontology/scripts/validate_ontology_model.py . --model <path/to/model.json>
 ```
 
 ## Shared conventions
@@ -64,12 +81,14 @@ mis-scoping defense is the `--object` declaration. See
 
 ## Ontology design (Module D) and relations
 
-Module D treats the docs system as one scoped object: decompose each page into
+Module D (L4) treats the docs system as one scoped object: decompose each page into
 entity/attribute/relation/rule elements (bootstrap or incremental), then recompose
 the docs so claims trace to a model element validated against
-`references/ontology-meta-schema.json` by `validate_ontology_model.py`. Map entries
-are also the declaration surface — a closed `relations:` set and a `graph_snapshot`
-derived from the map alone. Both layers are audits, not verdicts; green is a floor.
+`references/ontology-meta-schema.json` by the separate `validate_ontology_model.py`
+process — a lightweight JSON schema, not a formal OWL/RDF ontology. Map entries are
+the L3 declaration surface: a closed `relations:` set and a `graph_snapshot` derived
+from the map alone (a read-only projection, not a reasoning knowledge graph). Both
+layers are audits, not verdicts; green is a floor.
 To gate a merge, pipe the report to `check_gate.py`, which applies
 `references/gate-rules.json` (ERRORs gate; signals pass unless escalated); the skill
 never auto-installs workflows (see `references/ci-snippet.yml`).
