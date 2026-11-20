@@ -12,6 +12,13 @@ owner, a relation endpoint that does not exist — so those are ERRORs.
 Coverage is a navigation gap: a map-covered page the model does not decompose
 yet is ``CONTENT_UNCOVERED``, a signal (declare the receipt; never delete the
 page on this signal).
+
+A page may also declare a ``model-elements`` frontmatter anchor mirroring its
+receipt. When present, the anchor must match the receipt exactly; a mismatch is
+``ANCHOR_RECEIPT_DRIFT``, a signal (the receipt is the source of truth: fix the
+mirror, never delete the page). Missing anchors are tolerated — receipts may
+precede the anchor rollout — and the two-way "no silent anchor deletion" guard
+lives in the root regression suite that observes the anchors as public pages.
 """
 
 from __future__ import annotations
@@ -39,7 +46,21 @@ ERROR_CODES = frozenset({
     "ONTOLOGY_RULE_TRACE_MISSING",
     "ONTOLOGY_PAGE_RECEIPT_BROKEN",
 })
-SIGNAL_CODES = frozenset({"CONTENT_UNCOVERED"})
+SIGNAL_CODES = frozenset({"CONTENT_UNCOVERED", "ANCHOR_RECEIPT_DRIFT"})
+
+# frontmatter ``model-elements: [entity.x, rule.y]`` — parse the inline list.
+ANCHOR_RE = __import__("re").compile(r"^model-elements:\s*\[([^\]]*)\]", __import__("re").M)
+
+
+def declared_anchor(text: str) -> list[str] | None:
+    """Return the page's declared model-elements, or None when absent.
+    An empty/absent anchor is 'not declared yet' (tolerated); a declared list
+    is checked against the receipt.
+    """
+    match = ANCHOR_RE.search(text)
+    if not match:
+        return None
+    return [item.strip().strip("\"'") for item in match.group(1).split(",") if item.strip()]
 
 
 def has_error(diagnostics: list[dict[str, str]]) -> bool:
@@ -169,13 +190,30 @@ def validate(root: Path, model_path: Path, meta_path: Path | None = None) -> dic
             })
             continue
         receipt_paths.add(gov.relative(root, candidate))
-        for element in receipt.get("elements", []) or []:
-            if str(element) not in seen:
+        elements = [str(e) for e in (receipt.get("elements", []) or [])]
+        for element in elements:
+            if element not in seen:
                 diagnostics.append({
                     "code": "ONTOLOGY_PAGE_RECEIPT_BROKEN",
                     "path": str(model_path),
                     "message": f"page receipt for {raw} references unknown element: {element}",
                 })
+
+        # Anchor mirror check (signal): when a page declares model-elements,
+        # it must match its receipt exactly — both directions, order-insensitive.
+        # A missing anchor is tolerated (receipts may precede anchor rollout);
+        # the root regression suite guards against silent anchor deletion.
+        anchor = declared_anchor(candidate.read_text(encoding="utf-8"))
+        if anchor is not None and set(anchor) != set(elements):
+            diagnostics.append({
+                "code": "ANCHOR_RECEIPT_DRIFT",
+                "path": gov.relative(root, candidate),
+                "message": (
+                    f"model-elements anchor drifts from the model receipt "
+                    f"(anchor={anchor}, receipt={elements}); the receipt is the "
+                    f"source of truth — fix the mirror, never delete the page"
+                ),
+            })
 
     # Coverage invariant (signal): every map-covered page needs a receipt.
     selected, _origin, _diagnostics, reads = gov.discover(root)
@@ -201,6 +239,9 @@ def validate(root: Path, model_path: Path, meta_path: Path | None = None) -> dic
             "uncovered": len(uncovered),
             "uncovered_pages": uncovered,
         },
+        "anchor_drift": sum(
+            1 for d in diagnostics if d["code"] == "ANCHOR_RECEIPT_DRIFT"
+        ),
         "diagnostics": diagnostics,
     }
 

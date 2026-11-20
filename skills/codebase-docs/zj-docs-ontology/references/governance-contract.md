@@ -230,7 +230,12 @@ instance with its concrete types and vocabulary is the repository's own.
 Coverage is an invariant, not a wish: every map-covered page carries a
 decomposition receipt, and a page the model does not cover is
 `CONTENT_UNCOVERED` (signal — declare the receipt; deletion is never the
-remedy). Unclear details are not silently assumed: they enter an open-
+remedy). A page's `model-elements` frontmatter anchor, when present, must match
+its receipt exactly in both directions; a mismatch is `ANCHOR_RECEIPT_DRIFT`
+(signal — the receipt is the source of truth, fix the mirror). A missing anchor
+is tolerated because receipts may precede the anchor rollout; the two-way guard
+against silent anchor deletion lives in the consuming repository's root
+regression suite. Unclear details are not silently assumed: they enter an open-
 questions ledger and are settled by the Human before the recomposition plan
 is confirmed. Meaning is preserved by default; a recomposition that changes
 what a page says is a named, separately confirmed action.

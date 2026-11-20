@@ -202,7 +202,12 @@ attribute owners, relation endpoints, rule traces, receipt integrity — all
 ERRORs, because they are explicit declarations that do not match the model's
 own facts — plus the coverage invariant: every map-covered page needs a
 receipt, and a missing one is `CONTENT_UNCOVERED` (signal; declare the
-receipt, never delete the page on this signal).
+receipt, never delete the page on this signal). A page may mirror its receipt
+in a `model-elements` frontmatter anchor; when present it must match the
+receipt exactly (both directions) or the tool reports `ANCHOR_RECEIPT_DRIFT`
+(signal; the receipt is the source of truth — fix the mirror). Missing anchors
+are tolerated, and silent anchor deletion is guarded in the consuming
+repository's root regression suite.
 
 To turn a report into a merge gate in **any** target repository, pipe it into
 the consumer-side gate. The tool emits facts; the repository decides which

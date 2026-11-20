@@ -35,6 +35,12 @@
     "invariant": "every page covered by the repository's doc map must appear in pages[]",
     "diagnostic": "CONTENT_UNCOVERED (signal — declare the receipt; never delete the page on this signal)"
   },
+  "anchor_mirror": {
+    "frontmatter_key": "model-elements",
+    "invariant": "when a page declares a model-elements anchor, it must match the receipt's elements exactly (both directions, order-insensitive); the receipt is the source of truth",
+    "diagnostic": "ANCHOR_RECEIPT_DRIFT (signal — fix the mirror; missing anchors are tolerated as receipts may precede anchor rollout)",
+    "two_way_guard": "silent anchor deletion is guarded in the consuming repository's root regression suite, which observes the anchors as public pages"
+  },
   "exit_semantics": {
     "error_codes": [
       "ONTOLOGY_MODEL_UNREADABLE",
@@ -46,6 +52,6 @@
       "ONTOLOGY_RULE_TRACE_MISSING",
       "ONTOLOGY_PAGE_RECEIPT_BROKEN"
     ],
-    "signal_codes": ["CONTENT_UNCOVERED"]
+    "signal_codes": ["CONTENT_UNCOVERED", "ANCHOR_RECEIPT_DRIFT"]
   }
 }

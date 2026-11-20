@@ -17,6 +17,7 @@ from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = SKILL_ROOT / "tests" / "fixtures" / "ontology-model"
+ANCHOR_FIXTURE = SKILL_ROOT / "tests" / "fixtures" / "ontology-model-anchor"
 SPEC = importlib.util.spec_from_file_location(
     "validate_ontology_model", SKILL_ROOT / "scripts" / "validate_ontology_model.py"
 )
@@ -107,6 +108,47 @@ class CoverageInvariantTest(unittest.TestCase):
     def test_content_uncovered_is_registered_as_a_signal(self) -> None:
         self.assertNotIn("CONTENT_UNCOVERED", TOOL.ERROR_CODES)
         self.assertIn("CONTENT_UNCOVERED", TOOL.SIGNAL_CODES)
+
+
+class AnchorReceiptDriftTest(unittest.TestCase):
+    """A declared anchor mirrors its receipt. Drift is a signal, never an ERROR;
+    both directions are caught; missing anchors stay tolerated."""
+
+    def test_matching_anchors_are_green(self) -> None:
+        report, code = run_cli(ANCHOR_FIXTURE, ANCHOR_FIXTURE / "model.json")
+        self.assertEqual(report["diagnostics"], [])
+        self.assertEqual(report["anchor_drift"], 0)
+        self.assertEqual(code, 0)
+
+    def test_anchor_with_extra_element_is_a_signal(self) -> None:
+        report, code = run_cli(ANCHOR_FIXTURE, ANCHOR_FIXTURE / "variants" / "drift.json")
+        self.assertIn("ANCHOR_RECEIPT_DRIFT", codes(report))
+        self.assertEqual(report["anchor_drift"], 1)
+        self.assertEqual(code, 0)  # signal, not a gate
+
+    def test_anchor_with_missing_element_is_a_signal(self) -> None:
+        report, code = run_cli(ANCHOR_FIXTURE, ANCHOR_FIXTURE / "variants" / "drift-reverse.json")
+        self.assertIn("ANCHOR_RECEIPT_DRIFT", codes(report))
+        self.assertEqual(report["anchor_drift"], 1)
+        self.assertEqual(code, 0)
+
+    def test_missing_anchor_is_tolerated(self) -> None:
+        # The original fixture has receipts but no page anchors — must stay green.
+        report, code = run_cli(FIXTURE, FIXTURE / "model.json")
+        self.assertNotIn("ANCHOR_RECEIPT_DRIFT", codes(report))
+        self.assertEqual(code, 0)
+
+    def test_drift_is_registered_as_a_signal(self) -> None:
+        self.assertNotIn("ANCHOR_RECEIPT_DRIFT", TOOL.ERROR_CODES)
+        self.assertIn("ANCHOR_RECEIPT_DRIFT", TOOL.SIGNAL_CODES)
+
+    def test_declared_anchor_parser(self) -> None:
+        self.assertEqual(
+            TOOL.declared_anchor("---\nmodel-elements: [entity.x, rule.y]\n---\n"),
+            ["entity.x", "rule.y"],
+        )
+        self.assertIsNone(TOOL.declared_anchor("# no frontmatter\n"))
+        self.assertEqual(TOOL.declared_anchor("model-elements: ['entity.x']"), ["entity.x"])
 
 
 class MetaSchemaSingleSourceTest(unittest.TestCase):
