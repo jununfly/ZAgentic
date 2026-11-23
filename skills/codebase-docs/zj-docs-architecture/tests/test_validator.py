@@ -445,5 +445,45 @@ class InlinedConventionsBindingTest(unittest.TestCase):
             self.assertIn("CANARY_OK", result.stdout, result.stderr)
 
 
+class GreenfieldTest(unittest.TestCase):
+    """D4 — a repository with no documentation map is a legitimate cold start,
+    aligned with ontology (docs_governance.py:651 returns "greenfield"; has_error
+    short-circuits :1457-1459), not a MAP_MISSING ERROR. validate() must emit no
+    diagnostics, carry origin "greenfield", and exit 0 at the CLI seam."""
+
+    def test_greenfield_produces_no_diagnostics(self) -> None:
+        diags, _, metadata = VALIDATOR.validate(FIXTURES / "greenfield")
+        self.assertEqual([], [d.code for d in diags])
+        self.assertEqual("greenfield", metadata["origin"])
+
+    def test_greenfield_exits_zero(self) -> None:
+        proc = subprocess.run(
+            [sys.executable, str(MODULE_PATH), str(FIXTURES / "greenfield")],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+
+class MapLinkBrokenSeverityTest(unittest.TestCase):
+    """D3 — a broken architecture map link is a local "cannot open this page"
+    consequence, not a gate. It must stay a signal (the global broken-link ERROR
+    belongs to ontology docs_governance.py:676), so it cannot fail the exit code."""
+
+    def test_broken_map_link_is_signal_not_error(self) -> None:
+        with mutated_fixture() as repo:
+            map_path = repo / "handbook" / "map.md"
+            map_path.write_text(
+                map_path.read_text(encoding="utf-8").replace(
+                    "(architecture/subsystems/ta-billing-engine.md)",
+                    "(architecture/subsystems/does-not-exist.md)",
+                ),
+                encoding="utf-8",
+            )
+            diags = VALIDATOR.validate(repo)[0]
+            broken = [d for d in diags if d.code == "MAP_LINK_BROKEN"]
+            self.assertTrue(broken, "expected a MAP_LINK_BROKEN diagnostic")
+            self.assertTrue(all(d.signal for d in broken), "MAP_LINK_BROKEN must be a signal")
+
+
 if __name__ == "__main__":
     unittest.main()

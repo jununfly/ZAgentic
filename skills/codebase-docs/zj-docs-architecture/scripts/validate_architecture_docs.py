@@ -154,8 +154,11 @@ def discover_map(root: Path, reader: Reader) -> tuple[Path | None, str, list[Dia
     if len(candidates) > 1:
         diagnostics.append(Diagnostic("MAP_AMBIGUOUS", "docs", "multiple compatible map candidates"))
         return None, "ambiguous", diagnostics
-    diagnostics.append(Diagnostic("MAP_MISSING", "docs", "no explicit map, docs/README.md, or unique map candidate"))
-    return None, "missing", diagnostics
+    # greenfield = legitimate cold start, aligned with ontology
+    # (docs_governance.py:651 returns "greenfield", has_error short-circuits at :1457-1459).
+    # No MAP_MISSING ERROR: validate() returns with empty diagnostics at the
+    # map_path-is-None branch, so an empty repo exits 0 instead of failing the gate.
+    return None, "greenfield", diagnostics
 
 
 def frontmatter(text: str) -> dict[str, str]:
@@ -308,7 +311,7 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
     for entry in entries:
         linked_counts[entry.target] = linked_counts.get(entry.target, 0) + 1
         if not entry.target.is_file():
-            diagnostics.append(Diagnostic("MAP_LINK_BROKEN", entry.target.relative_to(root).as_posix(), "architecture map link does not exist"))
+            diagnostics.append(Diagnostic("MAP_LINK_BROKEN", entry.target.relative_to(root).as_posix(), "architecture map link does not exist", signal=True))
             continue
         if entry.target in page_seen:
             continue
