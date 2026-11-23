@@ -66,7 +66,7 @@ authority-id: design.docs-architecture-skill
 
 三条边界的硬约束 `[目标]`：
 
-1. **不 own 索引**：本 skill 不创建/不改 repo doc-map，只从中识别"哪些是架构内容文档"（识别机制见 §7）；此处"消费" = **只读投影取数**（找 map 路径 + 按 selector 取切片作开页清单），**不含对 map 的结构判定**（链完整性/覆盖率/去重/kind 归类），后者归 ontology（详见 §7、§9）。
+1. **不 own 索引**：本 skill 不创建/不改 repo doc-map，只从中识别"哪些是架构内容文档"（识别机制见 §7）；此处"消费" = **只读投影取数**（找 map 路径 + 按 map role 声明取切片作开页清单），**不含对 map 的结构判定**（链完整性/覆盖率/去重/kind 归类），后者归 ontology（详见 §7、§9）。
 2. **A→B 单向**：B 只能由 `formatter(A)` 生成；任何进入 B 的概念必须在代码 A 可定位；A 不反向读 B 内容做语义裁决。
 3. **判定收敛 C↔B**：因 A↔B 平凡真，本 skill 的实质工作全部是"人写 C 是否如实外化 B"。
 
@@ -76,14 +76,14 @@ authority-id: design.docs-architecture-skill
 
 B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7 消费的 repo doc-map（owner=ontology，仅作定位 C 切片的只读投影输入，不被本 skill 拥有或结构校验）。其设计契约（全部 `[目标]`）：
 
-- **命名**：专用前缀令牌定为 `tacm-`（architecture concept-map），**归入 `ta` 命名家族**（以 `ta` 为根，即 `ta/ba/pa` 同族）；`tacm` 作为完整令牌仍区别于纯内容前缀 `ta-/ba-/pa-`，保持"专用标识模型工件"的语义。前缀族与 `ARCH_AUTHORITY_PREFIX="architecture."`（§7）一并作为 **skill 私有扩展**，进 `SKILL.md` Shared Conventions `extensions`，**不进** 共享核心。
+- **命名**：专用前缀令牌定为 `tacm-`（architecture concept-map），**归入 `ta` 命名家族**（以 `ta` 为根，即 `ta/ba/pa` 同族）；`tacm` 作为完整令牌仍区别于纯内容前缀 `ta-/ba-/pa-`，保持"专用标识模型工件"的语义。`tacm-` 前缀族作为 **skill 私有扩展**，进 `SKILL.md` Shared Conventions `extensions`，**不进** 共享核心；authority-id 前缀**不**另立私有常量（切片判据是 map role 声明，见 §7）。
 - **生成**：`formatter(A)` 确定性产出 → 幂等、可重生成；故 B 是"提交供评审的派生物"，**真相在 formatter(A)**。
 - **不可手改不变式**：任何对 B 的人工编辑破坏幂等、把它变成第二声明源；CI 应以"重跑 formatter 比对"取代"评审 B 内容"。
 - **对代码封闭（closed-world over code）**：B 只含代码可定位的概念；"文档里有、代码里没有"的概念**绝不进 B**（这正是 C\B 差分能成立的前提）。
 - **schema 草图**（JSON，`[目标]`）：
   - `nodes`：concept（id、名称、类型 ∈ 八 maintenance-triggers 播种的概念词表、代码锚点 file:line 或符号定位符）。
   - `edges`：concept→concept 分解/组合关系（**节点是概念**，区别于 ontology L3 图"节点是文档"）。
-  - `index`：concept→文档 反向索引，叶子**以 authority-id 指文档**（与绑定共用同键，避免 #67 式双 link base）；此处 doc 指 **C（人写内容文档）**，经 §7 selector 取自 repo doc-map——**B ≠ repo doc-map**（B=概念图；repo doc-map=文档索引）。
+  - `index`：concept→文档 反向索引，叶子**以 authority-id 指文档**（与绑定共用同键，避免 #67 式双 link base）；此处 doc 指 **C（人写内容文档）**，经 §7 role 判据取自 repo doc-map——**B ≠ repo doc-map**（B=概念图；repo doc-map=文档索引）。
 - **概念词汇播种** `[目标]`：初版概念类型直接复用 `architecture-contract.md:85-104` 的八条 maintenance-triggers（Extension seam / Durable owner / Cross-process contract / Effect policy / Replay boundary / Lifecycle rule / Accepted ADR / Source-map target）——它们本就是"值得从代码抽出建模的东西"。
 
 ## 3. 内容文档 C 与技术规范校验（③，复用现机制）
@@ -93,7 +93,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **五类互补视图 + 各自必写小节** `[现状]`：`VIEW_HEADINGS`（overview/layers/subsystem/flow/cross-cutting）`validate_architecture_docs.py:65-71`，共有小节 `:64`，过程小节黑名单 `:72`。`[目标]` 这套 shape 契约继续作为 C 的人写文档规范。
 - **命名稳定性** `[现状]`：`naming_diagnostics` `:195-225`，规则来自内联 `naming-syntax-core`，附 `ta-/ba-/pa-` 前缀族 `:75`。`[目标]` 不变。
 - **authority 声明 + source-map + ADR status** `[现状]`：`:337/:355-384`。`[目标]` 仅作用于"在架构切片内"的人写文档（切片判定见 §7）。
-- **值域单一源、缺源 fail-loud** `[现状]`：`_load_inline_conventions :36-47`，缺块 `raise`。`[目标]` 这一"不硬编码兜底"原则继续成立，并延伸到 B 的概念词表与 id 前缀（同样声明为私有扩展而非散落硬编码）。
+- **值域单一源、缺源 fail-loud** `[现状]`：`_load_inline_conventions :36-47`，缺块 `raise`。`[目标]` 这一"不硬编码兜底"原则继续成立，并延伸到 B 的概念词表（同样声明为私有扩展而非散落硬编码；authority-id 前缀不再作切片判据，见 §7）。
 
 > B（机格式工件）**不受本节任何 shape 校验约束**（避免 formatter 校验 formatter 的循环，见定义）。
 
@@ -134,23 +134,24 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 
 > **同键两面** `[目标]`：页侧 `AUTHORITY_MAP_BINDING`（own，`validate_architecture_docs.py:352-354`）与 map 侧 `MAP_AUTHORITY_CONFLICT`（not-own，`docs_governance.py:683-690`）针对同一条 id↔page 绑定契约，可对同一 id 各报一条互补缺陷（`skill-conventions.json:134-146` notes）。
 
-## 7. 与 zj-docs-ontology 的接口（含投影 selector）
+## 7. 与 zj-docs-ontology 的接口（切片由 map role 声明界定）
 
 两 skill 互不 import，唯一运行期衔接是 ontology 的 `architecture_witness()` 对架构产物记 sha256（非调用）。`[目标]` 接口面：
 
-- **共享词汇单一源**：`doc-kind`/`authority`/命名语法来自 `skill-conventions.json → BASE_RULES` 内联块（`[现状]` `:36-47`）。新增的 `ARCH_AUTHORITY_PREFIX` 与 concept-map 前缀是**私有扩展**，不进共享源。
-- **authority-id 作为共享键**：投影切片用 **map 侧 authority-id 前缀 `architecture.`** 判定，与 `authority.binding.layers`（`skill-conventions.json:131-147`）同键、与 ontology `MAP_AUTHORITY_CONFLICT` 天然对账。
-- **消费语义（docs-map 用法收缩）** `[目标]`：architecture 自带 `discover_map`（`validate_architecture_docs.py:129-158`）**保留**，但降级为「取 map 路径 + 按下方 selector 取 `architecture.` 切片作开页清单」，并据此调整 map 相关码：**(a) 入口**——greenfield 对齐 ontology（`docs_governance.py:651` 返回 `"greenfield"`、`has_error` 短路 `:1457-1459`），**不报 `MAP_MISSING`**（呼应 §8 `:149`）；**(b) 让渡结构门禁**——`MAP_ARCHITECTURE_EMPTY :302`→ ontology `UNMAPPED_PAGE`（`docs_governance.py:1115`）、`MAP_LINK_BROKEN :311`→降 signal（全局断链 ERROR 归 ontology `:676`）、对 map 文件的 `PAGE_KIND_INVALID :335-336` 人口按下方 selector 收窄、不再判 map 自身 kind；**(c) 保留页侧**——`AUTHORITY_MAP_BINDING :352-354` 与 `AUTHORITY_ID_MISSING/DUPLICATE :346/:350` 属 page-declaration 层法定职责（`skill-conventions.json:141-143`）。本调整经「读同一张磁盘 map + selector」达成，**不新增 architecture→ontology 运行期依赖**。
-- **投影 selector（替代现 ERROR 墙）** `[目标，取代 §9 的 `:335` 行为]`：
-  - 谓词 `in_slice = (entry.authority_id is None) or entry.authority_id.startswith("architecture.")`；
-  - 外人命名空间项在主循环**开页前 `continue`** → 外人页零读取、不再被 architecture 误判 kind/prefix（消除探针冲突）；
-  - `id is None` 不跳（保 `AUTHORITY_ID_MISSING`）；`PAGE_KIND_INVALID` 保留但人口收窄为"map 称 architecture 切片、页 kind 却不符"的真漂移。
+- **共享词汇单一源**：`doc-kind`/`authority`/命名语法来自 `skill-conventions.json → BASE_RULES` 内联块（`[现状]` `:36-47`）。`concept-map` 前缀 `tacm-` 仍是**私有扩展**、不进共享源；authority-id 前缀**不再**作 architecture 的切片判据（见下方「切片判据」条与 §9 Delta）。
+- **authority-id 作为共享键**：authority-id 仍是与 ontology 对账的**共享键**（`MAP_AUTHORITY_CONFLICT`、`skill-conventions.json:131-147`），但**切片入口是 map entry 的 `role` 声明**（`validate_architecture_docs.py:251`，owner=ontology），**不是** authority-id 前缀——architecture 若按 id 根自判外人，等于行使索引归类权、违反 §6「不 own 索引」。
+- **消费语义（docs-map 用法收缩）** `[目标]`：architecture 自带 `discover_map`（`validate_architecture_docs.py:129-158`）**保留**，但降级为「取 map 路径 + 按 map `role` 声明取切片作开页清单」，并据此调整 map 相关码：**(a) 入口**——greenfield 对齐 ontology（`docs_governance.py:651` 返回 `"greenfield"`、`has_error` 短路 `:1457-1459`），**不报 `MAP_MISSING`**（呼应 §8 `:149`）；**(b) 让渡结构门禁**——`MAP_ARCHITECTURE_EMPTY :302`→ ontology `UNMAPPED_PAGE`（`docs_governance.py:1115`）、`MAP_LINK_BROKEN :311`→降 signal（全局断链 ERROR 归 ontology `:676`）、对 map 文件的 `PAGE_KIND_INVALID :335-336` 人口由 role 判据自然界定（外人=未声明 role，已 fail-open 零读 `:236-237`/`:253-254`）、不再判 map 自身 kind；**(c) 保留页侧**——`AUTHORITY_MAP_BINDING :352-354` 与 `AUTHORITY_ID_MISSING/DUPLICATE :346/:350` 属 page-declaration 层法定职责（`skill-conventions.json:141-143`）。本调整经「读同一张磁盘 map + role 判据」达成，**不新增 architecture→ontology 运行期依赖**。
+- **切片判据 = map role 声明（替代现 ERROR 墙）** `[目标→实为现状，取代 §9 的 `:335` 行为]`：
+  - 判据不是 authority-id 前缀，而是 **map entry 是否声明 `role:`**——`validate_architecture_docs.py:251` 仅把带 role 的块收为 entry，未声明者走 `:253-254` 的 fail-open 路径；
+  - `role: primary/supporting` → 进切片、按 §3 契约校验；未声明 role → `undeclared`，**零读**（`:236-237` 有界读契约）、不产 kind/prefix/binding 诊断，仅一条 `PAGE_ROLE_UNDECLARED` signal（`:291-297`）；
+  - 此判据由 map（owner=ontology）决定，architecture **不自定 id 根**——否则即违反 §6「不 own 索引」；
+  - **`#52` 反证**：`valid-external-layout` 的架构页 authority-id 用域命名空间 `nimbus.*`（`handbook/map.md:3-5`）且带 `role: primary`，任何 `architecture.`-前缀 id 判据都会误跳它们、违反 `test_the_layout_is_checked_not_skipped`；role 判据则正确纳入。`PAGE_KIND_INVALID` 保留但人口收窄为"map 声明为 role 条目、页 kind 却不符"的真漂移。
 - **derived-only 对齐**：B 是 A 的派生投影，与 ontology `graph_snapshot` 的 `derived-only`（`docs_governance.py:797`）同纪律；二者是不同节点类型的两张图（B=概念图；ontology=文档图，边 ∈ `derived-from|supersedes|supports` `:27`），不竞争。
 - **衔接方向不变** `[目标]`：两 skill 唯一运行期衔接仍是 ontology→architecture 的 `architecture_witness()` sha256 见证（`docs_governance.py:1217/:1307`）；上文「消费语义 (b)」的让渡只改变 architecture **是否自行报告** map 结构码，不引入对 ontology 产物的读取，故"互不 import"成立。
 
 ## 8. 运行模式：投影 / 独立目录 `[目标]`
 
-- **投影模式**（在仓内，默认）：消费 repo doc-map，按 §7 selector 取架构切片；可做 authority-id 相关 shape 检查。
+- **投影模式**（在仓内，默认）：消费 repo doc-map，按 §7 role 判据取架构切片；可做 authority-id 相关 shape 检查。
 - **独立目录模式**（指定目录、无 doc-map）：仅 ③ shape + 若提供则做 C↔B；**无 map 即无 authority-id↔page 绑定真相**，故**不产出任何 `AUTHORITY_MAP_BINDING`/id-1:1 类诊断**。
 - （已定）两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 这一族：投影态产出、独立目录态不产出（承 :148）；其余 ③ shape 及（若提供 B）C↔B 差分在两态一致。此差集同时是 §9 greenfield `MAP_MISSING` 的收口依据。
 
@@ -165,10 +166,10 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 | 现状机制 | 目标处置 |
 |---|---|
 | ③ shape 全套（kind/naming/section/authority/source/ADR） | **保留**（§3），人口收窄到架构切片 |
-| `:335` PAGE_KIND_INVALID 对任意 primary 触发 | **改造**：加 §7 selector-skip 前置；`:335` 仅余 id-claim-vs-kind 漂移；**对 map 文件自身不再判 kind 门禁** |
+| `:335` PAGE_KIND_INVALID 对任意 primary 触发 | **改造**：加 §7 role 判据前置（现状 `map_entries:251`）；`:335` 仅余 id-claim-vs-kind 漂移；**对 map 文件自身不再判 kind 门禁** |
 | 无 concept-map / 不读代码 | **新增**：`formatter(A)` + B + closed-world（§2/§4） |
 | 无一致性/债务检测 | **新增**：C↔B 方向差分，**signal-only**（§4） |
-| 隐含"map 只含架构页" | **替换**：显式 id 前缀投影切片（§7） |
+| 隐含"map 只含架构页" + §7 旧稿 id 前缀投影切片 | **替换→删除**：切片改由 map role 声明界定（§7「切片判据」）；id 前缀判据反证于 #52（nimbus.* 架构页）、且等于 architecture 行使索引归类权，违反不-own-索引 |
 | greenfield 仍 `MAP_MISSING` ERROR（`:157`，与 ontology `:651/:1458` 不对称） | **收口**：无 doc-map 场景归入 §8 独立目录态，按已定差集不产出 map 绑定类诊断，从而消除该 ERROR 不对称（详见 §7「消费语义 (a)」） |
 | `MAP_ARCHITECTURE_EMPTY:302`（map 无架构链，ERROR） | **让渡**：交 ontology `UNMAPPED_PAGE`（`docs_governance.py:1115`）；architecture 单跑不再报覆盖度（已批准取舍） |
 | `MAP_LINK_BROKEN:311`（切片断链，ERROR，与 ontology `:676` 双报） | **降级**：改为 signal（开页局部后果；`:312` 零读跳过不变）；全局断链 ERROR 归 ontology |
@@ -181,7 +182,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **不 own 索引、不改 doc-map**：索引真相唯一在 ontology。
 - **target 文档不在管辖**：前瞻/路线属 roadmap/grilling。
 - **shape 之外不做语义门禁**：①② 永远 signal（§5）。
-- `[未决]`：`undeclared` 仍用目录锚定 `:253` 与 id 前缀 selector 的判据统一；`ta/ba/pa` 三域与单一 `architecture.` id 根关系；formatter(A) 读码的具体概念抽取规则（仅以八 triggers 起步是否够）。
-- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）。
+- `[未决]`：formatter(A) 读码的具体概念抽取规则（仅以八 triggers 起步是否够）。
+- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）。
 
 > 落地顺序与逐文件改动（含 fixture/测试、`SKILL.md`、`skill-conventions.json`、`:335` 等三头对齐）属"如何把定义落到代码"，另立执行 plan，不在本设计文档范围。
