@@ -118,5 +118,25 @@ class UnmappedPageBoundaryTest(unittest.TestCase):
         self.assertEqual([], unmapped(payload))
 
 
+class ArchitectureCoverageTest(unittest.TestCase):
+    """Stage-2 counterweight: architecture lets the coverage signal through, so
+    ontology must catch a docs/architecture/ page that never reached the map.
+    `architecture` is a long_lived preset category (canonical-preset.json:20)."""
+
+    def payload(self) -> dict:
+        return TOOL.report(FIXTURES / "unmapped-architecture", validate_links=True)
+
+    def test_the_unmapped_architecture_page_fires(self) -> None:
+        paths = {item["path"] for item in unmapped(self.payload())}
+        self.assertEqual({"docs/architecture/ta-orphan.md"}, paths)
+
+    def test_the_mapped_architecture_page_stays_silent(self) -> None:
+        paths = {item["path"] for item in unmapped(self.payload())}
+        self.assertNotIn("docs/architecture/ta-mapped.md", paths)
+
+    def test_it_remains_a_signal_not_a_gate(self) -> None:
+        self.assertFalse(TOOL.has_error(self.payload()))
+
+
 if __name__ == "__main__":
     unittest.main()

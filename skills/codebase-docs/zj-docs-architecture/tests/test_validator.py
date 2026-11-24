@@ -485,5 +485,24 @@ class MapLinkBrokenSeverityTest(unittest.TestCase):
             self.assertTrue(all(d.signal for d in broken), "MAP_LINK_BROKEN must be a signal")
 
 
+class ArchitectureUnmappedLetThroughTest(unittest.TestCase):
+    """Stage-2 let-through: a map with zero entry links but existing
+    docs/architecture/ pages is no longer an ERROR here — coverage is owned by
+    ontology UNMAPPED_PAGE (signal). Pins that architecture emits nothing (in
+    particular no MAP_ARCHITECTURE_EMPTY) and exits 0."""
+
+    def test_unmapped_pages_are_let_through(self) -> None:
+        codes = {item.code for item in VALIDATOR.validate(FIXTURES / "architecture-unmapped")[0]}
+        self.assertEqual(set(), codes)
+        self.assertNotIn("MAP_ARCHITECTURE_EMPTY", codes)
+
+    def test_unmapped_let_through_exits_zero(self) -> None:
+        proc = subprocess.run(
+            [sys.executable, str(MODULE_PATH), str(FIXTURES / "architecture-unmapped")],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
