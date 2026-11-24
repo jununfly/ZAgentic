@@ -398,6 +398,10 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
     return diagnostics, reader.paths, metadata
 
 
+def _split_concepts(value: str) -> list[str]:
+    return [tok.strip() for tok in value.split(",") if tok.strip()]
+
+
 def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
     """B\\C consistency (PR-A): a concept whose code anchor no architecture page
     cites in its `## Source map` is 'under-documented' -> CONSIST_UNDOC, signal.
@@ -415,12 +419,19 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
         return []
     entries, _undeclared = map_entries(repo, map_path, reader.text(map_path))
     sliced: set[str] = set()
+    b_ids = {node.id for node in cmap.nodes}
+    claims: list[tuple[str, str, str]] = []  # (concept_id, status, page_rel) — D5
     for entry in entries:
         if entry.role not in ("primary", "supporting") or not entry.target.is_file():
             continue  # §7 role gate: foreign/unlinked pages never enter the join
-        for _raw, target in source_paths(repo, entry.target, reader.text(entry.target)):
+        page_text = reader.text(entry.target)
+        for _raw, target in source_paths(repo, entry.target, page_text):
             if target is not None:
                 sliced.add(target.relative_to(repo).as_posix())
+        for raw_id in _split_concepts(frontmatter(page_text).get("concepts", "")):
+            cid, _, status = raw_id.partition(":")
+            if cid:
+                claims.append((cid, status, entry.target.relative_to(repo).as_posix()))
     diagnostics: list[Diagnostic] = []
     for node in cmap.nodes:
         if node.anchor is None:
@@ -431,6 +442,15 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
                 "CONSIST_UNDOC",
                 node.id,
                 f"concept anchored at {node.anchor} has no architecture page Source map citing it",
+                signal=True,
+            ))
+    for cid, status, page_rel in claims:  # C\B: page cites a concept B (code) lacks
+        if cid not in b_ids:
+            suffix = f" (status:{status})" if status else ""  # echo, never exempt (§4)
+            diagnostics.append(Diagnostic(
+                "CONSIST_ORPHAN_DOC_CLAIM",
+                page_rel,
+                f"page claims concept {cid}{suffix} absent from code-derived B",
                 signal=True,
             ))
     return diagnostics
@@ -444,8 +464,14 @@ def main() -> int:
     parser.add_argument("--audit-json", action="store_true")
     parser.add_argument("--consistency", action="store_true",
                         help="B\\C consistency signal (concept-map B required); signal-only, exit unaffected")
+    parser.add_argument("--format-concepts", action="store_true",
+                        help="formatter(A): emit deterministic concept-map B from code @concept: markers (stdout)")
     args = parser.parse_args()
     reader = Reader()
+    if args.format_concepts:
+        import concept_map as cm
+        print(cm.render(cm.format_concepts(args.repo.resolve(), Reader())))
+        return 0
     if args.discover:
         path, origin, diagnostics = discover_map(args.repo.resolve(), reader)
         payload = {"map": str(path.relative_to(args.repo.resolve())) if path else None, "origin": origin, "diagnostics": [item.__dict__ for item in diagnostics], "read_paths": reader.paths}

@@ -551,5 +551,63 @@ class ConceptMapTest(unittest.TestCase):
             CM.parse(rendered)
 
 
+class ConsistencyOrphanTest(unittest.TestCase):
+    """PR-B — C\\B: a page's `concepts:` citing an id absent from B -> ORPHAN signal
+    (status echoed as context, never exempt). B\\C (PR-A) stays unchanged (join Y)."""
+
+    def _diags(self):
+        return VALIDATOR.consistency((FIXTURES / "consistency").resolve(), VALIDATOR.Reader())
+
+    def test_orphan_claim_emits_signal(self) -> None:
+        orphan = [d for d in self._diags() if d.code == "CONSIST_ORPHAN_DOC_CLAIM"]
+        self.assertEqual({"docs/architecture/ta-billing.md"}, {d.path for d in orphan})
+        self.assertTrue(all(d.signal for d in orphan))
+        self.assertIn("ghost-router", orphan[0].message)
+        self.assertIn("status:target", orphan[0].message)
+
+    def test_declared_concept_present_in_b_is_not_orphaned(self) -> None:
+        messages = " ".join(d.message for d in self._diags() if d.code == "CONSIST_ORPHAN_DOC_CLAIM")
+        self.assertNotIn("billing-owner", messages)
+
+    def test_b_c_undoc_still_holds_with_d5_present(self) -> None:
+        undoc = {d.path for d in self._diags() if d.code == "CONSIST_UNDOC"}
+        self.assertEqual({"dangling-edge"}, undoc)
+
+
+class FormatterTest(unittest.TestCase):
+    """PR-B — formatter(A): code `@concept:` markers -> closed-world, idempotent B."""
+
+    def _repo(self, tmp: Path) -> Path:
+        (tmp / "src").mkdir(parents=True)
+        (tmp / "src" / "a.py").write_text("# @concept: durable-owner alpha\n", encoding="utf-8")
+        (tmp / "src" / "b.rs").write_text("// @concept: effect-policy beta --anchor=src/b.rs:42\n", encoding="utf-8")
+        (tmp / "docs").mkdir()  # excluded from the A-scan domain
+        (tmp / "docs" / "x.py").write_text("# @concept: lifecycle-rule gamma\n", encoding="utf-8")
+        return tmp
+
+    def test_format_concepts_closed_world_and_domain(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            cmap = CM.format_concepts(self._repo(Path(td)), VALIDATOR.Reader())
+            by_id = {n.id: n for n in cmap.nodes}
+            self.assertEqual({"alpha", "beta"}, set(by_id))  # gamma under docs/ excluded
+            self.assertEqual("src/b.rs:42", by_id["beta"].anchor)
+            self.assertEqual("src/a.py", by_id["alpha"].anchor)
+
+    def test_formatter_is_idempotent_and_stable(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = self._repo(Path(td))
+            r1 = CM.render(CM.format_concepts(repo, VALIDATOR.Reader()))
+            r2 = CM.render(CM.format_concepts(repo, VALIDATOR.Reader()))
+            self.assertEqual(r1, r2)
+            self.assertFalse(CM.is_stale(r1, CM.parse(r2)))
+
+    def test_unknown_kind_marker_is_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            (repo / "src").mkdir()
+            (repo / "src" / "a.py").write_text("# @concept: not-a-trigger zeta\n", encoding="utf-8")
+            self.assertEqual((), CM.format_concepts(repo, VALIDATOR.Reader()).nodes)
+
+
 if __name__ == "__main__":
     unittest.main()

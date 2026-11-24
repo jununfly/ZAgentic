@@ -94,3 +94,37 @@ def is_stale(text: str, cm: ConceptMap) -> bool:
     if match is None:
         return True
     return _digest(match.group(0)) != _digest(render(cm))
+
+
+# --- formatter(A): code -> concept-map (D1) --------------------------------
+# Scan domain (D1-a): all repo source files, excluding docs/ and vendored dirs.
+# B stays closed-world: only code-declared concepts enter, so "documented but not
+# in code" can never be fabricated here — that is exactly the C\B signal's job.
+SOURCE_EXTS = {".py", ".rs", ".go", ".ts", ".tsx", ".js", ".jsx", ".java", ".kt",
+               ".rb", ".c", ".h", ".cc", ".cpp", ".hpp", ".swift", ".scala"}
+_SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "docs", "build", "dist", "target"}
+_CONCEPT_MARKER_RE = re.compile(
+    r"@concept:\s*([a-z][a-z0-9-]*)\s+([A-Za-z0-9._-]+)"
+    r"(?:\s+--anchor=(\S+))?(?:\s+--owner=(\S+))?"
+)
+
+
+def format_concepts(repo, reader) -> "ConceptMap":
+    """Deterministic scan of source files for `@concept: <kind> <id> [attrs]`.
+    Runs as a separate command against code (face A) with its own Reader, so it is
+    orthogonal to validate()'s bounded page-read contract. D1-c: MVP emits nodes
+    only (edges empty)."""
+    from pathlib import Path
+    nodes: dict[str, ConceptNode] = {}
+    for path in sorted(repo.rglob("*")):
+        if not path.is_file() or path.suffix not in SOURCE_EXTS:
+            continue
+        rel = path.relative_to(repo)
+        if any(part in _SKIP_DIRS for part in rel.parts):
+            continue
+        for line in reader.text(path).splitlines():
+            marker = _CONCEPT_MARKER_RE.search(line)
+            if marker and marker.group(1) in CONCEPT_KINDS:
+                _kind, node_id, anchor, _owner = marker.groups()
+                nodes[node_id] = ConceptNode(node_id, marker.group(1), anchor or rel.as_posix())
+    return ConceptMap(tuple(nodes.values()), ())  # edges: D1-c MVP
