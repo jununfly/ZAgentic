@@ -2,9 +2,10 @@
 """architecture concept-map (B): schema, deterministic render/parse, and idempotency.
 
 This is architecture's OWN map artifact (design doc §2), distinct from the repo
-doc-map it consumes (owner=ontology). formatter(A) (code -> concepts) and the C\\B
-consistency direction (which needs a page-side concept-declaration convention, D5)
-land in PR-B; PR-A ships the B schema + the B\\C (CONSIST_UNDOC) consumer.
+doc-map it consumes (owner=ontology). formatter(A) ships with --format-concepts; the
+consistency directions (B-to-C under-doc, C-to-B orphan, owner mismatch) ship with
+--consistency. Edges (concept-to-concept) and owner are additive schema keys, so any
+older B file without them still parses (owner/edges default to None/absent).
 
 The fenced block is delimited by CONCEPT_MAP_START/END — deliberately separate from
 the generated BASE_RULES_* block: check-shared-conventions.py only scans BASE_RULES,
@@ -37,6 +38,7 @@ class ConceptNode:
     id: str
     kind: str
     anchor: str | None  # "path" or "path:line" / symbol locator; None if unanchored
+    owner: str | None = None  # D1 code-declared ownership (authority-id); an A-face fact, NOT the D2 document index
 
 
 @dataclass(frozen=True)
@@ -57,7 +59,7 @@ def render(cm: ConceptMap) -> str:
     """Deterministic, byte-stable rendering (sorted) so CI can diff a re-render."""
     payload = {
         "nodes": [
-            {"id": n.id, "kind": n.kind, "anchor": n.anchor}
+            {"id": n.id, "kind": n.kind, "anchor": n.anchor, "owner": n.owner}
             for n in sorted(cm.nodes, key=lambda x: (x.kind, x.id))
         ],
         "edges": [list(e) for e in sorted(cm.edges)],
@@ -73,7 +75,8 @@ def parse(text: str) -> ConceptMap:
         raise ValueError("no CONCEPT_MAP block found")
     data = json.loads(match.group(1))
     nodes = tuple(
-        ConceptNode(n["id"], n["kind"], n.get("anchor")) for n in data.get("nodes", [])
+        ConceptNode(n["id"], n["kind"], n.get("anchor"), n.get("owner"))
+        for n in data.get("nodes", [])
     )
     bad = {n.kind for n in nodes} - CONCEPT_KINDS
     if bad:
@@ -105,7 +108,7 @@ SOURCE_EXTS = {".py", ".rs", ".go", ".ts", ".tsx", ".js", ".jsx", ".java", ".kt"
 _SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "docs", "build", "dist", "target"}
 _CONCEPT_MARKER_RE = re.compile(
     r"@concept:\s*([a-z][a-z0-9-]*)\s+([A-Za-z0-9._-]+)"
-    r"(?:\s+--anchor=(\S+))?(?:\s+--owner=(\S+))?"
+    r"(?:\s+--anchor=(\S+))?(?:\s+--owner=(\S+))?(?:\s+--part-of=(\S+))?"
 )
 
 
@@ -116,15 +119,24 @@ def format_concepts(repo, reader) -> "ConceptMap":
     only (edges empty)."""
     from pathlib import Path
     nodes: dict[str, ConceptNode] = {}
+    edges: list[tuple[str, str]] = []
     for path in sorted(repo.rglob("*")):
         if not path.is_file() or path.suffix not in SOURCE_EXTS:
             continue
         rel = path.relative_to(repo)
         if any(part in _SKIP_DIRS for part in rel.parts):
             continue
-        for line in reader.text(path).splitlines():
-            marker = _CONCEPT_MARKER_RE.search(line)
-            if marker and marker.group(1) in CONCEPT_KINDS:
-                _kind, node_id, anchor, _owner = marker.groups()
-                nodes[node_id] = ConceptNode(node_id, marker.group(1), anchor or rel.as_posix())
-    return ConceptMap(tuple(nodes.values()), ())  # edges: D1-c MVP
+        # block-level finditer: one marker per declared concept, incl. same-line multiples
+        for marker in _CONCEPT_MARKER_RE.finditer(reader.text(path)):
+            kind, node_id, anchor, owner, part_of = marker.groups()
+            if kind not in CONCEPT_KINDS:
+                continue
+            nodes[node_id] = ConceptNode(node_id, kind, anchor or rel.as_posix(), owner)
+            if part_of:
+                for parent in part_of.split(","):
+                    parent = parent.strip()
+                    if parent:
+                        edges.append((node_id, parent))
+    valid = set(nodes)
+    kept = tuple(sorted({e for e in edges if e[0] in valid and e[1] in valid}))
+    return ConceptMap(tuple(nodes.values()), kept)  # closed-world: dangling part-of edges dropped

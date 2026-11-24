@@ -534,6 +534,14 @@ class ConceptMapTest(unittest.TestCase):
         cmap = CM.ConceptMap((CM.ConceptNode("a", "durable-owner", "f.rs"),), (("a", "b"),))
         self.assertEqual(cmap, CM.parse(CM.render(cmap)))
 
+    def test_render_parse_roundtrip_with_owner_and_edges(self) -> None:
+        cmap = CM.ConceptMap(
+            (CM.ConceptNode("a", "durable-owner", "f.rs", "architecture.a"),
+             CM.ConceptNode("b", "extension-seam", None, None)),
+            (("a", "b"),),
+        )
+        self.assertEqual(cmap, CM.parse(CM.render(cmap)))
+
     def test_render_is_byte_stable_regardless_of_input_order(self) -> None:
         a = CM.ConceptNode("a", "durable-owner", None)
         z = CM.ConceptNode("z", "lifecycle-rule", None)
@@ -607,6 +615,58 @@ class FormatterTest(unittest.TestCase):
             (repo / "src").mkdir()
             (repo / "src" / "a.py").write_text("# @concept: not-a-trigger zeta\n", encoding="utf-8")
             self.assertEqual((), CM.format_concepts(repo, VALIDATOR.Reader()).nodes)
+
+    def test_part_of_edges_and_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            (repo / "src").mkdir()
+            (repo / "src" / "a.py").write_text(
+                "# @concept: durable-owner parent --owner=architecture.p\n"
+                "# @concept: extension-seam child --owner=architecture.c --part-of=parent,dangling\n",
+                encoding="utf-8",
+            )
+            cmap = CM.format_concepts(repo, VALIDATOR.Reader())
+            by_id = {n.id: n for n in cmap.nodes}
+            self.assertEqual({"parent", "child"}, set(by_id))
+            self.assertEqual("architecture.p", by_id["parent"].owner)
+            self.assertEqual("architecture.c", by_id["child"].owner)
+            # (child, parent) kept; (child, dangling) dropped — dangling end is not a node (closed-world)
+            self.assertEqual((("child", "parent"),), cmap.edges)
+
+    def test_same_line_multiple_markers_all_captured(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            (repo / "src").mkdir()
+            (repo / "src" / "a.py").write_text(
+                "# @concept: durable-owner x --owner=architecture.x @concept: durable-owner y --part-of=x\n",
+                encoding="utf-8",
+            )
+            cmap = CM.format_concepts(repo, VALIDATOR.Reader())
+            self.assertEqual({"x", "y"}, {n.id for n in cmap.nodes})
+            self.assertEqual((("y", "x"),), cmap.edges)
+
+
+class OwnerMismatchTest(unittest.TestCase):
+    """§10 — owner (code-declared ownership, an A-face fact distinct from the D2 index)
+    vs the page that actually externalizes it. A concept whose --owner page does not
+    declare it -> CONSIST_OWNER_MISMATCH (signal). Orthogonal to UNDOC (anchor) and
+    ORPHAN (id); join Y is untouched."""
+
+    def _diags(self):
+        return VALIDATOR.consistency((FIXTURES / "consistency").resolve(), VALIDATOR.Reader())
+
+    def test_owner_claim_not_externalized_by_page_emits_signal(self) -> None:
+        mismatch = [d for d in self._diags() if d.code == "CONSIST_OWNER_MISMATCH"]
+        self.assertEqual({"loose-policy"}, {d.path for d in mismatch})
+        self.assertTrue(all(d.signal for d in mismatch))
+        self.assertIn("architecture.subsystem.billing", mismatch[0].message)
+
+    def test_owner_whose_page_externalizes_concept_is_not_reported(self) -> None:
+        mismatch = {d.path for d in self._diags() if d.code == "CONSIST_OWNER_MISMATCH"}
+        self.assertNotIn("billing-owner", mismatch)  # ta-billing declares billing-owner:implemented
+
+    def test_all_consistency_signals_never_gate_exit(self) -> None:
+        self.assertTrue(all(d.signal for d in self._diags()))
 
 
 if __name__ == "__main__":

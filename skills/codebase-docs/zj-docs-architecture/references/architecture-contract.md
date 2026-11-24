@@ -111,15 +111,21 @@ target architecture, implemented behavior, inference, and unknowns in prose.
 An accepted or superseded ADR may support a claim; a proposed ADR cannot.
 
 **Concept declarations (D1/D5).** Code may name a concept with a marker
-`@concept: <kind> <id> [--anchor=<path:line>] [--owner=<authority-id>]`, where
-`<kind>` is one of the eight maintenance-triggers; `--format-concepts` collects
-these into the concept-map B (closed-world: code-declared concepts only, and the
-`docs/` tree is excluded from that scan). A page then lists the concepts it
+`@concept: <kind> <id> [--anchor=<path:line>] [--owner=<authority-id>] [--part-of=<id>[,<id>...]]`,
+where `<kind>` is one of the eight maintenance-triggers and the optional flags
+**must appear in that fixed order** (`--anchor`, then `--owner`, then
+`--part-of`) — an out-of-order flag is silently dropped. `--format-concepts`
+collects these into the concept-map B (closed-world: code-declared concepts
+only, the `docs/` tree is excluded, and a `--part-of` edge whose endpoint is not
+a code-declared concept is dropped). A page then lists the concepts it
 externalizes in its front matter, `concepts: <id>[:status], ...` with
 `status ∈ {target, implemented, inference, unknown}`. `--consistency` reports a B
-concept that no page's `## Source map` cites as `CONSIST_UNDOC` (signal), and a
+concept that no page's `## Source map` cites as `CONSIST_UNDOC` (signal), a
 declared id absent from B as `CONSIST_ORPHAN_DOC_CLAIM` (signal, its status
-echoed as context and never exempting). Both are signals: neither gates the exit.
+echoed as context and never exempting), and a concept whose `--owner` page does
+not externalize it as `CONSIST_OWNER_MISMATCH` (signal; `--owner` records
+code-side ownership intent, an A-face fact distinct from the document reverse
+index). All three are signals: none gates the exit.
 
 Those paths resolve from the **directory holding the page**, the same base a
 Markdown link uses: a page at
