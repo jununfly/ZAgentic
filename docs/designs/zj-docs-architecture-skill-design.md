@@ -82,7 +82,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **对代码封闭（closed-world over code）**：B 只含代码可定位的概念；"文档里有、代码里没有"的概念**绝不进 B**（这正是 C\B 差分能成立的前提）。
 - **schema 草图**（JSON，`[目标]`）：
   - `nodes`：concept（id、名称、类型 ∈ 八 maintenance-triggers 播种的概念词表、代码锚点 file:line 或符号定位符）。
-  - `edges`：concept→concept 分解/组合关系（**节点是概念**，区别于 ontology L3 图"节点是文档"）。
+  - `edges`：concept→concept 分解/组合关系（**节点是概念**，区别于 ontology L3 图"节点是文档"）。一条 `--part-of` 可列多个有效父（多条边，closed-world set 去重排序）；分解图须为 **DAG**——环由 `--consistency` 报 `CONCEPT_CYCLE`（signal，纯 B 结构自洽、不需 C，区别 `CONSIST_*` 的 B↔C，但随本命令 map 触发）；**跨 owner 成边有意不校验**（组合可合法跨归属，报之即裁决、违反「发事实不裁决」）。
   - **（PR-A 修正 D2）B 只含 `nodes`/`edges`，不落 `index`**：`concept→文档` 反向映射由 `--consistency` 的 anchor join 现求（formatter(A) 读不到文档，无法产 index）；join 以 C 页 `## Source map` 命中的代码文件匹配 `node.anchor`。**B ≠ repo doc-map**（B=概念图；repo doc-map=文档索引）。
 - **概念词汇播种** `[目标]`：初版概念类型直接复用 `architecture-contract.md:85-104` 的八条 maintenance-triggers（Extension seam / Durable owner / Cross-process contract / Effect policy / Replay boundary / Lifecycle rule / Accepted ADR / Source-map target）——它们本就是"值得从代码抽出建模的东西"。**D1 已落地（PR-B）**：`--format-concepts` 扫代码 `@concept: <kind> <id>` 标记产 B（closed-world、`docs/` 排除）。**edges/owner 已落地（PR-B 续 / §10 收尾）**：`--part-of=<id>[,<id>]` 抽 concept→concept 边（端点非节点则 closed-world 丢弃），`--owner=<authority-id>` 存为 `node.owner`——它是代码声明的归属意图（A 面事实），**不是 D2 禁止的文档反向 index**，故不违反 D2。属性须按 `--anchor/--owner/--part-of` 固定顺序书写。
 
@@ -116,7 +116,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 
 （已定=是）C\B 的"成因未定"**附带** echo 页上既有 `target/implemented/inference/unknown` 标签（`architecture-contract.md:110`），作**上下文而不作豁免**：标签只帮人或 roadmap 判读成因，绝不据此自动豁免或降级该 signal。
 
-**落地态（PR-A + PR-B + §10 收尾）**：B 的 schema / 确定性渲染 / 幂等比对（`concept_map.py`）、**B\C 差分**（`--consistency` anchor join → `CONSIST_UNDOC`）、**C\B 差分**（D5 页侧 `concepts:` 声明 id-join → `CONSIST_ORPHAN_DOC_CLAIM`，status echo 不豁免）、**owner 校验**（代码 `node.owner` 声称的归属页未在 `concepts:` 外化该概念 → `CONSIST_OWNER_MISMATCH`，与 UNDOC/ORPHAN 正交）与 **formatter(A)**（D1 `--format-concepts` 扫代码 `@concept:` 标记，closed-world、`docs/` 排除，并抽 `--part-of` 概念边与 `--owner` 归属）均已落地。三向一律 signal、绝不影响 exit；采用 join 方案 Y（B\C 用 anchor-file、C\B 用 concept-id、owner 用 authority-id↔页声明，互不干扰，不回改 PR-A）。
+**落地态（PR-A + PR-B + §10 收尾）**：B 的 schema / 确定性渲染 / 幂等比对（`concept_map.py`）、**B\C 差分**（`--consistency` anchor join → `CONSIST_UNDOC`）、**C\B 差分**（D5 页侧 `concepts:` 声明 id-join → `CONSIST_ORPHAN_DOC_CLAIM`，status echo 不豁免）、**owner 校验**（代码 `node.owner` 声称的归属页未在 `concepts:` 外化该概念 → `CONSIST_OWNER_MISMATCH`，与 UNDOC/ORPHAN 正交）与 **formatter(A)**（D1 `--format-concepts` 扫代码 `@concept:` 标记，closed-world、`docs/` 排除，并抽 `--part-of` 概念边与 `--owner` 归属）均已落地。三向一律 signal、绝不影响 exit；采用 join 方案 Y（B\C 用 anchor-file、C\B 用 concept-id、owner 用 authority-id↔页声明，互不干扰，不回改 PR-A）。**edges 复杂语义（§10 收尾）**：多父（一条 `--part-of` 列多个有效父）已支持、环检测 `CONCEPT_CYCLE`（signal，B 内部 DAG 自洽、不需 C，但随 `--consistency` 的 map 触发）已落地；跨 owner 成边有意不报（组合可合法跨归属）。
 
 ## 5. 严重度模型与裁决立场
 
@@ -184,7 +184,8 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **不 own 索引、不改 doc-map**：索引真相唯一在 ontology。
 - **target 文档不在管辖**：前瞻/路线属 roadmap/grilling。
 - **shape 之外不做语义门禁**：①② 永远 signal（§5）。
-- `[未决]`：八 maintenance-triggers 之外是否需扩概念词表；`--part-of` 边的更复杂语义（多父、跨 owner 成边、环检测）。
-- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）；**`MAP_ARCHITECTURE_EMPTY` 让渡 ontology `UNMAPPED_PAGE` 已落地**（ERROR→signal 降级；覆盖度仅在 ontology `--validate` 态报警，架构页须落 `docs/architecture/` 才被扫）；`tacm-` 已写入 SKILL.md `extensions`（`page-prefix:tacm-`，阶段3）；**D1 formatter(A)**（代码 `@concept:` → `--format-concepts`，closed-world）与 **D5 页侧 `concepts:` 声明**（C\B → `CONSIST_ORPHAN_DOC_CLAIM`，signal）已落地（PR-B）；**formatter `edges`（`--part-of` 概念边，closed-world）与 owner（`node.owner` → `CONSIST_OWNER_MISMATCH`）已落地**（PR-B 续 / §10 收尾，三向仍全 signal、不卡 exit）。
+- **不报跨 owner 成边**：分解/组合可合法跨归属，edges 不绑定 owner，报之即裁决（§2/§4）。
+- `[未决]`：八 maintenance-triggers 之外是否需扩概念词表；`--part-of` 边的进一步语义（边 kind 分类、加权、跨图合并）。
+- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）；**`MAP_ARCHITECTURE_EMPTY` 让渡 ontology `UNMAPPED_PAGE` 已落地**（ERROR→signal 降级；覆盖度仅在 ontology `--validate` 态报警，架构页须落 `docs/architecture/` 才被扫）；`tacm-` 已写入 SKILL.md `extensions`（`page-prefix:tacm-`，阶段3）；**D1 formatter(A)**（代码 `@concept:` → `--format-concepts`，closed-world）与 **D5 页侧 `concepts:` 声明**（C\B → `CONSIST_ORPHAN_DOC_CLAIM`，signal）已落地（PR-B）；**formatter `edges`（`--part-of` 概念边，closed-world）与 owner（`node.owner` → `CONSIST_OWNER_MISMATCH`）已落地**（PR-B 续 / §10 收尾，三向仍全 signal、不卡 exit）；**edges 复杂语义已落地**——多父（`--part-of` 多有效父）、环检测 `CONCEPT_CYCLE`（signal，B 内部 DAG 自洽）已实现，跨 owner 成边有意不报（见 §2/§4）。
 
 > 落地顺序与逐文件改动（含 fixture/测试、`SKILL.md`、`skill-conventions.json`、`:335` 等三头对齐）属"如何把定义落到代码"，另立执行 plan，不在本设计文档范围。

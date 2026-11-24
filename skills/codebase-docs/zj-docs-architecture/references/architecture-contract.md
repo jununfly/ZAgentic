@@ -122,10 +122,14 @@ externalizes in its front matter, `concepts: <id>[:status], ...` with
 `status ∈ {target, implemented, inference, unknown}`. `--consistency` reports a B
 concept that no page's `## Source map` cites as `CONSIST_UNDOC` (signal), a
 declared id absent from B as `CONSIST_ORPHAN_DOC_CLAIM` (signal, its status
-echoed as context and never exempting), and a concept whose `--owner` page does
+echoed as context and never exempting), a concept whose `--owner` page does
 not externalize it as `CONSIST_OWNER_MISMATCH` (signal; `--owner` records
 code-side ownership intent, an A-face fact distinct from the document reverse
-index). All three are signals: none gates the exit.
+index), and any concept on a `--part-of` decomposition cycle as `CONCEPT_CYCLE`
+(signal; the part-of graph must be a DAG, so a cycle is a contradiction in the
+code-declared composition). Edges are not bound to `owner`: a composition that
+crosses ownership is a legitimate pattern, so it is deliberately never reported.
+All four are signals: none gates the exit.
 
 Those paths resolve from the **directory holding the page**, the same base a
 Markdown link uses: a page at
