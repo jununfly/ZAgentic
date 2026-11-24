@@ -421,6 +421,7 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
     sliced: set[str] = set()
     b_ids = {node.id for node in cmap.nodes}
     claims: list[tuple[str, str, str]] = []  # (concept_id, status, page_rel) — D5
+    claimed_by_owner: dict[str, set[str]] = {}  # authority-id -> concepts it externalizes (owner check)
     for entry in entries:
         if entry.role not in ("primary", "supporting") or not entry.target.is_file():
             continue  # §7 role gate: foreign/unlinked pages never enter the join
@@ -428,10 +429,13 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
         for _raw, target in source_paths(repo, entry.target, page_text):
             if target is not None:
                 sliced.add(target.relative_to(repo).as_posix())
+        page_rel = entry.target.relative_to(repo).as_posix()
         for raw_id in _split_concepts(frontmatter(page_text).get("concepts", "")):
             cid, _, status = raw_id.partition(":")
             if cid:
-                claims.append((cid, status, entry.target.relative_to(repo).as_posix()))
+                claims.append((cid, status, page_rel))
+                if entry.authority_id:
+                    claimed_by_owner.setdefault(entry.authority_id, set()).add(cid)
     diagnostics: list[Diagnostic] = []
     for node in cmap.nodes:
         if node.anchor is None:
@@ -451,6 +455,14 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
                 "CONSIST_ORPHAN_DOC_CLAIM",
                 page_rel,
                 f"page claims concept {cid}{suffix} absent from code-derived B",
+                signal=True,
+            ))
+    for node in cmap.nodes:  # owner: a code-declared authority must actually externalize the concept
+        if node.owner and node.id not in claimed_by_owner.get(node.owner, set()):
+            diagnostics.append(Diagnostic(
+                "CONSIST_OWNER_MISMATCH",
+                node.id,
+                f"code declares owner {node.owner}, but that page does not externalize this concept",
                 signal=True,
             ))
     return diagnostics
