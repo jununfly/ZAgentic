@@ -110,6 +110,17 @@ code, tests, fixtures, accepted ADRs, or stable external references. Distinguish
 target architecture, implemented behavior, inference, and unknowns in prose.
 An accepted or superseded ADR may support a claim; a proposed ADR cannot.
 
+**Concept declarations (D1/D5).** Code may name a concept with a marker
+`@concept: <kind> <id> [--anchor=<path:line>] [--owner=<authority-id>]`, where
+`<kind>` is one of the eight maintenance-triggers; `--format-concepts` collects
+these into the concept-map B (closed-world: code-declared concepts only, and the
+`docs/` tree is excluded from that scan). A page then lists the concepts it
+externalizes in its front matter, `concepts: <id>[:status], ...` with
+`status ∈ {target, implemented, inference, unknown}`. `--consistency` reports a B
+concept that no page's `## Source map` cites as `CONSIST_UNDOC` (signal), and a
+declared id absent from B as `CONSIST_ORPHAN_DOC_CLAIM` (signal, its status
+echoed as context and never exempting). Both are signals: neither gates the exit.
+
 Those paths resolve from the **directory holding the page**, the same base a
 Markdown link uses: a page at
 `handbook/architecture/subsystems/ta-billing-engine.md` cites
