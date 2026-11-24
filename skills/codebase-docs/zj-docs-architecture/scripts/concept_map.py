@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""architecture concept-map (B): schema, deterministic render/parse, and idempotency.
+
+This is architecture's OWN map artifact (design doc §2), distinct from the repo
+doc-map it consumes (owner=ontology). formatter(A) (code -> concepts) and the C\\B
+consistency direction (which needs a page-side concept-declaration convention, D5)
+land in PR-B; PR-A ships the B schema + the B\\C (CONSIST_UNDOC) consumer.
+
+The fenced block is delimited by CONCEPT_MAP_START/END — deliberately separate from
+the generated BASE_RULES_* block: check-shared-conventions.py only scans BASE_RULES,
+and generate-shared-conventions.render_block never reads this, so the concept JSON
+cannot leak into the closed-schema or byte-equal checks.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+from dataclasses import dataclass
+
+# §2 :85 — initial concept vocabulary is the eight maintenance-triggers
+# (architecture-contract.md), the "worth modeling from code" seeds.
+CONCEPT_KINDS = {
+    "extension-seam",
+    "durable-owner",
+    "cross-process-contract",
+    "effect-policy",
+    "replay-boundary",
+    "lifecycle-rule",
+    "accepted-adr",
+    "source-map-target",
+}
+
+
+@dataclass(frozen=True)
+class ConceptNode:
+    id: str
+    kind: str
+    anchor: str | None  # "path" or "path:line" / symbol locator; None if unanchored
+
+
+@dataclass(frozen=True)
+class ConceptMap:
+    # D2: no `index` field — concept->document is derived by the consistency
+    # join, not stored here (formatter(A) cannot see the documents).
+    nodes: tuple[ConceptNode, ...]
+    edges: tuple[tuple[str, str], ...]  # concept -> concept decomposition/composition
+
+
+_BLOCK_RE = re.compile(
+    r"<!-- CONCEPT_MAP_START -->\s*```json\n(.*?)\n```\s*<!-- CONCEPT_MAP_END -->",
+    re.S,
+)
+
+
+def render(cm: ConceptMap) -> str:
+    """Deterministic, byte-stable rendering (sorted) so CI can diff a re-render."""
+    payload = {
+        "nodes": [
+            {"id": n.id, "kind": n.kind, "anchor": n.anchor}
+            for n in sorted(cm.nodes, key=lambda x: (x.kind, x.id))
+        ],
+        "edges": [list(e) for e in sorted(cm.edges)],
+    }
+    body = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
+    return f"<!-- CONCEPT_MAP_START -->\n```json\n{body}\n```\n<!-- CONCEPT_MAP_END -->"
+
+
+def parse(text: str) -> ConceptMap:
+    """Parse a rendered block. Raises on missing block or unknown concept kind."""
+    match = _BLOCK_RE.search(text)
+    if match is None:
+        raise ValueError("no CONCEPT_MAP block found")
+    data = json.loads(match.group(1))
+    nodes = tuple(
+        ConceptNode(n["id"], n["kind"], n.get("anchor")) for n in data.get("nodes", [])
+    )
+    bad = {n.kind for n in nodes} - CONCEPT_KINDS
+    if bad:
+        raise ValueError(f"concept kind(s) outside seed vocabulary: {sorted(bad)}")
+    edges = tuple((a, b) for a, b in data.get("edges", []))
+    return ConceptMap(nodes, edges)
+
+
+def _digest(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def is_stale(text: str, cm: ConceptMap) -> bool:
+    """CI invariant: B must equal formatter's deterministic output. A hand edit to
+    B (or a formatter change not re-run) makes this True. Only the fenced block is
+    compared, so surrounding prose in the B document is free."""
+    match = _BLOCK_RE.search(text)
+    if match is None:
+        return True
+    return _digest(match.group(0)) != _digest(render(cm))
