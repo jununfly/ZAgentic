@@ -65,6 +65,9 @@ After a code change, check the handbook when any signal below appears. A hit
 means going back to workflow step 3 — propose the handbook change and wait for
 confirmation, rather than editing pages in passing. The list is authoritative in
 `architecture-contract.md`, which carries the same items and their rationale.
+Because these names seed the concept vocabulary, changing an item here or in the
+contract also means updating `CONCEPT_KINDS` in `scripts/concept_map.py` (its slug
+form) — `ConceptVocabularyTest` fails if the two drift.
 
 - **Extension seam** — a new plugin, registry, hook, or callback entry exists, or
   an existing one changes signature: the handbook must say where outside code

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import re
+import sys
 import unittest
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from pathlib import Path
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_MD = SKILL_ROOT / "SKILL.md"
 CONTRACT = SKILL_ROOT / "references" / "architecture-contract.md"
+sys.path.insert(0, str(SKILL_ROOT / "scripts"))
+import concept_map  # noqa: E402  (top-level is pure: hashlib/json/re/dataclass, no I/O)
 HEADING = "## Maintenance triggers"
 ITEM_RE = re.compile(r"^- \*\*(.+?)\*\* — (.+)$")
 EXPECTED = (
@@ -75,6 +78,29 @@ class MaintenanceTriggersTest(unittest.TestCase):
         self.assertNotEqual([], skill_items)
         for name, body in skill_items:
             self.assertLess(40, len(body), name)
+
+
+def _trigger_slug(name: str) -> str:
+    """Display name → CONCEPT_KINDS slug: "Accepted ADR" → "accepted-adr",
+    "Cross-process contract" → "cross-process-contract", "Source-map target" →
+    "source-map-target". The rule lives here, not in concept_map: the runtime
+    treats CONCEPT_KINDS as the authority; only this test bridges names → slugs."""
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+class ConceptVocabularyTest(unittest.TestCase):
+    """§2:87 (design doc) and concept_map.py:22 (comment) both CLAIM:
+    CONCEPT_KINDS == the maintenance-triggers, slugified. That claim is a contract,
+    not a comment — and the skill's runtime never reads docs/designs/, so prose there
+    enforces nothing. Pin it where CI can: adding/renaming a trigger without updating
+    CONCEPT_KINDS must fail this, else format_concepts (concept_map.py) silently drops
+    `@concept:` markers for the new kind while every other test stays green."""
+
+    def test_concept_kinds_are_the_trigger_slugs(self) -> None:
+        contract_items = triggers(CONTRACT.read_text(encoding="utf-8"))
+        slugs = {_trigger_slug(name) for name, _body in contract_items}
+        self.assertEqual(slugs, concept_map.CONCEPT_KINDS)
+        self.assertEqual(len(concept_map.CONCEPT_KINDS), len(contract_items))
 
 
 if __name__ == "__main__":

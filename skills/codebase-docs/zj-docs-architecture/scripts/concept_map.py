@@ -19,8 +19,10 @@ import json
 import re
 from dataclasses import dataclass
 
-# §2 :85 — initial concept vocabulary is the eight maintenance-triggers
-# (architecture-contract.md), the "worth modeling from code" seeds.
+# §2 :85 seed — must equal the slugs of `## Maintenance triggers` in
+# references/architecture-contract.md; enforced by ConceptVocabularyTest
+# (tests/test_docs_consistency.py). Adding or renaming a trigger means updating
+# BOTH the contract bullet AND this set — otherwise that test fails.
 CONCEPT_KINDS = {
     "extension-seam",
     "durable-owner",
