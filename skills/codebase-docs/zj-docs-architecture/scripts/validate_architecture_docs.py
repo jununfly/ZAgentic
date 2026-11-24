@@ -104,6 +104,9 @@ class MapEntry:
 # second is worth reporting.
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "#")
 
+# D3: architecture's own concept-map B lives here (distinct from the repo doc-map).
+CONCEPT_MAP_FILE = "docs/architecture/tacm-map.md"
+
 
 class Reader:
     def __init__(self) -> None:
@@ -395,12 +398,52 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
     return diagnostics, reader.paths, metadata
 
 
+def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
+    """B\\C consistency (PR-A): a concept whose code anchor no architecture page
+    cites in its `## Source map` is 'under-documented' -> CONSIST_UNDOC, signal.
+    The C\\B direction (page claims a concept code lacks) needs the page-side
+    concept-declaration convention (D5) and ships with formatter(A) in PR-B.
+    Requires both a discoverable map and a B file; absent either, emits nothing
+    (never an error). Signal-only: never enters the ERROR set, never gates exit."""
+    import concept_map as cm
+    b_path = repo / CONCEPT_MAP_FILE
+    if not b_path.is_file():
+        return []
+    cmap = cm.parse(reader.text(b_path))
+    map_path, _origin, _discovery = discover_map(repo, reader)
+    if map_path is None:
+        return []
+    entries, _undeclared = map_entries(repo, map_path, reader.text(map_path))
+    sliced: set[str] = set()
+    for entry in entries:
+        if entry.role not in ("primary", "supporting") or not entry.target.is_file():
+            continue  # §7 role gate: foreign/unlinked pages never enter the join
+        for _raw, target in source_paths(repo, entry.target, reader.text(entry.target)):
+            if target is not None:
+                sliced.add(target.relative_to(repo).as_posix())
+    diagnostics: list[Diagnostic] = []
+    for node in cmap.nodes:
+        if node.anchor is None:
+            continue  # unanchored concept: no code to be under-documented against
+        anchor_file = node.anchor.split(":", 1)[0]
+        if anchor_file not in sliced:
+            diagnostics.append(Diagnostic(
+                "CONSIST_UNDOC",
+                node.id,
+                f"concept anchored at {node.anchor} has no architecture page Source map citing it",
+                signal=True,
+            ))
+    return diagnostics
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repo", type=Path)
     parser.add_argument("--map", dest="map_path")
     parser.add_argument("--discover", action="store_true")
     parser.add_argument("--audit-json", action="store_true")
+    parser.add_argument("--consistency", action="store_true",
+                        help="B\\C consistency signal (concept-map B required); signal-only, exit unaffected")
     args = parser.parse_args()
     reader = Reader()
     if args.discover:
@@ -409,6 +452,8 @@ def main() -> int:
         print(json.dumps(payload, indent=2))
         return 0 if path and not diagnostics else 1
     diagnostics, read_paths, metadata = validate(args.repo, explicit_map=args.map_path)
+    if args.consistency:
+        diagnostics.extend(consistency(args.repo.resolve(), reader))
     if args.audit_json:
         print(json.dumps({"metadata": metadata, "diagnostics": [item.__dict__ for item in diagnostics], "read_paths": read_paths}, indent=2))
     else:

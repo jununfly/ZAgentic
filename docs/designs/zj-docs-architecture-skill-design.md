@@ -83,7 +83,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **schema 草图**（JSON，`[目标]`）：
   - `nodes`：concept（id、名称、类型 ∈ 八 maintenance-triggers 播种的概念词表、代码锚点 file:line 或符号定位符）。
   - `edges`：concept→concept 分解/组合关系（**节点是概念**，区别于 ontology L3 图"节点是文档"）。
-  - `index`：concept→文档 反向索引，叶子**以 authority-id 指文档**（与绑定共用同键，避免 #67 式双 link base）；此处 doc 指 **C（人写内容文档）**，经 §7 role 判据取自 repo doc-map——**B ≠ repo doc-map**（B=概念图；repo doc-map=文档索引）。
+  - **（PR-A 修正 D2）B 只含 `nodes`/`edges`，不落 `index`**：`concept→文档` 反向映射由 `--consistency` 的 anchor join 现求（formatter(A) 读不到文档，无法产 index）；join 以 C 页 `## Source map` 命中的代码文件匹配 `node.anchor`。**B ≠ repo doc-map**（B=概念图；repo doc-map=文档索引）。
 - **概念词汇播种** `[目标]`：初版概念类型直接复用 `architecture-contract.md:85-104` 的八条 maintenance-triggers（Extension seam / Durable owner / Cross-process contract / Effect policy / Replay boundary / Lifecycle rule / Accepted ADR / Source-map target）——它们本就是"值得从代码抽出建模的东西"。
 
 ## 3. 内容文档 C 与技术规范校验（③，复用现机制）
@@ -115,6 +115,8 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **不裁 target** `[目标]`：target（意图、未实现）文档的概念本就不在 B → 落 C\B → 作为"文档跑在代码前"呈报；本 skill **不**判它"是前瞻还是陈旧"，也不因此判失败。
 
 （已定=是）C\B 的"成因未定"**附带** echo 页上既有 `target/implemented/inference/unknown` 标签（`architecture-contract.md:110`），作**上下文而不作豁免**：标签只帮人或 roadmap 判读成因，绝不据此自动豁免或降级该 signal。
+
+**落地态（PR-A）**：B 的 schema / 确定性渲染 / 幂等比对（`concept_map.py`）与 **B\C 差分**（`--consistency`，anchor join → `CONSIST_UNDOC`，signal）已落地；**C\B（`CONSIST_ORPHAN_DOC_CLAIM`）与 formatter(A) 待 PR-B**——需 D1 代码 `@concept:` 抽取约定 + D5 页侧概念声明约定，二者未定前 C\B 无可解析来源。
 
 ## 5. 严重度模型与裁决立场
 
@@ -182,7 +184,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **不 own 索引、不改 doc-map**：索引真相唯一在 ontology。
 - **target 文档不在管辖**：前瞻/路线属 roadmap/grilling。
 - **shape 之外不做语义门禁**：①② 永远 signal（§5）。
-- `[未决]`：formatter(A) 读码的具体概念抽取规则（仅以八 triggers 起步是否够）。
+- `[未决]`：D1 formatter(A) 读码的概念抽取（代码 `@concept:` 标记起步，仅以八 triggers 够否）；**D5 页侧概念声明约定**（`C\B` 的 `CONSIST_ORPHAN_DOC_CLAIM` 依赖，随 formatter 落 PR-B）。
 - **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）；**`MAP_ARCHITECTURE_EMPTY` 让渡 ontology `UNMAPPED_PAGE` 已落地**（ERROR→signal 降级；覆盖度仅在 ontology `--validate` 态报警，架构页须落 `docs/architecture/` 才被扫）；`tacm-` 已写入 SKILL.md `extensions`（`page-prefix:tacm-`，阶段3）。
 
 > 落地顺序与逐文件改动（含 fixture/测试、`SKILL.md`、`skill-conventions.json`、`:335` 等三头对齐）属"如何把定义落到代码"，另立执行 plan，不在本设计文档范围。

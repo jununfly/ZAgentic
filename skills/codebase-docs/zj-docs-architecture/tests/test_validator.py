@@ -23,6 +23,8 @@ assert SPEC and SPEC.loader
 VALIDATOR = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = VALIDATOR
 SPEC.loader.exec_module(VALIDATOR)
+sys.path.insert(0, str(SKILL_ROOT / "scripts"))
+import concept_map as CM  # noqa: E402  (tests the concept-map B schema module directly)
 
 
 class ArchitectureValidatorTest(unittest.TestCase):
@@ -502,6 +504,51 @@ class ArchitectureUnmappedLetThroughTest(unittest.TestCase):
             capture_output=True, text=True,
         )
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+
+class ConsistencyTest(unittest.TestCase):
+    """PR-A — B\\C consistency. A concept whose code anchor no architecture page
+    cites in its Source map is under-documented (CONSIST_UNDOC, signal). The C\\B
+    direction needs the page-side concept convention (D5) and ships in PR-B."""
+
+    def _diags(self, fixture: str):
+        return VALIDATOR.consistency((FIXTURES / fixture).resolve(), VALIDATOR.Reader())
+
+    def test_b_minus_c_emits_undoc_signal(self) -> None:
+        undoc = [d for d in self._diags("consistency") if d.code == "CONSIST_UNDOC"]
+        self.assertEqual({"dangling-edge"}, {d.path for d in undoc})
+        self.assertTrue(all(d.signal for d in self._diags("consistency")))
+
+    def test_anchored_concept_covered_by_a_page_is_not_reported(self) -> None:
+        self.assertNotIn("billing-owner", {d.path for d in self._diags("consistency")})
+
+    def test_no_concept_map_is_not_an_error(self) -> None:
+        self.assertEqual([], self._diags("valid-minimal"))
+
+
+class ConceptMapTest(unittest.TestCase):
+    """PR-A — concept-map B: deterministic render/parse, idempotency, closed
+    concept-kind vocabulary (the eight maintenance-triggers)."""
+
+    def test_render_parse_roundtrip(self) -> None:
+        cmap = CM.ConceptMap((CM.ConceptNode("a", "durable-owner", "f.rs"),), (("a", "b"),))
+        self.assertEqual(cmap, CM.parse(CM.render(cmap)))
+
+    def test_render_is_byte_stable_regardless_of_input_order(self) -> None:
+        a = CM.ConceptNode("a", "durable-owner", None)
+        z = CM.ConceptNode("z", "lifecycle-rule", None)
+        self.assertEqual(CM.render(CM.ConceptMap((a, z), ())), CM.render(CM.ConceptMap((z, a), ())))
+
+    def test_hand_edit_is_detected_as_stale(self) -> None:
+        cmap = CM.ConceptMap((CM.ConceptNode("a", "durable-owner", "f.rs"),), ())
+        text = CM.render(cmap)
+        self.assertFalse(CM.is_stale(text, cmap))
+        self.assertTrue(CM.is_stale(text.replace("durable-owner", "lifecycle-rule"), cmap))
+
+    def test_unknown_concept_kind_is_rejected(self) -> None:
+        rendered = CM.render(CM.ConceptMap((CM.ConceptNode("x", "not-a-trigger", None),), ()))
+        with self.assertRaises(ValueError):
+            CM.parse(rendered)
 
 
 if __name__ == "__main__":
