@@ -20,7 +20,7 @@ governance (`/zj-docs-ontology`).
   "rule_source": "docs/skill-conventions/skill-conventions.json",
   "authority_id": "reference.skill-conventions",
   "consumes": ["naming-syntax-core", "doc-kind", "authority"],
-  "extensions": ["page-prefix:ta-/ba-/pa-"]
+  "extensions": ["page-prefix:ta-/ba-/pa-", "page-prefix:tacm-"]
 }
 ```
 

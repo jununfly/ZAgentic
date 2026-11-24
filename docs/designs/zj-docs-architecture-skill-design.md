@@ -183,6 +183,6 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **target 文档不在管辖**：前瞻/路线属 roadmap/grilling。
 - **shape 之外不做语义门禁**：①② 永远 signal（§5）。
 - `[未决]`：formatter(A) 读码的具体概念抽取规则（仅以八 triggers 起步是否够）。
-- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）；**`MAP_ARCHITECTURE_EMPTY` 让渡 ontology `UNMAPPED_PAGE` 已落地**（ERROR→signal 降级；覆盖度仅在 ontology `--validate` 态报警，架构页须落 `docs/architecture/` 才被扫）。
+- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）；**`MAP_ARCHITECTURE_EMPTY` 让渡 ontology `UNMAPPED_PAGE` 已落地**（ERROR→signal 降级；覆盖度仅在 ontology `--validate` 态报警，架构页须落 `docs/architecture/` 才被扫）；`tacm-` 已写入 SKILL.md `extensions`（`page-prefix:tacm-`，阶段3）。
 
 > 落地顺序与逐文件改动（含 fixture/测试、`SKILL.md`、`skill-conventions.json`、`:335` 等三头对齐）属"如何把定义落到代码"，另立执行 plan，不在本设计文档范围。
