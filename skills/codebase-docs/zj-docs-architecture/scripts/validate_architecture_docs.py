@@ -408,7 +408,10 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
     The C\\B direction (page claims a concept code lacks) needs the page-side
     concept-declaration convention (D5) and ships with formatter(A) in PR-B.
     Requires both a discoverable map and a B file; absent either, emits nothing
-    (never an error). Signal-only: never enters the ERROR set, never gates exit."""
+    (never an error). Also reports CONCEPT_CYCLE — a part-of decomposition cycle:
+    it is B-internal well-formedness (needs no C, only the parsed B), but is surfaced
+    here so it shares the command's trigger. All signals: never enter the ERROR set,
+    never gate exit."""
     import concept_map as cm
     b_path = repo / CONCEPT_MAP_FILE
     if not b_path.is_file():
@@ -465,6 +468,13 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
                 f"code declares owner {node.owner}, but that page does not externalize this concept",
                 signal=True,
             ))
+    for cid in cm.find_cycle_nodes(cmap.edges):  # B-internal well-formedness: part-of graph must be a DAG
+        diagnostics.append(Diagnostic(
+            "CONCEPT_CYCLE",
+            cid,
+            f"concept {cid} participates in a part-of decomposition cycle (not a DAG)",
+            signal=True,
+        ))
     return diagnostics
 
 

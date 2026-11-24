@@ -115,8 +115,9 @@ _CONCEPT_MARKER_RE = re.compile(
 def format_concepts(repo, reader) -> "ConceptMap":
     """Deterministic scan of source files for `@concept: <kind> <id> [attrs]`.
     Runs as a separate command against code (face A) with its own Reader, so it is
-    orthogonal to validate()'s bounded page-read contract. D1-c: MVP emits nodes
-    only (edges empty)."""
+    orthogonal to validate()'s bounded page-read contract. Emits nodes plus
+    concept→concept edges from `--part-of` (closed-world: an edge whose endpoint is
+    not a code-declared concept is dropped)."""
     from pathlib import Path
     nodes: dict[str, ConceptNode] = {}
     edges: list[tuple[str, str]] = []
@@ -140,3 +141,33 @@ def format_concepts(repo, reader) -> "ConceptMap":
     valid = set(nodes)
     kept = tuple(sorted({e for e in edges if e[0] in valid and e[1] in valid}))
     return ConceptMap(tuple(nodes.values()), kept)  # closed-world: dangling part-of edges dropped
+
+
+def find_cycle_nodes(edges: "tuple[tuple[str, str], ...]") -> "tuple[str, ...]":
+    """Concepts that lie on a part-of decomposition cycle (the graph must be a DAG).
+
+    Pure B structure: needs neither a doc-map nor C, so it is a well-formedness
+    check on face A, distinct from the B<->C CONSIST_* signals. A node is reported
+    iff some non-empty path of part-of edges returns to it (covers self-loops and
+    multi-node cycles). Endpoints outside the node set are folded in as vertices, so
+    a hand-edited dangling edge can never by itself fabricate a cycle. Sorted for a
+    byte-stable result."""
+    adj: dict[str, list[str]] = {}
+    for child, parent in edges:
+        adj.setdefault(child, []).append(parent)
+        adj.setdefault(parent, [])
+
+    def returns_to_start(start: str) -> bool:
+        seen: set[str] = set()
+        stack = list(adj[start])  # start from a neighbour: a 0-length self-hit never counts
+        while stack:
+            current = stack.pop()
+            if current == start:
+                return True
+            if current in seen:
+                continue
+            seen.add(current)
+            stack.extend(adj[current])
+        return False
+
+    return tuple(sorted(node for node in adj if returns_to_start(node)))

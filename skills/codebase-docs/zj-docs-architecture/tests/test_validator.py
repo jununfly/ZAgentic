@@ -558,6 +558,12 @@ class ConceptMapTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             CM.parse(rendered)
 
+    def test_find_cycle_nodes(self) -> None:
+        self.assertEqual((), CM.find_cycle_nodes((("a", "b"), ("b", "c"))))  # DAG
+        self.assertEqual(("a", "b"), CM.find_cycle_nodes((("a", "b"), ("b", "a"))))  # 2-cycle
+        self.assertEqual(("x",), CM.find_cycle_nodes((("x", "x"),)))  # self-loop
+        self.assertEqual((), CM.find_cycle_nodes((("a", "b"), ("b", "ghost"))))  # dangling endpoint folded as vertex, no cycle
+
 
 class ConsistencyOrphanTest(unittest.TestCase):
     """PR-B — C\\B: a page's `concepts:` citing an id absent from B -> ORPHAN signal
@@ -645,6 +651,20 @@ class FormatterTest(unittest.TestCase):
             self.assertEqual({"x", "y"}, {n.id for n in cmap.nodes})
             self.assertEqual((("y", "x"),), cmap.edges)
 
+    def test_multiple_valid_parents_kept(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            (repo / "src").mkdir()
+            (repo / "src" / "a.py").write_text(
+                "# @concept: durable-owner p1\n"
+                "# @concept: durable-owner p2\n"
+                "# @concept: durable-owner child --part-of=p1,p2\n",
+                encoding="utf-8",
+            )
+            cmap = CM.format_concepts(repo, VALIDATOR.Reader())
+            # both valid parents kept as distinct edges (set-dedup, sorted); multi-parent is supported
+            self.assertEqual((("child", "p1"), ("child", "p2")), cmap.edges)
+
 
 class OwnerMismatchTest(unittest.TestCase):
     """§10 — owner (code-declared ownership, an A-face fact distinct from the D2 index)
@@ -667,6 +687,35 @@ class OwnerMismatchTest(unittest.TestCase):
 
     def test_all_consistency_signals_never_gate_exit(self) -> None:
         self.assertTrue(all(d.signal for d in self._diags()))
+
+
+class ConceptCycleTest(unittest.TestCase):
+    """§10 — edges well-formedness: a part-of graph must be a DAG; a cycle -> CONCEPT_CYCLE
+    (signal, B-internal, NOT a B<->C CONSIST_* direction). Cross-owner edges are
+    deliberately never reported (composition may legally cross ownership)."""
+
+    def _cycle(self):
+        return VALIDATOR.consistency((FIXTURES / "consistency-cycle").resolve(), VALIDATOR.Reader())
+
+    def test_two_node_cycle_reports_both_nodes(self) -> None:
+        cyc = [d for d in self._cycle() if d.code == "CONCEPT_CYCLE"]
+        self.assertEqual({"a", "b"}, {d.path for d in cyc})
+        self.assertTrue(all(d.signal for d in cyc))
+
+    def test_cycle_fixture_isolates_the_signal(self) -> None:
+        # page cites both anchors and declares both ids, so UNDOC/ORPHAN/OWNER stay empty
+        self.assertEqual({"CONCEPT_CYCLE"}, {d.code for d in self._cycle()})
+
+    def test_base_fixture_has_no_cycle(self) -> None:
+        diags = VALIDATOR.consistency((FIXTURES / "consistency").resolve(), VALIDATOR.Reader())
+        self.assertNotIn("CONCEPT_CYCLE", {d.code for d in diags})
+
+    def test_no_diagnostic_outside_the_four_signals(self) -> None:
+        # pins the design decision: cross-owner edges (and anything else) add no fifth code
+        allowed = {"CONSIST_UNDOC", "CONSIST_ORPHAN_DOC_CLAIM", "CONSIST_OWNER_MISMATCH", "CONCEPT_CYCLE"}
+        for fixture in ("consistency", "consistency-cycle"):
+            codes = {d.code for d in VALIDATOR.consistency((FIXTURES / fixture).resolve(), VALIDATOR.Reader())}
+            self.assertTrue(codes <= allowed, f"{fixture} produced unexpected codes: {codes - allowed}")
 
 
 if __name__ == "__main__":
