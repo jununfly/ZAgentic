@@ -140,7 +140,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 
 - **共享词汇单一源**：`doc-kind`/`authority`/命名语法来自 `skill-conventions.json → BASE_RULES` 内联块（`[现状]` `:36-47`）。`concept-map` 前缀 `tacm-` 仍是**私有扩展**、不进共享源；authority-id 前缀**不再**作 architecture 的切片判据（见下方「切片判据」条与 §9 Delta）。
 - **authority-id 作为共享键**：authority-id 仍是与 ontology 对账的**共享键**（`MAP_AUTHORITY_CONFLICT`、`skill-conventions.json:131-147`），但**切片入口是 map entry 的 `role` 声明**（`validate_architecture_docs.py:251`，owner=ontology），**不是** authority-id 前缀——architecture 若按 id 根自判外人，等于行使索引归类权、违反 §6「不 own 索引」。
-- **消费语义（docs-map 用法收缩）** `[目标]`：architecture 自带 `discover_map`（`validate_architecture_docs.py:129-158`）**保留**，但降级为「取 map 路径 + 按 map `role` 声明取切片作开页清单」，并据此调整 map 相关码：**(a) 入口**——greenfield 对齐 ontology（`docs_governance.py:651` 返回 `"greenfield"`、`has_error` 短路 `:1457-1459`），**不报 `MAP_MISSING`**（呼应 §8 `:149`）；**(b) 让渡结构门禁**——`MAP_ARCHITECTURE_EMPTY :302`→ ontology `UNMAPPED_PAGE`（`docs_governance.py:1115`）、`MAP_LINK_BROKEN :311`→降 signal（全局断链 ERROR 归 ontology `:676`）、对 map 文件的 `PAGE_KIND_INVALID :335-336` 人口由 role 判据自然界定（外人=未声明 role，已 fail-open 零读 `:236-237`/`:253-254`）、不再判 map 自身 kind；**(c) 保留页侧**——`AUTHORITY_MAP_BINDING :352-354` 与 `AUTHORITY_ID_MISSING/DUPLICATE :346/:350` 属 page-declaration 层法定职责（`skill-conventions.json:141-143`）。本调整经「读同一张磁盘 map + role 判据」达成，**不新增 architecture→ontology 运行期依赖**。
+- **消费语义（docs-map 用法收缩）** `[目标]`：architecture 自带 `discover_map`（`validate_architecture_docs.py:129-158`）**保留**，但降级为「取 map 路径 + 按 map `role` 声明取切片作开页清单」，并据此调整 map 相关码：**(a) 入口**——greenfield 对齐 ontology（`docs_governance.py:651` 返回 `"greenfield"`、`has_error` 短路 `:1457-1459`），**不报 `MAP_MISSING`**（呼应 §8 `:149`）；**(b) 让渡结构门禁**——`MAP_ARCHITECTURE_EMPTY`（让渡**已落地**，删除）→ ontology `UNMAPPED_PAGE`（`docs_governance.py:1090-1121`，signal）、`MAP_LINK_BROKEN :311`→降 signal（全局断链 ERROR 归 ontology `:676`）、对 map 文件的 `PAGE_KIND_INVALID :335-336` 人口由 role 判据自然界定（外人=未声明 role，已 fail-open 零读 `:236-237`/`:253-254`）、不再判 map 自身 kind；**(c) 保留页侧**——`AUTHORITY_MAP_BINDING :352-354` 与 `AUTHORITY_ID_MISSING/DUPLICATE :346/:350` 属 page-declaration 层法定职责（`skill-conventions.json:141-143`）。本调整经「读同一张磁盘 map + role 判据」达成，**不新增 architecture→ontology 运行期依赖**。
 - **切片判据 = map role 声明（替代现 ERROR 墙）** `[目标→实为现状，取代 §9 的 `:335` 行为]`：
   - 判据不是 authority-id 前缀，而是 **map entry 是否声明 `role:`**——`validate_architecture_docs.py:251` 仅把带 role 的块收为 entry，未声明者走 `:253-254` 的 fail-open 路径；
   - `role: primary/supporting` → 进切片、按 §3 契约校验；未声明 role → `undeclared`，**零读**（`:236-237` 有界读契约）、不产 kind/prefix/binding 诊断，仅一条 `PAGE_ROLE_UNDECLARED` signal（`:291-297`）；
@@ -159,7 +159,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 
 > 本节唯一描述**已存在的代码**，所有 `文件:行号` 对 `validate_architecture_docs.py` 成立、可 grep。它是被本文定义逐步取代的起点，非规范。
 
-现状是单进程只读校验器，流水线：`main(:393)` → `validate(:269)` → `discover_map(:129)`（显式指针→docs/README.md→`*-map.md` 候选，`:132-157`）→ `map_entries(:228)`（按行首 `- ` 切块、读 `role:`/`authority-id:`，`:242-252`）→ 逐 entry 主循环 `:308-384` → `exit(:415)`。现状施加的 shape 检查：`MAP_LINK_BROKEN:311`、`kind:319/335`、`authority:337`、`naming:339`、`primary authority-id 缺失/撞车/map 绑定:343-354`、`小节契约:355-363`、`source-map/ADR:365-384`；role/supporting/undeclared 语义 `:324-333`、`:253`；严重度 `signal` 标志 `:83-88`（默认 False→ERROR，`:88`）。**现状还自报的 map 结构码**（§7「消费语义 (b)」让渡 / 本节 Delta 降级对象）：`MAP_ARCHITECTURE_EMPTY:302`（ERROR·交 ontology `UNMAPPED_PAGE`）、`MAP_LINK_BROKEN:311`（ERROR·与 ontology `:676` 双报）、`SIGNAL_MAP_DUPLICATE_LINK:388`（signal）、`MAP_KINDS:57`/`is_navigation:321` 对 map 自身的 kind 门禁与豁免链 `:339/:355`。
+现状是单进程只读校验器，流水线：`main(:393)` → `validate(:269)` → `discover_map(:129)`（显式指针→docs/README.md→`*-map.md` 候选，`:132-157`）→ `map_entries(:228)`（按行首 `- ` 切块、读 `role:`/`authority-id:`，`:242-252`）→ 逐 entry 主循环 `:308-384` → `exit(:415)`。现状施加的 shape 检查：`MAP_LINK_BROKEN:311`、`kind:319/335`、`authority:337`、`naming:339`、`primary authority-id 缺失/撞车/map 绑定:343-354`、`小节契约:355-363`、`source-map/ADR:365-384`；role/supporting/undeclared 语义 `:324-333`、`:253`；严重度 `signal` 标志 `:83-88`（默认 False→ERROR，`:88`）。**现状还自报的 map 结构码**（§7「消费语义 (b)」让渡 / 本节 Delta 降级对象；`MAP_ARCHITECTURE_EMPTY` 已于阶段 2 让渡删除、不再自报）：`MAP_LINK_BROKEN:311`（ERROR·与 ontology `:676` 双报）、`SIGNAL_MAP_DUPLICATE_LINK:388`（signal）、`MAP_KINDS:57`/`is_navigation:321` 对 map 自身的 kind 门禁与豁免链 `:339/:355`。
 
 **Delta（现状 → 目标）**：
 
@@ -171,7 +171,7 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 | 无一致性/债务检测 | **新增**：C↔B 方向差分，**signal-only**（§4） |
 | 隐含"map 只含架构页" + §7 旧稿 id 前缀投影切片 | **替换→删除**：切片改由 map role 声明界定（§7「切片判据」）；id 前缀判据反证于 #52（nimbus.* 架构页）、且等于 architecture 行使索引归类权，违反不-own-索引 |
 | greenfield 仍 `MAP_MISSING` ERROR（`:157`，与 ontology `:651/:1458` 不对称） | **收口**：无 doc-map 场景归入 §8 独立目录态，按已定差集不产出 map 绑定类诊断，从而消除该 ERROR 不对称（详见 §7「消费语义 (a)」） |
-| `MAP_ARCHITECTURE_EMPTY:302`（map 无架构链，ERROR） | **让渡**：交 ontology `UNMAPPED_PAGE`（`docs_governance.py:1115`）；architecture 单跑不再报覆盖度（已批准取舍） |
+| `MAP_ARCHITECTURE_EMPTY:302`（迁移前；map 无架构链，ERROR） | **让渡（已落地，已删除）**：交 ontology `UNMAPPED_PAGE`（`docs_governance.py:1090-1121`，signal-only）；architecture 单跑不再报覆盖度，**ERROR→signal 降级（已接受）** |
 | `MAP_LINK_BROKEN:311`（切片断链，ERROR，与 ontology `:676` 双报） | **降级**：改为 signal（开页局部后果；`:312` 零读跳过不变）；全局断链 ERROR 归 ontology |
 | `SIGNAL_MAP_DUPLICATE_LINK:388`（重复链，signal） | **保留**：维持 signal，与 ontology 去重对账，不 own 索引去重 |
 | `discover_map:129-158` 与 ontology `:620-651` 重复；greenfield 报 `MAP_MISSING:157` | **保留但降级**（Q1=①）：自带 discover 仅作只读投影取数，greenfield 对齐 `:651/:1457-1459`；不引入 architecture→ontology 依赖 |
@@ -183,6 +183,6 @@ B 是本 skill 的身份——**本 skill 自有**的 map 工件，区别于 §7
 - **target 文档不在管辖**：前瞻/路线属 roadmap/grilling。
 - **shape 之外不做语义门禁**：①② 永远 signal（§5）。
 - `[未决]`：formatter(A) 读码的具体概念抽取规则（仅以八 triggers 起步是否够）。
-- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）。
+- **已定**：B 前缀令牌 = `tacm-`，归入 `ta` 家族（§2）；C\B echo `target/implemented/inference/unknown` 标签作上下文、不作豁免（§4）；两态诊断精确差集 = `AUTHORITY_MAP_BINDING`/id-1:1 族，独立目录态不产出（§8）；greenfield `MAP_MISSING` 经 §8 独立目录态收口、不再作 ERROR（§9）；**切片判据 = map role 声明**——architecture 不预设 authority-id 根，域命名空间（如 `nimbus.`）归 map/ontology 持有（§7，#52 反证 id 前缀判据）；`undeclared` 与切片判据统一：未声明 role 者即 fail-open、零读（`:253-254`/`:236-237`）；**`MAP_ARCHITECTURE_EMPTY` 让渡 ontology `UNMAPPED_PAGE` 已落地**（ERROR→signal 降级；覆盖度仅在 ontology `--validate` 态报警，架构页须落 `docs/architecture/` 才被扫）。
 
 > 落地顺序与逐文件改动（含 fixture/测试、`SKILL.md`、`skill-conventions.json`、`:335` 等三头对齐）属"如何把定义落到代码"，另立执行 plan，不在本设计文档范围。

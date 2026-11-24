@@ -299,10 +299,12 @@ def validate(root: Path, *, explicit_map: str | None = None) -> tuple[list[Diagn
             signal=True,
         ))
     if not entries:
-        architecture_root = root / "docs" / "architecture"
-        has_unmapped_page = architecture_root.is_dir() and any(architecture_root.rglob("*.md"))
-        if has_unmapped_page:
-            diagnostics.append(Diagnostic("MAP_ARCHITECTURE_EMPTY", map_path.relative_to(root).as_posix(), "map has no architecture links for existing architecture pages"))
+        # Coverage of architecture pages that never reached the map is owned by
+        # ontology UNMAPPED_PAGE (docs_governance.py:1090-1121, signal-only; the
+        # `architecture` category is long_lived in canonical-preset.json:20). This
+        # skill keeps only the empty-entry early return — the undeclared-role
+        # reminder above (:294-300) still fires. ERROR->signal degradation is
+        # accepted per §7(b) let-through / §9 Delta.
         return diagnostics, reader.paths, {"origin": origin, "map": map_path.relative_to(root).as_posix()}
 
     page_seen: set[Path] = set()
