@@ -7,7 +7,7 @@ deletions.
 
 - **[zj-docs-architecture](./zj-docs-architecture/SKILL.md)** — Maintain and validate the system, layers, subsystem, flow, and cross-cutting architecture handbook views.
 - **[zj-docs-ontology](./zj-docs-ontology/SKILL.md)** — Human-invoked documentation-system discovery, governance proposal, validation, and lifecycle reporting.
-- **[zj-doc-health](./zj-doc-health/SKILL.md)** — Opt-in, report-only documentation health metering: line budgets, Source-map freshness, orphan and zero-indegree pages.
+- **[zj-docs-metrics](./zj-docs-metrics/SKILL.md)** — Opt-in, report-only documentation metrics: line budgets, Source-map freshness, navigation-orphan and map-only pages.
 - **[zj-debrief](./zj-debrief/SKILL.md)** — Close out a task as process material and route durable conclusions for later synthesis.
 - **[zj-domain-modeling](./zj-domain-modeling/SKILL.md)** — Maintain a project's domain language and glossary.
 - **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — Reconcile codebase knowledge and governance drift.

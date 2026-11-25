@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the opt-in documentation health meter."""
+"""Regression tests for the opt-in documentation metrics tool."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("doc_health", SKILL_ROOT / "scripts" / "doc_health.py")
+SPEC = importlib.util.spec_from_file_location("docs_metrics", SKILL_ROOT / "scripts" / "docs_metrics.py")
 assert SPEC and SPEC.loader
 TOOL = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = SPEC.loader.exec_module(TOOL) or TOOL
@@ -34,10 +34,10 @@ class TempRepoTest(unittest.TestCase):
         self.addCleanup(self._tmp.cleanup)
 
     def config(self, payload: dict) -> Path:
-        return write(self.root / "docs" / "doc-health.json", json.dumps(payload))
+        return write(self.root / "docs" / "docs-metrics.json", json.dumps(payload))
 
     def outliers(self) -> list[dict[str, str]]:
-        return TOOL.measure(self.root, json.loads((self.root / "docs" / "doc-health.json").read_text()))
+        return TOOL.measure(self.root, json.loads((self.root / "docs" / "docs-metrics.json").read_text()))
 
     def codes(self) -> list[str]:
         return [o["code"] for o in self.outliers()]
@@ -51,7 +51,7 @@ class OptInBoundaryTest(TempRepoTest):
         self.assertIsNone(config)
 
     def test_malformed_config_is_config_error_not_clean(self) -> None:
-        write(self.root / "docs" / "doc-health.json", "{not json")
+        write(self.root / "docs" / "docs-metrics.json", "{not json")
         path, config = TOOL.load_config(self.root, None)
         self.assertIsNotNone(path)
         self.assertIsInstance(config, str)
@@ -61,7 +61,7 @@ class BudgetTest(TempRepoTest):
     def test_over_cap_is_reported_with_the_rule(self) -> None:
         write(self.root / "docs" / "prds" / "big.md", "# x\n" * 30)
         self.config({"budgets": [{"glob": "docs/prds/*.md", "max_lines": 10}]})
-        self.assertEqual(["BUDGET_EXCEEDED"], self.codes())
+        self.assertEqual([TOOL.BUDGET_EXCEEDED], self.codes())
 
     def test_under_cap_is_clean(self) -> None:
         write(self.root / "docs" / "prds" / "small.md", "# x\n" * 5)
@@ -84,7 +84,7 @@ class FreshnessTest(TempRepoTest):
     def test_source_newer_than_page_drifts(self) -> None:
         self.page_and_source()
         self.config({"freshness": {"max_age_days": 30}})
-        self.assertEqual(["FRESHNESS_DRIFT"], self.codes())
+        self.assertEqual([TOOL.FRESHNESS_DRIFT], self.codes())
 
     def test_fresh_page_is_clean(self) -> None:
         self.page_and_source()
@@ -105,17 +105,17 @@ class OrphanTest(TempRepoTest):
         write(self.root / "docs" / "prds" / "b.md", "# B\n")
         write(self.root / "docs" / "prds" / "orphan.md", "# nobody knows me\n")
 
-    def test_zero_indegree_is_reported(self) -> None:
+    def test_map_only_is_reported(self) -> None:
         self.graph()
         self.config({"orphans": True})
-        self.assertIn("ZERO_INDEGREE", self.codes())
-        entry = next(o for o in self.outliers() if o["code"] == "ZERO_INDEGREE")
+        self.assertIn(TOOL.MAP_ONLY, self.codes())
+        entry = next(o for o in self.outliers() if o["code"] == TOOL.MAP_ONLY)
         self.assertEqual("docs/prds/a.md", entry["path"])
 
-    def test_orphan_is_reported(self) -> None:
+    def test_nav_orphan_is_reported(self) -> None:
         self.graph()
         self.config({"orphans": True})
-        entry = next(o for o in self.outliers() if o["code"] == "ORPHAN_PAGE")
+        entry = next(o for o in self.outliers() if o["code"] == TOOL.NAV_ORPHAN)
         self.assertEqual("docs/prds/orphan.md", entry["path"])
 
     def test_cited_pages_are_not_reported(self) -> None:
@@ -127,7 +127,7 @@ class OrphanTest(TempRepoTest):
         self.graph()
         write(self.root / "skills-outputs" / "sweep" / "note.md", "cites [a](../../docs/prds/a.md)\n")
         self.config({"orphans": True})
-        self.assertIn("ZERO_INDEGREE", self.codes())
+        self.assertIn(TOOL.MAP_ONLY, self.codes())
 
 
 class OnlyReadsTest(TempRepoTest):
@@ -136,7 +136,7 @@ class OnlyReadsTest(TempRepoTest):
         write(self.root / "docs" / "README.md", "# map\n\n- [big](prds/big.md)\n")
         self.config({"budgets": [{"glob": "docs/**/*.md", "max_lines": 10}], "orphans": True})
         before = sorted((p, p.stat().st_mtime_ns, p.read_bytes()) for p in self.root.rglob("*") if p.is_file())
-        TOOL.measure(self.root, json.loads((self.root / "docs" / "doc-health.json").read_text()))
+        TOOL.measure(self.root, json.loads((self.root / "docs" / "docs-metrics.json").read_text()))
         after = sorted((p, p.stat().st_mtime_ns, p.read_bytes()) for p in self.root.rglob("*") if p.is_file())
         self.assertEqual(before, after)
 
@@ -144,7 +144,7 @@ class OnlyReadsTest(TempRepoTest):
 class CommandLineTest(unittest.TestCase):
     def run_cli(self, root: Path) -> tuple[int, dict]:
         result = subprocess.run(
-            [sys.executable, str(SKILL_ROOT / "scripts" / "doc_health.py"), str(root)],
+            [sys.executable, str(SKILL_ROOT / "scripts" / "docs_metrics.py"), str(root)],
             capture_output=True, text=True,
         )
         return result.returncode, json.loads(result.stdout)
@@ -159,17 +159,17 @@ class CommandLineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write(root / "docs" / "prds" / "big.md", "# x\n" * 30)
-            write(root / "docs" / "doc-health.json", json.dumps({"budgets": [{"glob": "docs/prds/*.md", "max_lines": 10}]}))
+            write(root / "docs" / "docs-metrics.json", json.dumps({"budgets": [{"glob": "docs/prds/*.md", "max_lines": 10}]}))
             code, payload = self.run_cli(root)
             self.assertEqual(1, code)
             self.assertEqual("measured", payload["status"])
-            self.assertEqual("BUDGET_EXCEEDED", payload["outliers"][0]["code"])
+            self.assertEqual(TOOL.BUDGET_EXCEEDED, payload["outliers"][0]["code"])
 
     def test_clean_configured_exit_zero(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write(root / "docs" / "prds" / "small.md", "# x\n" * 3)
-            write(root / "docs" / "doc-health.json", json.dumps({"budgets": [{"glob": "docs/prds/*.md", "max_lines": 10}]}))
+            write(root / "docs" / "docs-metrics.json", json.dumps({"budgets": [{"glob": "docs/prds/*.md", "max_lines": 10}]}))
             code, payload = self.run_cli(root)
             self.assertEqual(0, code)
             self.assertEqual([], payload["outliers"])
@@ -177,7 +177,7 @@ class CommandLineTest(unittest.TestCase):
     def test_config_error_exit_nonzero(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write(root / "docs" / "doc-health.json", "{oops")
+            write(root / "docs" / "docs-metrics.json", "{oops")
             code, payload = self.run_cli(root)
             self.assertEqual(1, code)
             self.assertEqual("config-error", payload["status"])

@@ -405,7 +405,7 @@ zj-roadmap-driven 如何在不膨胀 Human 主视图、不破坏 process-state �
 | RD::03 | 再建一张独立图作为第二事实源 | execution-graph 已判定「解法不是加更多图，而是从同一 carrier 派生不同投影」 |
 | RD::04 | 用 hosted 服务渲染与批注计划 | 数据出域、依赖托管服务、违反 ADR 0010 相对路径与 skill runtime closure |
 | RD::05 | 把可视化状态或勾选当验收证据 | process-state 权威边界；完成态只是过程记录，不是正确性证明 |
-| RD::06 | 把 doc-slop / 视图质量做成运行时门禁 | 本仓 ADR 0011 与 zj-doc-health 已把机械 health gate 列为 rejected default |
+| RD::06 | 把 doc-slop / 视图质量做成运行时门禁 | 本仓 ADR 0011 与 zj-doc-health（现 zj-docs-metrics）已把机械 health gate 列为 rejected default |
 | RD::07 | 让 LLM 每次判断「哪些信息重要」来做 smart 压缩 | 非确定性、不可逐字节回归、两 carrier 无法保证一致；smart 只能是确定性 DOI 加显式阈值 |
 | RD::08 | 每次重入整页重绘，让人重新通读全量 | 阅读成本随 S 线性增长；应改为条目级增量加稳定项折叠计数 |
 | RD::09 | 执行期发现债务就自动 add 成 plan 节点 | 图膨胀并绕过 Human 审核，正是 execution-graph 用 promote proposal 防住的缺陷 |

@@ -1205,12 +1205,12 @@ The directory a stored relative path is resolved against — the carrier file's
 directory or the skill directory (normpath). Absolute paths are never stored.
 _Avoid_: absolute base
 
-**Doc health / 文档健康度**:
+**Doc metrics / 文档度量**:
 A measurement axis, distinct from map correctness (`MAP_*`/`RETIRE_*`) and
 structure correctness (`PAGE_*`/`SOURCE_*`/`ADR_*`). Metered only by
-`zj-doc-health`, only against a committed opt-in config
-(`docs/doc-health.json`): line budgets, Source-map freshness, orphan and
-zero-indegree pages. Report-only; a mechanical health-score gate by default
+`zj-docs-metrics`, only against a committed opt-in config
+(`docs/docs-metrics.json`): line budgets, Source-map freshness, navigation-orphan
+and map-only pages. Report-only; a mechanical health-score gate by default
 is a rejected design (see governance-contract `Rejected defaults`).
 _Avoid_: health-score gate（作为默认门禁）, uninvited metering
 
@@ -1547,8 +1547,8 @@ _Avoid_: 网络协议, 设备发现, 定时任务, last-write-wins, 部分成功
 - A↔B relationship (this repo vs. any source skills collection) is
   intentionally **not defined** as a domain term here. It is a property of
   individual merge waves, not of the glossary.
-- `orphan` — resolved by scope: in doc-health / `zj-doc-health` it means an
-  **orphan page** (zero-indegree in the documentation map); in the graphical
+- `orphan` — resolved by scope: in docs-metrics / `zj-docs-metrics` it means a
+  **navigation orphan** (`NAV_ORPHAN`: no inbound link from any living page); in the graphical
   cross-comparison agreement it means an **orphan node** (a `V` member no
   `S` connects). Never use the bare word across these two contexts.
 - `composability` / 可组合性 — resolved by scope: in the capability-fit model
