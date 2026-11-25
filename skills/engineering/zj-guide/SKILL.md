@@ -94,7 +94,7 @@ repository's documentation system rather than to implement a feature.
 - **Architecture reader cannot answer a system, layer, subsystem, flow, or shared-rule question** → **`/zj-docs-architecture`**. It maintains the five complementary handbook views and validates their authority and source maps. Use it directly for an architecture slice, or let an explicit ontology pass compose it.
 - **Tracker or triage configuration is missing after a map is selected** → **`/zj-repo-init`**. It configures the issue tracker, triage vocabulary, and concise Agent entrypoints; it never creates a docs map or invokes governance.
 - **A finished task needs a process closeout** → **`/zj-debrief`**. **Broader code/docs/rules/memory drift** → **`/zj-neat-freak`**. They are complementary, not automatic lifecycle triggers.
-- **Documentation health metering: line budgets, freshness against declared sources, orphan or zero-index pages** → **`/zj-doc-health`**. It is Human-invoked and opt-in: it measures and reports without mutating the docs system; governance moves stay with `/zj-docs-ontology`.
+- **Documentation metrics: line budgets, freshness against declared sources, navigation-orphan or map-only pages** → **`/zj-docs-metrics`**. It is Human-invoked and opt-in: it measures and reports without mutating the docs system; governance moves stay with `/zj-docs-ontology`.
 
 For a domain word or glossary conflict inside any of these routes, use
 `/zj-domain-modeling`; it remains the vocabulary layer, not the documentation

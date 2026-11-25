@@ -252,7 +252,7 @@ Anchor token 是**双方共享引用**，不是 Agent 单方面的解释权。�
   前三者引入服务与不确定性，第四者越过权威边界。
 - **不升格为门禁**：视图质量 / doc-slop 只作审计清单，不新增扫描全仓报诊断的运行时门禁
   （[ADR 0011](../zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md)
-  与 `zj-doc-health` 已把机械 health gate 列为 rejected default）。机械钉住的是**规格与不变量**，
+  与 `zj-doc-health`（现 `zj-docs-metrics`）已把机械 health gate 列为 rejected default）。机械钉住的是**规格与不变量**，
   不是文风。
 
 ## How：落地顺序与本次交付边界

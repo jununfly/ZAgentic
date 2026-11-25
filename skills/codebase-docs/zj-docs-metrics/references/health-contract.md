@@ -1,6 +1,6 @@
 # Health Contract
 
-This file is the single definition of what `scripts/doc_health.py` measures,
+This file is the single definition of what `scripts/docs_metrics.py` measures,
 what it refuses to do, and what its output means. Read it before changing the
 tool or interpreting a report.
 
@@ -12,6 +12,17 @@ tool or interpreting a report.
 correctness diagnostics, borrows no gating authority, and its verdicts are
 advisory outliers for the Human. "The map is correct", "the structure is
 valid", and "the pages are healthy" are three different claims.
+
+**Living-page scope is deliberately independent of the other skills.** This
+skill counts a *living page* as every `*.md` outside the
+`artifacts|evidence|evaluations|fixtures|skills-outputs|test-results` and
+`plans|zj-retros` path segments. That is **not** `/zj-docs-ontology`'s
+map-coverage notion, and the two scopes may disagree on which pages count — by
+design. Unifying them would couple this opt-in, zero-cross-skill-import tool to
+the ontology's preset vocabulary and break its portability boundary. Every meter
+here is only meaningful within this skill's own living-page scope; do not
+"align" the two definitions, and do not assume a page this skill ignores is a
+page the ontology ignores.
 
 ## Opt-in and portability
 
@@ -27,7 +38,7 @@ The engine is parameterized by a JSON config the target repository commits:
 }
 ```
 
-- Default location `docs/doc-health.json`; `--config` overrides.
+- Default location `docs/docs-metrics.json`; `--config` overrides.
 - **No config file means no measurement**: the tool prints `status: opt-in`
   and exits zero. A repository that never adopted these skills is untouched —
   metering never crosses the portability boundary uninvited.
@@ -55,17 +66,27 @@ Time source: git commit time when the target is a git work tree; file mtime
 otherwise (plain directories, test fixtures). Git time is preferred because
 checkouts and rebases do not reset content age.
 
-### ORPHAN_PAGE / ZERO_INDEGREE
+### NAV_ORPHAN / MAP_ONLY
 
 Link graph over living pages (evidence surfaces and process material are
 excluded from both endpoints — they are frozen or transient, not living
 references). The docs map is tracked separately from ordinary citations:
 
-- `ORPHAN_PAGE` — no inbound link from any living page **including the map**:
+- `NAV_ORPHAN` — no inbound link from any living page **including the map**:
   nothing knows the page exists.
-- `ZERO_INDEGREE` — the map links it but no living page does: indexed but
+- `MAP_ONLY` — the map links it but no living page does: indexed but
   uncited. Common and often fine for entry points; it is an advisory signal
   for the Human, which is why it is metered only when `orphans: true`.
+
+**`NAV_ORPHAN` (formerly `ORPHAN_PAGE`) is a different claim from
+`/zj-docs-ontology`'s `ORPHAN_PAGE`, and the two coexist.** That skill's is a
+graph-reachability defect over `## Source map` entries and their typed relation
+edges (`derived-from`/`supersedes`/`supports`); this skill's is a navigation
+island over the plain-markdown-link graph of living pages. Different graph,
+different edge, no shared authority. A page can be reported by both at once
+without either being wrong, and clearing one never clears the other. This skill
+was renamed `ORPHAN_PAGE` → `NAV_ORPHAN` precisely to drop the inherited name
+collision; the two codes never shared authority and still do not.
 
 ## Output and exit codes
 

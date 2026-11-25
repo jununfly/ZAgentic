@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Read-only documentation health metering for one repository.
+"""Read-only documentation metrics for one repository.
 
 Opt-in and report-only. Without a config file this tool measures nothing and
 exits zero. With one, it meters what the Human parameterized — line budgets,
-freshness of pages against their declared `## Source map` targets, orphan and
-zero-indegree pages — and prints a machine-readable outlier table. It never
-mutates anything.
+freshness of pages against their declared `## Source map` targets, and
+navigation-orphan / map-only pages — and prints a machine-readable outlier
+table. It never mutates anything.
 """
 
 from __future__ import annotations
@@ -23,6 +23,13 @@ INLINE_PATH_RE = re.compile(r"`([^`\n]+)`")
 HEADING_RE = re.compile(r"(?m)^##\s+(.+)$")
 EVIDENCE_NAMES = {"artifacts", "evidence", "evaluations", "fixtures", "skills-outputs", "test-results"}
 PROCESS = ("plans", "zj-retros")
+
+# Diagnostic codes — single source of truth. Emit sites reference these
+# constants, never bare string literals, so a rename cannot be missed.
+BUDGET_EXCEEDED = "BUDGET_EXCEEDED"
+FRESHNESS_DRIFT = "FRESHNESS_DRIFT"
+NAV_ORPHAN = "NAV_ORPHAN"
+MAP_ONLY = "MAP_ONLY"
 
 
 def relative(root: Path, path: Path) -> str:
@@ -110,7 +117,7 @@ def measure(root: Path, config: dict) -> list[dict[str, str]]:
             lines = len(md.read_text(encoding="utf-8").splitlines())
             if lines > cap:
                 outliers.append({
-                    "code": "BUDGET_EXCEEDED",
+                    "code": BUDGET_EXCEEDED,
                     "path": relative(root, md),
                     "detail": f"{lines} lines > max {cap} (rule: {pattern})",
                 })
@@ -127,7 +134,7 @@ def measure(root: Path, config: dict) -> list[dict[str, str]]:
             newest_source = max(mtime(t, is_git) for t in targets)
             if newest_source - page_time > max_age:
                 outliers.append({
-                    "code": "FRESHNESS_DRIFT",
+                    "code": FRESHNESS_DRIFT,
                     "path": relative(root, md),
                     "detail": f"newest source target is {int((newest_source - page_time) / 86400)} day(s) newer than the page (max {freshness['max_age_days']})",
                 })
@@ -152,10 +159,10 @@ def measure(root: Path, config: dict) -> list[dict[str, str]]:
             map_cites = page in map_inbound
             cited = bool(inbound[page])
             if not map_cites and not cited:
-                outliers.append({"code": "ORPHAN_PAGE", "path": relative(root, page), "detail": "no inbound link from any living page, not even the map"})
+                outliers.append({"code": NAV_ORPHAN, "path": relative(root, page), "detail": "no inbound link from any living page, not even the map"})
             elif map_cites and not cited:
                 outliers.append({
-                    "code": "ZERO_INDEGREE",
+                    "code": MAP_ONLY,
                     "path": relative(root, page),
                     "detail": "linked from the map only; no living page cites it",
                 })
@@ -163,7 +170,7 @@ def measure(root: Path, config: dict) -> list[dict[str, str]]:
 
 
 def load_config(root: Path, explicit: str | None) -> tuple[Path | None, str | None]:
-    candidate = Path(explicit) if explicit else root / "docs" / "doc-health.json"
+    candidate = Path(explicit) if explicit else root / "docs" / "docs-metrics.json"
     if not candidate.is_file():
         return None, None
     try:
@@ -183,7 +190,7 @@ def main() -> int:
     config_path, config = load_config(root, args.config)
     if config_path is None:
         print(json.dumps({"status": "opt-in", "repository": str(root), "config": None,
-                          "message": "doc-health is opt-in; no config found (docs/doc-health.json)", "outliers": []}, indent=2))
+                          "message": "docs-metrics is opt-in; no config found (docs/docs-metrics.json)", "outliers": []}, indent=2))
         return 0
     if isinstance(config, str):
         print(json.dumps({"status": "config-error", "repository": str(root), "config": relative(root, config_path),

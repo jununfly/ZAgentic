@@ -1179,7 +1179,7 @@
     {
       "id": "RD::06",
       "statement": "把 doc-slop / 视图质量做成运行时门禁",
-      "reason": "本仓 ADR 0011 与 zj-doc-health 已把机械 health gate 列为 rejected default"
+      "reason": "本仓 ADR 0011 与 zj-doc-health（现 zj-docs-metrics）已把机械 health gate 列为 rejected default"
     },
     {
       "id": "RD::07",
