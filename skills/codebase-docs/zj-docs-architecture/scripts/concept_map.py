@@ -101,6 +101,25 @@ def is_stale(text: str, cm: ConceptMap) -> bool:
     return _digest(match.group(0)) != _digest(render(cm))
 
 
+def render_verified(cm: ConceptMap) -> str:
+    """Render B and self-verify it before it is emitted — the write-side mirror of the
+    read guard in `consistency`. Under a correct renderer this is a no-op; it exists so a
+    render-level regression (a dropped closing fence / CONCEPT_MAP_END, a body that is no
+    longer valid JSON, or an unknown kind) fails HERE instead of shipping an
+    intact-looking block that `parse` / `--consistency` would later crash on. It re-applies
+    the reader's own contract (`_BLOCK_RE` + `json.loads` + `parse`) independently of `render`."""
+    block = render(cm)
+    match = _BLOCK_RE.search(block)
+    if match is None:
+        raise ValueError("rendered concept-map B is not a closed CONCEPT_MAP block")
+    try:
+        json.loads(match.group(1))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"rendered concept-map B body is not valid JSON: {exc}") from exc
+    parse(block)  # parses the fenced JSON back, re-checking kinds + structure
+    return block
+
+
 # --- formatter(A): code -> concept-map (D1) --------------------------------
 # Scan domain (D1-a): all repo source files, excluding docs/ and vendored dirs.
 # B stays closed-world: only code-declared concepts enter, so "documented but not

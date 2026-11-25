@@ -104,6 +104,56 @@ target resolves from the repository root, so source-map entries use
 root-relative paths rather than paths relative to the owning skill.
 _Avoid_: bare skill name, unresolvable path, evidence payload
 
+**Concept map (face A / B / C)**:
+`zj-docs-architecture`'s own three-view model of its concepts. Face **A** is the
+code side: `@concept:` markers embedded in source that declare a concept exists.
+Face **B** is the concept-map artifact — the single machine block generated from
+A and the authority `--consistency` reads. Face **C** is the architecture content
+pages that document a concept in prose. The three are solved against one another
+to surface drift. B is architecture's OWN artifact, distinct from the repo
+**Document map** / **Architecture map** it consumes (that one is owned by ontology).
+_Avoid_: concept index, the repo doc-map, document map
+
+**Concept kind**:
+The closed vocabulary of a concept on face B — the slug of each entry under
+`## Maintenance triggers` in `references/architecture-contract.md`, mirrored by
+`CONCEPT_KINDS`. A concept carries exactly one kind; an unknown kind is rejected
+rather than invented. It is enforced against drift by `ConceptVocabularyTest`.
+_Avoid_: doc-kind, Architecture view (the page-kind vocabulary is a separate enum)
+
+**Consistency signal**:
+One of the four advisories `--consistency` emits while joining faces A/B/C:
+`CONSIST_UNDOC` (a B concept anchored in code that no architecture page cites in
+its Source map), `CONSIST_ORPHAN_DOC_CLAIM` (a page claims a concept absent from
+code-derived B), `CONSIST_OWNER_MISMATCH` (a declared owner page does not
+externalize the concept), and `CONCEPT_CYCLE` (a part-of decomposition that is not
+a DAG — B-internal well-formedness, needs no page). All four are signal-only: they
+never enter the ERROR set and never gate the exit code. A status token written after
+a page's concept claim (`:target`, `:implemented`, …) is echoed as context only — it
+is never validated against a fixed set and never exempts a signal. A B that cannot be
+parsed (unclosed fence, absent block, or invalid JSON) surfaces separately as
+`CONCEPT_MAP_MALFORMED` — an input-integrity precondition that suppresses the four
+drift checks rather than joining them, so it never rides alongside them.
+_Avoid_: consistency error, a gate, a status enum to validate against, a drift signal
+
+**`@concept:` marker**:
+The face-A grammar that declares a concept in source:
+`@concept: <kind> <id> [--anchor=<loc>] [--owner=<authority-id>] [--part-of=<id>[,<id>…]]`,
+one marker per concept (several may share a line). The attributes are order-fixed —
+a flag written out of position is silently dropped, not an error. `format_concepts`
+(formatter, A→B) scans the whole repo for these markers to regenerate B deterministically.
+_Avoid_: free-form tag, order-independent attributes
+
+**`tacm-` page-prefix**:
+The prefix reserved for the concept-map **B** artifact
+(`docs/architecture/tacm-map.md`, the skill's `CONCEPT_MAP_FILE`). It names a model
+artifact, not a content view: `tacm-` is deliberately outside the `ta-` / `ba-` /
+`pa-` content-page family, so a `tacm-` file never runs through the content-page
+naming gate and is reached only by `--consistency`. Declared in this skill's
+`extensions`, and — by design — kept out of the shared `core` so it cannot leak into
+the BASE_RULES block.
+_Avoid_: content page, a fourth view prefix (ta-/ba-/pa- are the only content prefixes)
+
 **Bucket discipline**:
 The cross-cutting rule that a skill's discoverability depends on exactly three
 things: its bucket is its public entry, the root-level `personal/` tree is a
