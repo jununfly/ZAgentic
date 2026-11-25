@@ -279,13 +279,13 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 
 ### 10.5 决策汇总（与正文 §10.1–§10.4 两处收口）
 
-定位层的三条本轮已收口，余下为执行细节、留下一轮 plan：
+下列 U1–U5（含改名 + U3）决策均已收口，并已随 PR #295 / #296 落地到代码与契约正文，无待执行的后续 plan：
 
-- **U1** freshness 第二份解析 → **[已决：(b) best-effort 消费者]**，见 §10.3。(a)/(c) 作为被否方案留痕。
-- **U2** freshness 与 architecture `SOURCE_*` 切分为「时间 vs 存在性」 → **[已决]**，并入 §1 [定稿] 功能边界 + §10.3 所有权表述。
-- **U5** 三轴表/码族与邻居现状对齐 → **[已决：已就地 [现状] 更新于 §1]**。
-- **改名 + U3**（**全按推荐定稿，待执行**）：skill→`zj-docs-metrics`、config→`docs/docs-metrics.json`、引擎→`docs_metrics.py`、测试→`test_docs_metrics.py`、meter 码→`NAV_ORPHAN`/`MAP_ONLY`；**D1** 脚本/测试文件名同步改、**D2** 上述码名、**D3** `graph.json` 重跑生成、**D4** 3 个 roadmap 引用**保留旧名加注**。调用粒度维持整仓 batch、不加 `--scope`。合并为**单个去歧义 PR**，执行版见最终改名 plan。
-- **U4** 把 §1 定位、§10.3 freshness 定性、`:369-372` capability-gap 授权回写进本 skill `health-contract.md` → **[未决·执行细节]**。
+- **U1** freshness 第二份解析 → **[已决：(b) best-effort 消费者]**，见 §10.3；定性已随 PR #296 回写 `health-contract.md`「FRESHNESS_DRIFT」段。(a)/(c) 作为被否方案留痕。
+- **U2** freshness 与 architecture `SOURCE_*` 切分为「时间 vs 存在性」 → **[已决]**，并入 §1 [定稿] 功能边界 + §10.3 所有权表述；所有权切分已随 PR #296 写进 `health-contract.md`「FRESHNESS_DRIFT」段。
+- **U5** 三轴表/码族与邻居现状对齐 → **[已决]**：§1 表已就地更新（PR #295），`health-contract.md`「Status」段码族已同步 `SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`（PR #296）。
+- **改名 + U3**（**[已决：随 PR #295 落地 `338db6c`，squash 合并、分支已删]**）：skill→`zj-docs-metrics`、config→`docs/docs-metrics.json`、引擎→`docs_metrics.py`、测试→`test_docs_metrics.py`、meter 码→`NAV_ORPHAN`/`MAP_ONLY`；**D1** 脚本/测试文件名同步改、**D2** 上述码名、**D3** `graph.json` 重跑生成、**D4** 3 个 roadmap 引用**保留旧名加注**，均已执行。调用粒度维持整仓 batch、不加 `--scope`。17 回归测试全绿、0 dangling。
+- **U4** 把 §1 定位、§10.3 freshness 定性、`:369-372` capability-gap 授权回写进 `health-contract.md` → **[已决：随 PR #296 落地 `4f823e4`]**（Diff 1+2+3 全量回写，Status 段码族一并对齐现状）。
 
 ---
 
