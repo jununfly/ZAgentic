@@ -416,7 +416,18 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
     b_path = repo / CONCEPT_MAP_FILE
     if not b_path.is_file():
         return []
-    cmap = cm.parse(reader.text(b_path))
+    try:
+        cmap = cm.parse(reader.text(b_path))
+    except ValueError as err:  # unclosed fence, absent block, or invalid JSON (JSONDecodeError is a ValueError)
+        # An unparseable B is an input-integrity precondition: the four drift signals
+        # are not computable without a parsed B, so this is the one code, signal-only,
+        # never a crash. Forces a closed block instead of swallowing the command.
+        return [Diagnostic(
+            "CONCEPT_MAP_MALFORMED",
+            CONCEPT_MAP_FILE,
+            f"concept-map B is unreadable (unclosed fence or invalid JSON): {err}",
+            signal=True,
+        )]
     map_path, _origin, _discovery = discover_map(repo, reader)
     if map_path is None:
         return []
@@ -478,6 +489,21 @@ def consistency(repo: Path, reader: Reader) -> list[Diagnostic]:
     return diagnostics
 
 
+def format_concepts_cli(repo: Path) -> int:
+    """--format-concepts write path: generate B from code markers, then emit ONLY after
+    render_verified confirms the block is intact. A self-check failure is a loud exit 1
+    with no partial stdout, mirroring the read-side guard so neither direction can ship
+    or read a broken B."""
+    import concept_map as cm
+    try:
+        block = cm.render_verified(cm.format_concepts(repo.resolve(), Reader()))
+    except ValueError as err:
+        print(f"error: concept-map B failed its write-side self-check: {err}", file=sys.stderr)
+        return 1
+    print(block)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repo", type=Path)
@@ -491,9 +517,7 @@ def main() -> int:
     args = parser.parse_args()
     reader = Reader()
     if args.format_concepts:
-        import concept_map as cm
-        print(cm.render(cm.format_concepts(args.repo.resolve(), Reader())))
-        return 0
+        return format_concepts_cli(args.repo)
     if args.discover:
         path, origin, diagnostics = discover_map(args.repo.resolve(), reader)
         payload = {"map": str(path.relative_to(args.repo.resolve())) if path else None, "origin": origin, "diagnostics": [item.__dict__ for item in diagnostics], "read_paths": reader.paths}

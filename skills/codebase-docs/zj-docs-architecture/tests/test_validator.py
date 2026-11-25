@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import contextlib
 import importlib.util
+import io
 import json
 import re
 import shutil
@@ -710,12 +711,165 @@ class ConceptCycleTest(unittest.TestCase):
         diags = VALIDATOR.consistency((FIXTURES / "consistency").resolve(), VALIDATOR.Reader())
         self.assertNotIn("CONCEPT_CYCLE", {d.code for d in diags})
 
-    def test_no_diagnostic_outside_the_four_signals(self) -> None:
-        # pins the design decision: cross-owner edges (and anything else) add no fifth code
-        allowed = {"CONSIST_UNDOC", "CONSIST_ORPHAN_DOC_CLAIM", "CONSIST_OWNER_MISMATCH", "CONCEPT_CYCLE"}
-        for fixture in ("consistency", "consistency-cycle"):
-            codes = {d.code for d in VALIDATOR.consistency((FIXTURES / fixture).resolve(), VALIDATOR.Reader())}
-            self.assertTrue(codes <= allowed, f"{fixture} produced unexpected codes: {codes - allowed}")
+    def test_each_fixture_emits_exactly_its_designed_codes(self) -> None:
+        # Closure, tightened from a `codes <= allowed` upper bound (which passed even
+        # when a signal silently disappeared — empty is a subset) to a per-fixture
+        # EXACT set. Each fixture must emit precisely the codes it was hand-built to
+        # trigger and nothing else, so a lost CONSIST_*/CONCEPT_CYCLE check, a
+        # spurious extra, or an untested fifth code all turn the run red.
+        expected = {
+            "consistency": {"CONSIST_UNDOC", "CONSIST_ORPHAN_DOC_CLAIM", "CONSIST_OWNER_MISMATCH"},
+            "consistency-cycle": {"CONCEPT_CYCLE"},
+            # B present + map discoverable, yet fully consistent -> the empty set,
+            # pinned as a real no-drift result (test_no_concept_map_is_not_an_error
+            # covers the distinct no-B early return).
+            "consistency-clean": set(),
+        }
+        for fixture, want in expected.items():
+            diags = VALIDATOR.consistency((FIXTURES / fixture).resolve(), VALIDATOR.Reader())
+            codes = {d.code for d in diags}
+            self.assertEqual(want, codes, f"{fixture} emitted {codes}, expected {want}")
+            # design invariant (section 4): the consistency surface is signal-only, never an error
+            self.assertTrue(all(d.signal for d in diags), f"{fixture} produced a non-signal")
+        # across the three fixtures every documented code is actually reachable — a
+        # dropped producer cannot hide behind a single-fixture subset check.
+        reachable = set().union(*expected.values())
+        self.assertEqual(
+            {"CONSIST_UNDOC", "CONSIST_ORPHAN_DOC_CLAIM", "CONSIST_OWNER_MISMATCH", "CONCEPT_CYCLE"},
+            reachable,
+        )
+
+
+class ConceptMapArtifactPrefixTest(unittest.TestCase):
+    """Glossary "`tacm-` page-prefix": the concept-map B artifact prefix is
+    deliberately OUTSIDE the ta-/ba-/pa- content-page family. This pins the split so
+    the declared `SKILL.md` extensions entry is not mistaken for an inert mistake —
+    and so no one "fixes" the review smell by folding `tacm-` into the content-page
+    naming gate, which would wrongly subject the model artifact to view rules."""
+
+    def test_tacm_is_not_recognized_as_a_content_page_prefix(self) -> None:
+        # A `tacm-` name must be rejected by the content-page naming rule — exactly
+        # why the B artifact is never published as a map content page. The control
+        # (a real content prefix) proves the gate is wired, not vacuously empty.
+        self.assertIn(
+            "PAGE_NAME_PREFIX", {code for code, _ in VALIDATOR.naming_diagnostics("tacm-map")}
+        )
+        self.assertNotIn(
+            "PAGE_NAME_PREFIX", {code for code, _ in VALIDATOR.naming_diagnostics("ta-map")}
+        )
+
+    def test_the_artifact_is_consumed_by_consistency_not_the_naming_gate(self) -> None:
+        # In the shipped fixture `tacm-map.md` is NOT a map entry, so validate() never
+        # routes it through the content-page naming gate, while consistency() consumes
+        # it via CONCEPT_MAP_FILE. Both halves of the boundary: artifact reached,
+        # content gate not applied.
+        rel = VALIDATOR.CONCEPT_MAP_FILE  # docs/architecture/tacm-map.md
+        self.assertTrue(rel.endswith("tacm-map.md"))
+        naming_paths = {
+            d.path
+            for d in VALIDATOR.validate(FIXTURES / "consistency")[0]
+            if d.code.startswith("PAGE_NAME")
+        }
+        self.assertNotIn(rel, naming_paths)  # never naming-checked as a content page
+        codes = {
+            d.code
+            for d in VALIDATOR.consistency((FIXTURES / "consistency").resolve(), VALIDATOR.Reader())
+        }
+        self.assertIn("CONSIST_UNDOC", codes)  # the B artifact was parsed -> reached by its path
+
+
+class ConceptMapMalformedTest(unittest.TestCase):
+    """Guard (zj-tdd): an unparseable concept-map B — unclosed fence, absent block,
+    or invalid JSON, all of which collapse to one `parse` ValueError — must degrade
+    to a clean signal, never crash `--consistency` with an unhandled traceback. The
+    malformed code is an input-integrity precondition, mutually exclusive with the
+    four drift signals (none of them is computable without a parsed B)."""
+
+    def _diags(self):
+        return VALIDATOR.consistency((FIXTURES / "consistency-malformed").resolve(), VALIDATOR.Reader())
+
+    def test_malformed_b_returns_a_signal_instead_of_raising(self) -> None:
+        codes = {d.code for d in self._diags()}  # must not raise
+        self.assertEqual({"CONCEPT_MAP_MALFORMED"}, codes)
+        self.assertTrue(all(d.signal for d in self._diags()))
+
+    def test_malformed_b_leaks_no_drift_signal(self) -> None:
+        drift = {"CONSIST_UNDOC", "CONSIST_ORPHAN_DOC_CLAIM", "CONSIST_OWNER_MISMATCH", "CONCEPT_CYCLE"}
+        self.assertEqual(set(), drift & {d.code for d in self._diags()})
+
+    def test_malformed_b_does_not_gate_the_cli_exit(self) -> None:
+        # the fixture's content page is fully valid, so a non-zero exit can only
+        # come from the B guard — proving the crash is gone and it stays advisory
+        proc = subprocess.run(
+            [sys.executable, str(MODULE_PATH), str(FIXTURES / "consistency-malformed"), "--consistency"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+        self.assertIn("signal CONCEPT_MAP_MALFORMED", proc.stdout)
+
+
+class FormatConceptsWriteGuardTest(unittest.TestCase):
+    """Write-side counterpart to the read guard. `--format-concepts` used to
+    blind-print `cm.render(cm.format_concepts(...))` and `return 0`, so a render-level
+    regression (e.g. the closing fence / CONCEPT_MAP_END dropped) shipped an
+    intact-looking-but-unreadable B — which the read path would then crash on. The fix
+    self-verifies the block before emit (re-applies _BLOCK_RE + json.loads + parse) and
+    fails loudly (exit 1, no partial stdout) when it is not intact. The input side is
+    deliberately not the seam: format_concepts drops unknown kinds, so only a regression
+    can produce a bad block, and these tests drive one via a render patch."""
+
+    def _patch_render_to_drop_close(self):
+        """Return (restore, corrupt): `corrupt` reproduces the render regression where
+        the block keeps its opening ```json fence but loses the closing fence +
+        CONCEPT_MAP_END marker. It closes over the real `render` so patching does not
+        recurse, and exactly mirrors the END-dropped case the read guard also rejects."""
+        orig = CM.render
+
+        def corrupt(cmap: "CM.ConceptMap") -> str:
+            return orig(cmap).replace("\n```\n<!-- CONCEPT_MAP_END -->", "\n")
+
+        return orig, corrupt
+
+    def test_render_verified_accepts_a_well_formed_block(self) -> None:
+        cmap = CM.ConceptMap((CM.ConceptNode("a", "durable-owner", "f.rs", "x.y"),), (("a", "b"),))
+        block = CM.render_verified(cmap)
+        self.assertIsNotNone(CM._BLOCK_RE.search(block))  # readable by the reader contract
+        self.assertEqual(cmap, CM.parse(block))
+
+    def test_render_verified_rejects_a_corrupt_render(self) -> None:
+        cmap = CM.ConceptMap((CM.ConceptNode("a", "durable-owner", "f.rs"),), ())
+        orig, corrupt = self._patch_render_to_drop_close()
+        CM.render = corrupt
+        try:
+            with self.assertRaises(ValueError):
+                CM.render_verified(cmap)  # must fail before the block is emitted
+        finally:
+            CM.render = orig
+
+    def test_format_concepts_cli_fails_loud_on_corrupt_render(self) -> None:
+        # seam: the public --format-concepts path, run in-process so a render patch
+        # reaches it; the old blind version printed a block and exited 0 (fake green).
+        repo = FIXTURES / "consistency"  # has src/billing/engine.rs with @concept markers
+        orig, corrupt = self._patch_render_to_drop_close()
+        CM.render = corrupt
+        stdout = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(stdout):
+                rc = VALIDATOR.format_concepts_cli(repo)
+        finally:
+            CM.render = orig
+        self.assertNotEqual(0, rc, "a corrupt render must not exit 0")
+        self.assertNotIn("CONCEPT_MAP_START", stdout.getvalue())  # no partial block shipped
+
+    def test_format_concepts_cli_emits_a_verified_block(self) -> None:
+        # positive CLI control: untouched render -> exit 0 and a closed, parseable block
+        proc = subprocess.run(
+            [sys.executable, str(MODULE_PATH), str(FIXTURES / "consistency"), "--format-concepts"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(0, proc.returncode, proc.stderr)
+        self.assertIn("CONCEPT_MAP_START", proc.stdout)
+        self.assertIsNotNone(CM._BLOCK_RE.search(proc.stdout))  # what CI will store is readable
 
 
 if __name__ == "__main__":
