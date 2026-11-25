@@ -78,7 +78,7 @@
 | `DocMap` | 文档地图本身（`docs/README.md`）；把 `authority-id` 绑定到各页，自身为索引不持有 primary id | `docs/README.md` | `docs/README.md` |
 | `DocPage` | docs/ 下任意文档（doc-map 除外），按 `doc-kind` 分角色 | 任意 md | `docs/**` |
 | `ArchitectureView` | 架构手册中回答单一有界问题的主视图（authority: primary） | `ta-zagentic-layers` | `docs/architecture/ta-*.md` |
-| `Design` | 设计权威页（规范/契约/决策） | `zj-roadmap-concurrency-model` | `docs/designs/*.md` |
+| `Design` | 设计权威页（规范/契约/决策） | `zj-roadmap-driven/concurrency-model` | `docs/designs/**/*.md` |
 | `ADR` | 已接受的不易逆转决策（历史权威） | `0001`…`0007` | `docs/zj-adr/` |
 | `Agreement` | 方法论单一事实源（SSOT） | `open-source-capability-fit` | `docs/agreements/` |
 | `CapabilitySpec` | 产品/能力边界规格 | `codebase-docs-capability` | `docs/prds/` |

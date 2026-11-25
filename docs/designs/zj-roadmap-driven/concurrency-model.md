@@ -20,7 +20,7 @@ model-elements: [entity.design]
 ## Boundaries
 
 - 调度和并发模型在本文；trace layer 的上下文与因果模型由
-  [Roadmap 执行图](zj-roadmap-execution-graph.md)拥有。
+  [Roadmap 执行图](execution-graph.md)拥有。
 - 当前命令语法和实际错误行为以 skill 内 CLI reference 与实现为准。
 - 历史 spec 只保留在 Git 历史中，不继续作为现役权威。
 
@@ -100,19 +100,19 @@ model-elements: [entity.design]
 
 ## 后续
 
-P5（执行图 / trace layer）是另一张图的设计，权威见 [`zj-roadmap-execution-graph.md`](zj-roadmap-execution-graph.md)。
+P5（执行图 / trace layer）是另一张图的设计，权威见 [`execution-graph.md`](execution-graph.md)。
 
 ## Source map
 
-- [Roadmap skill](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
-- [Roadmap data model](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-data-model.md)
-- [Roadmap CLI contract](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
-- [Single-file carrier](../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap.py)
-- [SQLite carrier](../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap_sqlite.py)
+- [Roadmap skill](../../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
+- [Roadmap data model](../../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-data-model.md)
+- [Roadmap CLI contract](../../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
+- [Single-file carrier](../../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap.py)
+- [SQLite carrier](../../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap_sqlite.py)
 
 ## Related authority
 
-- [ZAgentic documentation map](../README.md)
-- [Roadmap execution graph](zj-roadmap-execution-graph.md)
-- [Wayfinder and roadmap carrier seam](zj-wayfinder-roadmap-dual-mode.md)
-- [ZJ-CONTEXT glossary](../../ZJ-CONTEXT.md)
+- [ZAgentic documentation map](../../README.md)
+- [Roadmap execution graph](execution-graph.md)
+- [Wayfinder and roadmap carrier seam](dual-mode.md)
+- [ZJ-CONTEXT glossary](../../../ZJ-CONTEXT.md)

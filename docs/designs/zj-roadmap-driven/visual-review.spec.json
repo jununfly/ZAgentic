@@ -1339,8 +1339,8 @@
     {
       "id": "E::execution-graph",
       "kind": "primary",
-      "title": "docs/designs/zj-roadmap-execution-graph.md（本仓）",
-      "url": "docs/designs/zj-roadmap-execution-graph.md",
+      "title": "docs/designs/zj-roadmap-driven/execution-graph.md（本仓）",
+      "url": "docs/designs/zj-roadmap-driven/execution-graph.md",
       "pin": "workspace HEAD, 2026-11-10",
       "captured": "2026-11-10",
       "quote": "解法不是「加更多图」，而是从同一 carrier 派生不同投影；trace 可自由增殖，但 md 行数不允许随之增长。"

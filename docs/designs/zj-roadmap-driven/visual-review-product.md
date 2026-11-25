@@ -9,8 +9,8 @@ model-elements: [entity.design]
 
 > 本页是**手写的产品论证**（Know Why / Do What / Trade-off / Who / How）。所有可机械校验的
 > 规格事实——场景集、差异条目、能力规格、视图契约、不变量、切片——都在同目录
-> [机器可读 SoT](zj-roadmap-visual-review.spec.json)，其派生视图是
-> [技术设计方案](zj-roadmap-visual-review-technical.md)。本页不重述那些事实（一处事实一个家）。
+> [机器可读 SoT](visual-review.spec.json)，其派生视图是
+> [技术设计方案](visual-review-technical.md)。本页不重述那些事实（一处事实一个家）。
 
 ## Question
 
@@ -21,14 +21,14 @@ model-elements: [entity.design]
 
 「可视化能力弱」这个判断需要拆开，否则会把投入引向错误的方向。查本仓实物：
 
-- [SKILL.md](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md) 核心原则 #2 已经把
+- [SKILL.md](../../../skills/codebase-docs/zj-roadmap-driven/SKILL.md) 核心原则 #2 已经把
   **焦点辐射**（祖先链必现 + 焦点子树下钻 + 非焦点兄弟折叠计数 + 异常折叠 + ready 小节）
   写成了 Human 主视图的既定形态，并有 `get_tree_radial` 与跨 carrier 字节相同的守卫测试。
   也就是说「方便阅读」的**信息架构**已经有了。
-- [radial-render-plan.md](../../skills/codebase-docs/zj-roadmap-driven/references/radial-render-plan.md)
-  §1 当年诊断过「ready 只在 CLI、不进 md 是 Human readiness 的真实缺口」，后来补上了
+- [radial-render.md](radial-render.md)
+  「要治的病」里诊断过「ready 只在 CLI、不进 md 是 Human readiness 的真实缺口」，后来补上了
   ready 前 3；但**调度信息仍以纯文本 `<details>` 阻塞链呈现**，没有视觉化的依赖来龙去脉。
-- [执行图设计](zj-roadmap-execution-graph.md) 把「trace 可自由增殖，但 md 行数不允许随之增长」
+- [执行图设计](execution-graph.md) 把「trace 可自由增殖，但 md 行数不允许随之增长」
   钉成硬判据，并明确「解法不是加更多图，而是从同一 carrier 派生不同投影」。
 
 **结构性诊断**：当前 Human 视图是一条**单通道缩进文本流**，把四类不同性质的信息挤在一起：
@@ -55,7 +55,7 @@ model-elements: [entity.design]
 ## Do What：调研得来的六条可迁移设计律
 
 调研对象为 GitHub 上六类形态的代表项目（项目清单、版本 pin、24 条场景锚定的差异条目、
-一手材料摘句全部列在[技术设计方案](zj-roadmap-visual-review-technical.md) 的证据层，
+一手材料摘句全部列在[技术设计方案](visual-review-technical.md) 的证据层，
 此处只给可迁移的结论，不复述清单）：
 
 | 律 | 从哪来 | 可迁移的内容 | 落到哪个能力 |
@@ -76,8 +76,8 @@ model-elements: [entity.design]
 `/plans sync` 用 git log 检测计划与现实漂移。
 
 **两处明确不采纳**：① 引入 MCP server / 托管审阅服务（Overture、/visual-plan 的 hosted 模式）
-——数据出域、依赖常驻服务，违反 [ADR 0010](../zj-adr/0010-local-file-persistence-convention.md)
-与 [skill runtime closure](zj-skill-runtime-closure.md)；② 让 Agent 直改画布或让模型自由产出
+——数据出域、依赖常驻服务，违反 [ADR 0010](../../zj-adr/0010-local-file-persistence-convention.md)
+与 [skill runtime closure](../zj-skill-runtime-closure.md)；② 让 Agent 直改画布或让模型自由产出
 HTML——破坏确定性、两 carrier 字节相同与可回归性。离线单文件产物即可拿到绝大部分收益。
 
 ## 四个场景 → 四个能力（规格以技术页为准）
@@ -239,7 +239,7 @@ receipt 不参与；`baseline=None` 时输出全量视图，两 carrier 逐字�
 | 把视图状态当作正确性证据 | ❌ | ❌（process-state 权威边界） |
 
 Anchor token 是**双方共享引用**，不是 Agent 单方面的解释权。视图永远只读，
-不可反向导入事实源；这也是 [SKILL.md](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
+不可反向导入事实源；这也是 [SKILL.md](../../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
 「Agent 禁止直接 Read/Edit md 的路线图 section」在可视化形态下的等价约束。
 
 ## Trade-off
@@ -251,7 +251,7 @@ Anchor token 是**双方共享引用**，不是 Agent 单方面的解释权。�
 - **放弃**：实时协同编辑、托管批注、AI 自动重排布局、把可视化状态接进验收证据链。
   前三者引入服务与不确定性，第四者越过权威边界。
 - **不升格为门禁**：视图质量 / doc-slop 只作审计清单，不新增扫描全仓报诊断的运行时门禁
-  （[ADR 0011](../zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md)
+  （[ADR 0011](../../zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md)
   与 `zj-doc-health`（现 `zj-docs-metrics`）已把机械 health gate 列为 rejected default）。机械钉住的是**规格与不变量**，
   不是文风。
 
@@ -260,13 +260,13 @@ Anchor token 是**双方共享引用**，不是 Agent 单方面的解释权。�
 **S0 前置**：DOI 函数 + 阅读预算 + 债务 schema + 视图 receipt 契约——这是第二轮问题定义的
 机器可读落点，必须在任何投影之前冻结。然后 S1 `view-ir` + 锚点契约 → S2 `overview` 投影 →
 S3 `dependency` 投影 → S4 `context` 侧载与 stale 标记；S2/S3/S4 都从 S1 投影，顺序不可换。
-每片的完成判据、依赖与不变量守卫见[技术设计方案](zj-roadmap-visual-review-technical.md)。
+每片的完成判据、依赖与不变量守卫见[技术设计方案](visual-review-technical.md)。
 
 **本次交付边界**（重要）：只落
 
 1. 产品设计方案（本页）；
 2. 机器可读 SoT（场景集 / 24 条差异条目 / 能力 / 视图契约 / 不变量 / 切片 / 一手材料）；
-3. 由确定性脚本维护的[技术设计方案](zj-roadmap-visual-review-technical.md)：
+3. 由确定性脚本维护的[技术设计方案](visual-review-technical.md)：
    `validate` 机械闸门、`render` 生成、`verify` 逐字节复核；
 4. 根 `tests/` 回归守卫与 doc-map 登记。
 
@@ -294,12 +294,12 @@ L1 律不是只对 roadmap 成立，它先在本设计里成立。
 
 ## Related authority
 
-- [Roadmap 执行图（trace layer）](zj-roadmap-execution-graph.md) — 硬判据与「同源多投影」判决的来源
-- [Roadmap 并发与依赖模型](zj-roadmap-concurrency-model.md) — 调度边的语义归口
-- [Skill runtime closure](zj-skill-runtime-closure.md) — 安装态自包含约束
-- [ADR 0010 本地文件持久化约定](../zj-adr/0010-local-file-persistence-convention.md)
-- [ADR 0011 文档治理质量契约与 rejected defaults](../zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md)
-- [文档地图](../README.md) — 本页的 authority-id 绑定
+- [Roadmap 执行图（trace layer）](execution-graph.md) — 硬判据与「同源多投影」判决的来源
+- [Roadmap 并发与依赖模型](concurrency-model.md) — 调度边的语义归口
+- [Skill runtime closure](../zj-skill-runtime-closure.md) — 安装态自包含约束
+- [ADR 0010 本地文件持久化约定](../../zj-adr/0010-local-file-persistence-convention.md)
+- [ADR 0011 文档治理质量契约与 rejected defaults](../../zj-adr/0011-docs-governance-quality-contract-and-rejected-defaults.md)
+- [文档地图](../../README.md) — 本页的 authority-id 绑定
 
 ## Amendment (2026-11-12)
 

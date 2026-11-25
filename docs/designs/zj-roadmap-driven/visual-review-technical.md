@@ -8,7 +8,7 @@ authority-id: design.roadmap-visual-review-technical
 
 # Roadmap Human 视图：技术设计方案（zj-roadmap-driven）
 
-> 本页由 `scripts/roadmap_visual_review_spec.py` 从 `docs/designs/zj-roadmap-visual-review.spec.json`（version-pin: `2026-11-10`）确定性生成，**不得手改**。改设计先改 spec，再跑 `render`，最后跑 `verify` 复核逐字节一致。本页不含生成时间、绝对路径或随机布局。
+> 本页由 `scripts/roadmap_visual_review_spec.py` 从 `docs/designs/zj-roadmap-driven/visual-review.spec.json`（version-pin: `2026-11-10`）确定性生成，**不得手改**。改设计先改 spec，再跑 `render`，最后跑 `verify` 复核逐字节一致。本页不含生成时间、绝对路径或随机布局。
 
 ## Question
 
@@ -274,7 +274,7 @@ zj-roadmap-driven 如何在不膨胀 Human 主视图、不破坏 process-state �
 | E::plans | secondary | yrangana/plans — roadmap.html + /plans sync | https://github.com/yrangana/plans | visited 2026-11-10 via aggregated research | roadmap.html renders from auto-generated plans.json; /plans sync audits plan-vs-commit drift with git log. |
 | E::d2-dac | secondary | Diagram-as-Code 工具对照（Mermaid / D2 / Structurizr / Graphviz） | https://stackbriefly.com/blog/diagram-as-code-tools-2026-mermaid-plantuml-d2-graphviz-structurizr | article, checked 2026-11-10 | Text-based diagramming lets a team store source in Git, inspect changes, and automate rendering. ... Structurizr builds multiple views from a shared architecture model. |
 | E::roadmap-skill | primary | zj-roadmap-driven SKILL.md（本仓） | skills/codebase-docs/zj-roadmap-driven/SKILL.md | workspace HEAD, 2026-11-10 | Markdown 永远不能反向导入事实源；两个载体的两个 Markdown 视图共用同一份模板，逐字节相同；render 与 section 会在所有 Markdown 视图中写入 zj-roadmap-authority/v1 权威信封。 |
-| E::execution-graph | primary | docs/designs/zj-roadmap-execution-graph.md（本仓） | docs/designs/zj-roadmap-execution-graph.md | workspace HEAD, 2026-11-10 | 解法不是「加更多图」，而是从同一 carrier 派生不同投影；trace 可自由增殖，但 md 行数不允许随之增长。 |
+| E::execution-graph | primary | docs/designs/zj-roadmap-driven/execution-graph.md（本仓） | docs/designs/zj-roadmap-driven/execution-graph.md | workspace HEAD, 2026-11-10 | 解法不是「加更多图」，而是从同一 carrier 派生不同投影；trace 可自由增殖，但 md 行数不允许随之增长。 |
 | E::closure-design | primary | docs/designs/zj-skill-runtime-closure.md（本仓） | docs/designs/zj-skill-runtime-closure.md | workspace HEAD, 2026-11-10 | 安装态只携带 skill 目录；运行时不得依赖源仓 docs 或外部路径。 |
 
 ### 证据完整性声明

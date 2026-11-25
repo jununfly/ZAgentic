@@ -59,17 +59,17 @@ local Markdown, and roadmap JSON as interchangeable stores.
 
 ## Source map
 
-- [zj-wayfinder](../../skills/codebase-docs/zj-wayfinder/SKILL.md) — planning
+- [zj-wayfinder](../../../skills/codebase-docs/zj-wayfinder/SKILL.md) — planning
   phases and tracker/local carrier rules.
-- [zj-to-tickets](../../skills/engineering/zj-to-tickets/SKILL.md) —
+- [zj-to-tickets](../../../skills/engineering/zj-to-tickets/SKILL.md) —
   blocking-aware ticket publication.
-- [zj-roadmap-driven](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md) —
+- [zj-roadmap-driven](../../../skills/codebase-docs/zj-roadmap-driven/SKILL.md) —
   JSON/SQLite fact source and CLI-only writes.
-- [dual-mode reference](../../skills/codebase-docs/zj-roadmap-driven/references/dual-mode.md)
+- [dual-mode reference](../../../skills/codebase-docs/zj-roadmap-driven/references/dual-mode.md)
   — detailed carrier and handoff guidance.
 
 ## Related authority
 
-- [ZAgentic documentation map](../README.md) — document routing and lifecycle.
-- [Codebase Docs capability spec](../prds/codebase-docs-capability.md) —
+- [ZAgentic documentation map](../../README.md) — document routing and lifecycle.
+- [Codebase Docs capability spec](../../prds/codebase-docs-capability.md) —
   repository documentation boundaries.

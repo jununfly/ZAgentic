@@ -107,7 +107,7 @@ maintenance rules for a single skill's frontmatter (owned by
   authority for which skills act as which checkpoints.
 - [Skill frontmatter validation boundary](../designs/zj-skill-frontmatter-schema.md) —
   design authority for the skill-discoverability contract.
-- [Wayfinder and roadmap carrier seam](../designs/zj-wayfinder-roadmap-dual-mode.md) —
+- [Wayfinder and roadmap carrier seam](../designs/zj-roadmap-driven/dual-mode.md) —
   design authority for the wayfinder/roadmap hand-off boundary.
 - [ADR 0001](../zj-adr/0001-explicit-setup-pointer-only-for-hard-dependencies.md)
   — pointer-only setup decision.

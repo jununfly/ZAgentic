@@ -20,7 +20,7 @@ Human 主视图边界。它记录 durable 设计，不替代 CLI 参考或运行
 ## Boundaries
 
 - 节点租约、调度依赖和 carrier 并发由
-  [Roadmap 并发与依赖模型](zj-roadmap-concurrency-model.md)拥有。
+  [Roadmap 并发与依赖模型](concurrency-model.md)拥有。
 - `reference` 是可成环的上下文引用；`mainline`、`prompted-by` 和 trace 参与的
   `derives-from` 共同构成无环因果图。
 - 过程 trace 默认不进入 Markdown 主视图，也不成为 plan tree 的父子节点。
@@ -109,15 +109,15 @@ S1 `layer` 字段 + 迁移 + L1/L2 归口 → S2 `trace add` + provenance → S3
 
 ## Source map
 
-- [Roadmap skill](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
-- [Roadmap implementation](../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap.py)
-- [Roadmap CLI contract](../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
-- [Trace behavior tests](../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace.py)
-- [Trace provenance tests](../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace_provenance.py)
+- [Roadmap skill](../../../skills/codebase-docs/zj-roadmap-driven/SKILL.md)
+- [Roadmap implementation](../../../skills/codebase-docs/zj-roadmap-driven/scripts/roadmap.py)
+- [Roadmap CLI contract](../../../skills/codebase-docs/zj-roadmap-driven/references/roadmap-cli.md)
+- [Trace behavior tests](../../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace.py)
+- [Trace provenance tests](../../../skills/codebase-docs/zj-roadmap-driven/tests/test_trace_provenance.py)
 
 ## Related authority
 
-- [ZAgentic documentation map](../README.md)
-- [Roadmap concurrency and dependency model](zj-roadmap-concurrency-model.md)
-- [Wayfinder and roadmap carrier seam](zj-wayfinder-roadmap-dual-mode.md)
-- [ZJ-CONTEXT glossary](../../ZJ-CONTEXT.md)
+- [ZAgentic documentation map](../../README.md)
+- [Roadmap concurrency and dependency model](concurrency-model.md)
+- [Wayfinder and roadmap carrier seam](dual-mode.md)
+- [ZJ-CONTEXT glossary](../../../ZJ-CONTEXT.md)

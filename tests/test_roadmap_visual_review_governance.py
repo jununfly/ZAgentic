@@ -13,9 +13,9 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 SKILL = REPO / "skills" / "codebase-docs" / "zj-roadmap-driven"
 CLI_REF = SKILL / "references" / "roadmap-cli.md"
 CONTEXT = REPO / "ZJ-CONTEXT.md"
-PRODUCT = REPO / "docs" / "designs" / "zj-roadmap-visual-review-product.md"
-SPEC = REPO / "docs" / "designs" / "zj-roadmap-visual-review.spec.json"
-TECH = REPO / "docs" / "designs" / "zj-roadmap-visual-review-technical.md"
+PRODUCT = REPO / "docs" / "designs" / "zj-roadmap-driven" / "visual-review-product.md"
+SPEC = REPO / "docs" / "designs" / "zj-roadmap-driven" / "visual-review.spec.json"
+TECH = REPO / "docs" / "designs" / "zj-roadmap-driven" / "visual-review-technical.md"
 WORKFLOW = REPO / ".github" / "workflows" / "skill-closure-lint.yml"
 
 

@@ -391,25 +391,37 @@
    ]
   },
   {
-   "path": "docs/designs/zj-wayfinder-roadmap-dual-mode.md",
+   "path": "docs/designs/zj-roadmap-driven/dual-mode.md",
    "elements": [
     "entity.design"
    ]
   },
   {
-   "path": "docs/designs/zj-roadmap-concurrency-model.md",
+   "path": "docs/designs/zj-roadmap-driven/concurrency-model.md",
    "elements": [
     "entity.design"
    ]
   },
   {
-   "path": "docs/designs/zj-roadmap-execution-graph.md",
+   "path": "docs/designs/zj-roadmap-driven/execution-graph.md",
    "elements": [
     "entity.design"
    ]
   },
   {
-   "path": "docs/designs/zj-roadmap-reconciliation.md",
+   "path": "docs/designs/zj-roadmap-driven/reconciliation.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-driven/radial-render.md",
+   "elements": [
+    "entity.design"
+   ]
+  },
+  {
+   "path": "docs/designs/zj-roadmap-driven/README.md",
    "elements": [
     "entity.design"
    ]
@@ -452,13 +464,13 @@
    ]
   },
   {
-   "path": "docs/designs/zj-roadmap-visual-review-product.md",
+   "path": "docs/designs/zj-roadmap-driven/visual-review-product.md",
    "elements": [
     "entity.design"
    ]
   },
   {
-   "path": "docs/designs/zj-roadmap-visual-review-technical.md",
+   "path": "docs/designs/zj-roadmap-driven/visual-review-technical.md",
    "elements": [
     "entity.design"
    ]

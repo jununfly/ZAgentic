@@ -27,7 +27,7 @@ from viz.cli import main  # noqa: E402
 
 SAMPLE = SKILL / "demos" / "roadmap_viz_sample.json"
 CLI_REF = SKILL / "references" / "roadmap-cli.md"
-PRODUCT = SKILL.parent.parent.parent / "docs" / "designs" / "zj-roadmap-visual-review-product.md"
+PRODUCT = SKILL.parent.parent.parent / "docs" / "designs" / "zj-roadmap-driven" / "visual-review-product.md"
 
 V1_FIELDS = {
     "version", "anchor", "carrier_revision", "theta", "seen_item_hashes",
