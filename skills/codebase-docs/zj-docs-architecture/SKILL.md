@@ -1,8 +1,6 @@
 ---
 name: zj-docs-architecture
-description: "Maintains and validates a codebase's multi-view architecture handbook: map, layers, subsystems, flows, and cross-cutting rules. Use when creating, reviewing, migrating, or validating architecture documentation and its source maps."
-source: zagentic
-
+description: "Maintains and validates a codebase's multi-view architecture handbook: overview, map, layers, subsystems, flows, and cross-cutting rules. Use when creating, reviewing, migrating, or validating architecture documentation and its source maps."
 ---
 
 # Architecture Handbook
@@ -29,9 +27,19 @@ selects which shared core keys the release generator inlines into this skill;
 `extensions` lists private terms that must never leak into the shared source or an
 inlined block. The generated `BASE_RULES_*` block is a separate, generated section.
 
+## Quick start
+
+```sh
+python3 skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py .
+python3 skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py . --discover
+```
+
+The first form validates the confirmed slice; `--discover` is the read-only
+discovery form. Workflow steps 1 and 5 below use exactly these two commands.
+
 ## Workflow
 
-1. **Discover, read-only.** Run the discovery command below. Follow an explicit
+1. **Discover, read-only.** Run the `--discover` command in Quick start. Follow an explicit
    `docs-map: <repo-relative Markdown path>` pointer in root `AGENTS.md`,
    `CLAUDE.md`, or `README.md`; otherwise use `docs/README.md`; otherwise
    report one compatible candidate or an ambiguity. Do not create a second map.
@@ -48,11 +56,6 @@ inlined block. The generated `BASE_RULES_*` block is a separate, generated secti
 5. **Validate.** Run the validator and resolve mechanical failures. Present
    duplicate/ambiguous ownership as a Human-review signal, never an automatic
    winner.
-
-```sh
-python3 skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py .
-python3 skills/codebase-docs/zj-docs-architecture/scripts/validate_architecture_docs.py . --discover
-```
 
 Read [architecture-contract.md](references/architecture-contract.md) before
 proposing pages or migration. Read
