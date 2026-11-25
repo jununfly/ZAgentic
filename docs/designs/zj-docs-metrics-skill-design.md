@@ -245,14 +245,14 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
   这样「页面健康」的判断权留给有上下文的 Human，工具不越权裁定语义。
 - **opt-in 与 config-error 的反向退出码**：未配置=没被邀请→exit 0；坏配置=被邀请但无法履约→exit 1。
   二者都返回空 `outliers`，但退出码刻意不同，防止「无法度量」冒充「度量通过」。
-- **复用架构层单一 mapping 语法（[目标]，现状见 §6.2/§10）**：意图是 freshness 只消费 `## Source map` 段、不另立声明格式、杜绝第二真相源；但现状是本 skill 自带一份**平行**解析，二者已分叉——对齐方案见 §10 未决项 U1。
+- **`## Source map` 的 best-effort 消费（[已决]，见 §10.3）**：早期意图是「只消费 `## Source map` 段、不另立声明格式、杜绝第二真相源」，但本 skill 实际自带一份**平行**解析（inline 正则/`/` 前缀/section 定位与 architecture `source_paths()` 已分叉）；U1 已决为 (b)：承认这一分叉、以 best-effort 消费者身份承接 freshness 时间维度——权威 source 集归 `/zj-docs-architecture`，其 `SOURCE_TARGET_*` 只管存在/越界、无时间码，正是本消费者承接的 gap。
 - **活页边界即度量边界**：证据面/过程面从「被度量」「链接源」两端同时排除，使链接图只反映活文档拓扑。
 - **`resolve()` load-bearing**：路径解析一致性是链接图正确性的前提，否则符号链接环境下图静默为空。
 - **物理行 + 时间源降级**：都是「确定、可移植、可在无 git 环境自测」取向的具体落点。
 
-## 10. 2026-11 refresh：对齐邻居现状后的定位与重设计未决项
+## 10. 2026-11 refresh：对齐邻居现状后的定位与重设计收口
 
-> 本节据 `zj-docs-ontology`（#275/#281/#282/#286 四层 + Module D + typed relations）与 `zj-docs-architecture`（#285/#286/#287/#288–#294 切片让渡 + 概念图 + `#67` Source map base）重构后的磁盘现状，重述本 skill 的定位、最强差异化，以及重设计必须正面处理的张力。`[现状]` = 磁盘事实可验；`[目标]/[新增]/[未决]` = 重设计意图，需另立执行 plan。
+> 本节据 `zj-docs-ontology`（#275/#281/#282/#286 四层 + Module D + typed relations）与 `zj-docs-architecture`（#285/#286/#287/#288–#294 切片让渡 + 概念图 + `#67` Source map base）重构后的磁盘现状，重述本 skill 的定位、最强差异化，以及重设计必须正面处理的张力。`[现状]` = 磁盘事实可验；`[目标]`/`[已决]` = 重设计意图与其收口。U1–U5 与改名 + U3 均已随 PR #295/#296 落地，见 §10.5 汇总。
 
 ### 10.1 定位不变 + 最强差异化 [现状]
 
@@ -275,7 +275,7 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 ### 10.4 重设计张力 C/D [目标/未决]
 
 - **C 同名码（已消歧）**：本 skill 旧码 `ORPHAN_PAGE`/`ZERO_INDEGREE` 已改名 `NAV_ORPHAN`/`MAP_ONLY`，与 ontology 的 `ORPHAN_PAGE`（`docs_governance.py:817`）不再同名；`health-contract.md`「NAV_ORPHAN / MAP_ONLY」段已降级为「改名沿革 + 不同图」说明。→ [已决，随改名 PR 落地]。
-- **D capability-gap 授权与归属矛盾未写进本 skill 契约**：`:369-372` 缺口承接、`:169-172` 时间/存在切分只在邻居侧，本 skill `health-contract.md` 未引用。`[目标]` 把 §1 定位、§10.3 freshness 定性一并补入 → [未决 U4]。
+- **D capability-gap 授权与归属切分（已回写契约）**：`:369-372` 缺口承接、`:169-172` 时间/存在切分——已随 PR #296（`4f823e4`）写进本 skill `health-contract.md`「Status」段的 capability-gap 授权段、「FRESHNESS_DRIFT」段的 best-effort 消费者定性、以及 Status 段码族对齐现状（`SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`）。→ [已决]。
 
 ### 10.5 决策汇总（与正文 §10.1–§10.4 两处收口）
 
@@ -284,7 +284,7 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 - **U1** freshness 第二份解析 → **[已决：(b) best-effort 消费者]**，见 §10.3；定性已随 PR #296 回写 `health-contract.md`「FRESHNESS_DRIFT」段。(a)/(c) 作为被否方案留痕。
 - **U2** freshness 与 architecture `SOURCE_*` 切分为「时间 vs 存在性」 → **[已决]**，并入 §1 [定稿] 功能边界 + §10.3 所有权表述；所有权切分已随 PR #296 写进 `health-contract.md`「FRESHNESS_DRIFT」段。
 - **U5** 三轴表/码族与邻居现状对齐 → **[已决]**：§1 表已就地更新（PR #295），`health-contract.md`「Status」段码族已同步 `SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`（PR #296）。
-- **改名 + U3**（**[已决：随 PR #295 落地 `338db6c`，squash 合并、分支已删]**）：skill→`zj-docs-metrics`、config→`docs/docs-metrics.json`、引擎→`docs_metrics.py`、测试→`test_docs_metrics.py`、meter 码→`NAV_ORPHAN`/`MAP_ONLY`；**D1** 脚本/测试文件名同步改、**D2** 上述码名、**D3** `graph.json` 重跑生成、**D4** 3 个 roadmap 引用**保留旧名加注**，均已执行。调用粒度维持整仓 batch、不加 `--scope`。17 回归测试全绿、0 dangling。
+- **改名 + U3**（**[已决：随 PR #295 落地 `338db6c`，squash 合并、分支已删]**）：skill→`zj-docs-metrics`、config→`docs/docs-metrics.json`、引擎→`docs_metrics.py`、测试→`test_docs_metrics.py`、meter 码→`NAV_ORPHAN`/`MAP_ONLY`；**D1** 脚本/测试文件名同步改、**D2** 上述码名、**D3** `graph.json` 本地重跑生成（`docs/ontology/` 缓存 gitignored、不入 PR）、**D4** 3 个 roadmap 引用**保留旧名加注**，均已执行。调用粒度维持整仓 batch、不加 `--scope`。17 回归测试全绿、0 dangling。
 - **U4** 把 §1 定位、§10.3 freshness 定性、`:369-372` capability-gap 授权回写进 `health-contract.md` → **[已决：随 PR #296 落地 `4f823e4`]**（Diff 1+2+3 全量回写，Status 段码族一并对齐现状）。
 
 ---
