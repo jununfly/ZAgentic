@@ -31,6 +31,37 @@ skill actually consumes at runtime must still be inside the skill. See
 `docs/designs/zj-skill-runtime-closure.md` (mechanical gate:
 `scripts/check-skill-runtime-closure.py`).
 
+**Cross-boundary shared facts (DRY × runtime closure):** when several skills need
+the *same* vocabulary, value-domain, or rule, DRY (one authoritative source) and
+runtime closure (an install carries only the skill's own directory) are in tension.
+Resolve it with a generic four-layer pipeline — **centralized authority → declarative
+consumption → generate-time inlining → runtime reads only itself**:
+
+1. A single repo-side authority file (under `docs/`) holds the canonical values and
+   declares its own scope: what is shared (a fact a second skill uses to constrain
+   its output) vs private (a fact only the owner consumes — e.g. diagnostic codes).
+2. Each consuming skill writes a human-authored *declaration* in its `SKILL.md`:
+   which shared keys it `consumes`, plus its own `extensions` terms that must never
+   leak into the shared source or another skill's block.
+3. A build-time generator inlines the consumed slice into a delimited, generated
+   block *inside each skill's own files*, so it ships with the install. The
+   declaration is hand-edited; the block is machine-written and never hand-edited.
+4. At runtime the skill reads only its own inlined block — never `docs/`, never a
+   sibling skill. A missing or malformed block fails loud with no hardcoded fallback
+   (a silent fallback is exactly the "enum still in force" fake-green this avoids).
+
+Enforce mechanically: byte-equal re-render (block == fresh generator output),
+closed-schema (no extension leaks), and a canary (inject a value into the source and
+prove the consumer's behavior flips, confirming it reads the block not a hardcoded
+enum). The rule: **copy at build-time, never reference at runtime.**
+
+This shape is for facts a skill *acts on*. For a fact a skill only *cites* (an
+argument or authority claim it does not enforce), do not inline an unguarded copy —
+address it by `authority-id` (a named reference the doc-map can resolve) rather than
+a cross-directory path, or inline the full quote with a provenance note. Read
+`docs/skill-conventions/` (+ `scripts/generate-shared-conventions.py`,
+`scripts/check-shared-conventions.py`) as a worked instance of this pattern.
+
 Every public skill must participate in recursive `./skills/` discovery and have
 a name-linked, one-line entry in both its bucket `README.md` and the top-level
 `README.md`. `personal/README.md` is its local index and stays out of public
