@@ -7,7 +7,7 @@ authority-id: design.docs-metrics-skill
 # zj-docs-metrics 设计文档（与实现对齐）
 
 > 本页描述 `skills/codebase-docs/zj-docs-metrics/` **实际实现的设计**。所有断言对应
-> `scripts/docs_metrics.py` 的真实控制流、`references/health-contract.md` 的契约、以及
+> `scripts/docs_metrics.py` 的真实控制流、`references/metrics-contract.md` 的契约、以及
 > `tests/test_docs_metrics.py` 钉死的行为。它**不是**操作指南；调用步骤见 skill 自身 `SKILL.md`。
 
 ## 1. 定位：measurement 是独立于 correctness 的第三轴
@@ -20,7 +20,7 @@ skill 链里有三种正交主张，本 skill 只拥有第三种：
 | "结构是对的"（structure correctness） | `/zj-docs-architecture` | `PAGE_*`、`SOURCE_TARGET_*`、`ADR_UNACCEPTED`、`AUTHORITY_ID_*`/`AUTHORITY_MAP_BINDING`、概念图 `CONSIST_*`/`CONCEPT_CYCLE` | correctness |
 | "页面是活的"（measurement） | **本 skill** | `BUDGET_EXCEEDED`、`FRESHNESS_DRIFT`、`NAV_ORPHAN`、`MAP_ONLY` | advisory |
 
-实现上本 skill **不发任何 correctness 诊断、借不到任何门禁权威**（`health-contract.md`
+实现上本 skill **不发任何 correctness 诊断、借不到任何门禁权威**（`metrics-contract.md`
 「Status in the skill chain」）。它的 verdict 是给 Human 的离群点（outlier），不是缺陷裁定。
 这条边界是设计的根：`measure()` 的返回类型是 `list[dict[str, str]]`（离群点表），不是
 错误码集合，也没有 `proposed_actions`/`mutations` 之类写动作概念。
@@ -33,7 +33,7 @@ skill 链里有三种正交主张，本 skill 只拥有第三种：
 >
 > 硬判据同时是**准入闸门**：未来任何新 meter，只要需要读邻居契约，默认不进本 skill（除非重定性为消费者级 advisory）。
 
-> **[命名定稿]（本轮，细节全收口）** skill 由 `zj-doc-health` 改名 **`zj-docs-metrics`**，并入 `zj-docs-` 家族（对齐 `zj-docs-ontology`/`zj-docs-architecture`）。两条硬依据：① `health`/「Health check」在组内已被 `zj-docs-ontology` 的 **L1** 占用（`SKILL.md:3`/`:22`/`:100`）且语义正交（那是 correctness，本 skill 是 advisory）；② 本 skill 的魂是**反 health 裁定**——契约拒绝「机械 health-score gate」（`health-contract.md:21`、`governance-contract.md:369-372`），且全仓（README / ZJ-CONTEXT / 3 个 roadmap design，如 `zj-roadmap-visual-review-technical.md:408`）拿 `zj-doc-health` 举证「不做 health 门禁」，名实相反。
+> **[命名定稿]（本轮，细节全收口）** skill 由 `zj-doc-health` 改名 **`zj-docs-metrics`**，并入 `zj-docs-` 家族（对齐 `zj-docs-ontology`/`zj-docs-architecture`）。两条硬依据：① `health`/「Health check」在组内已被 `zj-docs-ontology` 的 **L1** 占用（`SKILL.md:3`/`:22`/`:100`）且语义正交（那是 correctness，本 skill 是 advisory）；② 本 skill 的魂是**反 health 裁定**——契约拒绝「机械 health-score gate」（`metrics-contract.md:21`、`/zj-docs-ontology` 的 `governance-contract.md`「Rejected defaults」段），且全仓（README / ZJ-CONTEXT / 3 个 roadmap design，如 `zj-roadmap-visual-review-technical.md:408`）拿 `zj-doc-health` 举证「不做 health 门禁」，名实相反。
 >
 > **命名映射**（根名统一复数 `docs_metrics`，因单次调用 = 整仓一批 docs）：
 > - skill 目录 / 调用串：`zj-doc-health` → **`zj-docs-metrics`**
@@ -41,6 +41,7 @@ skill 链里有三种正交主张，本 skill 只拥有第三种：
 > - 引擎脚本：`scripts/doc_health.py` → **`scripts/docs_metrics.py`**
 > - 测试文件：`tests/test_doc_health.py` → **`tests/test_docs_metrics.py`**（**保留 `test_` 前缀**：本仓 CI 靠 `unittest discover -p` 收集，丢前缀会静默漏跑）
 > - meter 码（U3，与本改名合并为同一 PR）：`ORPHAN_PAGE` → **`NAV_ORPHAN`**、`ZERO_INDEGREE` → **`MAP_ONLY`**
+> - 契约文件（**推翻先前「`health-contract.md` 文件名保留」的 D5 判定**）：`health-contract.md` → **`metrics-contract.md`**；标题 `# Health Contract` → **`# Metrics Contract`**。推翻理由：组内其余契约皆 `<域>-contract.md`（`architecture-contract`/`validator-contract`/`governance-contract`/`proposal-tool-contract`），本文件是唯一定名为 health 的异类；且本条硬依据②「名实相反」对文件名同样成立——用名为 `health-contract.md` 的文件去举证「不做 health 门禁」，是把被否定误名留在了 referent 本身。文件内 `:14`/`:126` 的 "healthy"/"clean bill of health" 与被引的 "mechanical health-score gate" 是**被度量/被否定的声称**（口语，非标识符），保留不改。
 >
 > **改名沿革注**：上列旧名为**改名前的有意保留**（记录从 `zj-doc-health` 家族词迁移而来的对照）；文档其余部分的 `zj-doc-health`/`doc_health.py`/`test_doc_health.py`/`doc-health.json`/`ORPHAN_PAGE`/`ZERO_INDEGREE` 均已随本次执行统一为新标识符。
 >
@@ -78,7 +79,7 @@ python3 scripts/docs_metrics.py <repo> [--config <path>]
 - 文件不存在（`not candidate.is_file()`）→ 返回 `(None, None)` → opt-in。
 - 文件存在但 JSON 解析或读取失败 → 捕获 `(ValueError, OSError)` → 返回 `(candidate, f"unreadable config: {error}")`，
   即 **config 槽位放字符串**作为错误哨兵，`main()` 据此走 `config-error`。
-- 设计要点（`health-contract.md`「Output and exit codes」）：`config-error` **也 exit 1**——「读不懂的参数化」绝不能伪装成
+- 设计要点（`metrics-contract.md`「Output and exit codes」）：`config-error` **也 exit 1**——「读不懂的参数化」绝不能伪装成
   「健康检查通过」。这与 opt-in（exit 0）刻意相反：未配置是「没被邀请」，坏配置是「被邀请但无法履约」。
 
 配置 schema（自由字典，本 skill 不定义第二套语法，只读这三类键）：
@@ -114,10 +115,10 @@ python3 scripts/docs_metrics.py <repo> [--config <path>]
   说明：在 temp/工作目录位于符号链接后的系统上，未解析的 rglob 路径永远不等于 `resolve()` 产出的路径，
   链接图会**静默清空**。故入站/出站比较全部在已解析路径空间内进行。
 - 语义后果：证据面与过程面**既不作为被度量对象、也不作为链接源**（`SKILL.md` Boundaries、
-  `health-contract.md`「NAV_ORPHAN / MAP_ONLY」）——它们是冻结或瞬态的，不是「活引用」。
+  `metrics-contract.md`「NAV_ORPHAN / MAP_ONLY」）——它们是冻结或瞬态的，不是「活引用」。
 - **此活页定义刻意独立于 `/zj-docs-ontology` 的 map-coverage 判定**：两者「哪些页算数」可以不一致，
   这是设计而非缺陷——统一它会把这套 opt-in、零跨 skill import 的工具耦合到 ontology 的 preset 词汇，
-  破坏可移植边界。契约已钉死此点（`health-contract.md`「Status in the skill chain」）。
+  破坏可移植边界。契约已钉死此点（`metrics-contract.md`「Status in the skill chain」）。
 
 ### 4.2 `resolve(root, value, base)`（`:39`–`:47`）——链接目标解析
 
@@ -157,7 +158,7 @@ scope  = docs if docs.is_dir() else root
 → **静默跳过该规则**（`:112`–`:113`，不报错，符合「工具不猜参数」）。否则对每个匹配且 `.md` 结尾的文件，
 `len(text.splitlines())` 物理行数 > `max_lines` → 记 outlier，detail 含实际行数、上限、命中规则
 （`{lines} lines > max {cap} (rule: {pattern})`）。用**物理行**而非词数：确定、可被未来 linter 复核
-（`health-contract.md`「BUDGET_EXCEEDED」）。
+（`metrics-contract.md`「BUDGET_EXCEEDED」）。
 
 ### 6.2 `FRESHNESS_DRIFT`（`:125`–`:140`）
 
@@ -201,7 +202,7 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 
 - 自引用被排除（`target != md`，`:156`），否则页面会因链接自己而「被引用」。
 - `MAP_ONLY` 是**advisory 且常为正常**（入口页常只被地图索引）——这正是它只在 `orphans:true`
-  时才度量的理由（`health-contract.md`「NAV_ORPHAN / MAP_ONLY」）。
+  时才度量的理由（`metrics-contract.md`「NAV_ORPHAN / MAP_ONLY」）。
 - 两码路径都用 `relative(root, page)`（已解析路径回写为仓相对 POSIX 路径，`:35`–`:36`），
    故报告里是 `docs/prds/a.md` 这种形态（`test_map_only_is_reported`，`test_docs_metrics.py:108`–`:113`）。
 - **`NAV_ORPHAN`（旧名 `ORPHAN_PAGE`）与 ontology 的 `ORPHAN_PAGE` 不同图、可共存**：改名已消除旧同名；ontology 的是 `## Source map` 条目在
@@ -221,7 +222,7 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 否则: 直接用 path.stat().st_mtime
 ```
 
-- 偏好 git commit time 的原因：**checkout 与 rebase 不会重置内容年龄**，文件 mtime 会（`health-contract.md`「FRESHNESS_DRIFT」时间源段）。
+- 偏好 git commit time 的原因：**checkout 与 rebase 不会重置内容年龄**，文件 mtime 会（`metrics-contract.md`「FRESHNESS_DRIFT」时间源段）。
 - 回退文件 mtime 保证工具在**纯目录/测试 fixture**（无 git）里仍可用——单测正是靠 `os.utime` 设 mtime 来驱动
   freshness（`test_docs_metrics.py:81`–`:82`）。
 - 每个文件用其**自身父目录**作为 `git -C` 仓库根，命令只取 `--format=%ct`（提交时间戳），是只读查询。
@@ -256,7 +257,7 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 
 ### 10.1 定位不变 + 最强差异化 [现状]
 
-本 skill 仍是 correctness 之外的 measurement 第三轴：`measure()` 返回离群点表（`docs_metrics.py:103`），全程只读、无错误码、无 `proposal`/`mutation`。最强差异化是 **ontology 主动让渡的能力缺口的承接者**——`governance-contract.md:369-372` 把「page size budget / freshness scoring / orphan scoring」整体列为 **rejected default**，理由「目标仓库无 manifest、无统一 source-map 时间戳，任何 score 都是凭空捏造」「carried as a capability gap」；本 skill 用 opt-in `docs/docs-metrics.json`（`docs_metrics.py:173`）补 manifest、消费 `## Source map` + git commit-time（`docs_metrics.py:50-86`）补时间源，正是对该缺口的承接。它也是组内唯一**零跨 skill import、无 `BASE_RULES` 生成块**的成员（已核：`docs_metrics.py` 仅 import 标准库）。与 `zj-neat-freak` 不重叠：neat-freak 是写动作收尾（改文档/记忆/清场），本 skill 是 read-only 度量。裁定：保留独立。
+本 skill 仍是 correctness 之外的 measurement 第三轴：`measure()` 返回离群点表（`docs_metrics.py:103`），全程只读、无错误码、无 `proposal`/`mutation`。最强差异化是 **ontology 主动让渡的能力缺口的承接者**——`/zj-docs-ontology` 的 `governance-contract.md`「Rejected defaults」段 把「page size budget / freshness scoring / orphan scoring」整体列为 **rejected default**，理由「目标仓库无 manifest、无统一 source-map 时间戳，任何 score 都是凭空捏造」「carried as a capability gap」；本 skill 用 opt-in `docs/docs-metrics.json`（`docs_metrics.py:173`）补 manifest、消费 `## Source map` + git commit-time（`docs_metrics.py:50-86`）补时间源，正是对该缺口的承接。它也是组内唯一**零跨 skill import、无 `BASE_RULES` 生成块**的成员（已核：`docs_metrics.py` 仅 import 标准库）。与 `zj-neat-freak` 不重叠：neat-freak 是写动作收尾（改文档/记忆/清场），本 skill 是 read-only 度量。裁定：保留独立。
 
 ### 10.2 freshness 归属空洞 [现状]
 
@@ -274,18 +275,18 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 
 ### 10.4 重设计张力 C/D [目标/未决]
 
-- **C 同名码（已消歧）**：本 skill 旧码 `ORPHAN_PAGE`/`ZERO_INDEGREE` 已改名 `NAV_ORPHAN`/`MAP_ONLY`，与 ontology 的 `ORPHAN_PAGE`（`docs_governance.py:817`）不再同名；`health-contract.md`「NAV_ORPHAN / MAP_ONLY」段已降级为「改名沿革 + 不同图」说明。→ [已决，随改名 PR 落地]。
-- **D capability-gap 授权与归属切分（已回写契约）**：`:369-372` 缺口承接、`:169-172` 时间/存在切分——已随 PR #296（`4f823e4`）写进本 skill `health-contract.md`「Status」段的 capability-gap 授权段、「FRESHNESS_DRIFT」段的 best-effort 消费者定性、以及 Status 段码族对齐现状（`SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`）。→ [已决]。
+- **C 同名码（已消歧）**：本 skill 旧码 `ORPHAN_PAGE`/`ZERO_INDEGREE` 已改名 `NAV_ORPHAN`/`MAP_ONLY`，与 ontology 的 `ORPHAN_PAGE`（`docs_governance.py:817`）不再同名；`metrics-contract.md`「NAV_ORPHAN / MAP_ONLY」段已降级为「改名沿革 + 不同图」说明。→ [已决，随改名 PR 落地]。
+- **D capability-gap 授权与归属切分（已回写契约）**：`:369-372` 缺口承接、`:169-172` 时间/存在切分——已随 PR #296（`4f823e4`）写进本 skill `metrics-contract.md`「Status」段的 capability-gap 授权段、「FRESHNESS_DRIFT」段的 best-effort 消费者定性、以及 Status 段码族对齐现状（`SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`）。→ [已决]。
 
 ### 10.5 决策汇总（与正文 §10.1–§10.4 两处收口）
 
 下列 U1–U5（含改名 + U3）决策均已收口，并已随 PR #295 / #296 落地到代码与契约正文，无待执行的后续 plan：
 
-- **U1** freshness 第二份解析 → **[已决：(b) best-effort 消费者]**，见 §10.3；定性已随 PR #296 回写 `health-contract.md`「FRESHNESS_DRIFT」段。(a)/(c) 作为被否方案留痕。
-- **U2** freshness 与 architecture `SOURCE_*` 切分为「时间 vs 存在性」 → **[已决]**，并入 §1 [定稿] 功能边界 + §10.3 所有权表述；所有权切分已随 PR #296 写进 `health-contract.md`「FRESHNESS_DRIFT」段。
-- **U5** 三轴表/码族与邻居现状对齐 → **[已决]**：§1 表已就地更新（PR #295），`health-contract.md`「Status」段码族已同步 `SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`（PR #296）。
+- **U1** freshness 第二份解析 → **[已决：(b) best-effort 消费者]**，见 §10.3；定性已随 PR #296 回写 `metrics-contract.md`「FRESHNESS_DRIFT」段。(a)/(c) 作为被否方案留痕。
+- **U2** freshness 与 architecture `SOURCE_*` 切分为「时间 vs 存在性」 → **[已决]**，并入 §1 [定稿] 功能边界 + §10.3 所有权表述；所有权切分已随 PR #296 写进 `metrics-contract.md`「FRESHNESS_DRIFT」段。
+- **U5** 三轴表/码族与邻居现状对齐 → **[已决]**：§1 表已就地更新（PR #295），`metrics-contract.md`「Status」段码族已同步 `SOURCE_TARGET_*`/`CONSIST_*`/`UNMAPPED_PAGE`（PR #296）。
 - **改名 + U3**（**[已决：随 PR #295 落地 `338db6c`，squash 合并、分支已删]**）：skill→`zj-docs-metrics`、config→`docs/docs-metrics.json`、引擎→`docs_metrics.py`、测试→`test_docs_metrics.py`、meter 码→`NAV_ORPHAN`/`MAP_ONLY`；**D1** 脚本/测试文件名同步改、**D2** 上述码名、**D3** `graph.json` 本地重跑生成（`docs/ontology/` 缓存 gitignored、不入 PR）、**D4** 3 个 roadmap 引用**保留旧名加注**，均已执行。调用粒度维持整仓 batch、不加 `--scope`。17 回归测试全绿、0 dangling。
-- **U4** 把 §1 定位、§10.3 freshness 定性、`:369-372` capability-gap 授权回写进 `health-contract.md` → **[已决：随 PR #296 落地 `4f823e4`]**（Diff 1+2+3 全量回写，Status 段码族一并对齐现状）。
+- **U4** 把 §1 定位、§10.3 freshness 定性、`:369-372` capability-gap 授权回写进 `metrics-contract.md` → **[已决：随 PR #296 落地 `4f823e4`]**（Diff 1+2+3 全量回写，Status 段码族一并对齐现状）。
 
 ---
 
@@ -321,7 +322,7 @@ map 的每条 markdown 链接 → resolve 命中 pages 内某页 → 加入 map_
 - **不定义第二套 source mapping**：freshness 只认 `## Source map`（`:57`），其它表达映射的方式一律不支持。
 - **`orphans` 严格 `is True` 门控**（`:143`）：truthy 字符串（如 `"true"`）不会启用该 meter——避免隐式类型猜测。
 - **bad rule 静默跳过**：budgets 条目 glob/max_lines 非法只跳过该条（`:112`–`:113`），不影响其它规则与整体度量。
-- **零 outlier ≠ 页面正确**：`health-contract.md`「What a clean run does not mean」明确——干净只说明
+- **零 outlier ≠ 页面正确**：`metrics-contract.md`「What a clean run does not mean」明确——干净只说明
   Human 设定的阈值当前满足，页面质量/完整/正确属另外两个 skill 与阅读者。设计文档同样据此拒绝把本 skill
   的 exit 0 当质量背书。
 - **不与 `/zj-docs-ontology` 统一「活页」谓词、也不合并本 skill `NAV_ORPHAN` 与 ontology `ORPHAN_PAGE`**：见 §4.1 与 §6.3——统一会把
