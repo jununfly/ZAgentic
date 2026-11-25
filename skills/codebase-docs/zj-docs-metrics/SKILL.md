@@ -25,7 +25,7 @@ health *gate* is explicitly a rejected default (see the governance contract's
 ## Workflow
 
 1. **Read the contract.** Read
-   [health-contract.md](references/health-contract.md) before the first run
+   [metrics-contract.md](references/metrics-contract.md) before the first run
    or any change to the tool — it defines the config schema, the four
    meters, and the time-source degradation rule.
 2. **Run, read-only.** `python3 scripts/docs_metrics.py <repo> [--config <path>]`.

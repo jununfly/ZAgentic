@@ -1,4 +1,4 @@
-# Health Contract
+# Metrics Contract
 
 This file is the single definition of what `scripts/docs_metrics.py` measures,
 what it refuses to do, and what its output means. Read it before changing the
@@ -22,7 +22,9 @@ sibling skill's contract syntax is a positioning conflict, not a meter. This rul
 is both the scope and the gate for adding new meters.
 
 **Authority: this serves a gap `/zj-docs-ontology` explicitly declined.**
-`governance-contract.md:369-372` lists "a mechanical health-score gate (page size
+The **Rejected defaults** section of the `/zj-docs-ontology` skill's own
+`governance-contract.md` (that sibling skill is not shipped when this one is
+installed standalone) lists "a mechanical health-score gate (page size
 budget, freshness scoring, orphan scoring)" as a **rejected default**, because the
 target repo has "no manifest and no uniform source-map timestamp, so any score
 would be invented. It is carried as a capability gap rather than built on a
