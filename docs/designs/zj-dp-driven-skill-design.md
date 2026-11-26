@@ -353,13 +353,16 @@ model-elements: [entity.design]
 
 ## Source map
 
-- 本页为 `zj-dp-driven` 的**设计先行权威**：skill 实现（`SKILL.md`、carrier、可视化）落地后，
-  须回灌 `file:line` 锚点使每条 `[目标]` 断言可被源码验证，未对齐前不得升级为"与实现对齐"。
+- [zj-docs-ontology SKILL.md](../../skills/codebase-docs/zj-docs-ontology/SKILL.md) — §5.2 收摊阶段治理 md 语料的下游执行者；本页"过程即燃料"落地的运行时依赖权威。
+- [ADR 0010 — 本地文件持久化约定](../zj-adr/0010-local-file-persistence-convention.md) — §5.4 过程态落点纪律的上游约定；sqlite + md 双载体的落点必须遵循。
+
+> **本页性质**：**zj-dp-driven** skill 尚无代码目录（本轮只落文档），故无本 skill 的 SKILL.md
+> 或 file:line 锚可列；上述两条是当前**已存在、且本页设计明确依赖**的外部权威。skill 实现落地后须回灌
+> 其自身锚点，使每条 `[目标]` 断言可被源码验证，未对齐前不得升级为"与实现对齐"。
 
 ## Related authority
 
 - [skill 运行期闭包自包含](zj-skill-runtime-closure.md) — `design.skill-runtime-closure`：本设计页不被任何运行时 skill 反向依赖，仅 reviewer 留痕。
-- `zj-docs-ontology` 治理页 — §5.2 收摊阶段对 md 语料的治理动作权威（吸收阶段再具名对齐）。
 
 ## 本轮边界声明
 
