@@ -11,5 +11,6 @@ deletions.
 - **[zj-debrief](./zj-debrief/SKILL.md)** — Close out a task as process material and route durable conclusions for later synthesis.
 - **[zj-domain-modeling](./zj-domain-modeling/SKILL.md)** — Maintain a project's domain language and glossary.
 - **[zj-neat-freak](./zj-neat-freak/SKILL.md)** — Reconcile codebase knowledge and governance drift.
+- **[zj-dp-driven](./zj-dp-driven/SKILL.md)** — Drive a complex task as one dynamic-programming run over a two-layer state graph; process state is a throwaway SQLite carrier, durable output is its markdown.
 - **[zj-roadmap-driven](./zj-roadmap-driven/SKILL.md)** — Maintain a decision-carrying execution roadmap.
 - **[zj-wayfinder](./zj-wayfinder/SKILL.md)** — Maintain a shared map of large-work planning decisions.
