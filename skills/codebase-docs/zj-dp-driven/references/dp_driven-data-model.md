@@ -149,8 +149,40 @@ from a single edge table.
 `E_NO_SUCH_PLAN`, `E_NO_SUCH_FINDING`, `E_NO_SUCH_TICKET`, `E_REF_MISSING`,
 `E_EDGE_ENDPOINT_MISSING`, `E_PLAN_NOT_1TO1`.
 
-## Out of Phase-1 scope (deferred by the design)
+Phase-2 adds (claims / settlement / closeout):
 
-Two-layer claim/lock (§4.4), optimizer + scorer (§4.2, §3.6 F3 `[未决]`), settlement round
-(§4.5), visualization (§6), two-stage closeout + process-summary (§5.2), `finding→new
-finding/task` provenance edges (§7 Q1 `[未决]`) — all land in later phases.
+`E_CLAIM_HELD_BY_OTHER`, `E_CLAIM_NOT_OWNER`, `E_CLAIM_REF_MISSING`, `E_CLAIM_KIND`,
+`E_DUP_CLAIM`, `E_POOL_EMPTY`, `E_NOT_COMPLETE`, `E_CLOSEOUT_NOT_GOVERNED`,
+`E_CLOSEOUT_MARKER_MALFORMED`, `E_CLOSEOUT_CONFIRM_REQUIRED`. CLI-side: `E_DB_MISSING`,
+`E_LOCK_TIMEOUT` (from `dp_driven_lock.LockTimeout`), `E_USAGE`.
+
+## Phase-2 carrier additions
+
+### `claim` — two-layer claim (§4.4), `dp_driven_carrier.py:102`
+
+| Column | Type | Meaning |
+|---|---|---|
+| `kind` | TEXT | `plan` \| `ticket` |
+| `ref_id` | INTEGER | task_id (plan) or ticket_id (ticket) |
+| `agent` | TEXT | opaque claimant id (no auth in Phase 2; `__settlement__` is the reserved settlement sentinel) |
+| `claimed_at` | TEXT | timestamp |
+
+PK `(kind, ref_id)` → a plan or ticket has at most one holder. `validate` checks ref
+existence and duplicate rows (`E_CLAIM_REF_MISSING` / `E_CLAIM_KIND` / `E_DUP_CLAIM`).
+
+### claim gate + lock-free set (§4.4 [定稿])
+
+- `set_plan_status(task_id, status, agent=None)` — if `agent` given, must hold (or nobody
+  holds) the plan claim; the settlement sentinel bypasses the gate (§4.5). `agent=None` = Human direct.
+- `set_ticket_status(ticket_id, status, agent=None)` — same, ticket-level.
+- **Lock-free (never claim-checked):** `dispose_finding` (§3.5), `assign_ticket` (§4.3 hotplug),
+  `add_blocks` / `add_finding_membership` (§3.4). A finding is a global node; adding/hot-plugging
+  items into a plan is not "re-optimizing its structure".
+
+## Out of Phase-2 scope (deferred by the design)
+
+Optimizer + scorer (§4.2, §3.6 F3 `[未决]`) — no `orchestrate` command; pool-subset selection is
+manual (Human/agent) per §4.2 "参考值 + 人类确认". Claim **TTL / heartbeat** (§4.4 释放条件包含超时,
+§8 `[未决]`) — releases are explicit (`release --force` is the Human-privilege escape). Visualization
+(§6). `finding→new finding/task` provenance edges (§7 Q1 `[未决]`). Metrics collection (§9).
+These land in Phase 3+.

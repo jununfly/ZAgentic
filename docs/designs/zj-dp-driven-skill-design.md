@@ -7,10 +7,11 @@ model-elements: [entity.design]
 
 # zj-dp-driven 设计文档（定位与概要设计 · 基准）
 
-> **本页性质：基准设计页（Phase-1 地基已落地）。** `zj-dp-driven` 的 §2 载体 schema 与 §3 全部
-> `[定稿]` 不变式已随 PR #306 落地为代码；已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line`
-> 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`（§4 编排、§5.2 收摊、§6 可视化、§3.6 F3 算分器等）
-> 维持原标记，待 Phase 2+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
+> **本页性质：基准设计页（Phase-1 + Phase-2 已落地）。** `zj-dp-driven` 的 §2 载体 schema、§3 全部
+> `[定稿]` 不变式随 PR #306 落地；§4.0 init / §4.4 两层 claim（含单写者）/ §4.5 结算轮 / §5.2 两段式
+> 收摊随本 Phase-2 PR 落地。已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点（汇总见 §10）。
+> 未落地的 `[目标]` / `[未决]`（§3.6 F3 算分器、§4.4 claim 超时/TTL、§6 可视化、§7 finding→新 finding/task
+> 溯源边、§9 metric）维持原标记，待 Phase 3+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
 > 无继承意图、无兼容 shim、无 legacy 保留义务——Human 判 pair 参考价值耗尽时直接删除。`zj-composer`
 > 与 dp-driven 的关系属独立讨论，本轮不预设。
@@ -60,7 +61,7 @@ model-elements: [entity.design]
 | --- | --- | --- | --- |
 | **task** | **层一状态节点**（粗粒度） | `name`（据 scoped context 总结的简单清晰 self-explain 一句话）、`created_at`、`completed_at`、**scoped context**（md）、**scoped memory**（md） | 自增 `0,1,2…`；`status` **不存储、查询派生** |
 | **task-plan** | task 的求解计算单元 = **层二状态图的子问题区域** | 编排一组 findings + tickets（运行时可增删改）、到终态时的简洁总结 | 与 task **1:1**（索引即 task 编号）；`status` **存储**（唯一状态源，见 §3.1） |
-| **finding** | **层二 memoized 子问题状态节点** | 原子化、彼此不耦合的观察/发现（结论 / 灵感 / 新问题 / 新细节 / 遗漏细节皆可是）；**不预设已成结论或已可执行**（详见 §3.5）；新发现即追加；关联 scoped md 存放其内容与处置记录（[定稿·已实现] `md_path` `dp_driven_carrier.py:68`；处置标态+摘除 `dp_driven_model.py:177`，内容/分派治理随 Phase 2） | 自增 `0,1,2…`；可归属 **0..n 个 task-plan**；可无归属（orphan，待未来 task） |
+| **finding** | **层二 memoized 子问题状态节点** | 原子化、彼此不耦合的观察/发现（结论 / 灵感 / 新问题 / 新细节 / 遗漏细节皆可是）；**不预设已成结论或已可执行**（详见 §3.5）；新发现即追加；关联 scoped md 存放其内容与处置记录（[定稿·已实现] `md_path` `dp_driven_carrier.py:68`；处置标态+摘除 `dp_driven_model.py:193`，内容/分派治理随 Phase 3） | 自增 `0,1,2…`；可归属 **0..n 个 task-plan**；可无归属（orphan，待未来 task） |
 | **ticket** | **层二原子动作状态节点** | 绑定 github/gitlab issue 或本地 md；`json-string` 内 kv 记录；ticket↔ticket 有**父子关系 + 依赖关系**；`derived_from_finding`（见 §7 Q1）；关联 scoped md 存放其详情与执行记录（[定稿·已实现] `md_path`/`kv` 列 `dp_driven_carrier.py:81`；执行记录回灌随 Phase 2） | 自增 `0,1,2…`；同一时间**只归属一个 task-plan**（单归属） |
 | **存储（carrier）** | DP 表的物理之家 | sqlite（仅过程信息）+ 同目录一组 md（长期语料） | 落点**由 Human 指定目录** |
 
@@ -105,7 +106,7 @@ model-elements: [entity.design]
 > 破坏 §3.1 的单一状态源——正是本设计根除的目标。
 
 ### 3.3 task 派生投影（示例规则）
-> **[定稿·已实现]** task.status 由 1:1 的 task-plan 投影（"派生"性质 `[定稿]`，规则已落 `dp_driven_model.py:323` `task_view`，锁测试 `test_dp_driven_model.py:46`）：
+> **[定稿·已实现]** task.status 由 1:1 的 task-plan 投影（"派生"性质 `[定稿]`，规则已落 `dp_driven_model.py:344` `task_view`，锁测试 `test_dp_driven_model.py:46`）：
 > `已完成 ⇔ plan.status = 已完成`；`已放弃 ⇔ plan.status = 已放弃`；`被阻塞 ⇔ plan 派生 blocked`；
 > 否则 `未完成`。
 
@@ -356,34 +357,42 @@ model-elements: [entity.design]
 > **[未决]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，不设先验；后三条阈值可保留初估、
 > 随实跑校准。Owner：实现期指派。Exit condition：5 个 metric 均有可重复测量方法 + 首份实跑数据落地。
 
-## 10. 实现回灌（Phase-1 · PR #306）
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 本 PR）
 
-> **[定稿·已实现]** Phase-1 落地 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**。
+> **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
+> Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
 **载体表（`dp_driven_carrier.py:49` `_SCHEMA`）**：`meta`:50 · `task`:54 · `task_plan`:61 ·
-`finding`:68 · `finding_membership`:76 · `ticket`:81 · `edge`:94。状态词表与常量在
-`dp_driven_model.py:31-43`。
+`finding`:68 · `finding_membership`:76 · `ticket`:81 · `edge`:94 · `claim`:102。状态词表、
+claim 层名与结算哨兵常量在 `dp_driven_model.py:34-54`（`SETTLEMENT_AGENT`:52）。
 
 | 设计锚 | 实现落点 | 锁测试 |
 | --- | --- | --- |
-| §2 五实体 + 索引/归属 | `dp_driven_model.py:103,151,193` `add_task/add_finding/add_ticket` | `test_dp_driven_carrier.py:54` |
-| §2 pool（派生视图，不存储） | `dp_driven_model.py:342` `pool` | `test_dp_driven_model.py:248` |
-| §3.1 状态单一源（task 不落库） | `dp_driven_model.py:103,121,323` | `test_dp_driven_model.py:46,61` |
-| §3.2 blocked 恒派生 / 缺席非 false | `dp_driven_model.py:233,267,279` | `test_dp_driven_model.py:72,91,100`；`test_dp_driven_carrier.py:86`（sqlite 不落 blocked 列） |
-| §3.2.1 external_hold 正交 | `dp_driven_model.py:252,314` | `test_dp_driven_model.py:122,132` |
-| §3.3 task 投影 | `dp_driven_model.py:323` `task_view` | `test_dp_driven_model.py:46,152` |
-| §3.4 ticket 单归属 / finding 多归属 | `dp_driven_model.py:214,160` | `test_dp_driven_model.py:186,202` |
-| §3.5 finding 处置 = 标态 + 全归属摘除 | `dp_driven_model.py:177` `dispose_finding` | `test_dp_driven_model.py:217,229` |
-| §3.6 F1 全局内层图 / F2 外层商图 | `dp_driven_carrier.py:94` · `dp_driven_model.py:295` `plan_is_blocked` | `test_dp_driven_model.py:152,163,174` |
-| §5.1 完成判据 | `dp_driven_model.py:356` `is_complete` | `test_dp_driven_model.py:279,288` |
-| §5.3 sqlite 仅过程态、不被长期文档反向引用 | `dp_driven_carrier.py` 模块文档 + SKILL.md §Placement & closure discipline | — 属纪律性约束，非可失败测试（长期文档若反向引用 carrier 由 `check-docs-dangling-refs` + ontology `UNMAPPED_PAGE` 在治理侧捕获，非本 skill 代码内断言） |
+| §2 五实体 + 索引/归属 | `dp_driven_model.py:114,167,209` `add_task/add_finding/add_ticket` | `test_dp_driven_carrier.py:54` |
+| §2 pool（派生视图，不存储） | `dp_driven_model.py:363` `pool` | `test_dp_driven_model.py:248` |
+| §3.1 状态单一源（task 不落库） | `dp_driven_model.py:114,132,344` | `test_dp_driven_model.py:46,61` |
+| §3.2 blocked 恒派生 / 缺席非 false | `dp_driven_model.py:254,288,300` | `test_dp_driven_model.py:72,91,100`；`test_dp_driven_carrier.py:86`（sqlite 不落 blocked 列） |
+| §3.2.1 external_hold 正交 | `dp_driven_model.py:273,335` | `test_dp_driven_model.py:122,132` |
+| §3.3 task 投影 | `dp_driven_model.py:344` `task_view` | `test_dp_driven_model.py:46,152` |
+| §3.4 ticket 单归属 / finding 多归属 | `dp_driven_model.py:230,176` | `test_dp_driven_model.py:186,202` |
+| §3.5 finding 处置 = 标态 + 全归属摘除 | `dp_driven_model.py:193` `dispose_finding` | `test_dp_driven_model.py:217,229` |
+| §3.6 F1 全局内层图 / F2 外层商图 | `dp_driven_carrier.py:94` · `dp_driven_model.py:316` `plan_is_blocked` | `test_dp_driven_model.py:152,163,174` |
+| §5.1 完成判据 | `dp_driven_model.py:377` `is_complete` | `test_dp_driven_model.py:279,288` |
+| §5.3 sqlite 仅过程态、不被长期文档反向引用 | `dp_driven_carrier.py` 模块文档 + SKILL.md §Placement & closure discipline | — 属纪律性约束，非可失败测试（治理侧由 `check-docs-dangling-refs` + ontology `UNMAPPED_PAGE` 捕获） |
 | §7 Q1(a) `derived_from_finding` 物化列 | `dp_driven_carrier.py:81` | `test_dp_driven_carrier.py:66` |
+| §4.0 init（destination → carrier） | `dp_driven_cli.py:cmd_init` · `dp_driven_model.py:87` | `test_dp_driven_cli.py:39` |
+| §4.4 两层 claim（claim 表 + API） | `dp_driven_carrier.py:102` · `dp_driven_model.py:385,411,434` `claim/release/list_claims` | `test_dp_driven_claim.py:23`；`test_dp_driven_carrier.py:111` |
+| §4.4 claim 门（status 改写受控）+ lock-free（dispose / 热插 / blocks 不受门） | `dp_driven_model.py:638` `_require_claim_free_or_mine` | `test_dp_driven_claim.py:92,116,137` |
+| §4.4 carrier 单写者原子性 | `dp_driven_lock.py:acquire` | `test_dp_driven_lock.py:45`（跨进程互斥） |
+| §4.5 结算轮（收纳 pool + blocks 拓扑序 + plan-claim 退化） | `dp_driven_model.py:439,656` `settlement_run` + `_topo_order_pool` | `test_dp_driven_settlement.py:24,77`；`test_dp_driven_claim.py:174` |
+| §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:462,519,539` `closeout_export_summary / _verify_governed / _delete_carrier` | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114` |
 
-**仍未升级（Phase 2+ / `[未决]`）**：§4 编排主循环 + CLI、§4.3 热插、§4.4 两层 claim、
-§4.5 结算轮、§4.6 / §5.2 两段式收摊 + `process-summary.md` 导出、§6 可视化、§3.6 F3 算分器、
-§7 Q1 finding→新 finding/task 溯源边列、§9 metric 采集、SKILL.md 命令面 / opt-in 配置名。
+**仍未升级（Phase 3+ / `[未决]`）**：§3.6 F3 编排 optimizer + 算分器（本轮 CLI 无 `orchestrate`
+命令，pool 子集由 Human/agent 手工选，符合 §4.2「参考值 + 人类确认」但算法未落）、§4.4 claim
+**超时释放 / TTL**（§8 `[未决]`，本轮仅显式 `release --force`）、§6 可视化渲染、§7 Q1 finding→新
+finding/task 溯源边列、§9 metric 采集。
 
 ## Source map
 
@@ -402,11 +411,16 @@ model-elements: [entity.design]
 
 ## 基准轮边界声明
 
-`[定稿]` 本页确立**定位 + 功能模型 + 概要设计**基准。Phase-1 地基已随 **PR #306** 落地：创建
-`skills/codebase-docs/zj-dp-driven/`（`dp_driven_carrier.py` + `dp_driven_model.py` + 35 个测试 +
-`SKILL.md` + `dp_driven-data-model.md`），并登记进 `scripts/zagentic-skills-list`、bucket 与
-顶层 `README.md`、`ZJ-CONTEXT.md`、`zj-guide`；本设计页本身也已进 [`docs/README.md`](../README.md)
-Design 索引与 [`docs/ontology/model.json`](../ontology/model.json)。已实现项的源码锚点见 §10。
+`[定稿]` 本页确立**定位 + 功能模型 + 概要设计**基准，分阶段回灌代码：
 
-**本轮（本回灌 PR）只更新本页标记与锚点，不改代码**。§10"仍未升级"清单（§4 编排 / §4.4 锁 / §5.2 收摊 /
-§6 可视化 / §3.6 F3 算分器 / …）属 Phase 2+，届时再回灌。
+- **Phase-1（PR #306）**：创建 `skills/codebase-docs/zj-dp-driven/`（`dp_driven_carrier.py` +
+  `dp_driven_model.py` + 35 测试 + `SKILL.md` + `dp_driven-data-model.md`），落地 §2 schema + §3 全部
+  不变式 + §5.1 + §7 Q1(a)；登记进 `scripts/zagentic-skills-list`、bucket 与顶层 `README.md`、
+  `ZJ-CONTEXT.md`、`zj-guide`。本设计页也已进 [`docs/README.md`](../README.md) Design 索引与
+  [`docs/ontology/model.json`](../ontology/model.json)。
+- **Phase-2（本 PR）**：新增 `dp_driven_cli.py` + `dp_driven_lock.py` + claim 表 + `dp_driven_model.py`
+  的 claim/settlement/closeout API + 5 个新测试文件（累计 87 测试）；落地 §4.0 / §4.4 两层 claim（单写者
+  flock）/ §4.5 结算轮 / §5.2 两段式收摊（`.governed.json` 治理门 + 显式 force 删）。设计页 §10 同步扩行。
+
+**刻意留在 Phase 3+**（见 §10"仍未升级"）：§3.6 F3 编排 optimizer + 算分器、§4.4 claim 超时/TTL、
+§6 可视化、§7 Q1 finding→新 finding/task 溯源边列、§9 metric 采集。Phase-2 不假装做了这些。

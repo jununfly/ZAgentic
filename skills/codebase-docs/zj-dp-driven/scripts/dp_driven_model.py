@@ -24,6 +24,9 @@ finding *disposition* here records the §3.5 step-3 摘除+标态, while downstr
 
 from __future__ import annotations
 
+import json
+import os
+
 import dp_driven_carrier as carrier
 
 # ── status word table (§2). Display has four states; storage keeps three. ──
@@ -39,6 +42,14 @@ TERMINAL_STATUSES = (S_DONE, S_ABANDONED)        # §5.1 完成判据 counts the
 KIND_TASK = "task"
 KIND_TICKET = "ticket"
 KIND_FINDING = "finding"
+
+# §4.4 two-layer claim kinds (opaque identifiers on the `claim` table).
+CLAIM_PLAN = "plan"
+CLAIM_TICKET = "ticket"
+
+# §4.5 sentinel agent: a plan claimed by __settlement__ is the settlement round —
+# its plan-level claim gate is bypassed so any agent may claim tickets inside it.
+SETTLEMENT_AGENT = "__settlement__"
 
 EDGE_BLOCKS = "blocks"     # the only edge type that blocks (§3.2); parent-child is a column
 EDGE_TYPES = (EDGE_BLOCKS,)
@@ -119,9 +130,12 @@ class DpDriven:
         return tid
 
     def set_plan_status(self, task_id: int, status: str,
-                        summary: str | None = None, now: str | None = None) -> None:
+                        summary: str | None = None, now: str | None = None,
+                        agent: str | None = None) -> None:
         """Write the task↔plan lifecycle at its ONLY source: the task_plan (§3.1).
-        Rejects 被阻塞 — blocked is derived, never stored (§3.2)."""
+        Rejects 被阻塞 — blocked is derived, never stored (§3.2).
+        §4.4 claim gate: if `agent` is provided, that agent must hold (or nobody holds)
+        the plan-level claim. `agent=None` = Human direct action, no gate."""
         if status == S_BLOCKED:
             raise DpDrivenError("E_INVALID_STATUS",
                                 "被阻塞 是派生态，不能写入 status（§3.2 单一状态源）")
@@ -131,6 +145,8 @@ class DpDriven:
         plan = self.data["plans"].get(str(task_id))
         if plan is None:
             raise DpDrivenError("E_NO_SUCH_PLAN", f"task {task_id} 没有 1:1 task_plan")
+        if agent is not None:
+            self._require_claim_free_or_mine(CLAIM_PLAN, task_id, agent)
         plan["status"] = status
         if summary is not None:
             plan["summary"] = summary
@@ -219,12 +235,17 @@ class DpDriven:
             self._require_task(task_id)
         t["task_id"] = task_id
 
-    def set_ticket_status(self, ticket_id: int, status: str, now: str | None = None) -> None:
+    def set_ticket_status(self, ticket_id: int, status: str, now: str | None = None,
+                          agent: str | None = None) -> None:
+        """§4.4 ticket-level claim gate: if `agent` is provided and someone else holds
+        this ticket's claim, the write is rejected. `agent=None` = Human direct."""
         t = self._require_ticket(ticket_id)
         if status == S_BLOCKED:
             raise DpDrivenError("E_INVALID_STATUS", "被阻塞 是派生态，不能写入 ticket.status")
         if status not in STORED_STATUSES:
             raise DpDrivenError("E_INVALID_STATUS", f"status 必须 ∈ {list(STORED_STATUSES)}")
+        if agent is not None:
+            self._require_claim_free_or_mine(CLAIM_TICKET, ticket_id, agent)
         t["status"] = status
         t["completed_at"] = (now or _now()) if status in TERMINAL_STATUSES else None
 
@@ -359,6 +380,186 @@ class DpDriven:
             return False
         return all(p["status"] in TERMINAL_STATUSES for p in self.data["plans"].values())
 
+    # ── claims (§4.4 two-layer) ───────────────────────────
+
+    def claim(self, kind: str, ref_id: int, agent: str, now: str | None = None) -> bool:
+        """Acquire a plan-level or ticket-level claim (§4.4).
+        Returns True if newly acquired, False if the same agent already holds it.
+        Raises E_CLAIM_HELD_BY_OTHER if a different agent holds it,
+        E_INVALID_KIND if kind is not 'plan' | 'ticket',
+        E_NO_SUCH_TASK / E_NO_SUCH_TICKET if the ref does not exist.
+        No TTL in Phase 2 (§4.4 释放条件包含超时 is `[未决]` §8) — release is explicit.
+        """
+        if kind == CLAIM_PLAN:
+            self._require_task(ref_id)
+        elif kind == CLAIM_TICKET:
+            self._require_ticket(ref_id)
+        else:
+            raise DpDrivenError("E_INVALID_KIND", f"claim kind 必须是 {CLAIM_PLAN} | {CLAIM_TICKET}")
+        existing = self._find_claim(kind, ref_id)
+        if existing is None:
+            self.data["claims"].append({
+                "kind": kind, "ref_id": ref_id, "agent": agent,
+                "claimed_at": now or _now(),
+            })
+            return True
+        if existing["agent"] == agent:
+            return False
+        raise DpDrivenError("E_CLAIM_HELD_BY_OTHER",
+                            f"{kind}#{ref_id} 已被 agent {existing['agent']!r} claim")
+
+    def release(self, kind: str, ref_id: int, agent: str | None = None,
+                force: bool = False) -> bool:
+        """Release a claim. `force=True` (Human 特权) 或 `agent=None` 无条件释放；
+        否则必须由持有人释放。缺 claim 视为 no-op (False)。§4.1 优先级抢占 = 持有人
+        显式 release 而不新增第五态。"""
+        if force or agent is None:
+            before = len(self.data["claims"])
+            self.data["claims"] = [c for c in self.data["claims"]
+                                   if not (c["kind"] == kind and c["ref_id"] == ref_id)]
+            return len(self.data["claims"]) != before
+        existing = self._find_claim(kind, ref_id)
+        if existing is None:
+            return False
+        if existing["agent"] != agent:
+            raise DpDrivenError("E_CLAIM_NOT_OWNER",
+                                f"{kind}#{ref_id} 由 {existing['agent']!r} 持有，{agent!r} 无权 release")
+        self.data["claims"] = [c for c in self.data["claims"] if c is not existing]
+        return True
+
+    def claim_owner(self, kind: str, ref_id: int) -> str | None:
+        c = self._find_claim(kind, ref_id)
+        return c["agent"] if c else None
+
+    def list_claims(self) -> list[dict]:
+        return [dict(c) for c in sorted(self.data["claims"], key=lambda c: (c["kind"], c["ref_id"]))]
+
+    # ── settlement round (§4.5) ───────────────────────────
+
+    def settlement_run(self, name: str | None = None, now: str | None = None) -> tuple[int, list[dict]]:
+        """§4.5 结算轮: 建一个特殊 task-plan 收纳 pool 中所有未解决 items，
+        次序退化为主线顺序（blocks 拓扑优先，其余按 id 递增）。Plan-level claim 退化——
+        用 SETTLEMENT_AGENT 哨兵，set_plan_status 对该哨兵 bypass。
+        返回 (task_id, items)。空 pool → E_POOL_EMPTY。"""
+        items = self.pool()
+        if not items:
+            raise DpDrivenError("E_POOL_EMPTY", "pool 为空，无需结算轮")
+        ordered = self._topo_order_pool(items)
+        tid = self.add_task(name or f"结算轮", now=now)
+        self.data["claims"].append({
+            "kind": CLAIM_PLAN, "ref_id": tid, "agent": SETTLEMENT_AGENT,
+            "claimed_at": now or _now(),
+        })
+        for it in ordered:
+            if it["kind"] == KIND_TICKET:
+                self.assign_ticket(it["id"], tid)
+            else:
+                self.add_finding_membership(it["id"], tid)
+        return tid, ordered
+
+    # ── two-stage closeout (§5.2) ─────────────────────────
+
+    def closeout_export_summary(self, out_path: str) -> str:
+        """§5.2 步 1: 把过程图的关键结构性关系（跨 plan 依赖 / finding 多归属映射 /
+        物化链路）导出为 markdown 落进同目录，供治理者查阅。
+        Deterministic ordering → 相同输入两次输出字节相等。"""
+        lines: list[str] = []
+        dest = self.data["meta"].get("destination", "")
+        lines.append("# Process summary")
+        lines.append("")
+        lines.append(f"- destination: {dest}")
+        lines.append(f"- is_complete: {self.is_complete()}")
+        lines.append("")
+        lines.append("## Tasks")
+        lines.append("")
+        lines.append("| id | name | status | completed_at |")
+        lines.append("| --- | --- | --- | --- |")
+        for t in sorted(self.data["tasks"].values(), key=lambda x: x["id"]):
+            tv = self.task_view(t["id"])
+            lines.append(f"| {t['id']} | {t['name']} | {tv['status']} | {tv.get('completed_at') or ''} |")
+        lines.append("")
+        lines.append("## Cross-plan blocks (§3.6 F2 商图边)")
+        lines.append("")
+        lines.append("| edge_id | from (kind#id @ plan) | to (kind#id @ plan) |")
+        lines.append("| --- | --- | --- |")
+        for e in sorted(self.data["edges"], key=lambda x: x["id"]):
+            if e["type"] != EDGE_BLOCKS:
+                continue
+            fplan = self._item_plan(e["from_kind"], e["from_id"])
+            tplan = self._item_plan(e["to_kind"], e["to_id"])
+            lines.append(
+                f"| {e['id']} | {e['from_kind']}#{e['from_id']} @ {fplan if fplan is not None else '-'} | "
+                f"{e['to_kind']}#{e['to_id']} @ {tplan if tplan is not None else '-'} |"
+            )
+        lines.append("")
+        lines.append("## Finding multi-membership (§3.4)")
+        lines.append("")
+        lines.append("| finding_id | plans | status |")
+        lines.append("| --- | --- | --- |")
+        for f in sorted(self.data["findings"].values(), key=lambda x: x["id"]):
+            plans = sorted(self.find_memberships(f["id"]))
+            lines.append(f"| {f['id']} | {','.join(str(p) for p in plans) or '-'} | {f['status']} |")
+        lines.append("")
+        lines.append("## Ticket materialization (§7 Q1 derived_from_finding + parent_id + §2 ref)")
+        lines.append("")
+        lines.append("| ticket_id | ref | derived_from_finding | parent_id | task_id | status |")
+        lines.append("| --- | --- | --- | --- | --- | --- |")
+        for t in sorted(self.data["tickets"].values(), key=lambda x: x["id"]):
+            lines.append(
+                f"| {t['id']} | {t.get('ref') or '-'} | "
+                f"{t.get('derived_from_finding') if t.get('derived_from_finding') is not None else '-'} | "
+                f"{t.get('parent_id') if t.get('parent_id') is not None else '-'} | "
+                f"{t['task_id'] if t['task_id'] is not None else '-'} | {t['status']} |"
+            )
+        lines.append("")
+        with open(out_path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(lines))
+        return out_path
+
+    def closeout_verify_governed(self, marker_path: str | None = None) -> dict:
+        """§5.2 步 2 门：治理完成 = 存在 .governed.json marker（由 zj-docs-ontology
+        侧写入）。校验 is_complete() + marker 存在 + schema 合理。返回 marker payload；
+        任一失败抛 DpDrivenError。"""
+        if not self.is_complete():
+            raise DpDrivenError("E_NOT_COMPLETE", "closeout 前所有 task 必须到终态（§5.1）")
+        path = marker_path or self._default_marker_path()
+        if not os.path.exists(path):
+            raise DpDrivenError("E_CLOSEOUT_NOT_GOVERNED",
+                                f"未找到治理 marker: {path}（zj-docs-ontology 完成时应写入）")
+        with open(path, encoding="utf-8") as fh:
+            try:
+                payload = json.loads(fh.read())
+            except json.JSONDecodeError as e:
+                raise DpDrivenError("E_CLOSEOUT_MARKER_MALFORMED", f"{path}: {e}")
+        if not isinstance(payload, dict) or "governed_at" not in payload:
+            raise DpDrivenError("E_CLOSEOUT_MARKER_MALFORMED",
+                                f"{path} 缺 governed_at 字段")
+        return payload
+
+    def closeout_delete_carrier(self, force: bool = False,
+                                marker_path: str | None = None) -> str:
+        """§5.2 步 3: 顺序门 (a) is_complete + governed marker（先跑 verify），
+        (b) 显式 force。删除 sqlite 与 sidecar (.lock/.sqlite-wal/.sqlite-shm)。
+        返回被删的 carrier 路径。"""
+        self.closeout_verify_governed(marker_path)
+        if not force:
+            raise DpDrivenError("E_CLOSEOUT_CONFIRM_REQUIRED",
+                                "删除 sqlite 是终结动作，需显式 force=True")
+        db = self.db_path
+        for suffix in ("", "-wal", "-shm", ".lock"):
+            p = db + suffix
+            if os.path.exists(p):
+                os.remove(p)
+        return db
+
+    def _default_marker_path(self) -> str:
+        base = self.db_path
+        for ext in (".sqlite", ".sqlite3", ".db"):
+            if base.endswith(ext):
+                base = base[: -len(ext)]
+                break
+        return base + ".governed.json"
+
     # ── invariants ────────────────────────────────────────
 
     def validate(self) -> list[str]:
@@ -400,6 +601,20 @@ class DpDriven:
                     self._resolve(kind, nid)
                 except DpDrivenError:
                     errs.append(f"E_EDGE_ENDPOINT_MISSING: edge {e['id']} 端点 {kind}#{nid} 不存在")
+        seen_claim: set[tuple[str, int]] = set()
+        for c in self.data["claims"]:
+            key = (c["kind"], c["ref_id"])
+            if key in seen_claim:
+                errs.append(f"E_DUP_CLAIM: {c['kind']}#{c['ref_id']} 重复 claim")
+            seen_claim.add(key)
+            if c["kind"] == CLAIM_PLAN:
+                if str(c["ref_id"]) not in self.data["tasks"]:
+                    errs.append(f"E_CLAIM_REF_MISSING: plan claim → 不存在的 task {c['ref_id']}")
+            elif c["kind"] == CLAIM_TICKET:
+                if str(c["ref_id"]) not in self.data["tickets"]:
+                    errs.append(f"E_CLAIM_REF_MISSING: ticket claim → 不存在的 ticket {c['ref_id']}")
+            else:
+                errs.append(f"E_CLAIM_KIND: 未知 claim.kind={c['kind']!r}")
         return errs
 
     # ── helpers ───────────────────────────────────────────
@@ -413,6 +628,66 @@ class DpDriven:
             if m["task_id"] == task_id:
                 nodes.add((KIND_FINDING, m["finding_id"]))
         return nodes
+
+    def _find_claim(self, kind: str, ref_id: int) -> dict | None:
+        for c in self.data["claims"]:
+            if c["kind"] == kind and c["ref_id"] == ref_id:
+                return c
+        return None
+
+    def _require_claim_free_or_mine(self, kind: str, ref_id: int, agent: str) -> None:
+        """§4.4 claim gate helper: no claim OR claim by same agent OR settlement sentinel
+        → allowed. Any other holder → E_CLAIM_HELD_BY_OTHER."""
+        existing = self._find_claim(kind, ref_id)
+        if existing is None or existing["agent"] == agent:
+            return
+        if kind == CLAIM_PLAN and existing["agent"] == SETTLEMENT_AGENT:
+            return  # §4.5: settlement plan bypasses plan-claim gate
+        raise DpDrivenError("E_CLAIM_HELD_BY_OTHER",
+                            f"{kind}#{ref_id} 由 {existing['agent']!r} 持有，{agent!r} 无权改写")
+
+    def _item_plan(self, kind: str, node_id: int) -> int | None:
+        """Return the task_id an item currently belongs to (ticket.owner / first membership)."""
+        if kind == KIND_TICKET:
+            return self._require_ticket(node_id).get("task_id")
+        plans = self.find_memberships(node_id)
+        return plans[0] if plans else None
+
+    def _topo_order_pool(self, items: list[dict]) -> list[dict]:
+        """§4.5 结算轮次序：blocks 拓扑优先，剩余按 (kind=ticket-first, id) 递增。
+        使用 Kahn 分层；只考虑 pool 内部边（in-pool from & to）。"""
+        ids = {(it["kind"], it["id"]) for it in items}
+        indeg = {k: 0 for k in ids}
+        adj: dict[tuple, list[tuple]] = {k: [] for k in ids}
+        for e in self.data["edges"]:
+            if e["type"] != EDGE_BLOCKS:
+                continue
+            src = (e["from_kind"], e["from_id"])
+            dst = (e["to_kind"], e["to_id"])
+            if src in ids and dst in ids:
+                adj[src].append(dst)
+                indeg[dst] += 1
+        def order_key(k: tuple) -> tuple:
+            # ticket before finding at same "level"; then by id
+            return (0 if k[0] == KIND_TICKET else 1, k[1])
+        ready = sorted([k for k, d in indeg.items() if d == 0], key=order_key)
+        out: list[dict] = []
+        by_id = {("ticket", it["id"]): it for it in items if it["kind"] == KIND_TICKET}
+        by_id.update({("finding", it["id"]): it for it in items if it["kind"] == KIND_FINDING})
+        visited: set[tuple] = set()
+        while ready:
+            cur = ready.pop(0)
+            out.append(by_id[cur])
+            visited.add(cur)
+            for nxt in adj[cur]:
+                indeg[nxt] -= 1
+                if indeg[nxt] == 0:
+                    ready.append(nxt)
+            ready.sort(key=order_key)
+        leftover = sorted([it for it in items if (it["kind"], it["id"]) not in visited],
+                          key=lambda it: order_key((it["kind"], it["id"])))
+        out.extend(leftover)
+        return out
 
     def _require_task(self, task_id: int) -> dict:
         t = self.data["tasks"].get(str(task_id))

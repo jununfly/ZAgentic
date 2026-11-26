@@ -18,15 +18,17 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 — foundation only
+## Status: Phase 1 + Phase 2
 
-Implemented now: the **carrier schema** (`scripts/dp_driven_carrier.py`) and the **five-entity
-model + derived-state core** (`scripts/dp_driven_model.py`), locked by `tests/`.
+Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
+derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
+**single-writer lock** (`scripts/dp_driven_lock.py`), **two-layer claim (§4.4) + settlement round
+(§4.5) + two-stage closeout (§5.2)**. 87 tests in `tests/` lock every invariant.
 
-Deferred to later phases (per the design's §8 渐进策略 and `[未决]` items): the orchestration
-CLI, the optimizer + scorer (§4.2 / §3.6 F3), two-layer claim/lock (§4.4), settlement round
-(§4.5), visualization (§6), and two-stage closeout (§5.2). Until the CLI lands, drive the
-foundation through the documented `DpDriven` API (see [data model](references/dp_driven-data-model.md)).
+Deferred to Phase 3+ (design `[未决]` / progressive-rollout §8): the optimizer + scorer (§4.2 / §3.6 F3 —
+CLI has no `orchestrate`; pool-subset selection is manual), claim **TTL / heartbeat** (§4.4 — releases
+are explicit, `release --force` is the Human escape), visualization (§6), `finding→new finding/task`
+provenance edges (§7 Q1), metrics collection (§9).
 
 ## The model in one breath (§1–§2)
 
@@ -55,27 +57,60 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
 6. **Two-layer quotient (§3.6 F2).** Outer task/plan `blocked` is the projection of inner
    cross-region `blocks` edges — the inner layer is the sole truth; nothing stores outer `blocked`.
 
-## Quick start (library, Phase 1)
+6. **Two-layer quotient (§3.6 F2).** Outer task/plan `blocked` is the projection of inner
+   cross-region `blocks` edges — the inner layer is the sole truth; nothing stores outer `blocked`.
+7. **Two-layer claim (§4.4).** plan-claim guards re-optimization (`set_plan_status`); ticket-claim
+   guards duplicate execution (`set_ticket_status`). `dispose_finding`, `assign_ticket` (hot-plug),
+   and `add_blocks` are **lock-free** by design. Single-writer atomicity = `dp_driven_lock.acquire`
+   around every CLI write; no claim TTL yet (§8 `[未决]` — use `release --force`).
+8. **Settlement round (§4.5).** A special plan absorbs the whole pool, `SETTLEMENT_AGENT` sentinel
+   bypasses its plan-claim gate so any agent may claim tickets inside it.
+9. **Two-stage closeout (§5.2).** Export snapshot → require `.governed.json` marker → delete sqlite
+   + WAL/SHM/lock sidecars only, never the `.md` corpus. Order is code-enforced (`E_NOT_COMPLETE`,
+   `E_CLOSEOUT_NOT_GOVERNED`, `E_CLOSEOUT_CONFIRM_REQUIRED`).
+
+## Quick start (CLI)
 
 ```bash
 # $SKILL_ROOT = absolute path to this SKILL.md's directory (resolved by the loading agent).
 # Carrier + scoped md land in a Human-specified dir, default docs/plans/dp-driven/<topic>/
 # (ADR 0010 process zone). NEVER default to ~ / repo root / cwd (§5.4).
-PYTHONPATH="$SKILL_ROOT/scripts" python3 - <<'PY'
-from dp_driven_model import DpDriven, KIND_TICKET, KIND_FINDING
+DP="python3 $SKILL_ROOT/scripts/dp_driven_cli.py"
+DB=docs/plans/dp-driven/login/dp_driven.sqlite
 
-run = DpDriven.init("docs/plans/dp-driven/login/dp_driven.sqlite", destination="上线登录 v2")
-t1 = run.add_task("后端登录流水线", context_md="docs/plans/dp-driven/login/context.md")
-a  = run.add_ticket(task_id=t1, ref="gh#10")
-b  = run.add_ticket(task_id=t1)
-run.add_blocks(KIND_TICKET, a, KIND_TICKET, b)   # b 被阻塞 until a 已完成
-run.save()
-print(run.task_view(t1))                          # status derived, never stored
-PY
+$DP init  "$DB" --destination "上线登录 v2"
+$DP task  add "$DB" --name "后端登录流水线" --context-md docs/plans/dp-driven/login/context.md
+$DP ticket add "$DB" --task 0 --ref gh#10
+$DP ticket add "$DB" --task 0
+$DP blocks add "$DB" --from ticket:0 --to ticket:1     # b 被阻塞 until a 已完成
+$DP status "$DB" ticket:1                              # derived_blocked: true
+
+$DP claim   "$DB" plan 0 --agent alice                 # §4.4
+$DP ticket  status "$DB" 0 --set 已完成 --agent alice
+$DP status  "$DB" ticket:1                             # blocked gone, nothing stored changed
+$DP complete-check "$DB"
 ```
 
-`b` shows `derived_blocked: true` until `a` reaches `已完成`; then the very next read clears it
-with no stored field touched. See `tests/test_dp_driven_model.py` for each invariant's executable spec.
+`ticket:1` shows `derived_blocked: true` until `ticket:0` reaches `已完成`; then the next read
+clears it with no stored field touched (see [data model](references/dp_driven-data-model.md)).
+
+### Closeout (§5.2)
+
+```bash
+$DP closeout summary "$DB" --out docs/plans/dp-driven/login/process-summary.md  # 步 1
+# 步 2: Human 用 zj-docs-ontology 治理该目录 md，然后写 dp_driven.governed.json
+$DP closeout delete  "$DB" --force                                               # 步 3
+```
+
+See [closeout contract](references/dp_driven-closeout.md) for the marker schema and ordering gates.
+Full command + exit-code table in [CLI reference](references/dp_driven-cli.md).
+
+### Library API (optional deep use)
+
+The CLI wraps the same `DpDriven` methods (`add_task` / `add_ticket` / `dispose_finding` /
+`claim` / `settlement_run` / `closeout_*` / ...); drive them directly for bulk or programmatic
+work. Every mutating call still assumes single-writer — hold `dp_driven_lock.acquire(db)` around
+a load→mutate→save cycle. See `tests/test_dp_driven_model.py` for each invariant's executable spec.
 
 ## Placement & closure discipline
 
