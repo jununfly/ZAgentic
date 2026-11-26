@@ -112,16 +112,21 @@ class DpDriven:
     # ── task / task_plan (§2, §3.1) ───────────────────────
 
     def add_task(self, name: str, context_md: str | None = None,
-                 memory_md: str | None = None, now: str | None = None) -> int:
+                 memory_md: str | None = None, now: str | None = None,
+                 derived_from_finding: int | None = None) -> int:
         """Create a layer-1 task AND its 1:1 task_plan. task carries no status (§3.1);
-        the plan is the single lifecycle source, starting 未完成."""
+        the plan is the single lifecycle source, starting 未完成. `derived_from_finding`
+        records §3.5 form-③ origin — a new task a finding's disposition opened up."""
         if not name or not name.strip():
             raise DpDrivenError("E_INVALID_NAME", "task name 必须是非空、self-explain 的一句话")
+        if derived_from_finding is not None:
+            self._require_finding(derived_from_finding)
         tid = _next_id(self.data["tasks"])
         ts = now or _now()
         self.data["tasks"][str(tid)] = {
             "id": tid, "name": name.strip(), "context_md": context_md,
-            "memory_md": memory_md, "created_at": ts,
+            "memory_md": memory_md, "derived_from_finding": derived_from_finding,
+            "created_at": ts,
         }
         self.data["plans"][str(tid)] = {
             "task_id": tid, "status": S_OPEN, "summary": None,
@@ -165,11 +170,17 @@ class DpDriven:
     # ── finding (§2, §3.4, §3.5) ──────────────────────────
 
     def add_finding(self, md_path: str | None = None, external_hold: str | None = None,
-                    now: str | None = None) -> int:
+                    now: str | None = None,
+                    derived_from_finding: int | None = None) -> int:
+        """Create a finding. `derived_from_finding` records §3.5 form-② origin — a new
+        finding split out of a parent finding's disposition (NULL = a root observation)."""
+        if derived_from_finding is not None:
+            self._require_finding(derived_from_finding)   # source must already exist
         fid = _next_id(self.data["findings"])
         self.data["findings"][str(fid)] = {
             "id": fid, "status": S_OPEN, "md_path": md_path,
-            "external_hold": external_hold, "created_at": now or _now(), "completed_at": None,
+            "external_hold": external_hold, "derived_from_finding": derived_from_finding,
+            "created_at": now or _now(), "completed_at": None,
         }
         return fid
 
@@ -512,6 +523,20 @@ class DpDriven:
                 f"{t['task_id'] if t['task_id'] is not None else '-'} | {t['status']} |"
             )
         lines.append("")
+        lines.append("## Finding derivation (§3.5 形态② finding→finding / 形态③ finding→task)")
+        lines.append("")
+        lines.append("| source_finding | target_kind | target_id |")
+        lines.append("| --- | --- | --- |")
+        derived_rows = []
+        for f in sorted(self.data["findings"].values(), key=lambda x: x["id"]):
+            if f.get("derived_from_finding") is not None:
+                derived_rows.append((f["derived_from_finding"], KIND_FINDING, f["id"]))
+        for t in sorted(self.data["tasks"].values(), key=lambda x: x["id"]):
+            if t.get("derived_from_finding") is not None:
+                derived_rows.append((t["derived_from_finding"], KIND_TASK, t["id"]))
+        for src, kind, tid in sorted(derived_rows, key=lambda r: (r[0], r[1], r[2])):
+            lines.append(f"| {src} | {kind} | {tid} |")
+        lines.append("")
         with open(out_path, "w", encoding="utf-8") as fh:
             fh.write("\n".join(lines))
         return out_path
@@ -593,6 +618,14 @@ class DpDriven:
                 errs.append(f"E_REF_MISSING: membership 指向不存在的 finding {m['finding_id']}")
             if str(m["task_id"]) not in self.data["tasks"]:
                 errs.append(f"E_REF_MISSING: membership 指向不存在的 task {m['task_id']}")
+        # §3.5 form-②③ provenance: finding.derived_from_finding and task.derived_from_finding
+        # must reference an existing finding (E_REF_MISSING).
+        for kind, table in (("finding", "findings"), ("task", "tasks")):
+            for n in self.data[table].values():
+                src = n.get("derived_from_finding")
+                if src is not None and str(src) not in self.data["findings"]:
+                    errs.append(f"E_REF_MISSING: {kind} {n['id']}.derived_from_finding "
+                                f"指向不存在的 finding {src}")
         for e in self.data["edges"]:
             if e["type"] not in EDGE_TYPES:
                 errs.append(f"E_INVALID_EDGE_TYPE: edge {e['id']}.type={e['type']!r} 不支持")

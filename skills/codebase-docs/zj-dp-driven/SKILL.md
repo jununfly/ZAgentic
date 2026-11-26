@@ -18,18 +18,18 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + Phase 2 + Phase 3a (optimizer)
+## Status: Phase 1 + Phase 2 + Phase 3a + Phase 3b (optimizer + derivation)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
 **single-writer lock** (`scripts/dp_driven_lock.py`), **two-layer claim (§4.4) + settlement round
 (§4.5) + two-stage closeout (§5.2)**, **greedy cohesion optimizer + scorer (§3.6 F3 / §4.2)**
-(`scripts/dp_driven_optimize.py`). 105 tests in `tests/` lock every invariant.
+(`scripts/dp_driven_optimize.py`), **§3.5 form-②③ derivation columns** (`finding/task.derived_from_finding`,
+Phase-3b). 117 tests in `tests/` lock every invariant.
 
 Deferred to later phases (design `[未决]` / progressive-rollout §8): claim **TTL / heartbeat** (§4.4 —
-releases stay explicit, `release --force` is the Human escape), visualization (§6), `finding→new
-finding/task` provenance edges (§7 Q1), metrics collection (§9), and any re-calibration of the
-optimizer's default weights against real-run data (§9).
+releases stay explicit, `release --force` is the Human escape), visualization (§6), metrics collection
+(§9), and any re-calibration of the optimizer's default weights against real-run data (§9).
 
 ## The model in one breath (§1–§2)
 
@@ -54,7 +54,9 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
 4. **Ownership (§3.4).** ticket is single-owner (`task_id` column; `NULL` = in pool); finding is
    multi-owner (`finding_membership` table). A "shared ticket" is really a shared **finding**.
 5. **Finding memo (§3.5).** `已完成` = 已处置: `dispose_finding` marks the node AND removes it
-   from every plan it belongs to, so it is never re-processed. Downstream分派 is orchestration.
+    from every plan it belongs to, so it is never re-processed. Disposition may materialize downstream
+    tickets (form-① `ticket.derived_from_finding`), new findings (form-② `finding.derived_from_finding`),
+    or new tasks (form-③ `task.derived_from_finding`) — all single-parent provenance columns (§7 Q1).
 6. **Two-layer quotient (§3.6 F2).** Outer task/plan `blocked` is the projection of inner
    cross-region `blocks` edges — the inner layer is the sole truth; nothing stores outer `blocked`.
 

@@ -13,11 +13,15 @@ Schema discipline locked by the design — this file is where the `[目标]`
   meta        key/value         — destination, version, timestamps
   task        id PK             — layer-1 node. NO status / NO completed_at:
                                   both are derived from the 1:1 task_plan (§3.1, §3.3).
+                                  `derived_from_finding` records §3.5 form-③ origin
+                                  (a new task spawned by a finding's disposition).
   task_plan   task_id PK(1:1)   — layer-2 region. `status` is the SINGLE source of
                                   the task↔plan lifecycle (§3.1); explicit three-state
                                   only — 被阻塞 is derived, never stored here (§3.2).
   finding     id PK             — memoized subproblem node. `status` explicit three-state;
                                   多归属 via finding_membership (§3.4); content lives in `md_path`.
+                                  `derived_from_finding` records §3.5 form-② origin (a new
+                                  finding split out of a parent finding); NULL for a root.
   finding_membership (fid,tid)  — many-to-many finding↔plan (§3.4, §3.6 F1).
   ticket      id PK             — atomic action node. `task_id` is the SINGLE-membership
                                   owner (§3.4) — NULL means "not yet in any plan" = in pool.
@@ -52,11 +56,12 @@ CREATE TABLE IF NOT EXISTS meta (
     value TEXT
 );
 CREATE TABLE IF NOT EXISTS task (
-    id         INTEGER PRIMARY KEY,
-    name       TEXT NOT NULL,
-    context_md TEXT,
-    memory_md  TEXT,
-    created_at TEXT NOT NULL
+    id                    INTEGER PRIMARY KEY,
+    name                  TEXT NOT NULL,
+    context_md            TEXT,
+    memory_md             TEXT,
+    derived_from_finding  INTEGER,
+    created_at            TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS task_plan (
     task_id      INTEGER PRIMARY KEY,
@@ -66,12 +71,13 @@ CREATE TABLE IF NOT EXISTS task_plan (
     completed_at TEXT
 );
 CREATE TABLE IF NOT EXISTS finding (
-    id            INTEGER PRIMARY KEY,
-    status        TEXT NOT NULL,
-    md_path       TEXT,
-    external_hold TEXT,
-    created_at    TEXT NOT NULL,
-    completed_at  TEXT
+    id                   INTEGER PRIMARY KEY,
+    status               TEXT NOT NULL,
+    md_path              TEXT,
+    external_hold        TEXT,
+    derived_from_finding INTEGER,
+    created_at           TEXT NOT NULL,
+    completed_at         TEXT
 );
 CREATE TABLE IF NOT EXISTS finding_membership (
     finding_id INTEGER NOT NULL,
@@ -149,12 +155,12 @@ def load(db_path: str) -> dict:
         data["meta"] = {r[0]: r[1] for r in conn.execute("SELECT key, value FROM meta")}
 
         for row in conn.execute(
-            "SELECT id, name, context_md, memory_md, created_at FROM task ORDER BY id"
+            "SELECT id, name, context_md, memory_md, derived_from_finding, created_at FROM task ORDER BY id"
         ):
             tid = row[0]
             data["tasks"][str(tid)] = {
                 "id": tid, "name": row[1], "context_md": row[2],
-                "memory_md": row[3], "created_at": row[4],
+                "memory_md": row[3], "derived_from_finding": row[4], "created_at": row[5],
             }
         for row in conn.execute(
             "SELECT task_id, status, summary, created_at, completed_at FROM task_plan ORDER BY task_id"
@@ -164,12 +170,13 @@ def load(db_path: str) -> dict:
                 "created_at": row[3], "completed_at": row[4],
             }
         for row in conn.execute(
-            "SELECT id, status, md_path, external_hold, created_at, completed_at FROM finding ORDER BY id"
+            "SELECT id, status, md_path, external_hold, derived_from_finding, created_at, completed_at FROM finding ORDER BY id"
         ):
             fid = row[0]
             data["findings"][str(fid)] = {
                 "id": fid, "status": row[1], "md_path": row[2],
-                "external_hold": row[3], "created_at": row[4], "completed_at": row[5],
+                "external_hold": row[3], "derived_from_finding": row[4],
+                "created_at": row[5], "completed_at": row[6],
             }
         for fid, tid in conn.execute(
             "SELECT finding_id, task_id FROM finding_membership ORDER BY finding_id, task_id"
@@ -222,9 +229,10 @@ def save(db_path: str, data: dict) -> str:
 
         conn.execute("DELETE FROM task")
         conn.executemany(
-            "INSERT INTO task(id, name, context_md, memory_md, created_at) VALUES(?,?,?,?,?)",
+            "INSERT INTO task(id, name, context_md, memory_md, derived_from_finding, created_at) VALUES(?,?,?,?,?,?)",
             [
-                (t["id"], t["name"], t.get("context_md"), t.get("memory_md"), t["created_at"])
+                (t["id"], t["name"], t.get("context_md"), t.get("memory_md"),
+                 t.get("derived_from_finding"), t["created_at"])
                 for t in data.get("tasks", {}).values()
             ],
         )
@@ -240,11 +248,11 @@ def save(db_path: str, data: dict) -> str:
 
         conn.execute("DELETE FROM finding")
         conn.executemany(
-            "INSERT INTO finding(id, status, md_path, external_hold, created_at, completed_at) "
-            "VALUES(?,?,?,?,?,?)",
+            "INSERT INTO finding(id, status, md_path, external_hold, derived_from_finding, "
+            "created_at, completed_at) VALUES(?,?,?,?,?,?,?)",
             [
                 (f["id"], f["status"], f.get("md_path"), f.get("external_hold"),
-                 f["created_at"], f.get("completed_at"))
+                 f.get("derived_from_finding"), f["created_at"], f.get("completed_at"))
                 for f in data.get("findings", {}).values()
             ],
         )

@@ -15,36 +15,34 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 
 ## Subcommands
 
-| Command | Design anchor | Model method |
-|---|---|---|
 | `init DB --destination TEXT` | §4.0 step 1 | `dp_driven_model.py:87` `DpDriven.init` |
-| `task add DB --name TEXT [--context-md P] [--memory-md P]` | §4.0 step 2 | `:114` `add_task` |
-| `task status DB <id> --set {未完成\|已完成\|已放弃} [--agent A] [--summary S]` | §3.1 / §4.4 gate | `:132` `set_plan_status` |
-| `task summary DB <id> --text TEXT` | §2 终态总结 | `:158` `plan_summary` |
-| `task view DB <id>` | §3.3 派生投影 | `:344` `task_view` |
-| `finding add DB [--md-path P] [--external-hold R]` | §2 / §3.5 | `:167` `add_finding` |
-| `finding dispose DB <id> --to {已完成\|已放弃}` | §3.5 处置 | `:193` `dispose_finding` |
-| `finding membership add DB <fid> --task <tid>` | §3.4 多归属 | `:176` `add_finding_membership` |
-| `finding membership remove DB <fid> --task <tid>` | §3.4 | `:184` `remove_finding_membership` |
-| `ticket add DB [--task T] [--ref R] [--kv JSON] [--md-path P] [--derived-from-finding F] [--parent T] [--external-hold R]` | §2 / §3.4 / §7 Q1 | `:209` `add_ticket` |
-| `ticket assign DB <id> --task <tid\|NULL>` | §4.3 热插 (§4.4 lock-free) | `:230` `assign_ticket` |
-| `ticket status DB <id> --set {…} [--agent A]` | §4.4 ticket-claim gate | `:238` `set_ticket_status` |
-| `blocks add DB --from KIND:ID --to KIND:ID` | §3.2 blocks edge | `:254` `add_blocks` |
-| `edge remove DB <edge-id>` | §3.2 | `:268` `remove_edge` |
-| `hold DB KIND:ID [--reason TEXT]` | §3.2.1 | `:273` `set_external_hold` |
-| `status DB KIND:ID` | §3.2 派生读取 | `:300` `node_view` |
-| `pool DB` | §2 available pool | `:363` `pool` |
-| `validate DB` | §3 invariants | `:565` `validate` |
-| `complete-check DB` | §5.1 完成判据 | `:377` `is_complete` |
-| `claim DB {plan\|ticket} <id> --agent A` | §4.4 | `:385` `claim` |
-| `release DB {plan\|ticket} <id> [--agent A \| --force]` | §4.4 / §4.1 抢占 | `:411` `release` |
-| `claims list DB` | §4.4 观测 | `:434` `list_claims` |
-| `settlement run DB [--name TEXT]` | §4.5 | `:439` `settlement_run` |
+| `task add DB --name TEXT [--context-md P] [--memory-md P] [--derived-from-finding F]` | §4.0 step 2 / §3.5 form-③ | `:114` `add_task` |
+| `task status DB <id> --set {未完成\|已完成\|已放弃} [--agent A] [--summary S]` | §3.1 / §4.4 gate | `:137` `set_plan_status` |
+| `task summary DB <id> --text TEXT` | §2 终态总结 | `:163` `plan_summary` |
+| `task view DB <id>` | §3.3 派生投影 | `:355` `task_view` |
+| `finding add DB [--md-path P] [--external-hold R] [--derived-from-finding F]` | §2 / §3.5 form-② | `:172` `add_finding` |
+| `finding dispose DB <id> --to {已完成\|已放弃}` | §3.5 处置 | `:204` `dispose_finding` |
+| `finding membership add DB <fid> --task <tid>` | §3.4 多归属 | `:187` `add_finding_membership` |
+| `finding membership remove DB <fid> --task <tid>` | §3.4 | `:195` `remove_finding_membership` |
+| `ticket add DB [--task T] [--ref R] [--kv JSON] [--md-path P] [--derived-from-finding F] [--parent T] [--external-hold R]` | §2 / §3.4 / §7 Q1 | `:220` `add_ticket` |
+| `ticket assign DB <id> --task <tid\|NULL>` | §4.3 热插 (§4.4 lock-free) | `:241` `assign_ticket` |
+| `ticket status DB <id> --set {…} [--agent A]` | §4.4 ticket-claim gate | `:249` `set_ticket_status` |
+| `blocks add DB --from KIND:ID --to KIND:ID` | §3.2 blocks edge | `:265` `add_blocks` |
+| `edge remove DB <edge-id>` | §3.2 | `:279` `remove_edge` |
+| `hold DB KIND:ID [--reason TEXT]` | §3.2.1 | `:284` `set_external_hold` |
+| `status DB KIND:ID` | §3.2 派生读取 | `:311` `node_view` |
+| `pool DB` | §2 available pool | `:374` `pool` |
+| `validate DB` | §3 invariants | `:590` `validate` |
+| `complete-check DB` | §5.1 完成判据 | `:388` `is_complete` |
+| `claim DB {plan\|ticket} <id> --agent A` | §4.4 | `:396` `claim` |
+| `release DB {plan\|ticket} <id> [--agent A \| --force]` | §4.4 / §4.1 抢占 | `:422` `release` |
+| `claims list DB` | §4.4 观测 | `:445` `list_claims` |
+| `settlement run DB [--name TEXT]` | §4.5 | `:450` `settlement_run` |
 | `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
 | `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]` | §4.2 routing | `dp_driven_optimize.py:suggest/execute` |
-| `closeout summary DB --out PATH` | §5.2 步 1 | `:462` `closeout_export_summary` |
-| `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:519` `closeout_verify_governed` |
-| `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:539` `closeout_delete_carrier` |
+| `closeout summary DB --out PATH` | §5.2 步 1 | `:473` `closeout_export_summary` |
+| `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:544` `closeout_verify_governed` |
+| `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:564` `closeout_delete_carrier` |
 
 ## Exit codes
 

@@ -26,7 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from dp_driven_model import (
-    DpDriven, DpDrivenError, EDGE_BLOCKS, KIND_FINDING, KIND_TICKET,
+    DpDriven, DpDrivenError, EDGE_BLOCKS, KIND_FINDING, KIND_TASK, KIND_TICKET,
     S_DONE, S_OPEN,
 )
 
@@ -79,6 +79,15 @@ def _relations(model: DpDriven) -> set[frozenset]:
             add((KIND_TICKET, t["id"]), (KIND_TICKET, t["parent_id"]))
         if t.get("derived_from_finding") is not None:
             add((KIND_TICKET, t["id"]), (KIND_FINDING, t["derived_from_finding"]))
+    # §3.5 form-②③ provenance (Phase-3b): finding→new-finding and finding→new-task
+    # are related work; include them as cohesion adjacency. Backward-safe: existing
+    # fixtures never set these, so prior inputs yield identical relations.
+    for f in model.data["findings"].values():
+        if f.get("derived_from_finding") is not None:
+            add((KIND_FINDING, f["id"]), (KIND_FINDING, f["derived_from_finding"]))
+    for t in model.data["tasks"].values():
+        if t.get("derived_from_finding") is not None:
+            add((KIND_TASK, t["id"]), (KIND_FINDING, t["derived_from_finding"]))
     return rels
 
 

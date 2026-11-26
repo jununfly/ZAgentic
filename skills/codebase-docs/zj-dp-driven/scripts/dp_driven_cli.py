@@ -56,7 +56,8 @@ def cmd_init(args):
 def cmd_task_add(args):
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
-        tid = m.add_task(name=args.name, context_md=args.context_md, memory_md=args.memory_md)
+        tid = m.add_task(name=args.name, context_md=args.context_md, memory_md=args.memory_md,
+                         derived_from_finding=args.derived_from_finding)
         m.save()
     _emit({"task_id": tid})
 
@@ -85,7 +86,8 @@ def cmd_task_view(args):
 def cmd_finding_add(args):
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
-        fid = m.add_finding(md_path=args.md_path, external_hold=args.external_hold)
+        fid = m.add_finding(md_path=args.md_path, external_hold=args.external_hold,
+                            derived_from_finding=args.derived_from_finding)
         m.save()
     _emit({"finding_id": fid})
 
@@ -297,7 +299,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("task")
     tsub = sp.add_subparsers(dest="sub", required=True)
     a = tsub.add_parser("add"); add_db(a); a.add_argument("--name", required=True)
-    a.add_argument("--context-md"); a.add_argument("--memory-md"); a.set_defaults(fn=cmd_task_add)
+    a.add_argument("--context-md"); a.add_argument("--memory-md")
+    a.add_argument("--derived-from-finding", type=int); a.set_defaults(fn=cmd_task_add)
     s = tsub.add_parser("status"); add_db(s); s.add_argument("task_id", type=int)
     s.add_argument("--set", required=True); s.add_argument("--summary"); s.add_argument("--agent")
     s.set_defaults(fn=cmd_task_status)
@@ -309,7 +312,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("finding")
     fsub = sp.add_subparsers(dest="sub", required=True)
     a = fsub.add_parser("add"); add_db(a); a.add_argument("--md-path"); a.add_argument("--external-hold")
-    a.set_defaults(fn=cmd_finding_add)
+    a.add_argument("--derived-from-finding", type=int); a.set_defaults(fn=cmd_finding_add)
     d = fsub.add_parser("dispose"); add_db(d); d.add_argument("finding_id", type=int)
     d.add_argument("--to", required=True); d.set_defaults(fn=cmd_finding_dispose)
     ms = fsub.add_parser("membership")
