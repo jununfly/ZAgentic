@@ -156,9 +156,9 @@ Phase-2 adds (claims / settlement / closeout):
 `E_CLOSEOUT_MARKER_MALFORMED`, `E_CLOSEOUT_CONFIRM_REQUIRED`. CLI-side: `E_DB_MISSING`,
 `E_LOCK_TIMEOUT` (from `dp_driven_lock.LockTimeout`), `E_USAGE`.
 
-## Phase-2 carrier additions
+## Phase-2 / Phase-3 carrier additions
 
-### `claim` — two-layer claim (§4.4), `dp_driven_carrier.py:102`
+### `claim` — two-layer claim (§4.4), `dp_driven_carrier.py:108`
 
 | Column | Type | Meaning |
 |---|---|---|
@@ -179,10 +179,18 @@ existence and duplicate rows (`E_CLAIM_REF_MISSING` / `E_CLAIM_KIND` / `E_DUP_CL
   `add_blocks` / `add_finding_membership` (§3.4). A finding is a global node; adding/hot-plugging
   items into a plan is not "re-optimizing its structure".
 
-## Out of Phase-2 scope (deferred by the design)
+### derivation columns — §3.5 form-②③ / §7 Q1 扩展 (Phase-3b)
 
-Optimizer + scorer (§4.2, §3.6 F3 `[未决]`) — no `orchestrate` command; pool-subset selection is
-manual (Human/agent) per §4.2 "参考值 + 人类确认". Claim **TTL / heartbeat** (§4.4 释放条件包含超时,
-§8 `[未决]`) — releases are explicit (`release --force` is the Human-privilege escape). Visualization
-(§6). `finding→new finding/task` provenance edges (§7 Q1 `[未决]`). Metrics collection (§9).
-These land in Phase 3+.
+`finding` 表与 `task` 表各加 `derived_from_finding INTEGER`（`dp_driven_carrier.py:73` / `:58`），
+镜像 §7 Q1(a) ticket 的单父物化列：一个 finding 处置时可派生**新 finding**（形态②，写
+`add_finding(derived_from_finding=…)`）或开辟**新 task**（形态③，写 `add_task(..., derived_from_finding=…)`）。
+单父、1→n 天然满足；`validate` 检查源 finding 存在（否则 `E_REF_MISSING`）。optimizer `_relations`
+（`dp_driven_optimize.py:64`）把这两类溯源计入内聚邻接（向后安全：旧数据不置该列 → 邻接不变）。
+closeout 快照新增「Finding derivation」节。
+
+## Out of Phase-3b scope (deferred by the design)
+
+Claim **TTL / heartbeat** (§4.4 释放条件包含超时, §8 `[未决]`) — releases remain explicit
+(`release --force` is the Human-privilege escape). Visualization (§6). Metrics collection (§9) and
+optimizer weight calibration against §9 内聚命中率 ≥ 80% — both need Project B first real-run data.
+These land in Phase 3c+. (Optimizer + scorer §3.6 F3/§4.2 and provenance §7 landed in 3a/3b.)
