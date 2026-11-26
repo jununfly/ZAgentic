@@ -588,6 +588,12 @@
     "rule.ontology-two-modules",
     "rule.evidence-never-committed"
    ]
+  },
+  {
+   "path": "docs/designs/zj-wayfinder-skill-design.md",
+   "elements": [
+    "entity.design"
+   ]
   }
  ]
 }
