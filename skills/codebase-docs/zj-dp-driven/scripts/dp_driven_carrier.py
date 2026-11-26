@@ -99,6 +99,13 @@ CREATE TABLE IF NOT EXISTS edge (
     to_kind   TEXT NOT NULL,
     to_id     INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS claim (
+    kind       TEXT NOT NULL,   -- 'plan' | 'ticket' (§4.4 two-layer)
+    ref_id     INTEGER NOT NULL,
+    agent      TEXT NOT NULL,
+    claimed_at TEXT NOT NULL,
+    PRIMARY KEY (kind, ref_id)
+);
 """
 
 
@@ -126,6 +133,7 @@ def empty_data() -> dict:
         "memberships": [],  # [{"finding_id":int,"task_id":int}]
         "tickets": {},      # str(id) -> ticket row
         "edges": [],        # [{"id":int,"type":str,"from_kind":str,"from_id":int,...}]
+        "claims": [],       # [{"kind":str,"ref_id":int,"agent":str,"claimed_at":str}]
     }
 
 
@@ -186,6 +194,12 @@ def load(db_path: str) -> dict:
             data["edges"].append({
                 "id": row[0], "type": row[1], "from_kind": row[2],
                 "from_id": row[3], "to_kind": row[4], "to_id": row[5],
+            })
+        for row in conn.execute(
+            "SELECT kind, ref_id, agent, claimed_at FROM claim ORDER BY kind, ref_id"
+        ):
+            data["claims"].append({
+                "kind": row[0], "ref_id": row[1], "agent": row[2], "claimed_at": row[3],
             })
     finally:
         conn.close()
@@ -260,6 +274,15 @@ def save(db_path: str, data: dict) -> str:
             [
                 (e["id"], e["type"], e["from_kind"], e["from_id"], e["to_kind"], e["to_id"])
                 for e in data.get("edges", [])
+            ],
+        )
+
+        conn.execute("DELETE FROM claim")
+        conn.executemany(
+            "INSERT INTO claim(kind, ref_id, agent, claimed_at) VALUES(?,?,?,?)",
+            [
+                (c["kind"], c["ref_id"], c["agent"], c["claimed_at"])
+                for c in data.get("claims", [])
             ],
         )
         conn.execute("COMMIT")

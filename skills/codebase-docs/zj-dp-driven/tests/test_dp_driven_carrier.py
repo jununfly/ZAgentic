@@ -108,6 +108,22 @@ class CarrierRoundTrip(unittest.TestCase):
         self.build()
         self.assertEqual(DpDriven.open(self.db).validate(), [])
 
+    def test_claim_round_trip(self):
+        """§4.4: claim rows persist to sqlite and reload byte-equivalent."""
+        model = self.build()
+        model.claim(m.CLAIM_PLAN, 0, agent="alice", now="c1")
+        model.claim(m.CLAIM_TICKET, 1, agent="bob", now="c2")
+        model.save()
+        reloaded = DpDriven.open(self.db)
+        self.assertEqual(
+            sorted(reloaded.data["claims"], key=lambda c: (c["kind"], c["ref_id"])),
+            [
+                {"kind": m.CLAIM_PLAN, "ref_id": 0, "agent": "alice", "claimed_at": "c1"},
+                {"kind": m.CLAIM_TICKET, "ref_id": 1, "agent": "bob", "claimed_at": "c2"},
+            ],
+        )
+        self.assertEqual(reloaded.claim_owner(m.CLAIM_PLAN, 0), "alice")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
