@@ -8,8 +8,10 @@ model-elements: [entity.design]
 # zj-dp-driven 设计文档（定位与概要设计 · 基准）
 
 > **本页性质：实现前的基准设计页。** `zj-dp-driven` 尚无代码 / `SKILL.md`，故本页不挂代码 `file:line`
-> 锚点——行锚将在实现落地后回灌对齐。本轮**刻意不引用** `zj-wayfinder` / `zj-roadmap-driven` 的实现细节，
-> 以免污染基准；吸收/取代旧 pair 与 `zj-composer` 留待「基准立稳后」的独立讨论。
+> 锚点——行锚将在实现落地后回灌对齐。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
+> 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
+> 无继承意图、无兼容 shim、无 legacy 保留义务——Human 判 pair 参考价值耗尽时直接删除。`zj-composer`
+> 与 dp-driven 的关系属独立讨论，本轮不预设。
 > 标记约定：`[定稿]` = 本轮锁定的基线判据；`[目标]` = 已定方向、待实现的具体机制；`[未决]` = 明确留到下一轮。
 
 ## 1. 定位
@@ -19,7 +21,7 @@ model-elements: [entity.design]
 > 三者是**同一次编排调度循环（§4）的不同侧面**。过程态活在运行时 sqlite，
 > **执行完即删除**；沉淀的是它引用过的一组 markdown，由 `zj-docs-ontology` 治理成长期文档。
 
-**差异化判据**（相对任何"任务树/路线图"工具，也是本轮基准立得住、日后是否值得"取代旧 pair"的硬标准）：
+**差异化判据**（相对任何"任务树/路线图"工具，也是**基准本身**立得住的硬标准——不靠与旧 pair 对比挣得合法性）：
 
 1. **规划与执行一体**：不是"先 plan 后 do"的两段式，而是同一次 DP 迭代里展开 + 求解 + 回灌。
 2. **过程即燃料**：状态图用完即焚，长期价值只在其引用的 md 语料——反"过程文档腐烂"。
@@ -328,28 +330,29 @@ model-elements: [entity.design]
 >   实现期定具体策略，设计页仅锁定"释放条件包含超时"这一事实。
 > - **sqlite 损坏 / 进程崩溃的恢复路径**：WAL 是否足够？是否需要 backup-before-mutate？实现期验证。
 > - **首次上线的渐进策略**：先自用（单人单 agent）→ 再推广（多 agent 并发场景）；渐进期间哪些功能可裁剪。
-> - **旧 pair → zj-dp-driven 的数据迁移路径**：已有 roadmap JSON / wayfinder 地图如何映射到新模型——属吸收阶段议题。
 > - **可视化实现契约**：渲染后端、状态标注粒度、orphan findings 的排版细节。
 > - **过程态落点与既有 `docs/plans/` / `tmp/skills-outputs/` 约定的并存关系**（§5.4）。
 > - **命名之外的对外契约**：`SKILL.md` frontmatter、CLI 命令面、opt-in 配置名（按"共享命名根 + self-explain +
 >   单复数一致"偏好统一）。
-> - **吸收/取代 `zj-wayfinder` / `zj-roadmap-driven` / `zj-composer` 的策略与波及面评估**——本轮**不在范围内**。
+> - **`zj-composer` 与 dp-driven 的关系**：暂不评估、留待独立讨论（旧 pair 的构建期角色与处置已在
+>   页首「贯穿构建期的纪律」锁定，不在此列；pair 删除时的跨引用清理属届时的一次性 PR，非设计期未决）。
 
-## 9. 验证方向（metrics 种子）
+## 9. 实跑观察指标（metrics 种子）
 
-> **[目标]** 以下为设计期锁定的**验证判据方向**，实现期精化具体阈值与采集方式。
-> 目的：为日后判定"取代旧 pair 是否挣到"提供可操作的对比基准，避免凭印象收场。
+> **[目标]** 以下为设计期锁定的**dp-driven 自身实跑观察指标方向**，实现期精化具体阈值与采集方式。
+> 目的：帮 Human 判"dp-driven 是否已在实跑中稳态可用"。**不作为 pair 删除的判据**——pair 的处置走页首
+> 「贯穿构建期的纪律」，与本节解耦。
 
-| Metric | Baseline | Unit | Method | Target |
-|---|---|---|---|---|
-| Token efficiency | 旧 pair 同任务的 token consumption | tokens/session | 对比实验：同一 destination 分别用新/旧跑 | ≤ 旧 pair 的 70% |
-| 编排轮次 | 旧 pair 的 issue 数 / node 数 | count | 同一任务对比 | 不劣于旧 pair |
-| 内聚命中率 | — | % | optimizer 产出的 plan 被 Human 标注"完成"时无人工拆分/重组 | ≥ 80% |
-| 回灌正确性 | — | count | ticket 终态后 blocked 重算的调用次数 vs 正确值 | 100% correct |
-| 结算轮触发率 | — | % | 整个 DP 运行中触发结算轮的占比（越低说明 optimizer 分组能力越强） | ≤ 10%（初估） |
+| Metric | Unit | Method | Target（初估，实现后校准） |
+|---|---|---|---|
+| 单 effort token 消耗 | tokens/session | 每个真实 destination 记一次 | 阈值待 Project B 首次落地后定 |
+| 编排轮次 | count | 每个真实 destination 记一次 | 阈值待 Project B 首次落地后定 |
+| 内聚命中率 | % | optimizer 产出的 plan 被 Human 标注"完成"时无人工拆分/重组 | ≥ 80%（初估） |
+| 回灌正确性 | % | ticket 终态后 blocked 重算的调用次数 vs 正确值 | 100% correct |
+| 结算轮触发率 | % | 整个 DP 运行中触发结算轮的占比（越低说明 optimizer 分组能力越强） | ≤ 10%（初估） |
 
-> **[未决]** 基线数字需旧 pair 同任务跑通后获得；上述 target/threshold 为初估参考、实现后可校准。
-> Owner：实现期指派。Exit condition：5 个 metric 均有可重复的测量方法 + 首次基线数据落地。
+> **[未决]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，不设先验；后三条阈值可保留初估、
+> 随实跑校准。Owner：实现期指派。Exit condition：5 个 metric 均有可重复测量方法 + 首份实跑数据落地。
 
 ## Source map
 
@@ -364,7 +367,7 @@ model-elements: [entity.design]
 
 - [skill 运行期闭包自包含](zj-skill-runtime-closure.md) — `design.skill-runtime-closure`：本设计页不被任何运行时 skill 反向依赖，仅 reviewer 留痕。
 
-## 本轮边界声明
+## 基准轮边界声明
 
 `[定稿]` 本页只确立**定位 + 功能模型 + 概要设计**基准，未创建 skill 代码目录、未改任何脚本/测试、未把本页登记进
 `docs/README.md` Design 索引或 `docs/ontology/model.json`（这些登记留待基准 review 通过、或随实现 PR 一并做）。
