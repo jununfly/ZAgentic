@@ -40,6 +40,8 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | `release DB {plan\|ticket} <id> [--agent A \| --force]` | §4.4 / §4.1 抢占 | `:411` `release` |
 | `claims list DB` | §4.4 观测 | `:434` `list_claims` |
 | `settlement run DB [--name TEXT]` | §4.5 | `:439` `settlement_run` |
+| `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
+| `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]` | §4.2 routing | `dp_driven_optimize.py:suggest/execute` |
 | `closeout summary DB --out PATH` | §5.2 步 1 | `:462` `closeout_export_summary` |
 | `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:519` `closeout_verify_governed` |
 | `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:539` `closeout_delete_carrier` |
@@ -81,10 +83,13 @@ Read commands emit pretty-printed JSON on stdout (`ensure_ascii=false`, `indent=
 including the new entity id when applicable. Deterministic ordering everywhere so a
 byte-equal replay is a valid regression test.
 
-## Known Phase-2 gaps (not defects, deferred per design)
+## Known Phase-2/3a gaps (not defects, deferred per design)
 
-- **§3.6 F3 optimizer/scorer** — no `orchestrate` command; the Human/agent loop selects
-  pool subsets manually. Landing the greedy subset-scoring heuristic is Phase 3+.
+- **§3.6 F3 optimizer + scorer** — landed in Phase 3a as `dp_driven_optimize.suggest` /
+  `CohesionScorer` (seed-and-grow greedy). No `learned` or adaptive weights; defaults are
+  reference values for Human confirmation (§4.2).
+- **§4.4 claim TTL / heartbeat** — Phase 3a did NOT add this; releases remain explicit
+  (`release --force` = Human privilege). Design §8 `[未决]` for the concrete strategy.
 - **§4.4 claim TTL / heartbeat** — Phase 2 releases are explicit; a crashed agent's claim
   persists until `release --force` (Human privilege). Strategy deferred per design §8.
 - **§6 visualization** — no `render` command; carrier is inspected via `pool` / `status` /

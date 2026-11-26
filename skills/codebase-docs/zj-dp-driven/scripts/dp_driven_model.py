@@ -713,3 +713,22 @@ class DpDriven:
         if kind == KIND_FINDING:
             return self._require_finding(node_id)
         raise DpDrivenError("E_INVALID_KIND", f"未知 layer-2 节点类型: {kind}")
+
+    # ── orchestration input helpers (read-only; Phase-3a optimizer) ──
+    # Appended at EOF so every existing `basename.py:line` anchor above stays valid.
+
+    def in_flight_plans(self) -> list[int]:
+        """§4.2 optimizer 输入：未到终态、且非结算哨兵（§4.5）的 plan = 可被热插目标的
+        in-flight plan。纯只读，不新增存储列（不违反 §3.1 状态单一源）。"""
+        out = []
+        for tid, p in self.data["plans"].items():
+            if p["status"] != S_OPEN:
+                continue
+            if self._is_settlement_plan(int(tid)):
+                continue
+            out.append(int(tid))
+        return sorted(out)
+
+    def _is_settlement_plan(self, task_id: int) -> bool:
+        c = self._find_claim(CLAIM_PLAN, task_id)
+        return bool(c and c["agent"] == SETTLEMENT_AGENT)
