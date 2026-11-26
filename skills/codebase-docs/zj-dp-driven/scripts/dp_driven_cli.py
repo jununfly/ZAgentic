@@ -18,6 +18,7 @@ import json
 import sys
 
 import dp_driven_lock
+import dp_driven_optimize
 from dp_driven_model import (
     CLAIM_PLAN, CLAIM_TICKET, DpDriven, DpDrivenError,
     KIND_FINDING, KIND_TICKET, SETTLEMENT_AGENT,
@@ -249,6 +250,39 @@ def cmd_closeout_delete(args):
     _emit({"ok": True, "deleted": deleted})
 
 
+# ── orchestration (§4.2 optimizer) ────────────────────────
+
+def _step_to_dict(st) -> dict:
+    return {
+        "action": st.action, "task_id": st.task_id,
+        "items": [[k, i] for (k, i) in st.items],
+        "score": (st.score.total if st.score else None),
+        "factors": (st.score.factors if st.score else None),
+        "rationale": st.rationale,
+    }
+
+
+def cmd_suggest(args):
+    m = _open_model(args.db)
+    steps = dp_driven_optimize.suggest(m, threshold=args.threshold, max_size=args.max_size)
+    _emit({"steps": [_step_to_dict(s) for s in steps]})
+
+
+def cmd_orchestrate(args):
+    if not args.execute:
+        # dry-run preview: read-only, no lock, no write.
+        m = _open_model(args.db)
+        steps = dp_driven_optimize.suggest(m, threshold=args.threshold, max_size=args.max_size)
+        _emit({"executed": False, "steps": [_step_to_dict(s) for s in steps]})
+        return
+    with dp_driven_lock.acquire(args.db):
+        m = _open_model(args.db)
+        steps = dp_driven_optimize.suggest(m, threshold=args.threshold, max_size=args.max_size)
+        applied = dp_driven_optimize.execute(m, steps, agent=args.agent, name=args.name)
+        m.save()
+    _emit({"executed": True, "applied": applied})
+
+
 # ── parser wiring ────────────────────────────────────────
 
 def build_parser() -> argparse.ArgumentParser:
@@ -325,6 +359,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("settlement"); ssub = sp.add_subparsers(dest="sub", required=True)
     sr = ssub.add_parser("run"); add_db(sr); sr.add_argument("--name"); sr.set_defaults(fn=cmd_settlement_run)
+
+    sp = sub.add_parser("suggest"); add_db(sp)
+    sp.add_argument("--threshold", type=float, default=dp_driven_optimize.COHESION_THRESHOLD_DEFAULT)
+    sp.add_argument("--max-size", type=int, default=dp_driven_optimize.MAX_PLAN_SIZE_DEFAULT)
+    sp.set_defaults(fn=cmd_suggest)
+    sp = sub.add_parser("orchestrate"); add_db(sp)
+    sp.add_argument("--agent"); sp.add_argument("--name"); sp.add_argument("--execute", action="store_true")
+    sp.add_argument("--threshold", type=float, default=dp_driven_optimize.COHESION_THRESHOLD_DEFAULT)
+    sp.add_argument("--max-size", type=int, default=dp_driven_optimize.MAX_PLAN_SIZE_DEFAULT)
+    sp.set_defaults(fn=cmd_orchestrate)
 
     sp = sub.add_parser("closeout"); cosub = sp.add_subparsers(dest="sub", required=True)
     cs = cosub.add_parser("summary"); add_db(cs); cs.add_argument("--out", required=True)

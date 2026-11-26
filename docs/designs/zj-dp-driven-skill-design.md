@@ -7,11 +7,12 @@ model-elements: [entity.design]
 
 # zj-dp-driven 设计文档（定位与概要设计 · 基准）
 
-> **本页性质：基准设计页（Phase-1 + Phase-2 已落地）。** `zj-dp-driven` 的 §2 载体 schema、§3 全部
+> **本页性质：基准设计页（Phase-1 + Phase-2 + Phase-3a 已落地）。** `zj-dp-driven` 的 §2 载体 schema、§3 全部
 > `[定稿]` 不变式随 PR #306 落地；§4.0 init / §4.4 两层 claim（含单写者）/ §4.5 结算轮 / §5.2 两段式
-> 收摊随本 Phase-2 PR 落地。已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点（汇总见 §10）。
-> 未落地的 `[目标]` / `[未决]`（§3.6 F3 算分器、§4.4 claim 超时/TTL、§6 可视化、§7 finding→新 finding/task
-> 溯源边、§9 metric）维持原标记，待 Phase 3+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
+> 收摊随 Phase-2 PR 落地；§3.6 F3 编排 optimizer + §4.2 内聚算分器随本 Phase-3a PR 落地（种子-扩展贪心，
+> 4 因子，`effort` 因无单位定义剔除）。已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点
+> （汇总见 §10）。未落地的 `[目标]` / `[未决]`（§4.4 claim 超时/TTL、§6 可视化、§7 finding→新 finding/task
+> 溯源边、§9 metric）维持原标记，待 Phase 3b+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
 > 无继承意图、无兼容 shim、无 legacy 保留义务——Human 判 pair 参考价值耗尽时直接删除。`zj-composer`
 > 与 dp-driven 的关系属独立讨论，本轮不预设。
@@ -165,10 +166,12 @@ model-elements: [entity.design]
   - **回灌跨层**：内层 ticket 完成 → 满足跨区边 → 外层对应 task 自然解锁，无需手写外层边。
   - **[边界]** 此处"外层边"仅指**依赖 / blocks** 语义；top-down 展开产生的 task **父子包含**关系是另一回事，不参与 `blocked` 派生（属规划结构）。
 
-- **[未决 F3｜值函数 V 的角色重定义]** 旧框架问"V 选下一个 plan / ticket"；§4 编排调度模型下，这个问法不再成立——
-  plans 由 optimizer 按需创建/热插、多 plan 可并行推进、plan 内次序由 blocks 拓扑约束决定。
-  V 的实际角色 = **编排 optimizer 评估候选子集的内聚得分**（"选哪批 items 做本轮最优"），而非逐票排序。
-  具体算分因子与触发时机随实现期定（§8）。
+- **[定稿·已实现 F3｜值函数 V 的角色重定义]**（Phase-3a 落地，见 §10）旧框架问"V 选下一个 plan / ticket"；
+  §4 编排调度模型下这个问法不成立——plans 由 optimizer 按需创建/热插、多 plan 可并行、plan 内次序由 blocks
+  拓扑约束决定。V 的实际角色 = **编排 optimizer 评估候选子集的内聚得分**（"选哪批 items 做本轮最优"），非逐票
+  排序。Phase-3a 采用**种子-扩展贪心**（`dp_driven_optimize.py`），内聚 = 连通性，算分因子取 §8 候选中的
+  **4 个** `关联密度 / 切割面 / 解锁度 / 未标时长`；**`effort` 剔除**——§8 未定义其单位，纳入需新增存储列、
+  与 §3.1 状态单一源冲突，待 §9 实跑数据出现再议。`suggest()` 纯只读、从不落库（建议≠状态，§3.1）。
 
 ## 4. 运行时循环（编排调度）
 
@@ -212,6 +215,9 @@ model-elements: [entity.design]
   ② 无可行子集 → 触发结算轮（§4.5），或
   ③ 部分 items 热插到已有 in-flight plan（见 §4.3）
 ```
+
+> **Phase-3a 实装**：`dp_driven_optimize.suggest`（种子-扩展贪心，内聚 = 连通性）；模型只读输入 helper
+> `dp_driven_model.py:720` `in_flight_plans`；CLI `suggest` / `orchestrate --execute`。逐条锚点见 §10。
 
 > **[定稿] optimizer 的路由决定权**：新 items 入 pool 后，由 optimizer 在每次触发时决定其去向——
 > 热插到匹配的 in-flight plan（若高关联且无阻塞），或留在 pool 等待后续轮次的新 plan 编排。
@@ -326,9 +332,11 @@ model-elements: [entity.design]
 
 ## 8. 明确留到下一轮的未决面
 
-> **[未决]** 以下不影响基准定位，故本轮**不预设、不自作主张**：
-> - **编排 optimizer 的算分器实现**（§3.6 F3）：内聚度的具体因子与阈值（effort / 关联密度 / 切割面 / 解锁度 /
->   未标时长）、触发频率、与 V 的关系。方向已定 = **评估候选子集的参考值、少 token、不追求严谨**（§4.2），实现期单独讨论。
+> **[未决]** 以下不影响基准定位，故本轮**不预设、不自作主张**（**已实现项已划到 §10**）：
+> - ~~**编排 optimizer 的算分器实现**（§3.6 F3）~~ → **Phase-3a 已实现**：种子-扩展贪心，
+>   4 因子（`关联密度 / 切割面 / 解锁度 / 未标时长`），`effort` 因 §8 未定单位而剔除；见 §10
+>   + `dp_driven_optimize.py` + `dp_driven-optimizer.md`。**权重仍属起手值**，§9
+>   内聚命中率 ≥ 80% 的校准基线待实跑数据，Phase 3b+ 再议。
 > - **claim 超时释放 / TTL 机制**（§4.4）：agent 异常退出后如何判定"已死"而非"在思考"——heartbeat？固定 TTL？
 >   实现期定具体策略，设计页仅锁定"释放条件包含超时"这一事实。
 > - **sqlite 损坏 / 进程崩溃的恢复路径**：WAL 是否足够？是否需要 backup-before-mutate？实现期验证。
@@ -357,10 +365,11 @@ model-elements: [entity.design]
 > **[未决]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，不设先验；后三条阈值可保留初估、
 > 随实跑校准。Owner：实现期指派。Exit condition：5 个 metric 均有可重复测量方法 + 首份实跑数据落地。
 
-## 10. 实现回灌（Phase-1 PR #306 + Phase-2 本 PR）
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a 本 PR）
 
 > **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
-> Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**。
+> Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**；
+> Phase-3a = **§3.6 F3 编排 optimizer + §4.2 内聚算分器**（种子-扩展贪心，4 因子，`effort` 剔除）。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
@@ -388,11 +397,11 @@ claim 层名与结算哨兵常量在 `dp_driven_model.py:34-54`（`SETTLEMENT_AG
 | §4.4 carrier 单写者原子性 | `dp_driven_lock.py:acquire` | `test_dp_driven_lock.py:45`（跨进程互斥） |
 | §4.5 结算轮（收纳 pool + blocks 拓扑序 + plan-claim 退化） | `dp_driven_model.py:439,656` `settlement_run` + `_topo_order_pool` | `test_dp_driven_settlement.py:24,77`；`test_dp_driven_claim.py:174` |
 | §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:462,519,539` `closeout_export_summary / _verify_governed / _delete_carrier` | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114` |
+| §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:193,267` `suggest/execute` · `:104` `score_subset` · 只读输入 `dp_driven_model.py:720` `in_flight_plans` | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90` |
 
-**仍未升级（Phase 3+ / `[未决]`）**：§3.6 F3 编排 optimizer + 算分器（本轮 CLI 无 `orchestrate`
-命令，pool 子集由 Human/agent 手工选，符合 §4.2「参考值 + 人类确认」但算法未落）、§4.4 claim
-**超时释放 / TTL**（§8 `[未决]`，本轮仅显式 `release --force`）、§6 可视化渲染、§7 Q1 finding→新
-finding/task 溯源边列、§9 metric 采集。
+**仍未升级（Phase 3b+ / `[未决]`）**：§4.4 claim **超时释放 / TTL**（§8 `[未决]`，本轮仅显式
+`release --force`）、§6 可视化渲染、§7 Q1 finding→新 finding/task 溯源边列、§9 metric 采集与
+optimizer 权重实跑校准（§8 内聚命中率 ≥80% 基线，待 Project B 数据）。
 
 ## Source map
 
@@ -418,9 +427,13 @@ finding/task 溯源边列、§9 metric 采集。
   不变式 + §5.1 + §7 Q1(a)；登记进 `scripts/zagentic-skills-list`、bucket 与顶层 `README.md`、
   `ZJ-CONTEXT.md`、`zj-guide`。本设计页也已进 [`docs/README.md`](../README.md) Design 索引与
   [`docs/ontology/model.json`](../ontology/model.json)。
-- **Phase-2（本 PR）**：新增 `dp_driven_cli.py` + `dp_driven_lock.py` + claim 表 + `dp_driven_model.py`
+- **Phase-2**：新增 `dp_driven_cli.py` + `dp_driven_lock.py` + claim 表 + `dp_driven_model.py`
   的 claim/settlement/closeout API + 5 个新测试文件（累计 87 测试）；落地 §4.0 / §4.4 两层 claim（单写者
-  flock）/ §4.5 结算轮 / §5.2 两段式收摊（`.governed.json` 治理门 + 显式 force 删）。设计页 §10 同步扩行。
+  flock）/ §4.5 结算轮 / §5.2 两段式收摊（`.governed.json` 治理门 + 显式 force 删）。
+- **Phase-3a（本 PR）**：新增 `dp_driven_optimize.py`（种子-扩展贪心 + 4 因子 `density/cut/unlock/`
+  `staleness`，`effort` 因无单位定义剔除）+ `in_flight_plans` 只读 helper + CLI `suggest` / `orchestrate`
+   + `dp_driven-optimizer.md` + 2 个新测试文件（累计 105 测试）；落地 §3.6 F3 / §4.2。
+  `suggest` 纯只读、从不落库（§3.1 建议≠状态，`test_suggest_is_pure_readonly` 锁死）。
 
-**刻意留在 Phase 3+**（见 §10"仍未升级"）：§3.6 F3 编排 optimizer + 算分器、§4.4 claim 超时/TTL、
-§6 可视化、§7 Q1 finding→新 finding/task 溯源边列、§9 metric 采集。Phase-2 不假装做了这些。
+**刻意留在 Phase 3b+**（见 §10"仍未升级"）：§4.4 claim 超时/TTL、§6 可视化、§7 Q1 finding→新 finding/task
+溯源边列、§9 metric 采集与 optimizer 权重实跑校准。各 Phase 均不假装做了后续项。

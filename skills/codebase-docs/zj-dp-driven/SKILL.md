@@ -18,17 +18,18 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + Phase 2
+## Status: Phase 1 + Phase 2 + Phase 3a (optimizer)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
 **single-writer lock** (`scripts/dp_driven_lock.py`), **two-layer claim (§4.4) + settlement round
-(§4.5) + two-stage closeout (§5.2)**. 87 tests in `tests/` lock every invariant.
+(§4.5) + two-stage closeout (§5.2)**, **greedy cohesion optimizer + scorer (§3.6 F3 / §4.2)**
+(`scripts/dp_driven_optimize.py`). 105 tests in `tests/` lock every invariant.
 
-Deferred to Phase 3+ (design `[未决]` / progressive-rollout §8): the optimizer + scorer (§4.2 / §3.6 F3 —
-CLI has no `orchestrate`; pool-subset selection is manual), claim **TTL / heartbeat** (§4.4 — releases
-are explicit, `release --force` is the Human escape), visualization (§6), `finding→new finding/task`
-provenance edges (§7 Q1), metrics collection (§9).
+Deferred to later phases (design `[未决]` / progressive-rollout §8): claim **TTL / heartbeat** (§4.4 —
+releases stay explicit, `release --force` is the Human escape), visualization (§6), `finding→new
+finding/task` provenance edges (§7 Q1), metrics collection (§9), and any re-calibration of the
+optimizer's default weights against real-run data (§9).
 
 ## The model in one breath (§1–§2)
 
@@ -68,6 +69,11 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
 9. **Two-stage closeout (§5.2).** Export snapshot → require `.governed.json` marker → delete sqlite
    + WAL/SHM/lock sidecars only, never the `.md` corpus. Order is code-enforced (`E_NOT_COMPLETE`,
    `E_CLOSEOUT_NOT_GOVERNED`, `E_CLOSEOUT_CONFIRM_REQUIRED`).
+10. **Suggestion ≠ state (§3.6 F3 / §4.2).** The optimizer's `suggest()` is a pure read over the
+    graph — greedy cohesion seed-and-grow, never exhaustive, and it **never mutates or persists**
+    the model. A plan-subset is recomputed each trigger; storing it would be a second source of
+    truth (§3.1). Locked by `test_dp_driven_optimize.py::test_suggest_is_pure_readonly` and
+    `test_suggest_deterministic`.
 
 ## Quick start (CLI)
 
@@ -89,6 +95,10 @@ $DP claim   "$DB" plan 0 --agent alice                 # §4.4
 $DP ticket  status "$DB" 0 --set 已完成 --agent alice
 $DP status  "$DB" ticket:1                             # blocked gone, nothing stored changed
 $DP complete-check "$DB"
+
+$DP suggest     "$DB"                       # §4.2 read-only: propose cohesive subset / hotplug / settle
+$DP orchestrate "$DB" --agent alice         # same preview
+$DP orchestrate "$DB" --agent alice --execute   # apply it (takes the single-writer lock)
 ```
 
 `ticket:1` shows `derived_blocked: true` until `ticket:0` reaches `已完成`; then the next read
