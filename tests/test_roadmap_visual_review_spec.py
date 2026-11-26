@@ -19,9 +19,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "roadmap_visual_review_spec.py"
-SPEC = ROOT / "docs" / "designs" / "zj-roadmap-visual-review.spec.json"
-TECH_MD = ROOT / "docs" / "designs" / "zj-roadmap-visual-review-technical.md"
-PRODUCT_MD = ROOT / "docs" / "designs" / "zj-roadmap-visual-review-product.md"
+SPEC = ROOT / "docs" / "designs" / "zj-roadmap-driven" / "visual-review.spec.json"
+TECH_MD = ROOT / "docs" / "designs" / "zj-roadmap-driven" / "visual-review-technical.md"
+PRODUCT_MD = ROOT / "docs" / "designs" / "zj-roadmap-driven" / "visual-review-product.md"
 DOC_MAP = ROOT / "docs" / "README.md"
 
 EXPECTED_SCENES = 4
@@ -414,7 +414,7 @@ class DocumentationMapTest(unittest.TestCase):
             self.assertIn(authority_id, text)
 
     def test_soT_filename_appears_in_the_technical_page(self):
-        self.assertIn("zj-roadmap-visual-review.spec.json", TECH_MD.read_text(encoding="utf-8"))
+        self.assertIn("visual-review.spec.json", TECH_MD.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ from tests.roadmap_viz_traceability import (  # noqa: E402
     ACCEPTED_UNGOVERNED, MAX_UNGOVERNED, TRACEABILITY,
 )
 
-SPEC = REPO / "docs" / "designs" / "zj-roadmap-visual-review.spec.json"
+SPEC = REPO / "docs" / "designs" / "zj-roadmap-driven" / "visual-review.spec.json"
 WORKFLOW = REPO / ".github" / "workflows" / "skill-closure-lint.yml"
 
 

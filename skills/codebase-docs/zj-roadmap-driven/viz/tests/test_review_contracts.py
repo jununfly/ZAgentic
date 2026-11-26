@@ -226,7 +226,7 @@ class DagLayoutDeterminismContract(unittest.TestCase):
 
     RENDER_HTML = SKILL / "viz" / "render_html.py"
     SPEC = (SKILL.parents[2] / "docs" / "designs"
-            / "zj-roadmap-visual-review.spec.json")
+            / "zj-roadmap-driven" / "visual-review.spec.json")
 
     def _html(self, graph):
         return render_html(
@@ -292,7 +292,7 @@ class ViewKindRoutingContract(unittest.TestCase):
 
     CLI = SKILL / "viz" / "cli.py"
     SPEC = (SKILL.parents[2] / "docs" / "designs"
-            / "zj-roadmap-visual-review.spec.json")
+            / "zj-roadmap-driven" / "visual-review.spec.json")
 
     def _routes(self):
         from viz.view_kinds import VIEW_CONTRACT_ROUTES

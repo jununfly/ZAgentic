@@ -33,7 +33,7 @@ skill 链里有三种正交主张，本 skill 只拥有第三种：
 >
 > 硬判据同时是**准入闸门**：未来任何新 meter，只要需要读邻居契约，默认不进本 skill（除非重定性为消费者级 advisory）。
 
-> **[命名定稿]（本轮，细节全收口）** skill 由 `zj-doc-health` 改名 **`zj-docs-metrics`**，并入 `zj-docs-` 家族（对齐 `zj-docs-ontology`/`zj-docs-architecture`）。两条硬依据：① `health`/「Health check」在组内已被 `zj-docs-ontology` 的 **L1** 占用（`SKILL.md:3`/`:22`/`:100`）且语义正交（那是 correctness，本 skill 是 advisory）；② 本 skill 的魂是**反 health 裁定**——契约拒绝「机械 health-score gate」（`metrics-contract.md:21`、`/zj-docs-ontology` 的 `governance-contract.md`「Rejected defaults」段），且全仓（README / ZJ-CONTEXT / 3 个 roadmap design，如 `zj-roadmap-visual-review-technical.md:408`）拿 `zj-doc-health` 举证「不做 health 门禁」，名实相反。
+> **[命名定稿]（本轮，细节全收口）** skill 由 `zj-doc-health` 改名 **`zj-docs-metrics`**，并入 `zj-docs-` 家族（对齐 `zj-docs-ontology`/`zj-docs-architecture`）。两条硬依据：① `health`/「Health check」在组内已被 `zj-docs-ontology` 的 **L1** 占用（`SKILL.md:3`/`:22`/`:100`）且语义正交（那是 correctness，本 skill 是 advisory）；② 本 skill 的魂是**反 health 裁定**——契约拒绝「机械 health-score gate」（`metrics-contract.md:21`、`/zj-docs-ontology` 的 `governance-contract.md`「Rejected defaults」段），且全仓（README / ZJ-CONTEXT / 3 个 roadmap design，如 `docs/designs/zj-roadmap-driven/visual-review-technical.md:408`）拿 `zj-doc-health` 举证「不做 health 门禁」，名实相反。
 >
 > **命名映射**（根名统一复数 `docs_metrics`，因单次调用 = 整仓一批 docs）：
 > - skill 目录 / 调用串：`zj-doc-health` → **`zj-docs-metrics`**

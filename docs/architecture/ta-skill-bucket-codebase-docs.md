@@ -102,7 +102,7 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
 - [zj-wayfinder](../../skills/codebase-docs/zj-wayfinder/SKILL.md) and
   [zj-roadmap-driven](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md) —
   the decision carriers whose seam is owned by
-  [design.wayfinder-roadmap-carrier-seam](../designs/zj-wayfinder-roadmap-dual-mode.md).
+  [design.wayfinder-roadmap-carrier-seam](../designs/zj-roadmap-driven/dual-mode.md).
 
 ## Related authority
 

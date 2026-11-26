@@ -8,7 +8,7 @@
   cd skills/codebase-docs/zj-roadmap-driven
   python -m unittest viz.tests.test_viz viz.tests.test_s3_s4 -v
 
-判据来源：docs/designs/zj-roadmap-visual-review-technical.md 的 Consequences 切片表
+判据来源：docs/designs/zj-roadmap-driven/visual-review-technical.md 的 Consequences 切片表
   S3 | 阻塞链、critical-path、impact 与视图同源；点击边可回溯边 id 与来源
   S4 | 上下文条目增长时主视图字节不变；revision 不符时显式 stale 且不自动刷新
 """
