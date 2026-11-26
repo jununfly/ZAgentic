@@ -1092,6 +1092,68 @@ checks the initial `<= 1,000 ms` proposal threshold. It is evidence for this
 machine/configuration, not a universal capacity guarantee.
 _Avoid_: synthetic number without command/output, wall-clock claim without p95
 
+### DP-driven
+
+A `zj-dp-driven` run treats one complex task as a dynamic-programming pass over a
+partially observable, two-layer state graph. Governed by `zj-dp-driven`; design baseline
+`docs/designs/zj-dp-driven-skill-design.md`.
+
+**DP run / 动态规划运行**:
+One end-to-end solve of a `destination` through the orchestration loop — expand states,
+discover (findings → new states), execute (tickets → terminal), until every task is
+terminal. Process state is a throwaway SQLite carrier; the durable output is the `.md`
+corpus it references.
+_Avoid_: roadmap, plan file, project
+
+**Available pool / 可用池**:
+The derived set `{s | s.status = 未完成 ∧ s is claimed by no in-flight plan}` over tickets and
+findings — the input to each orchestration decision. A view, never a stored entity.
+_Avoid_: backlog, todo list, work queue (it is computed, not a queue)
+
+**Finding / 发现**:
+An atomic, non-coupled observation (a conclusion, an idea, a new problem, a new or
+previously-missed detail) — raw material, not necessarily already-actionable. May belong to
+0..n task-plans (multi-owner = the overlapping-subproblem landing point). `已完成` means
+**dispositioned once**, not "turned into a ticket".
+_Avoid_: issue, insight, conclusion-only; ticket (a finding is not an action)
+
+**Ticket / 工单**:
+An atomic action node bound to a github/gitlab issue or a local md. Single-owner (one task-plan
+at a time; `task_id = NULL` means it is in the pool); globally unique, so its completion
+radiates over `blocks` edges to every downstream. A "shared ticket" is a modeling smell — it
+should be a shared **finding**.
+_Avoid_: finding, subtask, card
+
+**Task / Task-plan / 任务 / 任务规划**:
+A `task` is a layer-1 (coarse) state node; its 1:1 `task-plan` is a region of the single global
+layer-2 graph. **Task status is always derived from the task-plan** (single source); the plan
+stores lifecycle status. Do not double-write task and plan status.
+_Avoid_: epic, milestone; storing task.status
+
+**Single source of status / 状态单一源**:
+Three tiers, each stored in exactly one place, more-derived going up: ticket/finding store their
+own status; task-plan stores the task↔plan lifecycle; task status is a query projection. The
+consistency root of the whole skill.
+_Avoid_: cached status field, mirrored state
+
+**Derived blocked / 派生被阻塞**:
+`被阻塞` is computed on read from `blocks` edges and never stored, on both layers. Parent-child
+never blocks. When unblocked, the `blocked`/`blocked_reason` fields are absent, not `False`. An
+off-graph wait is `external_hold` (orthogonal), never written into `status`.
+_Avoid_: stored blocked flag, `status=被阻塞` write
+
+**Disposition / 处置 (§3.5)**:
+Marking a finding terminal AND removing it from every plan that holds it, so it is never
+re-processed; its downstream (tickets / new findings / new task / scoped detail) is dispatched
+per its form. The memo step that makes "解一次、处处命中" hold.
+_Avoid_: closing, deleting, converting-to-ticket (those are only some forms)
+
+**DP carrier / 动态规划载体**:
+The SQLite file holding only process state (tasks / plans / tickets / findings / edges /
+memberships). Deleted at closeout; must not be referenced by any long-lived doc. Lives in a
+Human-specified directory (default `docs/plans/dp-driven/<topic>/`), never `~/`/repo-root/cwd.
+_Avoid_: database of record, archive, roadmap.json
+
 ### Issue / Triage
 
 **Issue tracker**:
