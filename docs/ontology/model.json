@@ -594,6 +594,12 @@
    "elements": [
     "entity.design"
    ]
+  },
+  {
+   "path": "docs/designs/zj-dp-driven-skill-design.md",
+   "elements": [
+    "entity.design"
+   ]
   }
  ]
 }
