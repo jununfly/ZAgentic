@@ -163,7 +163,7 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-debrief](./skills/codebase-docs/zj-debrief/SKILL.md) — Close out a task as process material and route durable conclusions for later synthesis.
 - [zj-domain-modeling](./skills/codebase-docs/zj-domain-modeling/SKILL.md) — Maintain a project's domain language and glossary.
 - [zj-neat-freak](./skills/codebase-docs/zj-neat-freak/SKILL.md) — Reconcile codebase knowledge and governance drift.
-- [zj-dp-driven](./skills/codebase-docs/zj-dp-driven/SKILL.md) — Drive a complex task as one dynamic-programming run over a two-layer state graph; process state is a throwaway SQLite carrier, durable output is its markdown.
+- [zj-dp-driven](./skills/codebase-docs/zj-dp-driven/SKILL.md) — Drive a complex task as one dynamic-programming run over a two-layer state graph; ships a stdlib orchestration CLI (two-layer claims with lease TTL, settlement rounds, two-stage closeout), a cohesion optimizer, Mermaid/HTML views, and metrics; process state is a throwaway SQLite carrier, durable output is its markdown.
 - [zj-roadmap-driven](./skills/codebase-docs/zj-roadmap-driven/SKILL.md) — Maintain a decision-carrying execution roadmap.
 - [zj-wayfinder](./skills/codebase-docs/zj-wayfinder/SKILL.md) — Maintain a shared map of large-work planning decisions.
 
