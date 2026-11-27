@@ -18,7 +18,7 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer)
+## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b + 4c (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer→§9 metrics)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
@@ -27,10 +27,13 @@ derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scr
 (`scripts/dp_driven_optimize.py`), **§3.5 form-②③ derivation columns** (`finding/task.derived_from_finding`),
 **§6 Mermaid visualization** (`scripts/dp_driven_viz.py`, read-only) + **§6 R7 interactive HTML card**
 (`scripts/dp_driven_viz_html.py`), **§4.4 claim TTL / heartbeat lease**
-(`claim/renew`, derived `expired`). 182 tests in `tests/` lock every invariant.
+(`claim/renew`, derived `expired`), **§9 metrics collection** (`scripts/dp_driven_metrics.py`:
+sidecar event log + `report` / `reflow-check` double-entry audit). 210 tests in `tests/` lock
+every invariant.
 
-Deferred to later phases (design `[未决]` / progressive-rollout §8): metrics collection (§9), and any
-re-calibration of the optimizer's default weights / the claim lease default against real-run data (§9).
+Deferred to later phases (design `[未决]` / progressive-rollout §8): **calibration only** — the §9
+thresholds need Project B's first real-run data (token / round counts explicitly have no prior),
+which also feeds re-calibration of the optimizer's default weights and the claim lease default.
 
 ## The model in one breath (§1–§2)
 
@@ -81,8 +84,15 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
      deterministic Mermaid text; both **never mutate or persist** the model. A plan-subset or a view is
      recomputed each call; storing it would be a second source of truth (§3.1). The R7 HTML/IR snapshot
      likewise never writes back — freshness = re-run `viz`. Locked by
-     `test_dp_driven_optimize.py::test_suggest_is_pure_readonly`, `test_dp_driven_viz.py::
-     test_render_is_pure_readonly`, and `test_dp_driven_viz_html.py::test_render_html_is_pure_readonly`.
+      `test_dp_driven_optimize.py::test_suggest_is_pure_readonly`, `test_dp_driven_viz.py::
+      test_render_is_pure_readonly`, and `test_dp_driven_viz_html.py::test_render_html_is_pure_readonly`.
+ 11. **Observation log ≠ state (§3.1 / §9).** The §9 metrics channel is an append-only sidecar
+     (`<db-stem>.events.jsonl`) written by the **CLI layer only** — the model stays a pure state
+     machine. No derivation (`node_view` / `task_view` / `pool` / `is_complete` / `render` /
+     `suggest`) may read it: an observation history must never become a second source of truth,
+     and its absence must never change the graph. Locked by `test_dp_driven_metrics.py::
+     test_events_inert_to_state`; dry runs log nothing (`test_dry_run_writes_no_event`).
+
 
 ## Quick start (CLI)
 
@@ -113,7 +123,16 @@ $DP orchestrate "$DB" --agent alice --execute   # apply it (takes the single-wri
 $DP viz "$DB"                                # §6 read-only Mermaid to stdout
 $DP viz "$DB" --out docs/plans/dp-driven/login/dp_driven.mmd   # process-zone .mmd (not durable, not git)
 $DP viz "$DB" --format html --out docs/plans/dp-driven/login/dp_driven.html   # §6 R7 click→card viewer
+
+$DP metrics record "$DB" --type token --value 1234 --agent alice   # §9-1 external fact input
+$DP metrics annotate "$DB" plan 1 --verdict kept                    # §9-3 Human verdict on an optimizer plan
+$DP metrics report "$DB"                       # §9 read-only: 5 metrics, all flagged calibrated:false
+$DP metrics reflow-check "$DB"                 # §9-4 double-entry audit; violations → exit 2
 ```
+
+`orchestrate --execute` / `settlement run` / `task status`(terminal) / `ticket assign` /
+`finding membership add|remove` append one line each to `$DB.events.jsonl` (process zone, §9);
+previews log nothing. See [metrics reference](references/dp_driven-metrics.md).
 
 `ticket:1` shows `derived_blocked: true` until `ticket:0` reaches `已完成`; then the next read
 clears it with no stored field touched (see [data model](references/dp_driven-data-model.md)).
@@ -122,8 +141,9 @@ clears it with no stored field touched (see [data model](references/dp_driven-da
 
 ```bash
 $DP closeout summary "$DB" --out docs/plans/dp-driven/login/process-summary.md  # 步 1
+$DP metrics report    "$DB" --out docs/plans/dp-driven/login/metrics.md         # 步 1b (§9 numbers into the corpus)
 # 步 2: Human 用 zj-docs-ontology 治理该目录 md，然后写 dp_driven.governed.json
-$DP closeout delete  "$DB" --force                                               # 步 3
+$DP closeout delete  "$DB" --force                                               # 步 3 (also removes the event log)
 ```
 
 See [closeout contract](references/dp_driven-closeout.md) for the marker schema and ordering gates.
@@ -139,7 +159,9 @@ a load→mutate→save cycle. See `tests/test_dp_driven_model.py` for each invar
 ## Placement & closure discipline
 
 - **§5.3**: the `.sqlite` carrier is process fuel — no long-lived doc may reference it; it is
-  deleted at closeout. Only the same-directory `.md` corpus is durable (handled by zj-docs-ontology).
+  deleted at closeout, together with its process-zone siblings (`.lock`, `.events.jsonl`, and the
+  regenerable `.mmd` / `.html` views). Only the same-directory `.md` corpus is durable (handled by
+  zj-docs-ontology).
 - **§5.4**: the carrier directory is Human-specified; the skill writes only inside it, at current
   user privilege — no network, no credentials, never outside the directory.
 - **Runtime closure**: this skill reads no file outside its own directory; `scripts/` touches only

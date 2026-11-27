@@ -20,10 +20,11 @@ import sys
 import time
 
 import dp_driven_lock
+import dp_driven_metrics
 import dp_driven_optimize
 from dp_driven_model import (
     CLAIM_PLAN, CLAIM_TICKET, DEFAULT_CLAIM_LEASE_SECONDS, DpDriven, DpDrivenError,
-    KIND_FINDING, KIND_TICKET, SETTLEMENT_AGENT,
+    KIND_FINDING, KIND_TICKET, SETTLEMENT_AGENT, TERMINAL_STATUSES,
 )
 
 
@@ -69,6 +70,10 @@ def cmd_task_status(args):
         m = _open_model(args.db)
         m.set_plan_status(args.task_id, args.set, summary=args.summary, agent=args.agent)
         m.save()
+        if args.set in TERMINAL_STATUSES:      # §9 metric-3 evidence: plan reached terminal
+            dp_driven_metrics.append_event(args.db, "plan_terminal", kind="plan",
+                                           ref_id=args.task_id, agent=args.agent,
+                                           payload={"status": args.set})
     _emit({"ok": True, "task_id": args.task_id, "status": args.set})
 
 
@@ -107,6 +112,9 @@ def cmd_finding_membership_add(args):
         m = _open_model(args.db)
         m.add_finding_membership(args.finding_id, args.task_id)   # §4.4 lock-free
         m.save()
+        dp_driven_metrics.append_event(args.db, "membership", kind="finding",
+                                       ref_id=args.finding_id,
+                                       payload={"op": "add", "task_id": args.task_id})
     _emit({"ok": True})
 
 
@@ -115,6 +123,9 @@ def cmd_finding_membership_remove(args):
         m = _open_model(args.db)
         m.remove_finding_membership(args.finding_id, args.task_id)
         m.save()
+        dp_driven_metrics.append_event(args.db, "membership", kind="finding",
+                                       ref_id=args.finding_id,
+                                       payload={"op": "remove", "task_id": args.task_id})
     _emit({"ok": True})
 
 
@@ -138,6 +149,8 @@ def cmd_ticket_assign(args):
         m = _open_model(args.db)
         m.assign_ticket(args.ticket_id, tid)   # §4.3 hotplug / §4.4 lock-free
         m.save()
+        dp_driven_metrics.append_event(args.db, "reassign", kind="ticket",
+                                       ref_id=args.ticket_id, payload={"task_id": tid})
     _emit({"ok": True, "ticket_id": args.ticket_id, "task_id": tid})
 
 
@@ -246,6 +259,8 @@ def cmd_settlement_run(args):
         m = _open_model(args.db)
         tid, items = m.settlement_run(name=args.name)
         m.save()
+        dp_driven_metrics.append_event(args.db, "settlement", kind="plan", ref_id=tid,
+                                       payload={"items": len(items)})   # §9 metric-5 evidence
     _emit({"ok": True, "task_id": tid, "items": items})
 
 
@@ -267,7 +282,14 @@ def cmd_closeout_delete(args):
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
         deleted = m.closeout_delete_carrier(force=args.force, marker_path=args.marker)
-    _emit({"ok": True, "deleted": deleted})
+        # The §9 sidecar log is process-zone fuel too: it dies with the carrier, only after
+        # the sequence gate passed (numbers already exported into the md corpus in step 1).
+        events = dp_driven_metrics.default_events_path(args.db)
+        removed = []
+        if os.path.exists(events):
+            os.remove(events)
+            removed.append(events)
+    _emit({"ok": True, "deleted": deleted, "sidecars_removed": removed})
 
 
 # ── orchestration (§4.2 optimizer) ────────────────────────
@@ -300,6 +322,10 @@ def cmd_orchestrate(args):
         steps = dp_driven_optimize.suggest(m, threshold=args.threshold, max_size=args.max_size)
         applied = dp_driven_optimize.execute(m, steps, agent=args.agent, name=args.name)
         m.save()
+        # §9 metric-2/-3 evidence: one round per executed orchestration, carrying which
+        # plans the optimizer created/extended (the dry-run branch above logs nothing).
+        dp_driven_metrics.append_event(args.db, "orchestrate", agent=args.agent,
+                                       payload=applied)
     _emit({"executed": True, "applied": applied})
 
 
@@ -335,6 +361,50 @@ def cmd_viz(args):
         sys.stdout.write(dp_driven_viz.render(m))  # stdout = the Human's live view
 
 
+# ── metrics (§9) ─────────────────────────────────────────
+
+def cmd_metrics_record(args):
+    # §9-1 token consumption is an EXTERNAL fact (the CLI can't see the agent's tokens),
+    # so `record` is the input channel. Other event types are appended automatically by
+    # their write commands; recording them manually is allowed for replay/repair.
+    with dp_driven_lock.acquire(args.db):
+        _open_model(args.db)
+        ev = dp_driven_metrics.append_event(args.db, args.type, agent=args.agent,
+                                            value=args.value, ref_id=args.ref_id,
+                                            kind=args.kind if args.kind else None)
+    _emit({"ok": True, "event": ev})
+
+
+def cmd_metrics_annotate(args):
+    # §9-3 cohesion hit rate: Human's verdict on an optimizer-proposed plan (decision 3).
+    with dp_driven_lock.acquire(args.db):
+        m = _open_model(args.db)
+        m.task_view(args.ref_id)               # plan must exist → E_NO_SUCH_TASK
+        ev = dp_driven_metrics.append_event(args.db, "verdict", kind=args.kind,
+                                            ref_id=args.ref_id, agent=args.agent,
+                                            payload={"verdict": args.verdict})
+    _emit({"ok": True, "event": ev})
+
+
+def cmd_metrics_report(args):
+    m = _open_model(args.db)                   # read-only, no lock
+    events = dp_driven_metrics.read_events(args.db)
+    rep = dp_driven_metrics.report(m, events, audit=not args.no_audit)
+    if args.out:                               # §5.2 corpus fuel, process zone (§5.4)
+        with open(args.out, "w", encoding="utf-8") as fh:
+            fh.write(dp_driven_metrics.render_report_md(m, rep))
+        rep["written"] = args.out
+    _emit(rep)
+
+
+def cmd_metrics_reflow(args):
+    m = _open_model(args.db)                   # read-only audit (§3.2 double-entry)
+    out = dp_driven_metrics.reflow_check(m)
+    _emit(out)                                 # the report prints even when it fails
+    if out["violations"]:
+        raise DpDrivenError("E_REFLOW_STALE", f"{len(out['violations'])} 处派生不一致（§3.2）")
+
+
 # ── parser wiring ────────────────────────────────────────
 
 def build_parser() -> argparse.ArgumentParser:
@@ -368,9 +438,11 @@ def build_parser() -> argparse.ArgumentParser:
     ms = fsub.add_parser("membership")
     msub = ms.add_subparsers(dest="msub", required=True)
     ma = msub.add_parser("add"); add_db(ma); ma.add_argument("finding_id", type=int)
-    ma.add_argument("--task", type=int, required=True); ma.set_defaults(fn=cmd_finding_membership_add)
+    ma.add_argument("--task", type=int, required=True, dest="task_id")
+    ma.set_defaults(fn=cmd_finding_membership_add)
     mr = msub.add_parser("remove"); add_db(mr); mr.add_argument("finding_id", type=int)
-    mr.add_argument("--task", type=int, required=True); mr.set_defaults(fn=cmd_finding_membership_remove)
+    mr.add_argument("--task", type=int, required=True, dest="task_id")
+    mr.set_defaults(fn=cmd_finding_membership_remove)
 
     sp = sub.add_parser("ticket")
     ksub = sp.add_subparsers(dest="sub", required=True)
@@ -439,6 +511,23 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--now", type=int, help="epoch 秒（判 claim 过期，默认当前时间）")
     sp.set_defaults(fn=cmd_viz)
 
+    sp = sub.add_parser("metrics"); msub = sp.add_subparsers(dest="sub", required=True)
+    a = msub.add_parser("record"); add_db(a)   # §9-1 外部事实（token）+ 重放/修补
+    a.add_argument("--type", required=True, choices=dp_driven_metrics.EVENT_TYPES)
+    a.add_argument("--value", type=float); a.add_argument("--agent")
+    a.add_argument("--kind", choices=("plan", "ticket", "finding")); a.add_argument("--ref-id", type=int)
+    a.set_defaults(fn=cmd_metrics_record)
+    a = msub.add_parser("annotate"); add_db(a)  # §9-3 Human 判定
+    a.add_argument("kind", choices=("plan",)); a.add_argument("ref_id", type=int)
+    a.add_argument("--verdict", required=True, choices=dp_driven_metrics.VERDICTS)
+    a.add_argument("--agent")
+    a.set_defaults(fn=cmd_metrics_annotate)
+    a = msub.add_parser("report"); add_db(a)    # §9 汇总，只读
+    a.add_argument("--out"); a.add_argument("--no-audit", action="store_true")
+    a.set_defaults(fn=cmd_metrics_report)
+    a = msub.add_parser("reflow-check"); add_db(a)  # §9-4 双记账审计；不一致 exit 2
+    a.set_defaults(fn=cmd_metrics_reflow)
+
     sp = sub.add_parser("closeout"); cosub = sp.add_subparsers(dest="sub", required=True)
     cs = cosub.add_parser("summary"); add_db(cs); cs.add_argument("--out", required=True)
     cs.set_defaults(fn=cmd_closeout_summary)
@@ -452,7 +541,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv=None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as e:
+        # argparse signals usage errors with exit code 2; the documented contract here is
+        # 1 = usage, 2 = business (DpDrivenError). Map only the parse phase.
+        return 1 if e.code in (2, None) else e.code
     try:
         args.fn(args)
         return 0

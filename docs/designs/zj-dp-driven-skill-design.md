@@ -13,9 +13,9 @@ model-elements: [entity.design]
 > 4 因子，`effort` 因无单位定义剔除）；§3.5 形态②③ 溯源（finding→新 finding / 新 task）随 Phase-3b PR
 > 落地（`finding/task.derived_from_finding` 单父列，镜像 Q1(a)）；§6 可视化 R1-R6 随 Phase-3c PR 落地
 > （stdlib Mermaid 文本后端，只读+确定，`dp_driven_viz.py`）；§4.4 **claim TTL / heartbeat 租约** 随
-> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随本 Phase-4b PR 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）。
+> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随 Phase-4b PR #313 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）；§9 **metric 采集** 随本 Phase-4c PR 落地（`dp_driven_metrics.py`：sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**）。
 > 已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`
-> （§9 metric 采集与权重/租约实跑校准）维持原标记，待后续 Phase 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
+> （§9 阈值与 optimizer 权重 / claim 租约默认值的实跑校准）维持原标记，待后续 Phase 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
 > 无继承意图、无兼容 shim、无 legacy 保留义务——Human 判 pair 参考价值耗尽时直接删除。`zj-composer`
 > 与 dp-driven 的关系属独立讨论，本轮不预设。
@@ -375,7 +375,9 @@ model-elements: [entity.design]
 
 ## 9. 实跑观察指标（metrics 种子）
 
-> **[目标]** 以下为设计期锁定的**dp-driven 自身实跑观察指标方向**，实现期精化具体阈值与采集方式。
+> **[定稿·已实现（采集方法）]** 以下为设计期锁定的**dp-driven 自身实跑观察指标方向**；**测量方法已随
+> Phase-4c 落地**（sidecar 事件日志 + `metrics report/reflow-check`，`dp_driven_metrics.py:200` `report`），
+> **阈值仍 `[未决]`**（下表 Target 列为初估值，报告里一律标 `calibrated: false`，实现期后以实跑数据校准）。
 > 目的：帮 Human 判"dp-driven 是否已在实跑中稳态可用"。**不作为 pair 删除的判据**——pair 的处置走页首
 > 「贯穿构建期的纪律」，与本节解耦。
 
@@ -387,10 +389,25 @@ model-elements: [entity.design]
 | 回灌正确性 | % | ticket 终态后 blocked 重算的调用次数 vs 正确值 | 100% correct |
 | 结算轮触发率 | % | 整个 DP 运行中触发结算轮的占比（越低说明 optimizer 分组能力越强） | ≤ 10%（初估） |
 
-> **[未决]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，不设先验；后三条阈值可保留初估、
-> 随实跑校准。Owner：实现期指派。Exit condition：5 个 metric 均有可重复测量方法 + 首份实跑数据落地。
+> **实装对应（Phase-4c，方法侧已落地）**：
+> - 单 effort token 消耗 → `metrics record --type token`（**外部事实**：CLI 看不见 agent 的 token 用量，只能录入）
+> - 编排轮次 → `orchestrate --execute` + `settlement run` 的自动事件计数（preview 不落事件）
+> - 内聚命中率 → `orchestrate` 事件里的 applied plan 集合 ∩ `metrics annotate --verdict kept|split|regrouped`；
+>   **未标注的 plan 不进分母**、单列 `unannotated_plans`（不把缺数据当成绩）
+> - 回灌正确性 → §9 原式（"blocked 重算调用次数"）在本实现**恒无意义**：blocked 从不缓存、每次现推（§3.2）。
+>   等价可测形式 = **双记账审计** `dp_driven_metrics.py:133` `reflow_check` —— 独立从边集重推 §3.2 项级规则，
+>   与 `node_view` 比对不一致数（审计范围限项级；§3.6 F2 商图由既有锁测试覆盖，二次实现易造假阳）
+> - 结算轮触发率 → settlement / (orchestrate + settlement) 事件占比
+>
+> 事件通道 = sidecar `<db-stem>.events.jsonl`（**不进 carrier**：日志≠状态，§3.1 红线由
+> `test_dp_driven_metrics.py::test_events_inert_to_state` 锁死）。详见 §10 + `dp_driven-metrics.md`。
 
-## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b 本 PR）
+> **[未决（仅阈值）]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，**不设先验**（实现里
+> `threshold: null`）；后三条保留初估、随实跑校准。Owner：实现期指派。Exit condition 已达成**前半**
+> （5 个 metric 均有可重复测量方法）；**后半「首份实跑数据落地」仍未达成**——它来自真实 destination
+> 的推进，不是本 skill 的代码，故 Phase-4c 不声称本节收口。
+
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b + Phase-4c 本 PR）
 
 > **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
 > Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**；
@@ -398,7 +415,9 @@ model-elements: [entity.design]
 > Phase-3b = **§3.5 形态②③ 溯源列**（`finding/task.derived_from_finding`，镜像 Q1(a) 单父列）；
 > Phase-3c = **§6 可视化 R1-R6**（stdlib Mermaid 文本后端，只读+确定）；
 > Phase-4a = **§4.4 claim TTL / heartbeat 租约**（`expired` 读时派生不存储、model 无时钟、epoch 注入）；
-> Phase-4b = **§6 R7 交互式 HTML 卡片**（单文件 viewer：内嵌同一 `render()` 图体 + `build_node_ir()` 快照，点击→卡片，零回写）。
+> Phase-4b = **§6 R7 交互式 HTML 卡片**（单文件 viewer：内嵌同一 `render()` 图体 + `build_node_ir()` 快照，点击→卡片，零回写）；
+> Phase-4c = **§9 metric 测量方法**（sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**，
+> 全部标 `calibrated: false`，本 PR 不声称 §9 exit condition 收口）。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
@@ -433,8 +452,11 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 | §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:109,217` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14` |
 | §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:318,352` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:132,204` `render_html/render_html_to_file` · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） | `test_dp_driven_viz_html.py:57,114,198`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · CLI `:213,224,229,234`） |
 
-**仍未升级（Phase 4c / `[未决]`）**：§9 metric 采集与 optimizer 权重 / claim 租约默认值的
-实跑校准（§8 内聚命中率 ≥80% 基线，待 Project B 数据）。
+| §9 metric 采集（5 指标可重复测量方法；sidecar 事件日志，日志≠状态） | `dp_driven_metrics.py:48,79,105,200,271` `EVENT_TYPES/append_event/read_events/report/render_report_md` · `:133` `reflow_check`（§9-4 双记账等价式） · CLI `metrics record/annotate/report/reflow-check`（`dp_driven_cli.py:cmd_metrics_*`；写命令在锁内自动落事件，preview 不落） | `test_dp_driven_metrics.py:53,111,178,224`（日志对状态惰性 `:84` · 分母诚实 `:125` · 审计可证伪 `:187` · 收摊清日志 `:322`） |
+
+**仍未升级（Phase 4d / `[未决]`）**：§9 **阈值校准本身**——token / 轮次依 §9 明令不设先验（`threshold: null`），
+命中率 / 正确率 / 结算率保留 §9 初估目标并标 `calibrated: false`；optimizer 权重与 claim 租约默认值同理。
+校准数据只能来自 Project B 首份真实 destination 的推进，**不属于本 skill 的代码范围**。
 
 ## Source map
 
@@ -444,6 +466,7 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 - [dp_driven_carrier.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_carrier.py) — §2 五实体 SQLite 载体 schema 的实现。
 - [dp_driven_viz.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_viz.py) — §6 可视化 Mermaid 渲染（只读+确定，Phase-3c）+ R7 节点 IR 快照 `build_node_ir`（Phase-4b）。
 - [dp_driven_viz_html.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_viz_html.py) — §6 R7 单文件交互式 HTML viewer（内嵌图体+IR，点击→卡片，零回写，Phase-4b）。
+- [dp_driven_metrics.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_metrics.py) — §9 metric 采集：sidecar 事件日志、5 指标算式、双记账审计（测量方法已落地，阈值待实跑校准，Phase-4c）。
 
 > **本页性质**：本 skill 已有代码目录（Phase-1，PR #306），故自身实现锚点见 §10 及上述 skill 实现链接；
 > 前两条仍是本页实现所依赖的外部权威。§10"仍未升级"清单里的 `[目标]` / `[未决]` 断言尚未对齐源码，
@@ -485,7 +508,7 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   `claim` 支持租约 + 过期接管、新增 `renew`（心跳续租）、`claim_owner`/`list_claims`/claim 门按
   `epoch` 判过期、`validate` 校验租约合法；CLI `claim --lease-seconds/--no-lease/--now` + `renew` +
   `claims list --now`；`test_dp_driven_ttl.py` + `ClaimTtlCli`（累计 160 测试）。
-- **Phase-4b（本 PR）**：§6 **R7 交互式 HTML 卡片**——新增 `dp_driven_viz_html.py`（单文件 viewer：
+- **Phase-4b（PR #313）**：§6 **R7 交互式 HTML 卡片**——新增 `dp_driven_viz_html.py`（单文件 viewer：
   内嵌 `render()` 的 Mermaid 图体（无第二套布局真相）+ `build_node_ir()` 节点快照（key 与 Mermaid
   节点 id 逐一对齐）+ 原生 JS 点击→右区卡片，卡片值全部经 `textContent` 写入）；`dp_driven_viz.py`
   尾部追加 `build_node_ir / _node_card / _plan_card / default_html_path`（既有 `render:109` 等
@@ -496,6 +519,22 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   视图**零回写**（不变式 10 延伸到 IR/HTML，`test_render_html_is_pure_readonly` 锁死 carrier 字节）。
   `test_dp_driven_viz_html.py`（累计 182 测试）。**未 vendor 任何 JS 进仓库**——cdn 为默认，
   inline 由调用方自备文件，避免向旧 pair 的 `viz/` 形状靠拢。
+- **Phase-4c（本 PR）**：§9 **metric 采集**（只交付"可重复测量方法"这半个 exit condition）——
+  新增 `dp_driven_metrics.py`：sidecar 事件日志 `<db-stem>.events.jsonl`（**不进 carrier**，让
+  「日志≠状态」§3.1 可被 `test_events_inert_to_state` 机械锁死）、5 指标算式 `report`、
+  §9-4 的双记账审计 `reflow_check`。**事件由 CLI 层写**（决策 2：model 仍是纯状态机，库调用者
+  不产事件属刻意留白）；五个写命令在单写者锁内 `m.save()` 后各追加一行，**preview 不落**
+  （`suggest` / `orchestrate` 无 `--execute` / 非终态 `task status`）。内聚命中率 = 事件证据 +
+  Human `annotate` 判定，未标注项**不进分母**；token 为外部事实只能 `metrics record` 录入。
+  阈值一律 `calibrated: false`，token / 轮次 `threshold: null`（§9 明令不设先验）。
+  CLI 新增 `metrics record/annotate/report/reflow-check` + 业务码 `E_METRICS_LOG` / `E_REFLOW_STALE`；
+  §5.2 收摊按决策 5 以**独立** `metrics.md` 进语料（`closeout_export_summary` 的 §10 锚点因此零漂移），
+  `cmd_closeout_delete` 同时清理事件日志（顺序门未过时什么都不删）。`test_dp_driven_metrics.py`
+  （累计 212 测试）。
+  附带修正两处既有缺陷：`finding membership add|remove --task` 的 argparse dest 与 handler 读的
+  `args.task_id` 不一致（Phase-2 起该命令一调用即 AttributeError，此前无 CLI 级测试覆盖）；
+  argparse 原生 usage 退出码是 2，`main` 现只在 parse 阶段映射为 1，使实现与本文档既定的
+  「1=usage / 2=业务码」契约一致。
 
-**刻意留在 Phase 4c**（见 §10"仍未升级"）：§9 metric 采集与 optimizer 权重 / claim 租约默认值
-的实跑校准。各 Phase 均不假装做了后续项。
+**刻意留在 Phase 4d**（见 §10"仍未升级"）：§9 阈值、optimizer 权重与 claim 租约默认值的**实跑校准**
+——数据只能来自 Project B 首份真实 destination，不属本 skill 的代码范围。各 Phase 均不假装做了后续项。
