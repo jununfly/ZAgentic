@@ -7,13 +7,14 @@ model-elements: [entity.design]
 
 # zj-dp-driven 设计文档（定位与概要设计 · 基准）
 
-> **本页性质：基准设计页（Phase-1 + Phase-2 + Phase-3a + Phase-3b 已落地）。** `zj-dp-driven` 的 §2 载体 schema、§3 全部
+> **本页性质：基准设计页（Phase-1 + Phase-2 + Phase-3a + Phase-3b + Phase-3c 已落地）。** `zj-dp-driven` 的 §2 载体 schema、§3 全部
 > `[定稿]` 不变式随 PR #306 落地；§4.0 init / §4.4 两层 claim（含单写者）/ §4.5 结算轮 / §5.2 两段式
 > 收摊随 Phase-2 PR 落地；§3.6 F3 编排 optimizer + §4.2 内聚算分器随 Phase-3a PR 落地（种子-扩展贪心，
-> 4 因子，`effort` 因无单位定义剔除）；§3.5 形态②③ 溯源（finding→新 finding / 新 task）随本 Phase-3b PR
-> 落地（`finding/task.derived_from_finding` 单父列，镜像 Q1(a)）。已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line`
-> 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`（§4.4 claim 超时/TTL、§6 可视化、§9 metric）维持原标记，
-> 待 Phase 3c+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
+> 4 因子，`effort` 因无单位定义剔除）；§3.5 形态②③ 溯源（finding→新 finding / 新 task）随 Phase-3b PR
+> 落地（`finding/task.derived_from_finding` 单父列，镜像 Q1(a)）；§6 可视化 R1-R6 随本 Phase-3c PR 落地
+> （stdlib Mermaid 文本后端，只读+确定，`dp_driven_viz.py`）。已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line`
+> 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`（§4.4 claim 超时/TTL、§6 R7 交互式 HTML 卡片、§9 metric）
+> 维持原标记，待 Phase 3d+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
 > 无继承意图、无兼容 shim、无 legacy 保留义务——Human 判 pair 参考价值耗尽时直接删除。`zj-composer`
 > 与 dp-driven 的关系属独立讨论，本轮不预设。
@@ -307,7 +308,7 @@ model-elements: [entity.design]
 
 ## 6. 可视化呈现（概要）
 
-> **[目标]** 一张交互视图，分两区：
+> **[定稿·已实现（左区 + R1-R6）]** 一张视图，分两区（R7 交互式右区留后续，今日用 CLI 读命令代替）：
 > - **左区**：全局 DAG，**两层同屏**——层一 `tasks-state-graph`（task→task-plan），层二 `ticket/finding-state-graph`
 >   （plan 内 tickets & findings 的父子/依赖/物化边），节点带简单状态标记；**无 task-plan 关联的 findings（orphan）
 >   排在该区下方**，与主图分离呈现。
@@ -316,7 +317,12 @@ model-elements: [entity.design]
 > - **右区**：点击左区任一元素 → 以**卡片**展示该元素的详细信息（含 scoped context/memory 引用、物化关系、时间戳）。
 > - **[定稿] 共享 finding 的取巧渲染**（承 §3.6 F1 全局内层图）：一个 finding 归属多个 task-plan 时，各区**各画一次**
 >   并加"重叠"角标 + 异色；本视图**不**画"它与哪些 plan/区域重叠"的全局连线，也不追求表示重叠对象是谁。
-> - **[未决]** 渲染方式（静态 HTML / CLI 生成 / 依赖何种布局引擎）与技术契约留实现期。
+> - **[定稿·已实现]** 渲染后端 = **Mermaid `flowchart TD` 文本**（stdlib 零依赖；`dp_driven_viz.py`
+>   `render / render_to_file`，CLI `viz DB [--out]`）。选它而非静态 HTML+vendor JS / Graphviz dot / 终端 ASCII，
+>   理由：零依赖、输出可 grep 成失败测试、GitHub/VSCode 直接渲染，且**不向旧 pair 的 viz/ 形状靠拢**。
+>   R1-R6 契约 + classDef 见 `dp_driven-viz.md`；纯只读、确定性（`test_dp_driven_viz.py`）。
+> - **[未决 R7]** 右区"点击→HTML 卡片"未做；今日由 CLI 只读命令（`task view` / `status` / `claims list`）
+>   充当卡片，真正的交互式 HTML viewer 留 Phase 3d+。
 
 ## 7. 本轮锁定的四条判据（Q1–Q4 决策记录）
 
@@ -339,12 +345,15 @@ model-elements: [entity.design]
 > - ~~**编排 optimizer 的算分器实现**（§3.6 F3）~~ → **Phase-3a 已实现**：种子-扩展贪心，
 >   4 因子（`关联密度 / 切割面 / 解锁度 / 未标时长`），`effort` 因 §8 未定单位而剔除；见 §10
 >   + `dp_driven_optimize.py` + `dp_driven-optimizer.md`。**权重仍属起手值**，§9
->   内聚命中率 ≥ 80% 的校准基线待实跑数据，Phase 3b+ 再议。
+>   内聚命中率 ≥ 80% 的校准基线待实跑数据，Phase 3c+ 再议。
 > - **claim 超时释放 / TTL 机制**（§4.4）：agent 异常退出后如何判定"已死"而非"在思考"——heartbeat？固定 TTL？
 >   实现期定具体策略，设计页仅锁定"释放条件包含超时"这一事实。
 > - **sqlite 损坏 / 进程崩溃的恢复路径**：WAL 是否足够？是否需要 backup-before-mutate？实现期验证。
 > - **首次上线的渐进策略**：先自用（单人单 agent）→ 再推广（多 agent 并发场景）；渐进期间哪些功能可裁剪。
-> - **可视化实现契约**：渲染后端、状态标注粒度、orphan findings 的排版细节。
+> - ~~**可视化实现契约**：渲染后端、状态标注粒度、orphan findings 的排版细节~~ →
+>   **Phase-3c 已实现**：后端 = stdlib Mermaid 文本（不向 pair 的 viz/ 靠拢）；状态标注 = classDef
+>   （open/done/abandoned/blocked/overlap）；orphan findings = 独立 `ORPHANS` 子图。见 §10 +
+>   `dp_driven_viz.py` + `dp_driven-viz.md`。**R7 交互式 HTML 卡片仍 `[未决]`**（今日用 CLI 读命令代替）。
 > - **过程态落点与既有 `docs/plans/` / `tmp/skills-outputs/` 约定的并存关系**（§5.4）。
 > - **命名之外的对外契约**：`SKILL.md` frontmatter、CLI 命令面、opt-in 配置名（按"共享命名根 + self-explain +
 >   单复数一致"偏好统一）。
@@ -368,12 +377,13 @@ model-elements: [entity.design]
 > **[未决]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，不设先验；后三条阈值可保留初估、
 > 随实跑校准。Owner：实现期指派。Exit condition：5 个 metric 均有可重复测量方法 + 首份实跑数据落地。
 
-## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b 本 PR）
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c 本 PR）
 
 > **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
 > Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**；
 > Phase-3a = **§3.6 F3 编排 optimizer + §4.2 内聚算分器**（种子-扩展贪心，4 因子，`effort` 剔除）；
-> Phase-3b = **§3.5 形态②③ 溯源列**（`finding/task.derived_from_finding`，镜像 Q1(a) 单父列）。
+> Phase-3b = **§3.5 形态②③ 溯源列**（`finding/task.derived_from_finding`，镜像 Q1(a) 单父列）；
+> Phase-3c = **§6 可视化 R1-R6**（stdlib Mermaid 文本后端，只读+确定；R7 交互 HTML 卡片仍留后）。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
@@ -403,10 +413,12 @@ claim 层名与结算哨兵常量在 `dp_driven_model.py:34-54`（`SETTLEMENT_AG
 | §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:473,544,564` `closeout_export_summary / _verify_governed / _delete_carrier` | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114` |
 | §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:753` `in_flight_plans` | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90` |
 | §3.5 形态②③ / §7 Q1 溯源列（finding→finding / finding→task） | `dp_driven_carrier.py:73,58` `derived_from_finding` 列 · `dp_driven_model.py:172,114` `add_finding/add_task(derived_from=)` · `_relations` `dp_driven_optimize.py:64` | `test_dp_driven_derivation.py`；`test_dp_driven_model.py`（validate E_REF_MISSING 复用） |
+| §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:108,216` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14` |
 
-**仍未升级（Phase 3c+ / `[未决]`）**：§4.4 claim **超时释放 / TTL**（§8 `[未决]`，本轮仅显式
-`release --force`）、§6 可视化渲染、§9 metric 采集与 optimizer 权重实跑校准（§8 内聚命中率
-≥80% 基线，待 Project B 数据）。
+**仍未升级（Phase 3d+ / `[未决]`）**：§4.4 claim **超时释放 / TTL**（§8 `[未决]`，本轮仅显式
+`release --force`）、§6 **R7 交互式 HTML 卡片**（后端已定 stdlib Mermaid，左区+R1-R6 已实现；
+今日由 CLI 读命令 `task view`/`status`/`claims list` 代替右区）、§9 metric 采集与 optimizer
+权重实跑校准（§8 内聚命中率 ≥80% 基线，待 Project B 数据）。
 
 ## Source map
 
@@ -414,6 +426,7 @@ claim 层名与结算哨兵常量在 `dp_driven_model.py:34-54`（`SETTLEMENT_AG
 - [ADR 0010 — 本地文件持久化约定](../zj-adr/0010-local-file-persistence-convention.md) — §5.4 过程态落点纪律的上游约定；sqlite + md 双载体的落点必须遵循。
 - [dp_driven_model.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_model.py) — §3 全部不变式与派生态核心的实现（Phase-1 已落，锚点汇总见 §10）。
 - [dp_driven_carrier.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_carrier.py) — §2 五实体 SQLite 载体 schema 的实现。
+- [dp_driven_viz.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_viz.py) — §6 可视化 Mermaid 渲染（只读+确定，Phase-3c）。
 
 > **本页性质**：本 skill 已有代码目录（Phase-1，PR #306），故自身实现锚点见 §10 及上述两条 skill 链接；
 > 前两条仍是本页实现所依赖的外部权威。§10"仍未升级"清单里的 `[目标]` / `[未决]` 断言尚未对齐源码，
@@ -439,11 +452,16 @@ claim 层名与结算哨兵常量在 `dp_driven_model.py:34-54`（`SETTLEMENT_AG
   `staleness`，`effort` 因无单位定义剔除）+ `in_flight_plans` 只读 helper + CLI `suggest` / `orchestrate`
    + `dp_driven-optimizer.md` + 2 个新测试文件（累计 105 测试）；落地 §3.6 F3 / §4.2。
   `suggest` 纯只读、从不落库（§3.1 建议≠状态，`test_suggest_is_pure_readonly` 锁死）。
-- **Phase-3b（本 PR）**：`finding` / `task` 表各加 `derived_from_finding` 单父列（镜像 Q1(a)，
+- **Phase-3b**：`finding` / `task` 表各加 `derived_from_finding` 单父列（镜像 Q1(a)，
   `dp_driven_carrier.py:73,58`）+ `add_finding/add_task` 新增 `derived_from_finding=` 参 +
   `validate` 溯源悬空检查 + closeout 快照新增「Finding derivation」节 + optimizer `_relations`
   纳入 finding→finding / finding→task 邻接（向后安全）+ CLI `--derived-from-finding` +
   `test_dp_driven_derivation.py`（累计 117 测试）；落地 §3.5 形态②③ / §7 Q1 扩展。
+- **Phase-3c（本 PR）**：新增 `dp_driven_viz.py`（stdlib Mermaid `flowchart TD` 文本后端，纯只读 +
+  确定；R1 层一商图边 / R2 层二 per-plan 子图 + blocks/parent/derived 边 / R3 状态 class /
+  R4 orphan 子图 / R5 claim inflight·paused·settlement / R6 共享 finding 各区各画 + `⟲` 角标 + 无
+  跨区重叠连线）+ CLI `viz` + `dp_driven-viz.md` + `test_dp_driven_viz.py` / `test_dp_driven_viz_cli.py`
+  （累计 140 测试）；落地 §6 R1-R6。**R7 交互式 HTML 卡片仍未做**（今日由 CLI 读命令代替）。
 
-**刻意留在 Phase 3c+**（见 §10"仍未升级"）：§4.4 claim 超时/TTL、§6 可视化、§9 metric 采集与
-optimizer 权重实跑校准。各 Phase 均不假装做了后续项。
+**刻意留在 Phase 3d+**（见 §10"仍未升级"）：§4.4 claim 超时/TTL、§6 R7 交互式 HTML 卡片、
+§9 metric 采集与 optimizer 权重实跑校准。各 Phase 均不假装做了后续项。
