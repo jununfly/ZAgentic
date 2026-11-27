@@ -144,7 +144,7 @@ def render_html(model: DpDriven, *, now: int | None = None,
     if assets == "inline" and mermaid_js is None:
         raise DpDrivenError("E_VIZ_ASSETS", "assets=inline 需要 mermaid_js 文本")
 
-    mermaid_text = render(model)                 # R1–R6 truth for the graph body
+    mermaid_text = render(model, epoch=now)      # R1–R6 truth for the graph body — SAME clock as the IR below
     ir = build_node_ir(model, epoch=now)          # click payload snapshot (id-aligned)
     title = model.data["meta"].get("destination") or "zj-dp-driven graph"
 

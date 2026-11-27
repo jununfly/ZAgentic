@@ -18,7 +18,7 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b + 4c (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer→§9 metrics)
+## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b + 4c + 4d-fix (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer→§9 metrics→lease-clock wiring)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
@@ -27,8 +27,10 @@ derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scr
 (`scripts/dp_driven_optimize.py`), **§3.5 form-②③ derivation columns** (`finding/task.derived_from_finding`),
 **§6 Mermaid visualization** (`scripts/dp_driven_viz.py`, read-only) + **§6 R7 interactive HTML card**
 (`scripts/dp_driven_viz_html.py`), **§4.4 claim TTL / heartbeat lease**
-(`claim/renew`, derived `expired`), **§9 metrics collection** (`scripts/dp_driven_metrics.py`:
-sidecar event log + `report` / `reflow-check` double-entry audit). 210 tests in `tests/` lock
+(`claim/renew`, derived `expired`) — with the lease clock injected on **every** CLI path that
+consults it (`claim/renew/claims list`, both `status` writers, `orchestrate --execute`, `viz`),
+**§9 metrics collection** (`scripts/dp_driven_metrics.py`:
+sidecar event log + `report` / `reflow-check` double-entry audit). 231 tests in `tests/` lock
 every invariant.
 
 Deferred to later phases (design `[未决]` / progressive-rollout §8): **calibration only** — the §9
@@ -71,9 +73,12 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
    and `add_blocks` are **lock-free** by design. Single-writer atomicity = `dp_driven_lock.acquire`
    around every CLI write. **TTL is heartbeat/lease**: `claim` stores `last_seen_at`(epoch) +
    `lease_seconds`; `expired` is **derived at read** (`_is_expired`), never a stored field (§3.1/§3.2
-   anti-drift); **the model never reads the wall clock** — callers inject `epoch` (CLI supplies
-   `time.time()`, tests pass `--now`); `renew` is the heartbeat, an expired claim is inert (another
-   agent may take it over), `--no-lease` pins it (never expires).
+   anti-drift); **lease/expiry evaluation never reads the wall clock** — callers inject `epoch`.
+   (Scope note: the model does call `_now()` to write `created_at`/`completed_at`/`claimed_at`
+   *text*, but no decision ever derives from it.) The CLI owns the clock and wires it into every
+   lease-aware path: `claim`, `renew`, `claims list`, both `status` writers, `orchestrate
+   --execute` and `viz` — so an expired claim is inert on the real write path, not only in the
+   library. `renew` is the heartbeat; `--no-lease` pins a claim (never expires).
 8. **Settlement round (§4.5).** A special plan absorbs the whole pool, `SETTLEMENT_AGENT` sentinel
    bypasses its plan-claim gate so any agent may claim tickets inside it.
 9. **Two-stage closeout (§5.2).** Export snapshot → require `.governed.json` marker → delete sqlite
@@ -112,13 +117,14 @@ $DP status "$DB" ticket:1                              # derived_blocked: true
 
 $DP claim   "$DB" plan 0 --agent alice                 # §4.4 (grants a 300s lease by default)
 $DP renew   "$DB" plan 0 --agent alice                 # §4.4 TTL heartbeat (extends last_seen_at)
-$DP ticket  status "$DB" 0 --set 已完成 --agent alice
+$DP ticket  status "$DB" 0 --set 已完成 --agent alice   # gate reads the lease clock
+$DP ticket  status "$DB" 0 --set 已完成 --agent bob --now 1700000000   # expired lease ⇒ bob may write
 $DP status  "$DB" ticket:1                             # blocked gone, nothing stored changed
 $DP complete-check "$DB"
 
 $DP suggest     "$DB"                       # §4.2 read-only: propose cohesive subset / hotplug / settle
 $DP orchestrate "$DB" --agent alice         # same preview
-$DP orchestrate "$DB" --agent alice --execute   # apply it (takes the single-writer lock)
+$DP orchestrate "$DB" --agent alice --execute   # apply it; the new plan's claim carries a real lease (§4.4)
 
 $DP viz "$DB"                                # §6 read-only Mermaid to stdout
 $DP viz "$DB" --out docs/plans/dp-driven/login/dp_driven.mmd   # process-zone .mmd (not durable, not git)
@@ -143,7 +149,7 @@ clears it with no stored field touched (see [data model](references/dp_driven-da
 $DP closeout summary "$DB" --out docs/plans/dp-driven/login/process-summary.md  # 步 1
 $DP metrics report    "$DB" --out docs/plans/dp-driven/login/metrics.md         # 步 1b (§9 numbers into the corpus)
 # 步 2: Human 用 zj-docs-ontology 治理该目录 md，然后写 dp_driven.governed.json
-$DP closeout delete  "$DB" --force                                               # 步 3 (also removes the event log)
+$DP closeout delete  "$DB" --force                                               # 步 3 (also removes the event log + the consumed marker)
 ```
 
 See [closeout contract](references/dp_driven-closeout.md) for the marker schema and ordering gates.
