@@ -26,9 +26,14 @@ Schema discipline locked by the design — this file is where the `[目标]`
   ticket      id PK             — atomic action node. `task_id` is the SINGLE-membership
                                   owner (§3.4) — NULL means "not yet in any plan" = in pool.
                                   `derived_from_finding` is the §7 Q1 物化 edge (int|null).
-  edge        id PK             — `blocks` dependency among layer-2 nodes (any kind pair).
-                                  The ONLY source of `blocked` (§3.2). Parent-child is a
-                                  ticket column, not an edge, so it never blocks (§3.2).
+   edge        id PK             — `blocks` dependency among layer-2 nodes (any kind pair).
+                                   The ONLY source of `blocked` (§3.2). Parent-child is a
+                                   ticket column, not an edge, so it never blocks (§3.2).
+   claim      (kind,ref_id) PK   — two-layer claim (§4.4). `last_seen_at`(epoch) +
+                                   `lease_seconds` make `expired` a DERIVED read-time fact
+                                   (the lease is the stored truth; `expired` is never stored —
+                                   same anti-drift rule as §3.1/§3.2). `lease_seconds = NULL`
+                                   ⇒ never expires (§8 opt-in `--no-lease`).
 
 `load()` returns an in-memory dict mirroring what `DpDriven` operates on; `save()`
 rewrites all rows inside a single transaction (the atomic multi-row write SQLite's
@@ -106,10 +111,12 @@ CREATE TABLE IF NOT EXISTS edge (
     to_id     INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS claim (
-    kind       TEXT NOT NULL,   -- 'plan' | 'ticket' (§4.4 two-layer)
-    ref_id     INTEGER NOT NULL,
-    agent      TEXT NOT NULL,
-    claimed_at TEXT NOT NULL,
+    kind          TEXT NOT NULL,   -- 'plan' | 'ticket' (§4.4 two-layer)
+    ref_id        INTEGER NOT NULL,
+    agent         TEXT NOT NULL,
+    claimed_at    TEXT NOT NULL,
+    last_seen_at  INTEGER,         -- epoch seconds; refreshed by claim/renew (§4.4 TTL)
+    lease_seconds INTEGER,         -- lease length; NULL = never expires (§8 opt-in)
     PRIMARY KEY (kind, ref_id)
 );
 """
@@ -139,7 +146,7 @@ def empty_data() -> dict:
         "memberships": [],  # [{"finding_id":int,"task_id":int}]
         "tickets": {},      # str(id) -> ticket row
         "edges": [],        # [{"id":int,"type":str,"from_kind":str,"from_id":int,...}]
-        "claims": [],       # [{"kind":str,"ref_id":int,"agent":str,"claimed_at":str}]
+        "claims": [],       # [{"kind":str,"ref_id":int,"agent":str,"claimed_at":str,"last_seen_at":int|None,"lease_seconds":int|None}]
     }
 
 
@@ -203,10 +210,11 @@ def load(db_path: str) -> dict:
                 "from_id": row[3], "to_kind": row[4], "to_id": row[5],
             })
         for row in conn.execute(
-            "SELECT kind, ref_id, agent, claimed_at FROM claim ORDER BY kind, ref_id"
+            "SELECT kind, ref_id, agent, claimed_at, last_seen_at, lease_seconds FROM claim ORDER BY kind, ref_id"
         ):
             data["claims"].append({
                 "kind": row[0], "ref_id": row[1], "agent": row[2], "claimed_at": row[3],
+                "last_seen_at": row[4], "lease_seconds": row[5],
             })
     finally:
         conn.close()
@@ -287,9 +295,10 @@ def save(db_path: str, data: dict) -> str:
 
         conn.execute("DELETE FROM claim")
         conn.executemany(
-            "INSERT INTO claim(kind, ref_id, agent, claimed_at) VALUES(?,?,?,?)",
+            "INSERT INTO claim(kind, ref_id, agent, claimed_at, last_seen_at, lease_seconds) VALUES(?,?,?,?,?,?)",
             [
-                (c["kind"], c["ref_id"], c["agent"], c["claimed_at"])
+                (c["kind"], c["ref_id"], c["agent"], c["claimed_at"],
+                 c.get("last_seen_at"), c.get("lease_seconds"))
                 for c in data.get("claims", [])
             ],
         )

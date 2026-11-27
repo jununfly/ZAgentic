@@ -18,19 +18,19 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + Phase 2 + Phase 3a + Phase 3b + Phase 3c (… + §6 viz)
+## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
 **single-writer lock** (`scripts/dp_driven_lock.py`), **two-layer claim (§4.4) + settlement round
 (§4.5) + two-stage closeout (§5.2)**, **greedy cohesion optimizer + scorer (§3.6 F3 / §4.2)**
 (`scripts/dp_driven_optimize.py`), **§3.5 form-②③ derivation columns** (`finding/task.derived_from_finding`),
-**§6 Mermaid visualization** (`scripts/dp_driven_viz.py`, read-only). 140 tests in `tests/` lock every invariant.
+**§6 Mermaid visualization** (`scripts/dp_driven_viz.py`, read-only), **§4.4 claim TTL / heartbeat lease**
+(`claim/renew`, derived `expired`). 160 tests in `tests/` lock every invariant.
 
-Deferred to later phases (design `[未决]` / progressive-rollout §8): claim **TTL / heartbeat** (§4.4 —
-releases stay explicit, `release --force` is the Human escape), §6 **R7 interactive HTML card** (today
+Deferred to later phases (design `[未决]` / progressive-rollout §8): §6 **R7 interactive HTML card** (today
 served by the CLI read commands `task view` / `status` / `claims list`), metrics collection (§9), and any
-re-calibration of the optimizer's default weights against real-run data (§9).
+re-calibration of the optimizer's default weights / the claim lease default against real-run data (§9).
 
 ## The model in one breath (§1–§2)
 
@@ -63,10 +63,14 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
 
 6. **Two-layer quotient (§3.6 F2).** Outer task/plan `blocked` is the projection of inner
    cross-region `blocks` edges — the inner layer is the sole truth; nothing stores outer `blocked`.
-7. **Two-layer claim (§4.4).** plan-claim guards re-optimization (`set_plan_status`); ticket-claim
+7. **Two-layer claim + lease (§4.4).** plan-claim guards re-optimization (`set_plan_status`); ticket-claim
    guards duplicate execution (`set_ticket_status`). `dispose_finding`, `assign_ticket` (hot-plug),
    and `add_blocks` are **lock-free** by design. Single-writer atomicity = `dp_driven_lock.acquire`
-   around every CLI write; no claim TTL yet (§8 `[未决]` — use `release --force`).
+   around every CLI write. **TTL is heartbeat/lease**: `claim` stores `last_seen_at`(epoch) +
+   `lease_seconds`; `expired` is **derived at read** (`_is_expired`), never a stored field (§3.1/§3.2
+   anti-drift); **the model never reads the wall clock** — callers inject `epoch` (CLI supplies
+   `time.time()`, tests pass `--now`); `renew` is the heartbeat, an expired claim is inert (another
+   agent may take it over), `--no-lease` pins it (never expires).
 8. **Settlement round (§4.5).** A special plan absorbs the whole pool, `SETTLEMENT_AGENT` sentinel
    bypasses its plan-claim gate so any agent may claim tickets inside it.
 9. **Two-stage closeout (§5.2).** Export snapshot → require `.governed.json` marker → delete sqlite
@@ -95,7 +99,8 @@ $DP ticket add "$DB" --task 0
 $DP blocks add "$DB" --from ticket:0 --to ticket:1     # b 被阻塞 until a 已完成
 $DP status "$DB" ticket:1                              # derived_blocked: true
 
-$DP claim   "$DB" plan 0 --agent alice                 # §4.4
+$DP claim   "$DB" plan 0 --agent alice                 # §4.4 (grants a 300s lease by default)
+$DP renew   "$DB" plan 0 --agent alice                 # §4.4 TTL heartbeat (extends last_seen_at)
 $DP ticket  status "$DB" 0 --set 已完成 --agent alice
 $DP status  "$DB" ticket:1                             # blocked gone, nothing stored changed
 $DP complete-check "$DB"

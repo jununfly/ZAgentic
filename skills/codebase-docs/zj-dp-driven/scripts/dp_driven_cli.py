@@ -16,11 +16,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 
 import dp_driven_lock
 import dp_driven_optimize
 from dp_driven_model import (
-    CLAIM_PLAN, CLAIM_TICKET, DpDriven, DpDrivenError,
+    CLAIM_PLAN, CLAIM_TICKET, DEFAULT_CLAIM_LEASE_SECONDS, DpDriven, DpDrivenError,
     KIND_FINDING, KIND_TICKET, SETTLEMENT_AGENT,
 )
 
@@ -199,13 +200,21 @@ def cmd_complete_check(args):
 
 # ── claims (§4.4) ────────────────────────────────────────
 
+def _epoch(args):
+    """§4.4 lease clock: use --now EPOCH when given (tests/replay), else wall clock.
+    The *model* never reads wall clock — only the CLI does (§4.4 / determinism)."""
+    return args.now if getattr(args, "now", None) is not None else int(time.time())
+
+
 def cmd_claim(args):
+    lease = None if args.no_lease else args.lease_seconds
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
-        acquired = m.claim(args.kind, args.ref_id, agent=args.agent)
+        acquired = m.claim(args.kind, args.ref_id, agent=args.agent,
+                           lease_seconds=lease, epoch=_epoch(args))
         m.save()
     _emit({"ok": True, "kind": args.kind, "ref_id": args.ref_id,
-           "agent": args.agent, "newly_acquired": acquired})
+           "agent": args.agent, "newly_acquired": acquired, "lease_seconds": lease})
 
 
 def cmd_release(args):
@@ -216,9 +225,17 @@ def cmd_release(args):
     _emit({"ok": True, "released": released})
 
 
+def cmd_renew(args):
+    with dp_driven_lock.acquire(args.db):
+        m = _open_model(args.db)
+        renewed = m.renew(args.kind, args.ref_id, agent=args.agent, epoch=_epoch(args))
+        m.save()
+    _emit({"ok": renewed, "renewed": renewed, "epoch": _epoch(args)})
+
+
 def cmd_claims_list(args):
     m = _open_model(args.db)
-    _emit(m.list_claims())
+    _emit(m.list_claims(epoch=_epoch(args)))
 
 
 # ── settlement (§4.5) ────────────────────────────────────
@@ -365,12 +382,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("claim"); add_db(sp); sp.add_argument("kind", choices=(CLAIM_PLAN, CLAIM_TICKET))
     sp.add_argument("ref_id", type=int); sp.add_argument("--agent", required=True)
+    sp.add_argument("--lease-seconds", type=int, default=DEFAULT_CLAIM_LEASE_SECONDS)
+    sp.add_argument("--no-lease", action="store_true")
+    sp.add_argument("--now", type=int, help="epoch seconds (default: wall clock)")
     sp.set_defaults(fn=cmd_claim)
+    sp = sub.add_parser("renew"); add_db(sp); sp.add_argument("kind", choices=(CLAIM_PLAN, CLAIM_TICKET))
+    sp.add_argument("ref_id", type=int); sp.add_argument("--agent", required=True)
+    sp.add_argument("--now", type=int, help="epoch seconds (default: wall clock)")
+    sp.set_defaults(fn=cmd_renew)
     sp = sub.add_parser("release"); add_db(sp); sp.add_argument("kind", choices=(CLAIM_PLAN, CLAIM_TICKET))
     sp.add_argument("ref_id", type=int); sp.add_argument("--agent"); sp.add_argument("--force", action="store_true")
     sp.set_defaults(fn=cmd_release)
     sp = sub.add_parser("claims"); csub = sp.add_subparsers(dest="sub", required=True)
-    cl = csub.add_parser("list"); add_db(cl); cl.set_defaults(fn=cmd_claims_list)
+    cl = csub.add_parser("list"); add_db(cl); cl.add_argument("--now", type=int)
+    cl.set_defaults(fn=cmd_claims_list)
 
     sp = sub.add_parser("settlement"); ssub = sp.add_subparsers(dest="sub", required=True)
     sr = ssub.add_parser("run"); add_db(sr); sr.add_argument("--name"); sr.set_defaults(fn=cmd_settlement_run)

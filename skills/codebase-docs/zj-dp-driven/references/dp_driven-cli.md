@@ -15,34 +15,35 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 
 ## Subcommands
 
-| `init DB --destination TEXT` | §4.0 step 1 | `dp_driven_model.py:87` `DpDriven.init` |
-| `task add DB --name TEXT [--context-md P] [--memory-md P] [--derived-from-finding F]` | §4.0 step 2 / §3.5 form-③ | `:114` `add_task` |
-| `task status DB <id> --set {未完成\|已完成\|已放弃} [--agent A] [--summary S]` | §3.1 / §4.4 gate | `:137` `set_plan_status` |
-| `task summary DB <id> --text TEXT` | §2 终态总结 | `:163` `plan_summary` |
-| `task view DB <id>` | §3.3 派生投影 | `:355` `task_view` |
-| `finding add DB [--md-path P] [--external-hold R] [--derived-from-finding F]` | §2 / §3.5 form-② | `:172` `add_finding` |
-| `finding dispose DB <id> --to {已完成\|已放弃}` | §3.5 处置 | `:204` `dispose_finding` |
-| `finding membership add DB <fid> --task <tid>` | §3.4 多归属 | `:187` `add_finding_membership` |
-| `finding membership remove DB <fid> --task <tid>` | §3.4 | `:195` `remove_finding_membership` |
-| `ticket add DB [--task T] [--ref R] [--kv JSON] [--md-path P] [--derived-from-finding F] [--parent T] [--external-hold R]` | §2 / §3.4 / §7 Q1 | `:220` `add_ticket` |
-| `ticket assign DB <id> --task <tid\|NULL>` | §4.3 热插 (§4.4 lock-free) | `:241` `assign_ticket` |
-| `ticket status DB <id> --set {…} [--agent A]` | §4.4 ticket-claim gate | `:249` `set_ticket_status` |
-| `blocks add DB --from KIND:ID --to KIND:ID` | §3.2 blocks edge | `:265` `add_blocks` |
-| `edge remove DB <edge-id>` | §3.2 | `:279` `remove_edge` |
-| `hold DB KIND:ID [--reason TEXT]` | §3.2.1 | `:284` `set_external_hold` |
-| `status DB KIND:ID` | §3.2 派生读取 | `:311` `node_view` |
-| `pool DB` | §2 available pool | `:374` `pool` |
-| `validate DB` | §3 invariants | `:590` `validate` |
-| `complete-check DB` | §5.1 完成判据 | `:388` `is_complete` |
-| `claim DB {plan\|ticket} <id> --agent A` | §4.4 | `:396` `claim` |
-| `release DB {plan\|ticket} <id> [--agent A \| --force]` | §4.4 / §4.1 抢占 | `:422` `release` |
-| `claims list DB` | §4.4 观测 | `:445` `list_claims` |
-| `settlement run DB [--name TEXT]` | §4.5 | `:450` `settlement_run` |
+| `init DB --destination TEXT` | §4.0 step 1 | `dp_driven_model.py:94` `DpDriven.init` |
+| `task add DB --name TEXT [--context-md P] [--memory-md P] [--derived-from-finding F]` | §4.0 step 2 / §3.5 form-③ | `:121` `add_task` |
+| `task status DB <id> --set {未完成\|已完成\|已放弃} [--agent A] [--summary S]` | §3.1 / §4.4 gate | `:144` `set_plan_status` |
+| `task summary DB <id> --text TEXT` | §2 终态总结 | `:170` `plan_summary` |
+| `task view DB <id>` | §3.3 派生投影 | `:362` `task_view` |
+| `finding add DB [--md-path P] [--external-hold R] [--derived-from-finding F]` | §2 / §3.5 form-② | `:179` `add_finding` |
+| `finding dispose DB <id> --to {已完成\|已放弃}` | §3.5 处置 | `:211` `dispose_finding` |
+| `finding membership add DB <fid> --task <tid>` | §3.4 多归属 | `:194` `add_finding_membership` |
+| `finding membership remove DB <fid> --task <tid>` | §3.4 | `:202` `remove_finding_membership` |
+| `ticket add DB [--task T] [--ref R] [--kv JSON] [--md-path P] [--derived-from-finding F] [--parent T] [--external-hold R]` | §2 / §3.4 / §7 Q1 | `:227` `add_ticket` |
+| `ticket assign DB <id> --task <tid\|NULL>` | §4.3 热插 (§4.4 lock-free) | `:248` `assign_ticket` |
+| `ticket status DB <id> --set {…} [--agent A]` | §4.4 ticket-claim gate | `:256` `set_ticket_status` |
+| `blocks add DB --from KIND:ID --to KIND:ID` | §3.2 blocks edge | `:272` `add_blocks` |
+| `edge remove DB <edge-id>` | §3.2 | `:286` `remove_edge` |
+| `hold DB KIND:ID [--reason TEXT]` | §3.2.1 | `:291` `set_external_hold` |
+| `status DB KIND:ID` | §3.2 派生读取 | `:318` `node_view` |
+| `pool DB` | §2 available pool | `:381` `pool` |
+| `validate DB` | §3 invariants | `:657` `validate` |
+| `complete-check DB` | §5.1 完成判据 | `:395` `is_complete` |
+| `claim DB {plan\|ticket} <id> --agent A [--lease-seconds S \| --no-lease] [--now EPOCH]` | §4.4 + §4.4 TTL | `:403` `claim` |
+| `renew DB {plan\|ticket} <id> --agent A [--now EPOCH]` | §4.4 heartbeat 续租 | `:449` `renew` |
+| `release DB {plan\|ticket} <id> [--agent A \| --force]` | §4.4 / §4.1 抢占 | `:479` `release` |
+| `claims list DB [--now EPOCH]` | §4.4 观测（含派生 `expired`） | `:505` `list_claims` |
+| `settlement run DB [--name TEXT]` | §4.5 | `:516` `settlement_run` |
 | `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
 | `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]` | §4.2 routing | `dp_driven_optimize.py:suggest/execute` |
-| `closeout summary DB --out PATH` | §5.2 步 1 | `:473` `closeout_export_summary` |
-| `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:544` `closeout_verify_governed` |
-| `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:564` `closeout_delete_carrier` |
+| `closeout summary DB --out PATH` | §5.2 步 1 | `:540` `closeout_export_summary` |
+| `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:611` `closeout_verify_governed` |
+| `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:631` `closeout_delete_carrier` |
 
 ## Exit codes
 
@@ -64,8 +65,10 @@ Emitted on stderr as `<CODE>: <message>`. Codes originate from `dp_driven_model.
 | `E_SELF_EDGE` | `blocks add` where from == to |
 | `E_NO_SUCH_TASK` / `E_NO_SUCH_PLAN` / `E_NO_SUCH_FINDING` / `E_NO_SUCH_TICKET` | ref resolution |
 | `E_REF_MISSING` / `E_EDGE_ENDPOINT_MISSING` / `E_PLAN_NOT_1TO1` | `validate` |
-| `E_CLAIM_HELD_BY_OTHER` | claim conflict / status-write gate (§4.4) |
-| `E_CLAIM_NOT_OWNER` | release with wrong agent, no `--force` |
+| `E_CLAIM_HELD_BY_OTHER` | claim conflict / status-write gate (§4.4); NOT raised if the held claim is expired (§4.4 TTL) |
+| `E_CLAIM_NOT_OWNER` | release / renew with wrong agent, no `--force` |
+| `E_CLAIM_LEASE_INVALID` | `lease_seconds ≤ 0` on claim, or an invalid stored lease (§4.4 TTL) |
+| `E_CLAIM_REF_MISSING` / `E_CLAIM_KIND` / `E_DUP_CLAIM` | claim row integrity (`validate`) |
 | `E_POOL_EMPTY` | `settlement run` on empty pool (§4.5) |
 | `E_NOT_COMPLETE` | `closeout` before §5.1 satisfied |
 | `E_CLOSEOUT_NOT_GOVERNED` | closeout without `.governed.json` marker (§5.2 步 2) |
@@ -81,16 +84,15 @@ Read commands emit pretty-printed JSON on stdout (`ensure_ascii=false`, `indent=
 including the new entity id when applicable. Deterministic ordering everywhere so a
 byte-equal replay is a valid regression test.
 
-## Known Phase-2/3a gaps (not defects, deferred per design)
+## Known remaining gaps (not defects, deferred per design)
 
-- **§3.6 F3 optimizer + scorer** — landed in Phase 3a as `dp_driven_optimize.suggest` /
-  `CohesionScorer` (seed-and-grow greedy). No `learned` or adaptive weights; defaults are
-  reference values for Human confirmation (§4.2).
-- **§4.4 claim TTL / heartbeat** — Phase 3a did NOT add this; releases remain explicit
-  (`release --force` = Human privilege). Design §8 `[未决]` for the concrete strategy.
-- **§4.4 claim TTL / heartbeat** — Phase 2 releases are explicit; a crashed agent's claim
-  persists until `release --force` (Human privilege). Strategy deferred per design §8.
-- **§6 visualization** — no `render` command; carrier is inspected via `pool` / `status` /
-  `task view`. Rendering lands later.
+- **§3.6 F3 optimizer + scorer** — landed (Phase-3a) as `dp_driven_optimize.suggest`
+  (seed-and-grow greedy). No learned/adaptive weights; defaults are reference values for
+  Human confirmation (§4.2); calibration awaits §9 real-run data.
+- **§4.4 claim TTL / heartbeat** — landed (Phase-4a): heartbeat lease + derived `expired`,
+  `renew`, `--no-lease`, `--now` epoch injection (§8 strategy now fixed as heartbeat).
+- **§6 visualization** — landed (Phase-3c) as `viz` (stdlib Mermaid). Still open: **R7
+  interactive HTML card** (today served by `task view` / `status` / `claims list`).
+- **§9 metrics + weight calibration** — not implemented; needs Project B first real-run data.
 - **Windows file lock** — `fcntl.flock` is POSIX. §5.4 assumes a POSIX Human-specified
   directory; porting to Windows `msvcrt.locking` is out of Phase 2 scope.

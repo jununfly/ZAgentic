@@ -2,8 +2,8 @@
 
 The two-stage teardown that turns a completed DP run into durable docs + a deleted carrier.
 Design baseline: `zj-dp-driven-skill-design.md` §5.2, §5.3. Implementation:
-`dp_driven_model.py:473` `closeout_export_summary`, `:544` `closeout_verify_governed`,
-`:564` `closeout_delete_carrier`. CLI: `closeout summary / check / delete`.
+`dp_driven_model.py:540` `closeout_export_summary`, `:611` `closeout_verify_governed`,
+`:631` `closeout_delete_carrier`. CLI: `closeout summary / check / delete`.
 
 ## Why two stages (order is load-bearing)
 

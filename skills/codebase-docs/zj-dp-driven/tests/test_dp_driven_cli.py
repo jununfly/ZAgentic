@@ -140,5 +140,41 @@ class OutputContract(CliHarness):
             json.loads(p.stdout)   # must parse
 
 
+class ClaimTtlCli(CliHarness):
+    """§4.4 Phase-4a: lease/takeover/renew driven end-to-end via --now EPOCH."""
+
+    def test_claim_then_expired_takeover(self):
+        self.run_cli("init", self.db, "--destination", "d")
+        self.run_cli("task", "add", self.db, "--name", "x")
+        self.run_cli("claim", self.db, "plan", "0", "--agent", "alice",
+                     "--lease-seconds", "100", "--now", "1000")
+        # alice still holds at 1050
+        rows = json.loads(self.run_cli("claims", "list", self.db, "--now", "1050").stdout)
+        self.assertFalse([r for r in rows if r["kind"] == "plan"][0]["expired"])
+        # expired at 1200 → bob takes over
+        rows = json.loads(self.run_cli("claims", "list", self.db, "--now", "1200").stdout)
+        self.assertTrue([r for r in rows if r["kind"] == "plan"][0]["expired"])
+        self.run_cli("claim", self.db, "plan", "0", "--agent", "bob",
+                     "--lease-seconds", "100", "--now", "1200")
+        self.assertEqual(json.loads(self.run_cli("claims", "list", self.db, "--now", "1200").stdout)
+                         [0]["agent"], "bob")
+
+    def test_renew_extends(self):
+        self.run_cli("init", self.db, "--destination", "d")
+        self.run_cli("task", "add", self.db, "--name", "x")
+        self.run_cli("claim", self.db, "plan", "0", "--agent", "alice",
+                     "--lease-seconds", "100", "--now", "1000")
+        self.run_cli("renew", self.db, "plan", "0", "--agent", "alice", "--now", "1080")
+        rows = json.loads(self.run_cli("claims", "list", self.db, "--now", "1150").stdout)
+        self.assertFalse([r for r in rows if r["kind"] == "plan"][0]["expired"])
+
+    def test_no_lease_flag(self):
+        self.run_cli("init", self.db, "--destination", "d")
+        self.run_cli("task", "add", self.db, "--name", "x")
+        self.run_cli("claim", self.db, "plan", "0", "--agent", "alice", "--no-lease", "--now", "0")
+        rows = json.loads(self.run_cli("claims", "list", self.db, "--now", "1000000000").stdout)
+        self.assertFalse([r for r in rows if r["kind"] == "plan"][0]["expired"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
