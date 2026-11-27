@@ -1150,9 +1150,61 @@ _Avoid_: closing, deleting, converting-to-ticket (those are only some forms)
 
 **DP carrier / 动态规划载体**:
 The SQLite file holding only process state (tasks / plans / tickets / findings / edges /
-memberships). Deleted at closeout; must not be referenced by any long-lived doc. Lives in a
-Human-specified directory (default `docs/plans/dp-driven/<topic>/`), never `~/`/repo-root/cwd.
+memberships / claims). Deleted at closeout together with its process-zone siblings — the writer
+lock sidecar, the event log, and the regenerable view artifacts — none of which may be referenced
+by a long-lived doc; only the `.md` corpus persists. Lives in a Human-specified directory
+(default `docs/plans/dp-driven/<topic>/`), never `~/`/repo-root/cwd.
 _Avoid_: database of record, archive, roadmap.json
+
+**Claim / 占用声明 (§4.4)**:
+A session-scoped statement that some agent is working one layer-1 plan or one ticket. The two
+layers are independent: a plan claim gates only that plan's status writes, a ticket claim only
+that ticket's. Disposing a finding, hotplugging an item into a plan, or adding a `blocks` edge is
+deliberately claim-free — announcing ownership is not the same as freezing arrangement.
+_Avoid_: lock, mutex, assignment, ownership transfer
+
+**Claim lease / heartbeat (§4.4)**:
+The bounded life of a claim: it records when the holder was last seen and how long that sighting
+stays valid, and liveness is answered on read. An expired claim is inert, so any other agent may
+take it over and a crashed holder gives up its grip without a sweeper; a heartbeat renews the
+lease, which is what separates "still thinking" from "dead". Expiry is never a stored flag.
+_Avoid_: stored expired boolean, background reaper, indefinite claim
+
+**Settlement round / 结算轮 (§4.5)**:
+The catch-all orchestration round that sweeps the available pool into a single plan when no
+cohesive subset is worth proposing, so a run can always converge instead of stalling on leftovers.
+Its plan-level claim degrades to a sentinel, letting any agent pick the swept items back up. A
+high settlement share is evidence the grouping pass underperformed, not that the run is healthy.
+_Avoid_: mop-up task, backlog drain, failed run
+
+**Two-stage closeout / 两段式收摊 (§5.2)**:
+The ordered teardown of a finished run: export the structural snapshot while the carrier is still
+readable, let the Human govern that markdown corpus and attest it, and only then delete the
+carrier. The order is load-bearing — governing documents that still point into a live process
+store inverts the authority boundary between durable output and throwaway state.
+_Avoid_: archiving the carrier, backup-before-mutate, delete first and reconcile later
+
+**Cohesion suggestion / 内聚建议 (§3.6 F3 / §4.2)**:
+A token-cheap greedy proposal for which pool items are worth grouping into the next plan, scored
+on how interconnected the candidate set is, how clean its cut is, and how much it unlocks —
+reference values for Human confirmation, not a verdict. It never enumerates subsets, never claims
+optimality, and is never persisted: a stored suggestion would be a second source of truth.
+_Avoid_: authoritative ranking, autonomous scheduler, stored score
+
+**Derived view artifact / 视图产物 (§6)**:
+A renderable projection of the state graph — Mermaid text, a self-contained interactive viewer, or
+the node snapshot behind their click-to-card behavior — built on demand from the same derived
+reads the CLI exposes. It is a generation-time snapshot: never written back, never trusted as
+state, and refreshed by re-running the view command rather than by any background sync.
+_Avoid_: visualization state, canvas of record, live model
+
+**Event log / 事件日志 (§9)**:
+The append-only observation channel beside the carrier that records what happened across rounds —
+orchestrations, settlements, terminal transitions, manual reassignments, Human verdicts, and
+externally reported token cost. It is history, not state: no derivation may read it, and its
+absence or corruption must never change the graph. It dies with the carrier at closeout, after its
+numbers have been exported into the durable corpus.
+_Avoid_: audit table as truth source, second state store, achieved baseline
 
 ### Issue / Triage
 
