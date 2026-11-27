@@ -51,7 +51,13 @@ WANT_PLATFORMS=""
 METHOD="copy"
 DRY_RUN=0
 
-usage() { sed -n '3,35p' "$0"; exit 0; }
+usage() {
+  # Help = the whole leading comment block, content-delimited: from the first
+  # `# ` line to the first non-comment line. Never a line range — editing the
+  # header cannot silently truncate the help text.
+  awk '/^# /{f=1} f && !/^#/ {exit} f {print substr($0, 3)}' "$0"
+  exit 0
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
