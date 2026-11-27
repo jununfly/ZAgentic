@@ -42,6 +42,10 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
 | `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]` | §4.2 routing | `dp_driven_optimize.py:suggest/execute` |
 | `viz DB [--out PATH] [--format mermaid\|html] [--assets cdn\|inline] [--js-path P] [--now EPOCH]` | §6 R1–R6 + R7 (read-only) | `dp_driven_viz.py:render` · `dp_driven_viz_html.py:render_html` |
+| `metrics record DB --type {token,…} [--value N] [--agent A] [--kind K] [--ref-id I]` | §9-1 外部事实 / 修补 | `dp_driven_metrics.py:79` `append_event` |
+| `metrics annotate DB plan <id> --verdict {kept\|split\|regrouped} [--agent A]` | §9-3 Human 判定 | `dp_driven_metrics.py:190` `verdicts` |
+| `metrics report DB [--out PATH] [--no-audit]` | §9 汇总（read-only） | `dp_driven_metrics.py:200` `report` · `:271` `render_report_md` |
+| `metrics reflow-check DB` | §9-4 双记账审计（不一致 → exit 2） | `dp_driven_metrics.py:133` `reflow_check` |
 | `closeout summary DB --out PATH` | §5.2 步 1 | `:540` `closeout_export_summary` |
 | `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:611` `closeout_verify_governed` |
 | `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:631` `closeout_delete_carrier` |
@@ -51,7 +55,7 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | Code | Meaning | Source |
 |---|---|---|
 | 0 | OK | `dp_driven_cli.py:main` |
-| 1 | usage / argparse error | `SystemExit` from argparse |
+| 1 | usage / argparse error | `main` maps argparse's native exit 2 → 1 (parse phase only) |
 | 2 | `DpDrivenError` (business code on stderr) | `dp_driven_cli.py:main` maps `e.code` |
 | 3 | carrier file not found | `FileNotFoundError` |
 | 4 | single-writer lock timeout | `dp_driven_lock.py:LockTimeout` |
@@ -76,6 +80,8 @@ Emitted on stderr as `<CODE>: <message>`. Codes originate from `dp_driven_model.
 | `E_CLOSEOUT_MARKER_MALFORMED` | marker present but invalid JSON / missing `governed_at` |
 | `E_CLOSEOUT_CONFIRM_REQUIRED` | `closeout delete` without `--force` |
 | `E_VIZ_ASSETS` | `viz --format html --assets inline` without a readable `--js-path` / env `DP_DRIVEN_MERMAID_JS` (§6 R7) |
+| `E_METRICS_LOG` | unknown event type/kind, or a malformed line in the sidecar event log (§9) |
+| `E_REFLOW_STALE` | `metrics reflow-check` found derived-view disagreement (§9-4 / §3.2) |
 | `E_DB_MISSING` | carrier path does not exist |
 | `E_LOCK_TIMEOUT` | single-writer acquire exceeded 10 s (§4.4) |
 
@@ -85,6 +91,24 @@ Read commands emit pretty-printed JSON on stdout (`ensure_ascii=false`, `indent=
 `default=str`). Write commands emit a small `{ "ok": true, ... }` confirmation object
 including the new entity id when applicable. Deterministic ordering everywhere so a
 byte-equal replay is a valid regression test.
+
+## Event logging (§9, Phase-4c)
+
+Five write commands also append one JSONL line each to the sidecar
+`<db-stem>.events.jsonl` **inside the single-writer lock, after `m.save()`** — the CLI layer
+is the only writer, so `dp_driven_model.py` stays a pure state machine:
+
+`orchestrate --execute` · `settlement run` · `task status` (terminal only) · `ticket assign`
+· `finding membership add|remove`.
+
+Dry runs write nothing: `suggest` and `orchestrate` without `--execute` leave the log
+untouched, and so does a non-terminal `task status`. `metrics record` / `metrics annotate`
+are the explicit input channels (§9-1 tokens are an external fact; §9-3 needs a Human
+verdict).
+
+The log is an observation channel, never a state source: no derivation reads it, asserted by
+`test_dp_driven_metrics.py::test_events_inert_to_state`. Schema, metric arithmetic and the
+double-entry audit live in `references/dp_driven-metrics.md`.
 
 ## Known remaining gaps (not defects, deferred per design)
 
@@ -98,6 +122,9 @@ byte-equal replay is a valid regression test.
   node-IR JSON; `--assets cdn|inline --js-path`, `--now EPOCH` for claim expiry display).
   CLI reads (`task view` / `status` / `claims list`) remain the terminal equivalent.
   Still open: pan/zoom chrome (design does not require it).
-- **§9 metrics + weight calibration** — not implemented; needs Project B first real-run data.
+- **§9 metrics** — measurement methods landed (Phase-4c): sidecar `events.jsonl` +
+  `metrics record/annotate/report/reflow-check`. Still open: **threshold calibration**, which
+  needs Project B's first real-run data (§9 explicitly forbids priors for token / round
+  counts; the other three keep their seed targets flagged `calibrated: false`).
 - **Windows file lock** — `fcntl.flock` is POSIX. §5.4 assumes a POSIX Human-specified
   directory; porting to Windows `msvcrt.locking` is out of Phase 2 scope.
