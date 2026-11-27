@@ -40,6 +40,7 @@ directories:
 | `claude` | `~/.claude/skills` |
 | `codex` | `~/.codex/skills` |
 | `workbuddy` | `~/.workbuddy/skills` |
+| `qianwen` | `~/.qwenworkcn/skills` (千问办公 / QwenWork; international edition falls back to `~/.qwenwork/skills`) |
 
 ```bash
 # Install into every detected platform.
@@ -54,8 +55,9 @@ scripts/link-skills.sh --platform codex --method symlink
 ```
 
 The installer replaces a same-named target skill folder; use `--dry-run` before
-overwriting an existing installation. Reload WorkBuddy plugins (or restart it)
-after installation so its scanner sees the new skills.
+overwriting an existing installation. Reload the agent app after installation
+(e.g. reload plugins in WorkBuddy, or restart 千问办公 / QwenWork) so its
+scanner sees the new skills.
 
 ### Refresh or remove a local installation
 
