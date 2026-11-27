@@ -41,6 +41,7 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | `settlement run DB [--name TEXT]` | §4.5 | `:516` `settlement_run` |
 | `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
 | `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]` | §4.2 routing | `dp_driven_optimize.py:suggest/execute` |
+| `viz DB [--out PATH] [--format mermaid\|html] [--assets cdn\|inline] [--js-path P] [--now EPOCH]` | §6 R1–R6 + R7 (read-only) | `dp_driven_viz.py:render` · `dp_driven_viz_html.py:render_html` |
 | `closeout summary DB --out PATH` | §5.2 步 1 | `:540` `closeout_export_summary` |
 | `closeout check DB [--marker PATH]` | §5.2 步 2 门 | `:611` `closeout_verify_governed` |
 | `closeout delete DB [--marker PATH] --force` | §5.2 步 3 | `:631` `closeout_delete_carrier` |
@@ -74,6 +75,7 @@ Emitted on stderr as `<CODE>: <message>`. Codes originate from `dp_driven_model.
 | `E_CLOSEOUT_NOT_GOVERNED` | closeout without `.governed.json` marker (§5.2 步 2) |
 | `E_CLOSEOUT_MARKER_MALFORMED` | marker present but invalid JSON / missing `governed_at` |
 | `E_CLOSEOUT_CONFIRM_REQUIRED` | `closeout delete` without `--force` |
+| `E_VIZ_ASSETS` | `viz --format html --assets inline` without a readable `--js-path` / env `DP_DRIVEN_MERMAID_JS` (§6 R7) |
 | `E_DB_MISSING` | carrier path does not exist |
 | `E_LOCK_TIMEOUT` | single-writer acquire exceeded 10 s (§4.4) |
 
@@ -91,8 +93,11 @@ byte-equal replay is a valid regression test.
   Human confirmation (§4.2); calibration awaits §9 real-run data.
 - **§4.4 claim TTL / heartbeat** — landed (Phase-4a): heartbeat lease + derived `expired`,
   `renew`, `--no-lease`, `--now` epoch injection (§8 strategy now fixed as heartbeat).
-- **§6 visualization** — landed (Phase-3c) as `viz` (stdlib Mermaid). Still open: **R7
-  interactive HTML card** (today served by `task view` / `status` / `claims list`).
+- **§6 visualization** — landed (Phase-3c) as `viz` (stdlib Mermaid); **R7 interactive
+  HTML card landed (Phase-4b)** as `viz --format html` (embeds the same Mermaid text + a
+  node-IR JSON; `--assets cdn|inline --js-path`, `--now EPOCH` for claim expiry display).
+  CLI reads (`task view` / `status` / `claims list`) remain the terminal equivalent.
+  Still open: pan/zoom chrome (design does not require it).
 - **§9 metrics + weight calibration** — not implemented; needs Project B first real-run data.
 - **Windows file lock** — `fcntl.flock` is POSIX. §5.4 assumes a POSIX Human-specified
   directory; porting to Windows `msvcrt.locking` is out of Phase 2 scope.

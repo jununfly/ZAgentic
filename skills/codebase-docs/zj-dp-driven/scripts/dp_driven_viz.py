@@ -9,9 +9,9 @@ claim is a *failing test*, not a screenshot hope; (c) it renders in GitHub/VSCod
 with no install; (d) adopting a vendored layout JS would mirror `zj-roadmap-driven/viz/`
 and drift toward the old pair, which this skill's build-period discipline forbids.
 
-R7 (interactive right-region card) is deliberately NOT here: the existing read commands
-(`status` / `task view` / `node_view`) are the CLI form of "click → details"; HTML
-interactivity is deferred (design §6 [未决] R7 / §8).
+R7 (interactive card) support lives in build_node_ir() below + dp_driven_viz_html.py
+(Phase-4b): a per-node-instance snapshot keyed by the SAME Mermaid ids render() emits,
+so a click maps back to a card. `render()` itself stays layout-agnostic and epoch-agnostic.
 
 Invariants honored:
 * **read-only + deterministic** (§3.1 / §3.6): `render()` calls only existing derived reads
@@ -26,7 +26,7 @@ Invariants honored:
 from __future__ import annotations
 
 from dp_driven_model import (
-    CLAIM_PLAN, DpDriven, KIND_FINDING, KIND_TICKET, SETTLEMENT_AGENT,
+    CLAIM_PLAN, CLAIM_TICKET, DpDriven, KIND_FINDING, KIND_TICKET, SETTLEMENT_AGENT,
     S_ABANDONED, S_BLOCKED, S_DONE, S_OPEN,
 )
 
@@ -83,13 +83,14 @@ def _status_class(status: str) -> str:
     return {S_DONE: "done", S_ABANDONED: "abandoned", S_BLOCKED: "blocked"}.get(status, "open")
 
 
-def _plan_claim_class(model: DpDriven, tid: int) -> str | None:
+def _plan_claim_class(model: DpDriven, tid: int, epoch: int | None = None) -> str | None:
     """R5 claim visualization: in-flight (claimed by a real agent) vs paused (open, no claim)
-    vs settlement sentinel. Terminal plans get no emphasis class."""
+    vs settlement sentinel. Terminal plans get no emphasis class.
+    `epoch` (Phase-4b): when given, an EXPIRED lease (§4.4) reads as paused, not in-flight."""
     plan = model.data["plans"][str(tid)]
     if plan["status"] != S_OPEN:
         return None
-    owner = model.claim_owner(CLAIM_PLAN, tid)
+    owner = model.claim_owner(CLAIM_PLAN, tid, epoch=epoch)
     if owner == SETTLEMENT_AGENT:
         return "plan_settlement"
     if owner is not None:
@@ -229,3 +230,129 @@ def default_out_path(db_path: str) -> str:
             base = base[: -len(ext)]
             break
     return base + ".mmd"
+
+
+# ── R7 interactive viewer support (Phase-4b) ──────────────────────────────
+#
+# build_node_ir() emits a per-node-instance snapshot whose KEYS are exactly the
+# Mermaid node ids render() produces (subgraph id `T{tid}`, item mid
+# `{short}_T{plan}` / `{short}_ORPHAN`). The HTML viewer's click handler maps a
+# clicked SVG node id straight back into this dict, so id parity with render() is
+# load-bearing (locked by test_ir_ids_match_mermaid_ids). It reuses the SAME
+# traversal + mid helpers as render() so the two can never drift.
+#
+# §3.1 discipline: this is a READ-TIME SNAPSHOT, never persisted, never re-read as
+# state. Fields are pulled from the same derived views (node_view / task_view /
+# list_claims) that render() and the CLI read commands use — no second source of truth.
+
+def _node_card(model: DpDriven, kind: str, nid: int, plan: int | None,
+               epoch: int | None, multi: set[int]) -> dict:
+    """One item-instance card. blocked/hold come from the DERIVED node_view (§3.2);
+    `overlap` mirrors render()'s R6 marker. No stored blocked/status field is read."""
+    nv = model.node_view(kind, nid)
+    disp = _display_status(model, kind, nid)
+    card = {
+        "mid": _node_mid(kind, nid, plan),
+        "kind": kind,
+        "ref_id": nid,
+        "plan": plan,
+        "label": f"{_short_id(kind, nid)} {disp}",
+        "display_status": disp,
+        "shown_blocked": bool(nv.get("shown_blocked")),
+        "external_hold": nv.get("external_hold"),
+        "created_at": nv.get("created_at"),
+        "completed_at": nv.get("completed_at"),
+    }
+    if nv.get("blocked"):
+        card["blocked"] = True
+        card["blocked_reason"] = nv.get("blocked_reason")
+    if kind == KIND_FINDING:
+        card["md_path"] = nv.get("md_path")
+        card["memberships"] = model.find_memberships(nid)
+        card["overlap"] = nid in multi
+        card["derived_from_finding"] = nv.get("derived_from_finding")
+    else:  # ticket
+        card["md_path"] = nv.get("md_path")
+        card["ref"] = nv.get("ref")
+        card["parent_id"] = nv.get("parent_id")
+        card["derived_from_finding"] = nv.get("derived_from_finding")
+    owner = model.claim_owner(CLAIM_TICKET, nid, epoch=epoch) if kind == KIND_TICKET else None
+    if owner is not None:
+        card["claim_agent"] = owner
+    return card
+
+
+def _plan_card(model: DpDriven, tid: int, epoch: int | None) -> dict:
+    """Task-plan card (§3.3 projection). plan_status is the stored source; `status`
+    is the derived task_view projection. claim border class reuses render()'s R5."""
+    tv = model.task_view(tid)
+    plan = model.data["plans"][str(tid)]
+    card = {
+        "mid": f"T{tid}",
+        "kind": "plan",
+        "ref_id": tid,
+        "label": f"task{tid} {_clean(model.data['tasks'][str(tid)]['name'])}",
+        "name": model.data["tasks"][str(tid)]["name"],
+        "status": tv["status"],
+        "plan_status": plan["status"],
+        "shown_blocked": bool(tv.get("shown_blocked")),
+        "summary": plan.get("summary"),
+        "context_md": model.data["tasks"][str(tid)].get("context_md"),
+        "memory_md": model.data["tasks"][str(tid)].get("memory_md"),
+        "derived_from_finding": model.data["tasks"][str(tid)].get("derived_from_finding"),
+        "created_at": model.data["tasks"][str(tid)].get("created_at"),
+        "completed_at": tv.get("completed_at"),
+        "claim_class": _plan_claim_class(model, tid, epoch),
+    }
+    # Claim snapshot: surface the STALE agent + expired flag from the raw row, so the
+    # card can read "claim: alice (expired)" even though the frame renders as paused
+    # (claim_owner→None once expired). §4.4 display semantics; pure read, never stored.
+    raw = model._find_claim(CLAIM_PLAN, tid)
+    if raw is not None:
+        card["claim_agent"] = raw["agent"]
+        if model._is_expired(raw, epoch):
+            card["claim_expired"] = True
+    return card
+
+
+def build_node_ir(model: DpDriven, *, epoch: int | None = None) -> dict:
+    """Return {mermaid_node_id: card} — the R7 click payload. Pure read, deterministic.
+
+    `epoch` (seconds) is passed straight to claim_owner/list_claims so an expired
+    claim (§4.4 lease) renders as paused, never in-flight. Keys are byte-identical to
+    the ids render() emits for the same model.
+    """
+    ir: dict[str, dict] = {}
+    multi = _multi_membership(model)
+
+    tasks = sorted(model.data["tasks"].values(), key=lambda x: x["id"])
+    findings = sorted(model.data["findings"].values(), key=lambda x: x["id"])
+    tickets = sorted(model.data["tickets"].values(), key=lambda x: x["id"])
+
+    in_any_plan: set = set()
+    for t in tasks:
+        tid = t["id"]
+        ir[f"T{tid}"] = _plan_card(model, tid, epoch)
+        members = model._plan_inner_nodes(tid)
+        in_any_plan |= members
+        for (kind, nid) in sorted(members):
+            ir[_node_mid(kind, nid, tid)] = _node_card(model, kind, nid, tid, epoch, multi)
+
+    for f in findings:
+        if (KIND_FINDING, f["id"]) not in in_any_plan:
+            ir[_node_mid(KIND_FINDING, f["id"], None)] = _node_card(
+                model, KIND_FINDING, f["id"], None, epoch, multi)
+    for k in tickets:
+        if k.get("task_id") is None and (KIND_TICKET, k["id"]) not in in_any_plan:
+            ir[_node_mid(KIND_TICKET, k["id"], None)] = _node_card(
+                model, KIND_TICKET, k["id"], None, epoch, multi)
+    return ir
+
+
+def default_html_path(db_path: str) -> str:
+    base = db_path
+    for ext in (".sqlite", ".sqlite3", ".db"):
+        if base.endswith(ext):
+            base = base[: -len(ext)]
+            break
+    return base + ".html"

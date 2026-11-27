@@ -18,18 +18,18 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL)
+## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
 **single-writer lock** (`scripts/dp_driven_lock.py`), **two-layer claim (§4.4) + settlement round
 (§4.5) + two-stage closeout (§5.2)**, **greedy cohesion optimizer + scorer (§3.6 F3 / §4.2)**
 (`scripts/dp_driven_optimize.py`), **§3.5 form-②③ derivation columns** (`finding/task.derived_from_finding`),
-**§6 Mermaid visualization** (`scripts/dp_driven_viz.py`, read-only), **§4.4 claim TTL / heartbeat lease**
-(`claim/renew`, derived `expired`). 160 tests in `tests/` lock every invariant.
+**§6 Mermaid visualization** (`scripts/dp_driven_viz.py`, read-only) + **§6 R7 interactive HTML card**
+(`scripts/dp_driven_viz_html.py`), **§4.4 claim TTL / heartbeat lease**
+(`claim/renew`, derived `expired`). 182 tests in `tests/` lock every invariant.
 
-Deferred to later phases (design `[未决]` / progressive-rollout §8): §6 **R7 interactive HTML card** (today
-served by the CLI read commands `task view` / `status` / `claims list`), metrics collection (§9), and any
+Deferred to later phases (design `[未决]` / progressive-rollout §8): metrics collection (§9), and any
 re-calibration of the optimizer's default weights / the claim lease default against real-run data (§9).
 
 ## The model in one breath (§1–§2)
@@ -76,12 +76,13 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
 9. **Two-stage closeout (§5.2).** Export snapshot → require `.governed.json` marker → delete sqlite
    + WAL/SHM/lock sidecars only, never the `.md` corpus. Order is code-enforced (`E_NOT_COMPLETE`,
    `E_CLOSEOUT_NOT_GOVERNED`, `E_CLOSEOUT_CONFIRM_REQUIRED`).
-10. **Suggestion / view ≠ state (§3.6 F3 / §4.2 / §6).** The optimizer's `suggest()` and the §6
-    renderer are pure reads over the graph — greedy cohesion seed-and-grow (never exhaustive) and
-    deterministic Mermaid text; both **never mutate or persist** the model. A plan-subset or a view is
-    recomputed each call; storing it would be a second source of truth (§3.1). Locked by
-    `test_dp_driven_optimize.py::test_suggest_is_pure_readonly` and `test_dp_driven_viz.py::
-    test_render_is_pure_readonly`.
+ 10. **Suggestion / view ≠ state (§3.6 F3 / §4.2 / §6).** The optimizer's `suggest()` and the §6
+     renderer are pure reads over the graph — greedy cohesion seed-and-grow (never exhaustive) and
+     deterministic Mermaid text; both **never mutate or persist** the model. A plan-subset or a view is
+     recomputed each call; storing it would be a second source of truth (§3.1). The R7 HTML/IR snapshot
+     likewise never writes back — freshness = re-run `viz`. Locked by
+     `test_dp_driven_optimize.py::test_suggest_is_pure_readonly`, `test_dp_driven_viz.py::
+     test_render_is_pure_readonly`, and `test_dp_driven_viz_html.py::test_render_html_is_pure_readonly`.
 
 ## Quick start (CLI)
 
@@ -111,6 +112,7 @@ $DP orchestrate "$DB" --agent alice --execute   # apply it (takes the single-wri
 
 $DP viz "$DB"                                # §6 read-only Mermaid to stdout
 $DP viz "$DB" --out docs/plans/dp-driven/login/dp_driven.mmd   # process-zone .mmd (not durable, not git)
+$DP viz "$DB" --format html --out docs/plans/dp-driven/login/dp_driven.html   # §6 R7 click→card viewer
 ```
 
 `ticket:1` shows `derived_blocked: true` until `ticket:0` reaches `已完成`; then the next read

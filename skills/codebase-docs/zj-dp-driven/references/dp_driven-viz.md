@@ -20,16 +20,22 @@ Mermaid also keeps the output **greppable/diffable text**, so every visual requi
 ## CLI
 
 ```bash
-# print to stdout (live view)
+# mermaid text to stdout (live view)
 $DP viz DB
-# write a sibling file (process zone, default <db-without-ext>.mmd; §5.4 — not durable, not git-tracked)
+# mermaid text to a sibling file (process zone, default <db-without-ext>.mmd; §5.4 — not durable, not git-tracked)
 $DP viz DB --out docs/plans/dp-driven/<topic>/dp_driven.mmd
-# --format currently only `mermaid` (reserved for future backends)
+# R7 interactive HTML viewer (Phase-4b)
+$DP viz DB --format html                        # html to stdout
+$DP viz DB --format html --out <db>.html        # process zone, sibling of the carrier
+$DP viz DB --format html --out <db>.html --assets inline --js-path mermaid.esm.min.mjs
+# --now EPOCH overrides the clock used to evaluate claim expiry (§4.4)
 ```
 
-`viz` is a **pure read**: no lock, no write, no save (locked by
-`test_dp_driven_viz.py::test_render_is_pure_readonly` and `test_dp_driven_viz_cli.py::
-test_viz_cli_readonly`). Rendering a suggestion/view must never become state (§3.1/§3.6).
+`viz` is a **pure read** in every format: no lock, no write, no save (locked by
+`test_dp_driven_viz.py::test_render_is_pure_readonly`, `test_dp_driven_viz_cli.py::
+test_viz_cli_readonly`, and for the HTML surface `test_dp_driven_viz_html.py::
+test_render_html_is_pure_readonly` / `test_viz_html_cli_readonly`). Rendering a
+suggestion/view must never become state (§3.1/§3.6).
 
 ## Requirement → mechanism map (R1–R6)
 
@@ -72,9 +78,48 @@ renderer without them still shows correct topology.
 - **sanitized labels** — `"`/`[`/`]`/`{`/`}`/backtick are stripped from names so the
   generated text is always valid Mermaid.
 
-## Deferred (R7, stays `[目标]`/`[未决]`)
+## R7 interactive HTML viewer (Phase-4b, was `[未决]`)
 
-The interactive right-region "click node → detail card" is **not** implemented. Its
-functional equivalent today is the CLI read surface: `viz` for the overview, then
-`task view <id>` / `status <kind>:<id>` / `claims list` for the per-node card. A real
-click-to-pan HTML viewer is a Phase-3d candidate.
+Architecture (chosen over vendored-layout HTML and over Pages/deployables):
+
+```
+model (read-only)
+ ├─▶ dp_driven_viz.render()          Mermaid text — R1–R6, layout/semantics source of truth
+ └─▶ dp_driven_viz.build_node_ir()   per-node-instance snapshot, keys == Mermaid ids
+        ▼
+ dp_driven_viz_html.render_html()    single self-contained file:
+      <pre class="mermaid">  = render() text (html-escaped, byte-exact)
+      <script type="application/json" id="dp-ir"> = the IR snapshot
+      native JS (~70 lines)  = click delegation on g.node / g.cluster → card panel
+```
+
+- **No second layout truth**: the viewer never re-derives the graph; it embeds `render()`
+  verbatim, so the `.mmd` and the `.html` can never disagree (locked by
+  `test_html_mermaid_body_matches_render`).
+- **id parity is load-bearing**: `build_node_ir()` walks the *same* traversal and reuses
+  the same mid helpers as `render()`; `test_ir_ids_match_mermaid_ids` fails if anyone
+  adds a node to one side only.
+- **Card payload**: `kind / ref_id / plan / label / display_status / shown_blocked /
+  blocked+blocked_reason (absent when free, §3.2) / external_hold / md_path /
+  context_md / memory_md / memberships / overlap / derived_from_finding / parent_id /
+  ref / claim_agent (+claim_expired) / created_at / completed_at / summary(plan)`.
+- **Claim expiry (§4.4)**: `--now EPOCH` (CLI default = wall clock; the Python API stays
+  clock-free) decides whether a plan frame is `plan_inflight` or `plan_paused`. An
+  **expired** lease renders paused **but the card keeps the stale agent +
+  `claim_expired: true`** — who dropped it stays visible (`test_claim_expired_surfaced_not_hidden`).
+- **Assets modes**: `cdn` (default) emits `import mermaid from
+  "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"`; `inline` embeds a
+  caller-supplied ESM text (`--js-path`, or env `DP_DRIVEN_MERMAID_JS`) as a JSON string
+  and loads it via a Blob URL — the file then works with no network. Nothing is vendored
+  into the repo.
+- **XSS-safe**: every model value reaches the DOM through `textContent` only; embedded
+  JSON neutralizes `</` as `<\/` so no data can close the script tag early
+  (`test_html_escape_node_name`).
+- **Zero write-back** (invariant 10 extended to views): the IR/HTML is a generation-time
+  snapshot; freshness = re-run `viz`. Locked by `test_render_html_is_pure_readonly`
+  (carrier bytes unchanged) and the CLI `test_viz_html_cli_readonly`.
+- **Placement (§5.4)**: output goes only to `--out` (convention `<db-stem>.html` beside
+  the carrier, process zone, not git-tracked).
+
+Still open after 4b: pan/zoom chrome and cross-artifact deep links are not implemented
+(click-to-inspect only); §9 metric collection remains a separate phase.

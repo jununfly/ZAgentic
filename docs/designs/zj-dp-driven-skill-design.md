@@ -12,10 +12,10 @@ model-elements: [entity.design]
 > 收摊随 Phase-2 PR 落地；§3.6 F3 编排 optimizer + §4.2 内聚算分器随 Phase-3a PR 落地（种子-扩展贪心，
 > 4 因子，`effort` 因无单位定义剔除）；§3.5 形态②③ 溯源（finding→新 finding / 新 task）随 Phase-3b PR
 > 落地（`finding/task.derived_from_finding` 单父列，镜像 Q1(a)）；§6 可视化 R1-R6 随 Phase-3c PR 落地
-> （stdlib Mermaid 文本后端，只读+确定，`dp_driven_viz.py`）；§4.4 **claim TTL / heartbeat 租约** 随本
-> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）。
+> （stdlib Mermaid 文本后端，只读+确定，`dp_driven_viz.py`）；§4.4 **claim TTL / heartbeat 租约** 随
+> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随本 Phase-4b PR 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）。
 > 已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`
-> （§6 R7 交互式 HTML 卡片、§9 metric）维持原标记，待 Phase 4b+ 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
+> （§9 metric 采集与权重/租约实跑校准）维持原标记，待后续 Phase 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
 > 无继承意图、无兼容 shim、无 legacy 保留义务——Human 判 pair 参考价值耗尽时直接删除。`zj-composer`
 > 与 dp-driven 的关系属独立讨论，本轮不预设。
@@ -309,7 +309,7 @@ model-elements: [entity.design]
 
 ## 6. 可视化呈现（概要）
 
-> **[定稿·已实现（左区 + R1-R6）]** 一张视图，分两区（R7 交互式右区留后续，今日用 CLI 读命令代替）：
+> **[定稿·已实现（左区 + R1-R6 + R7 右区）]** 一张视图，分两区（左区随 Phase-3c、右区随 Phase-4b 落地）：
 > - **左区**：全局 DAG，**两层同屏**——层一 `tasks-state-graph`（task→task-plan），层二 `ticket/finding-state-graph`
 >   （plan 内 tickets & findings 的父子/依赖/物化边），节点带简单状态标记；**无 task-plan 关联的 findings（orphan）
 >   排在该区下方**，与主图分离呈现。
@@ -322,8 +322,15 @@ model-elements: [entity.design]
 >   `render / render_to_file`，CLI `viz DB [--out]`）。选它而非静态 HTML+vendor JS / Graphviz dot / 终端 ASCII，
 >   理由：零依赖、输出可 grep 成失败测试、GitHub/VSCode 直接渲染，且**不向旧 pair 的 viz/ 形状靠拢**。
 >   R1-R6 契约 + classDef 见 `dp_driven-viz.md`；纯只读、确定性（`test_dp_driven_viz.py`）。
-> - **[未决 R7]** 右区"点击→HTML 卡片"未做；今日由 CLI 只读命令（`task view` / `status` / `claims list`）
->   充当卡片，真正的交互式 HTML viewer 留 Phase 3d+。
+> - **[定稿·已实现 R7]** 右区"点击→卡片"随 Phase-4b 落地：**单文件 HTML viewer**
+>   （`dp_driven_viz_html.py` `render_html:132`，CLI `viz DB --format html [--out] [--assets cdn|inline] [--now]`）。
+>   图体 = 直接内嵌 `dp_driven_viz.py` `render:109` 的 Mermaid 文本（无第二套布局真相），节点点击数据 =
+>   `build_node_ir:318` 的生成时快照（key 与 Mermaid 节点 id 逐一对齐，锁测试 `test_dp_driven_viz_html.py:58`）。
+>   卡片含 scoped context/memory 引用（`md_path/context_md/memory_md`）、物化/归属/父子关系、时间戳、
+>   claim（过期 claim 边框呈 paused、卡片仍显示原 agent+expired，§4.4）；blocked 一律取派生态（§3.2）。
+>   **零回写**：IR/HTML 是视图快照，从不落库（`test_dp_driven_viz_html.py:121`）。Mermaid JS 默认走官方 CDN，
+>   `--assets inline --js-path` 可完全离线自包含；不向旧 pair 的 `viz/` vendor-布局引擎形状靠拢。契约细节见
+>   `dp_driven-viz.md` R7 节。
 
 ## 7. 本轮锁定的四条判据（Q1–Q4 决策记录）
 
@@ -358,7 +365,8 @@ model-elements: [entity.design]
 > - ~~**可视化实现契约**：渲染后端、状态标注粒度、orphan findings 的排版细节~~ →
 >   **Phase-3c 已实现**：后端 = stdlib Mermaid 文本（不向 pair 的 viz/ 靠拢）；状态标注 = classDef
 >   （open/done/abandoned/blocked/overlap）；orphan findings = 独立 `ORPHANS` 子图。见 §10 +
->   `dp_driven_viz.py` + `dp_driven-viz.md`。**R7 交互式 HTML 卡片仍 `[未决]`**（今日用 CLI 读命令代替）。
+>   `dp_driven_viz.py` + `dp_driven-viz.md`。**R7 交互式 HTML 卡片已随 Phase-4b 落地**（`dp_driven_viz_html.py`
+>   单文件 viewer；CLI 读命令 `task view`/`status`/`claims list` 仍是终端等价形态）。
 > - **过程态落点与既有 `docs/plans/` / `tmp/skills-outputs/` 约定的并存关系**（§5.4）。
 > - **命名之外的对外契约**：`SKILL.md` frontmatter、CLI 命令面、opt-in 配置名（按"共享命名根 + self-explain +
 >   单复数一致"偏好统一）。
@@ -382,14 +390,15 @@ model-elements: [entity.design]
 > **[未决]** 前两条（token / 轮次）阈值依赖 Project B 首份实跑数据，不设先验；后三条阈值可保留初估、
 > 随实跑校准。Owner：实现期指派。Exit condition：5 个 metric 均有可重复测量方法 + 首份实跑数据落地。
 
-## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a 本 PR）
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b 本 PR）
 
 > **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
 > Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**；
 > Phase-3a = **§3.6 F3 编排 optimizer + §4.2 内聚算分器**（种子-扩展贪心，4 因子，`effort` 剔除）；
 > Phase-3b = **§3.5 形态②③ 溯源列**（`finding/task.derived_from_finding`，镜像 Q1(a) 单父列）；
 > Phase-3c = **§6 可视化 R1-R6**（stdlib Mermaid 文本后端，只读+确定）；
-> Phase-4a = **§4.4 claim TTL / heartbeat 租约**（`expired` 读时派生不存储、model 无时钟、epoch 注入）。
+> Phase-4a = **§4.4 claim TTL / heartbeat 租约**（`expired` 读时派生不存储、model 无时钟、epoch 注入）；
+> Phase-4b = **§6 R7 交互式 HTML 卡片**（单文件 viewer：内嵌同一 `render()` 图体 + `build_node_ir()` 快照，点击→卡片，零回写）。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
@@ -421,11 +430,11 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 | §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:540,611,631` `closeout_export_summary / _verify_governed / _delete_carrier` | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114` |
 | §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:826` `in_flight_plans` | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90` |
 | §3.5 形态②③ / §7 Q1 溯源列（finding→finding / finding→task） | `dp_driven_carrier.py:78,63` `derived_from_finding` 列 · `dp_driven_model.py:179,121` `add_finding/add_task(derived_from=)` · `_relations` `dp_driven_optimize.py:64` | `test_dp_driven_derivation.py`；`test_dp_driven_model.py`（validate E_REF_MISSING 复用） |
-| §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:108,216` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14` |
+| §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:109,217` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14` |
+| §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:318,352` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:132,204` `render_html/render_html_to_file` · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） | `test_dp_driven_viz_html.py:57,114,198`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · CLI `:213,224,229,234`） |
 
-**仍未升级（Phase 4b+ / `[未决]`）**：§6 **R7 交互式 HTML 卡片**（后端已定 stdlib Mermaid，左区+R1-R6 已实现；
-今日由 CLI 读命令 `task view`/`status`/`claims list` 代替右区）、§9 metric 采集与 optimizer
-权重实跑校准（§8 内聚命中率 ≥80% 基线，待 Project B 数据）。
+**仍未升级（Phase 4c / `[未决]`）**：§9 metric 采集与 optimizer 权重 / claim 租约默认值的
+实跑校准（§8 内聚命中率 ≥80% 基线，待 Project B 数据）。
 
 ## Source map
 
@@ -433,9 +442,10 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 - [ADR 0010 — 本地文件持久化约定](../zj-adr/0010-local-file-persistence-convention.md) — §5.4 过程态落点纪律的上游约定；sqlite + md 双载体的落点必须遵循。
 - [dp_driven_model.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_model.py) — §3 全部不变式与派生态核心的实现（Phase-1 已落，锚点汇总见 §10）。
 - [dp_driven_carrier.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_carrier.py) — §2 五实体 SQLite 载体 schema 的实现。
-- [dp_driven_viz.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_viz.py) — §6 可视化 Mermaid 渲染（只读+确定，Phase-3c）。
+- [dp_driven_viz.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_viz.py) — §6 可视化 Mermaid 渲染（只读+确定，Phase-3c）+ R7 节点 IR 快照 `build_node_ir`（Phase-4b）。
+- [dp_driven_viz_html.py](../../skills/codebase-docs/zj-dp-driven/scripts/dp_driven_viz_html.py) — §6 R7 单文件交互式 HTML viewer（内嵌图体+IR，点击→卡片，零回写，Phase-4b）。
 
-> **本页性质**：本 skill 已有代码目录（Phase-1，PR #306），故自身实现锚点见 §10 及上述两条 skill 链接；
+> **本页性质**：本 skill 已有代码目录（Phase-1，PR #306），故自身实现锚点见 §10 及上述 skill 实现链接；
 > 前两条仍是本页实现所依赖的外部权威。§10"仍未升级"清单里的 `[目标]` / `[未决]` 断言尚未对齐源码，
 > 不得升级为"与实现对齐"。
 
@@ -469,12 +479,23 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   R4 orphan 子图 / R5 claim inflight·paused·settlement / R6 共享 finding 各区各画 + `⟲` 角标 + 无
   跨区重叠连线）+ CLI `viz` + `dp_driven-viz.md` + `test_dp_driven_viz.py` / `test_dp_driven_viz_cli.py`
   （累计 140 测试）；落地 §6 R1-R6。
-- **Phase-4a（本 PR）**：`claim` 表加 `last_seen_at`(epoch) + `lease_seconds`（`dp_driven_carrier.py:113`）
+- **Phase-4a（PR #312）**：`claim` 表加 `last_seen_at`(epoch) + `lease_seconds`（`dp_driven_carrier.py:113`）
   两列实现 §4.4 **claim TTL / heartbeat 租约**——`expired` 是**读时派生**（`_is_expired`，绝不存储，
   沿用 §3.1/§3.2 反漂移纪律）、**model 从不读时钟**（`epoch` 由调用方注入，只有 CLI 取 `time.time()`）。
   `claim` 支持租约 + 过期接管、新增 `renew`（心跳续租）、`claim_owner`/`list_claims`/claim 门按
   `epoch` 判过期、`validate` 校验租约合法；CLI `claim --lease-seconds/--no-lease/--now` + `renew` +
   `claims list --now`；`test_dp_driven_ttl.py` + `ClaimTtlCli`（累计 160 测试）。
+- **Phase-4b（本 PR）**：§6 **R7 交互式 HTML 卡片**——新增 `dp_driven_viz_html.py`（单文件 viewer：
+  内嵌 `render()` 的 Mermaid 图体（无第二套布局真相）+ `build_node_ir()` 节点快照（key 与 Mermaid
+  节点 id 逐一对齐）+ 原生 JS 点击→右区卡片，卡片值全部经 `textContent` 写入）；`dp_driven_viz.py`
+  尾部追加 `build_node_ir / _node_card / _plan_card / default_html_path`（既有 `render:109` 等
+  函数体未动，本 PR 内已把引用其行号的锚点重定位：`108→109`、`216→217` 系 `_plan_claim_class`
+  加 epoch 文档 2 行所致）；`_plan_claim_class` 增 epoch 形参（过期 claim 边框呈 paused、卡片透明
+  保留原 agent + `claim_expired`，§4.4 显示语义）。CLI `viz --format html --assets cdn|inline
+  --js-path --now`，新增业务码 `E_VIZ_ASSETS`（inline 缺 JS 文本；缺文件仍走 exit 3 既有 I/O 路径）。
+  视图**零回写**（不变式 10 延伸到 IR/HTML，`test_render_html_is_pure_readonly` 锁死 carrier 字节）。
+  `test_dp_driven_viz_html.py`（累计 182 测试）。**未 vendor 任何 JS 进仓库**——cdn 为默认，
+  inline 由调用方自备文件，避免向旧 pair 的 `viz/` 形状靠拢。
 
-**刻意留在 Phase 4b+**（见 §10"仍未升级"）：§6 R7 交互式 HTML 卡片、§9 metric 采集与
-optimizer 权重实跑校准。各 Phase 均不假装做了后续项。
+**刻意留在 Phase 4c**（见 §10"仍未升级"）：§9 metric 采集与 optimizer 权重 / claim 租约默认值
+的实跑校准。各 Phase 均不假装做了后续项。
