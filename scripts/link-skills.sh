@@ -20,6 +20,8 @@ set -euo pipefail
 #   claude    ~/.claude/skills
 #   codex     ~/.codex/skills
 #   workbuddy ~/.workbuddy/skills
+#   qianwen   ~/.qwenworkcn/skills  (千问办公 / QwenWork; international edition
+#             falls back to ~/.qwenwork/skills)
 #
 # Method:
 #   copy     (default) copy each skill folder into the target dir. Robust on
@@ -33,17 +35,29 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 
+# 千问办公 (QwenWork): the CN edition keeps user skills in ~/.qwenworkcn; the
+# international edition would use ~/.qwenwork. Detected once, at script start.
+QIANWEN_DIR="$HOME/.qwenworkcn"
+[[ -d "$QIANWEN_DIR" ]] || QIANWEN_DIR="$HOME/.qwenwork"
+
 PLATFORMS=(
   claude:"$HOME/.claude/skills"
   codex:"$HOME/.codex/skills"
   workbuddy:"$HOME/.workbuddy/skills"
+  qianwen:"$QIANWEN_DIR/skills"
 )
 
 WANT_PLATFORMS=""
 METHOD="copy"
 DRY_RUN=0
 
-usage() { sed -n '3,33p' "$0"; exit 0; }
+usage() {
+  # Help = the whole leading comment block, content-delimited: from the first
+  # `# ` line to the first non-comment line. Never a line range — editing the
+  # header cannot silently truncate the help text.
+  awk '/^# /{f=1} f && !/^#/ {exit} f {print substr($0, 3)}' "$0"
+  exit 0
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -69,7 +83,7 @@ if [[ -z "$WANT_PLATFORMS" ]]; then
     [[ -d "$dir" ]] && { ACT_NAMES+=("$name"); ACT_DIRS+=("$dir"); }
   done
   if [[ ${#ACT_DIRS[@]} -eq 0 ]]; then
-    echo "error: no agent skill directory found. Use --platform <claude|codex|workbuddy> to pick one." >&2
+    echo "error: no agent skill directory found. Use --platform <claude|codex|workbuddy|qianwen> to pick one." >&2
     exit 1
   fi
 else
@@ -82,7 +96,7 @@ else
         ACT_NAMES+=("$name"); ACT_DIRS+=("$dir"); found=1; break
       fi
     done
-    [[ $found -eq 1 ]] || { echo "error: unknown platform '$r' (use claude|codex|workbuddy)" >&2; exit 1; }
+    [[ $found -eq 1 ]] || { echo "error: unknown platform '$r' (use claude|codex|workbuddy|qianwen)" >&2; exit 1; }
   done
 fi
 
@@ -137,4 +151,4 @@ done < <(find "$REPO/skills" "$REPO/personal" -name SKILL.md -not -path '*/node_
 
 echo
 echo "done. installed ${total} skills across ${#ACT_DIRS[@]} platform(s)."
-echo "remember to reload the agent (e.g. /reload-plugins in WorkBuddy) to pick up changes."
+echo "remember to reload the agent (e.g. /reload-plugins in WorkBuddy, or restart 千问办公/QwenWork) to pick up changes."
