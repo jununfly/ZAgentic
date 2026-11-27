@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 
@@ -305,11 +306,31 @@ def cmd_orchestrate(args):
 # ── visualization (§6) ───────────────────────────────────
 
 def cmd_viz(args):
-    import dp_driven_viz
     m = _open_model(args.db)                      # read-only, no lock (§6 render)
+    now = args.now if getattr(args, "now", None) is not None else int(time.time())
+    fmt = getattr(args, "format", "mermaid") or "mermaid"
+    if fmt == "html":                             # §6 R7 interactive viewer (Phase-4b)
+        import dp_driven_viz_html
+        assets = getattr(args, "assets", "cdn") or "cdn"
+        js_text = None
+        if assets == "inline":
+            path = args.js_path or os.environ.get("DP_DRIVEN_MERMAID_JS")
+            if not path:
+                raise DpDrivenError(
+                    "E_VIZ_ASSETS", "assets=inline 需 --js-path 或 env DP_DRIVEN_MERMAID_JS")
+            js_text = dp_driven_viz_html.read_mermaid_js(path)  # absent → exit 3
+        text = dp_driven_viz_html.render_html(m, now=now, assets=assets, mermaid_js=js_text)
+        if args.out:
+            with open(args.out, "w", encoding="utf-8") as fh:
+                fh.write(text)
+            _emit({"ok": True, "written": args.out, "format": "html", "assets": assets})
+        else:
+            sys.stdout.write(text)
+        return
+    import dp_driven_viz
     if args.out:
         path = dp_driven_viz.render_to_file(m, args.out)
-        _emit({"ok": True, "written": path, "format": args.format})
+        _emit({"ok": True, "written": path, "format": "mermaid"})
     else:
         sys.stdout.write(dp_driven_viz.render(m))  # stdout = the Human's live view
 
@@ -411,7 +432,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.set_defaults(fn=cmd_orchestrate)
 
     sp = sub.add_parser("viz"); add_db(sp)        # §6 read-only render
-    sp.add_argument("--out"); sp.add_argument("--format", default="mermaid", choices=("mermaid",))
+    sp.add_argument("--out"); sp.add_argument("--format", default="mermaid",
+                    choices=("mermaid", "html"))  # html = §6 R7 interactive viewer
+    sp.add_argument("--assets", default="cdn", choices=("cdn", "inline"))  # html 模式
+    sp.add_argument("--js-path", help="inline 模式的 mermaid ESM 文件路径")
+    sp.add_argument("--now", type=int, help="epoch 秒（判 claim 过期，默认当前时间）")
     sp.set_defaults(fn=cmd_viz)
 
     sp = sub.add_parser("closeout"); cosub = sp.add_subparsers(dest="sub", required=True)
