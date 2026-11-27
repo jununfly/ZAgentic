@@ -17,16 +17,16 @@ and how does it fail?
 This page describes the codebase-docs bucket as an architecture subsystem.
 The bucket is the **governance subsystem** of the repository: it owns the
 documentation-system lifecycle, the architecture handbook, the domain
-vocabulary maintenance, the cross-stage debrief, and the wayfinding /
-roadmap tracking needed for large planning work. It is **not** a place to
+vocabulary maintenance, the cross-stage debrief, and the dp-driven
+state-graph orchestration for large planning work. It is **not** a place to
 ship user-facing productivity skills or runtime diagnostics.
 
 ## Boundaries
 
 The codebase-docs bucket is the documentation-governance subsystem of the
 repository. It owns the document map, the architecture handbook, the
-domain vocabulary, the cross-stage debrief, and the wayfinder / roadmap
-tracking needed for large planning work. It does **not** ship
+domain vocabulary, the cross-stage debrief, and the dp-driven
+state-graph orchestration for large planning work. It does **not** ship
 user-facing productivity skills or runtime diagnostics; those belong to
 other buckets.
 
@@ -40,7 +40,7 @@ One-codebase documentation governance. The bucket owns:
 - the domain vocabulary and the glossary updates that flow from it,
 - the debrief closeout that converts session drift into long-lived authority
   or evidence surfaces,
-- the wayfinder and roadmap carrying of decisions for long-running work,
+- the dp-driven orchestration of long-running work as one state-graph run,
 - the grilling loop that crystallises hard-to-reverse decisions before
   ADR creation.
 
@@ -61,8 +61,8 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
 
 | Direction | Interface |
 | --- | --- |
-| Inbound | Human prompts for documentation governance, architecture handbook work, domain-model updates, debrief closeouts, wayfinder or roadmap tracking, and repository-aware grilling. |
-| Outbound | Document map updates, architecture page validations, glossary entries, retrospective records, wayfinder maps, and ADR drafts — all subject to explicit Human confirmation. |
+| Inbound | Human prompts for documentation governance, architecture handbook work, domain-model updates, debrief closeouts, dp-driven orchestration, and repository-aware grilling. |
+| Outbound | Document map updates, architecture page validations, glossary entries, retrospective records, dp-driven durable markdown, and ADR drafts — all subject to explicit Human confirmation. |
 | Cross-bucket | Reads every other bucket's `SKILL.md` to register it in the architecture map; may consume `research/` and `skills-outputs/` as evidence surfaces but never promotes them without a Human confirmation. |
 | External | Validates the `docs/` tree through `validate_architecture_docs.py`; promotes hard-to-reverse decisions into ADRs. |
 
@@ -75,8 +75,8 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
   consent; it never picks a winner between conflicting claims.
 - `zj-debrief` writes process material only; durable value extraction is
   a later governance pass, not a side effect of the closeout.
-- `zj-wayfinder` and `zj-roadmap-driven` carry decisions as carriers do;
-  they do not silently drop or merge decision threads.
+- `zj-dp-driven` carries decisions in its two-layer state graph; it does
+  not silently drop or merge decision threads.
 
 ## Source map
 
@@ -99,10 +99,8 @@ The bucket accepts Human-invoked governance, never auto-triggers it.
   process-material closeout.
 - [zj-neat-freak](../../skills/codebase-docs/zj-neat-freak/SKILL.md) —
   drift reconciliation.
-- [zj-wayfinder](../../skills/codebase-docs/zj-wayfinder/SKILL.md) and
-  [zj-roadmap-driven](../../skills/codebase-docs/zj-roadmap-driven/SKILL.md) —
-  the decision carriers whose seam is owned by
-  [design.wayfinder-roadmap-carrier-seam](../designs/zj-roadmap-driven/dual-mode.md).
+- [zj-dp-driven](../../skills/codebase-docs/zj-dp-driven/SKILL.md) — the
+  decision carrier for long-running planning work.
 
 ## Related authority
 

@@ -88,7 +88,7 @@ The skill never creates a second map merely because a compatible map uses a diff
 | `docs/benchmarks/` | Long-lived | What stable benchmark definition, measurement method or confirmed interpretation applies? |
 | `docs/references/` | Long-lived / external reference | What enduring external reference, runbook or integration knowledge is relevant? |
 | `docs/zj-adr/` | Long-lived decision history | What accepted hard-to-reverse decision explains an intentional boundary or trade-off? |
-| `docs/plans/` | Process | What is the current plan, roadmap, wayfinder map, focus or execution decision context? |
+| `docs/plans/` | Process | What is the current plan, DP-driven carrier context, focus or execution decision context? |
 | `docs/zj-retros/` | Process | What did one completed work session reveal before its durable value is extracted? |
 | Target-defined fixture documentation | Long-lived supporting documentation | What behavior, purpose and maintenance boundary does a fixture establish? It may live beside its fixture; the map records its path rather than prescribing a directory. |
 
@@ -163,8 +163,8 @@ These commands retain their established names; the bucket expresses their shared
 - `zj-domain-modeling`
 - `zj-debrief`
 - `zj-neat-freak`
-- `zj-wayfinder`
-- `zj-roadmap-driven`
+
+> 2026-11-27：`zj-wayfinder` 与 `zj-roadmap-driven` 已删除，长任务决策携带由 `zj-dp-driven`（state-graph 编排）统一承接。
 
 `zj-debrief` writes process material. Its reusable conclusions are deliberately extracted into a long-lived authority by a subsequent governance task; retro records are not permanent history by default.
 

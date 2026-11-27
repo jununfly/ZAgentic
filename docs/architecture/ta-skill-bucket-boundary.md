@@ -28,7 +28,7 @@ that).
 
 - This rule is one rule. It is the rule of **bucket ingress, tree
   separation, and authority non-duplication**. Distinct concerns, such as
-  frontmatter validation or the wayfinder-roadmap seam, are owned by their
+  frontmatter validation or dp-driven orchestration, are owned by their
   respective design authorities and are not part of this page.
 - The rule applies to every cross-bucket or cross-tree edge in the
   repository. If a view claims an exception, the exception must reference

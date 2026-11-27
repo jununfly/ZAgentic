@@ -1,6 +1,6 @@
 ---
 name: zj-merge-skill-pair
-description: Execute a single skill-pair merge as one atomic commit. Reads the strategy from a zj-roadmap-driven node's decisions, applies 12 classes of side effects (skill files, README sync, bucket README, setup-skills templates, ZJ-CONTEXT.md, ADR cross-refs, git mv for renames, deletion of replaced skills), updates the roadmap node to completed, and commits. Triggers on "merge this skill", "execute the plan for X", "absorb B into A". Pair with zj-merge-skills-wave — that one plans a whole wave, this one executes one pair.
+description: Execute a single skill-pair merge as one atomic commit. Reads the strategy from a zj-dp-driven task's decision record (context-md), applies 12 classes of side effects (skill files, README sync, bucket README, setup-skills templates, ZJ-CONTEXT.md, ADR cross-refs, git mv for renames, deletion of replaced skills), closes the pair's ticket, and commits. Triggers on "merge this skill", "execute the plan for X", "absorb B into A". Pair with zj-merge-skills-wave — that one plans a whole wave, this one executes one pair.
 disable-model-invocation: true
 source: zagentic
 
@@ -12,12 +12,12 @@ Execute a single skill-pair merge as **one atomic commit**. This skill is the **
 
 ## Pre-condition
 
-A roadmap node must already exist with a `decisions` entry containing:
+A zj-dp-driven carrier must already exist with a task whose context-md contains a `## Decision` entry recording:
 - the strategy (`strict-align` / `absorb` / `adopt` / `replace` / `reject`)
 - the source path (or URL → scratch path)
 - the base path (or `null` if source is new to base)
 
-If no node exists, route to `zj-merge-skills-wave` first.
+If no carrier/task exists, route to `zj-merge-skills-wave` first.
 
 ## Side-effect checklist
 
@@ -30,7 +30,7 @@ name/path coupling, index, and registration repairs are mechanical and may be
 applied during the merge. If the execution plan would rewrite the source
 skill's logic or semantics without a concrete error or omission, stop before
 editing and route the proposed change through `/zj-grilling`; continue only
-after the Human's agreed change is recorded in the roadmap decision.
+after the Human's agreed change is recorded in the task's decision entry.
 
 **Read the source dir tree first**. If `git ls-tree` on the source shows N files, plan all N, not just SKILL.md.
 
@@ -38,14 +38,14 @@ after the Human's agreed change is recorded in the roadmap decision.
 
 ### 1. Resolve strategy
 
-Read the roadmap node's `decisions`. The first decision's `answer` MUST be one of:
+Read the task's context-md `## Decision` entry. The strategy MUST be one of:
 - `strict-align` — copy source files, change `name` to `zj-<basename>` only
 - `absorb` — keep base, cherry-pick from source (changes are surgical, listed in decision note)
 - `adopt` — rename base skill to source's name; body is source verbatim
 - `replace` — delete base, install source as new
-- `reject` — record decision, do nothing else, mark node completed
+- `reject` — record decision, do nothing else, close the pair's ticket and task (step 7)
 
-If the strategy is `reject`, the entire merge reduces to step 7 (update roadmap).
+If the strategy is `reject`, the entire merge reduces to step 7 (close the ticket and the task).
 
 ### 2. File-level plan
 
@@ -73,7 +73,7 @@ Apply side effects 5–10 in order. Use `grep` to find every cross-reference bef
 One commit per skill-pair. Commit message format:
 
 ```
-feat(<bucket>): <strategy> <dst> — <one-line summary> (<roadmap-node-id>)
+feat(<bucket>): <strategy> <dst> — <one-line summary> (dp-driven task <task-id>)
 
 - side effect 1
 - side effect 2
@@ -85,14 +85,16 @@ ADR cross-ref: <id or N/A>
 
 Push only on explicit human request. Default: leave committed locally.
 
-### 7. Update roadmap
+### 7. Close the ticket and the task
+
+After the human confirms the commit, record completion in the dp-driven carrier (two steps — task status is NOT auto-derived from ticket status, both must be set explicitly):
 
 ```
-python3 <zj-roadmap-driven-skill-dir>/roadmap_cli.py update <roadmap-json> <roadmap-node-id> --status completed
-python3 <zj-roadmap-driven-skill-dir>/roadmap_cli.py render <roadmap-json>
+python3 <zj-dp-driven-skill-dir>/scripts/dp_driven_cli.py ticket status <db> <ticket-id> --set 已完成 --agent <agent>
+python3 <zj-dp-driven-skill-dir>/scripts/dp_driven_cli.py task status <db> <task-id> --set 已完成
 ```
 
-This is the human's call. The agent must NOT auto-update — the merge is done but the human owns the roadmap.
+The `<ticket-id>` and `<task-id>` come from the wave planner's step 6 (ids are printed at creation, 0-based); if they were not recorded, look them up in the carrier before closing. The pair is done when its ticket reaches a terminal state **and** the task is set to `已完成`.
 
 ## When to abort
 
@@ -105,10 +107,10 @@ This is the human's call. The agent must NOT auto-update — the merge is done b
 
 ```
 zj-merge-skills-wave  (plan layer for a whole wave)
-   └─ produces roadmap nodes ─→ zj-merge-skill-pair (this skill, execution)
-                                  ├─ reads decision
-                                  ├─ executes 12 side effects
-                                  └─ leaves roadmap update to human
+   └─ produces dp-driven tasks with Decision entries ─→ zj-merge-skill-pair (this skill, execution)
+                                   ├─ reads the task's Decision
+                                   ├─ executes 12 side effects
+                                   └─ closes the pair's ticket after human confirmation
 ```
 
 The complete per-merge touch list is maintained in the [side-effect checklist](references/side-effects.md).

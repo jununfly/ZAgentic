@@ -1,6 +1,6 @@
 # Skill-pair forms and strategies
 
-Use this reference during candidate comparison and roadmap planning.
+Use this reference during candidate comparison and dp-driven task planning.
 
 ## Pair forms
 
@@ -15,7 +15,7 @@ Compare each source skill against `base-skills-list` using name and description 
 
 ## Strategy enum
 
-Record one of these strategies as the roadmap decision for each pair. The enum mirrors what 1-3 actually used:
+Record one of these strategies in each pair task's Decision entry. The enum mirrors what 1-3 actually used:
 
 - `strict-align` — copy B source files verbatim, only zj- prefix the `name` field
 - `absorb` — keep A as base, cherry-pick specific B features (Redact, scope-before-scan, seam...)

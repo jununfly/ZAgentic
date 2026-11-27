@@ -105,9 +105,9 @@ expects, and it accepts either `python3` or `python` on `PATH`.
   then `/zj-to-spec` → `/zj-to-tickets` → `/zj-implement` as the work needs.
   `/zj-steelman`, `/zj-dry-run`, and `/zj-debrief` are the pre-plan,
   pre-implementation, and post-task checkpoints.
-- **Long-running uncertainty** — `/zj-wayfinder` carries decisions and
-  blockers until the work is ready for a spec and tickets; `/zj-roadmap-driven`
-  tracks an agreed execution route.
+- **Long-running uncertainty** — `/zj-dp-driven` drives a complex, partially
+  observable effort as one dynamic-programming run over a two-layer state
+  graph until the work is ready for a spec and tickets.
 - **Complex problem solving** — `/zj-discuss` turns a genuinely hard problem
   into a master document plus independent sub-documents, runs role-based
   multi-agent discussion per sub-problem, synthesizes the result, and hands off
@@ -166,8 +166,6 @@ expects, and it accepts either `python3` or `python` on `PATH`.
 - [zj-domain-modeling](./skills/codebase-docs/zj-domain-modeling/SKILL.md) — Maintain a project's domain language and glossary.
 - [zj-neat-freak](./skills/codebase-docs/zj-neat-freak/SKILL.md) — Reconcile codebase knowledge and governance drift.
 - [zj-dp-driven](./skills/codebase-docs/zj-dp-driven/SKILL.md) — Drive a complex task as one dynamic-programming run over a two-layer state graph; ships a stdlib orchestration CLI (two-layer claims with lease TTL, settlement rounds, two-stage closeout), a cohesion optimizer, Mermaid/HTML views, and metrics; process state is a throwaway SQLite carrier, durable output is its markdown.
-- [zj-roadmap-driven](./skills/codebase-docs/zj-roadmap-driven/SKILL.md) — Maintain a decision-carrying execution roadmap.
-- [zj-wayfinder](./skills/codebase-docs/zj-wayfinder/SKILL.md) — Maintain a shared map of large-work planning decisions.
 
 ### Productivity
 

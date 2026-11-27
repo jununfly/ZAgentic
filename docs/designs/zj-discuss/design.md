@@ -393,7 +393,7 @@ thin prompt。文档未标出该冲突，把 C 当自然结论——这是 §0�
 | 1 | gated method 内联 `role-matrix.md` 还是拆 `references/role-methods/<key>.md`？ | **拆文件**（保持 SSOT 可读性） |
 | 2 | 过程角色 adapt 只取闸门结构还是连具体评审项？ | **只取结构**，剥离软件专用措辞 |
 | 3 | B1 重评后是否补示例决策记录？ | 由 `zj-open-source-capability-fit` skill 落为可复核工具，执行阶段补 1 条示例决策记录 |
-| 4 | 本补丁是否转 `zj-roadmap-driven` 节点？ | 维持 design patch 形态；ratify 后可转录为 roadmap 节点驱动执行 |
+| 4 | 本补丁是否转节点驱动执行？ | 维持 design patch 形态；ratify 后可转录为任务编排节点驱动执行（历史记录：原指 `zj-roadmap-driven`，该 skill 已于 2026-11-27 删除，由 `zj-dp-driven` 承接） |
 
 ### 10.6 风险（维持 patch §8）
 
