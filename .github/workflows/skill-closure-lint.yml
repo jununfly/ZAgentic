@@ -30,32 +30,6 @@ jobs:
         # docs/ tree, so anything read at runtime must be closed over inside the
         # skill. Pure stdlib; see scripts/check-skill-runtime-closure.py.
         run: python3 scripts/check-skill-runtime-closure.py --repo .
-      - name: Enforce Roadmap process-state authority boundary
-        # Roadmap progress may drive work, but durable code/docs must promote
-        # claims to ADR/design/contract/runtime evidence before citing them.
-        run: python3 skills/codebase-docs/zj-roadmap-driven/scripts/roadmap_cli.py authority-check .
-      - name: Verify published skill contracts
-        # Static closure lint cannot see this class of breakage: a skill is a
-        # published unit, and its commands execute with cwd = target project,
-        # not the skill directory. Bare script names and undeclared path vars
-        # pass every static check and fail on every installed copy.
-        # Five guards: install-state commands (with in-memory negative probes
-        # so a checker that cannot fail is itself red), landing guard for core
-        # disciplines, scripts/ + tests/ layout, and frontmatter schema
-        # consistency. Same unfiltered required job: a path-filtered required
-        # check leaves unrelated PRs BLOCKED (#211).
-        run: >-
-          python3 -m unittest
-          tests.test_skill_install_smoke
-          tests.test_zj_roadmap_driven_landing
-          tests.test_zj_roadmap_driven_layout
-          tests.test_zj_roadmap_driven_frontmatter
-          tests.test_process_authority_boundary
-          -v
-      - name: Verify roadmap visual-review governance guards
-        # Previously local-only: this suite asserts CLI reference, glossary,
-        # product/spec pages and required-job wiring, but had no CI caller.
-        run: python3 -m unittest tests.test_roadmap_visual_review_governance -v
       - name: Install gate dependencies
         # The frontmatter validator needs PyYAML; without it the validator
         # exits 2 and an absent check can look green (see ui-contract gate).
@@ -76,31 +50,8 @@ jobs:
       - name: Verify the plugin validation entrypoint
         # Previously an orphan: scripts/test_validate_plugin.py had no CI caller.
         run: python3 -m unittest discover -s scripts -p 'test_validate_plugin.py' -v
-      - name: Validate and verify the visual-review spec projection
-        run: |
-          python3 scripts/roadmap_visual_review_spec.py validate
-          python3 scripts/roadmap_visual_review_spec.py verify
-          python3 -m unittest tests.test_roadmap_visual_review_spec -v
-      - name: Verify every spec id has an executable guard or a recorded reason
-        # The suite inserts the skill import root into sys.path itself, so it
-        # needs no PYTHONPATH here. Negative probes prove a dropped id, a fake
-        # guard name, an unjustified gap or a growing gap set all fail.
-        run: python3 -m unittest tests.test_roadmap_visual_review_traceability -v
       - name: Verify ADR 0006 dated bucket counts are not read as live
         run: python3 -m unittest tests.test_adr_0006_bucket_counts -v
-      - name: Verify viz view contracts and Python/JS selection parity
-        # viz lives inside the skill; its import root must be explicit, and
-        # verify_selection.mjs needs node (preinstalled on ubuntu-latest).
-        env:
-          PYTHONPATH: skills/codebase-docs/zj-roadmap-driven
-        run: >-
-          python3 -m unittest
-          viz.tests.test_viz
-          viz.tests.test_s3_s4
-          viz.tests.test_review_contracts
-          viz.tests.test_s1
-          viz.tests.test_s1b
-          -v
 
   docs-dangling-refs:
     runs-on: ubuntu-latest

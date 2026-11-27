@@ -20,7 +20,7 @@ model-elements: [entity.adr]
 升华 #169 为跨 skill 通用约定（范围：仅**持久化产物**，不含纯临时态/`/tmp`）：
 
 1. **引用一律相对路径**，绝不存绝对路径；解析基准 = carrier/技能目录（normpath）。
-2. **落点按使用场景二分**：项目输出产物落 `<project-root>/tmp/skills-outputs/<skill>/<topic>/`（gitignored）；过程/计划类（roadmap、wayfinder map）落 `docs/plans/<skill>/...`（git 跟踪、close-out 后清理，语义写入 `zj-docs-ontology`）；**非项目输出必须主动询问 Human** 落点，绝不默认 `~/`、`~/Desktop`、cwd、仓库根。
+2. **落点按使用场景二分**：项目输出产物落 `<project-root>/tmp/skills-outputs/<skill>/<topic>/`（gitignored）；过程/计划类（dp-driven carrier 与过程材料）落 `docs/plans/<skill>/...`（git 跟踪、close-out 后清理，语义写入 `zj-docs-ontology`）；**非项目输出必须主动询问 Human** 落点，绝不默认 `~/`、`~/Desktop`、cwd、仓库根。
 3. **解析以 carrier/技能目录为基准**做 normpath；遇异机绝对路径 fail-loud（#169 机制保留）。
 4. **单向耦合**：计划（`docs/plans/`、roadmap）瞬态，决策（ADR）持久；依赖方向只能 `计划 → 决策 → 代码`，**禁止** `代码/长期文档 → 计划`。`check-docs-dangling-refs.py` 对来自持久产物、指向 `docs/plans/` 的入站引用报警（WARN-first）。roadmap 节点成熟为决策时抽取成 ADR。
 5. **轻量 guard**：扩展 `scripts/check-skill-runtime-closure.py`（`TARGET_PROJECT_ROOTS` 加 `tmp/`；新增 WARN 模式捕获 skill 内绝对 home/cwd 默认）。WARN-first，待 11-skill 迁移清空后可视情升级 ERROR（符合本仓库校准纪律）。

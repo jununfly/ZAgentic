@@ -26,6 +26,6 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 - `skills/engineering/zj-repo-init/domain.md` (if domain terms changed)
 - `ZJ-CONTEXT.md` (if domain terms changed)
 - `docs/zj-adr/*.md` (if ADR refs old name)
-- `docs/plans/roadmap-<wave>.json` (the active wave's roadmap JSON, when human runs `update` after)
+- `docs/plans/dp-driven/<wave>/` (the wave's dp-driven carrier, when execution closes tickets after)
 
 Never touches: scratch dirs, source dirs (read-only), `~/.workbuddy/` (out of repo).

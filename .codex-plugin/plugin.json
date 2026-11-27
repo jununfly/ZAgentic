@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "ZAgentic",
     "shortDescription": "Composable skills for human-agent engineering workflows",
-    "longDescription": "ZAgentic packages Jununfly's engineering, codebase-documentation, and productivity skills for planning, evidence-backed research, triage, TDD, diagnosis, roadmap-driven work, and handoffs.",
+    "longDescription": "ZAgentic packages Jununfly's engineering, codebase-documentation, and productivity skills for planning, evidence-backed research, triage, TDD, diagnosis, state-graph task orchestration, and handoffs.",
     "developerName": "Jununfly",
     "category": "Developer Tools",
     "capabilities": [
@@ -34,7 +34,7 @@
     "defaultPrompt": [
       "Grill me on this implementation plan",
       "Break this plan into issues",
-      "Set up a roadmap for this project",
+      "Drive this large task as a dynamic-programming state graph",
       "Govern this repository's documentation system",
       "Research these repositories and draft a cited comparison"
     ],

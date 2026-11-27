@@ -9,7 +9,7 @@ The §6 rendering contract. Source of truth: `scripts/dp_driven_viz.py`. Design 
 
 | Alternative | Rejected because |
 |---|---|
-| static HTML + vendored dagre/elk | vendored JS bundle breaks the zero-dep stance **and** mirrors `zj-roadmap-driven/viz/`, drifting toward the old pair (forbidden by the build-period discipline) |
+| static HTML + vendored dagre/elk | vendored JS bundle breaks the zero-dep stance and couples the view layer to an external asset tree |
 | Graphviz `dot` + `dot -Tsvg` | needs an external binary, violating stdlib-only |
 | terminal ASCII | can't cleanly express claim distinction / overlap markers / cross-plan quotient |
 | IR-JSON only | doesn't actually pick a backend |

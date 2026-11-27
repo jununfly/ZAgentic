@@ -47,22 +47,13 @@ doc-kind: doc-map
 ### Design（设计权威，authority: primary）
 - [designs/zj-cross-stage-skills.md](designs/zj-cross-stage-skills.md) — 跨阶段检查点模型; authority-id: `design.cross-stage-checkpoints`
 - [designs/zj-skill-frontmatter-schema.md](designs/zj-skill-frontmatter-schema.md) — 技能 frontmatter schema; authority-id: `design.skill-frontmatter-schema`
-- [designs/zj-roadmap-driven/README.md](designs/zj-roadmap-driven/README.md) — zj-roadmap-driven 设计文档索引（阅读顺序 + 分册职责）; authority-id: `design.roadmap-driven-index`
-- [designs/zj-roadmap-driven/dual-mode.md](designs/zj-roadmap-driven/dual-mode.md) — wayfinder/roadmap carrier seam; authority-id: `design.wayfinder-roadmap-carrier-seam`
-- [designs/zj-roadmap-driven/concurrency-model.md](designs/zj-roadmap-driven/concurrency-model.md) — roadmap 并发模型; authority-id: `design.roadmap-concurrency-model`
-- [designs/zj-roadmap-driven/execution-graph.md](designs/zj-roadmap-driven/execution-graph.md) — roadmap 执行图; authority-id: `design.roadmap-execution-graph`
-- [designs/zj-roadmap-driven/reconciliation.md](designs/zj-roadmap-driven/reconciliation.md) — roadmap reconciliation 与原子 ChangeSet 层（设计决策/替代方案/不变式/记号决策）; authority-id: `design.roadmap-reconciliation`
-- [designs/zj-roadmap-driven/radial-render.md](designs/zj-roadmap-driven/radial-render.md) — roadmap 轻量视图焦点辐射渲染设计（渲染层 durable 决策与不变式）; authority-id: `design.roadmap-radial-render`
 - [designs/zj-discuss/product.md](designs/zj-discuss/product.md) — zj-discuss 产品模型; authority-id: `design.zj-discuss-product`
 - [designs/zj-discuss/architecture.md](designs/zj-discuss/architecture.md) — zj-discuss 架构; authority-id: `design.zj-discuss-architecture`
 - [designs/zj-discuss/design.md](designs/zj-discuss/design.md) — zj-discuss 设计; authority-id: `design.zj-discuss-spec`
 - [designs/zj-composer-plan-product-form.md](designs/zj-composer-plan-product-form.md) — composer plan/product form; authority-id: `design.composer-plan-product-form`
 - [designs/zj-skill-runtime-closure.md](designs/zj-skill-runtime-closure.md) — skill 运行期闭包自包含（源仓 docs 不得运行时依赖、SSOT 不迁单 skill）; authority-id: `design.skill-runtime-closure`
 - [designs/zj-docs-convention-distillation-playbook.md](designs/zj-docs-convention-distillation-playbook.md) — 跨仓文档规范蒸馏 playbook（不建 skill 的判决 + 五段法）; authority-id: `design.docs-convention-distillation`
-- [designs/zj-roadmap-driven/visual-review-product.md](designs/zj-roadmap-driven/visual-review-product.md) — roadmap Human 视图产品设计方案（四场景锚定 + 同源多投影）; authority-id: `design.roadmap-visual-review-product`
-- [designs/zj-roadmap-driven/visual-review-technical.md](designs/zj-roadmap-driven/visual-review-technical.md) — roadmap Human 视图技术设计方案（由确定性脚本从机器可读 SoT 生成）; authority-id: `design.roadmap-visual-review-technical`
 - [designs/zj-docs-ontology-skill-design.md](designs/zj-docs-ontology-skill-design.md) — zj-docs-ontology skill 设计文档（四层：健康检查→治理→生成知识图谱→遵照 Ontology 设计；既是分层架构也是「做下文档治理」的闭环流程，与实现对齐）; authority-id: `design.docs-ontology-skill`
-- [designs/zj-wayfinder-skill-design.md](designs/zj-wayfinder-skill-design.md) — zj-wayfinder skill 设计文档（把大于一次会话、裹在雾里的想法规划成决策工单共享地图：索引不变式 / 双载体 / 三态 / HITL·AFK / refer-by-name / 会话交接，与实现对齐）; authority-id: `design.wayfinder-skill`
 - [designs/zj-dp-driven-skill-design.md](designs/zj-dp-driven-skill-design.md) — zj-dp-driven 基准设计页（把复杂任务当作动态规划在部分可观测状态图上的一次运行：两层嵌套状态图 / 编排调度循环 / memoization 双路径 / 状态单一源 / 两段式收摊 / 验证方向种子）; authority-id: `design.dp-driven-skill`
 
 ### Reference（共享规则单一权威，authority: primary）

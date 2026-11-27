@@ -21,7 +21,7 @@ silently invoke another user-only skill. The other user-only routes are
 `zj-implement`, `zj-improve-codebase-architecture`,
 `zj-merge-skill-pair`, `zj-merge-skills-wave`, `zj-repo-init`,
 `zj-show-me`, `zj-steelman`, `zj-teach`, `zj-to-questionnaire`, `zj-to-spec`,
-`zj-to-tickets`, `zj-triage`, `zj-wait-what`, and `zj-wayfinder`.
+`zj-to-tickets`, `zj-triage`, and `zj-wait-what`.
 
 All other public skills remain model-invoked or reference-capable: the agent
 may reach them when their descriptions match, while the Human may still name
@@ -71,19 +71,17 @@ A starting situation that generates work, then merges onto the main flow.
 
 - **Something's broken** → **`/zj-diagnosing-bugs`**. For the hard ones: the bug that resists a first glance, the intermittent flake, the regression that crept in between two known-good states. It refuses to theorise until it has a **tight feedback loop** — one command that already goes red on *this* bug — then fixes with a regression test. Its post-mortem hands off to **`/zj-improve-codebase-architecture`** when the real finding is that there's no good seam to lock the bug down.
 
-- **A huge, foggy effort — a greenfield project or a huge feature build, too big for one session** → **`/zj-wayfinder`**, the most cognitively demanding flow here. When the way from here to the destination isn't visible yet, it charts a **shared map** of **decision tickets** on the issue tracker and resolves them one at a time — producing **decisions, not deliverables** — until the fog is pushed back and the way is clear. Where **`/zj-grilling`** sharpens an idea you can hold in one session, wayfinder is for the idea you can't — and it's slower and denser, so save it for exactly that, never a well-scoped feature.
+- **A huge, foggy effort — a greenfield project or a huge feature build, too big for one session** → **`/zj-dp-driven`**, the most cognitively demanding flow here. It drives the effort as one dynamic-programming run over a two-layer state graph: expand tasks, memoize findings as decisions surface, push tickets to terminal, and re-plan as discoveries emerge. Where **`/zj-grilling`** sharpens an idea you can hold in one session, dp-driven is for the effort you can't — and it's slower and denser, so save it for exactly that, never a well-scoped feature.
 
-  When the map clears, **it hands off, it doesn't build**: merge onto the main flow at **`/zj-to-spec`**, which collapses the map's linked decisions into a buildable plan, then `/zj-to-tickets` and `/zj-implement` as usual. Looping the map straight into `/zj-implement` skips that collapse and throws the linked detail away — go straight to `/zj-implement` only when the effort turned out genuinely small.
+  When the state graph clears, **it hands off, it doesn't build**: merge onto the main flow at **`/zj-to-spec`**, which collapses the durable markdown into a buildable plan, then `/zj-to-tickets` and `/zj-implement` as usual. Going straight to `/zj-implement` skips that collapse and throws the recorded detail away — go straight there only when the effort turned out genuinely small.
 
 ## Planning, tracking, and delegation
 
 - **`/zj-leader`** — turn one sentence into a self-contained `/goal` brief when the desired next step is to delegate work to an agent. It is a task-brief route, not a substitute for the idea→ship flow.
-- **`/zj-wayfinder`** — plan a foggy, multi-session effort and resolve decision tickets. When the map is clear, continue through `/zj-to-spec` → `/zj-to-tickets`.
-- **`/zj-roadmap-driven`** — track an agreed route in a local JSON roadmap, record decisions, and keep the Human-facing Markdown view current. It tracks; it does not replace wayfinder planning or ticket slicing.
 - **`/zj-dp-driven`** — drive a genuinely complex, partially-observable task as one dynamic-programming run over a two-layer state graph: expand tasks, memoize findings, push tickets to terminal, and re-plan as discoveries emerge. Process state is a throwaway SQLite carrier; the durable output is the markdown it references.
 - **`/zj-composer`** — compose a reviewable, versioned Plan from a goal and constraints, explain selected capabilities, report bounded gaps, and stop for Human approval before handoff.
 
-If the work is already well-scoped, skip `/zj-leader` and `/zj-wayfinder` and
+If the work is already well-scoped, skip `/zj-leader` and `/zj-dp-driven` and
 start at the main flow.
 
 ## Codebase documentation
@@ -182,7 +180,7 @@ Read PHASE-BOUNDARIES.md for the ordered tree — the five questions, the reason
 
 Off the main flow entirely.
 
-- **`/zj-grilling`** — the interview primitive itself: rounds, the frontier, facts are the agent's job and decisions are yours. In a working directory, pair it with `/zj-domain-modeling` to retain vocabulary and ADRs. `/zj-triage`, `/zj-wayfinder` and `/zj-improve-codebase-architecture` all run it internally.
+- **`/zj-grilling`** — the interview primitive itself: rounds, the frontier, facts are the agent's job and decisions are yours. In a working directory, pair it with `/zj-domain-modeling` to retain vocabulary and ADRs. `/zj-triage` and `/zj-improve-codebase-architecture` all run it internally.
 - **`/zj-resolving-merge-conflicts`** — work an in-progress merge or rebase conflict hunk by hunk, resolving by **intent** traced to each side's primary source rather than by picking lines, then finish the operation. It never runs `--abort`. Standalone and off every flow: reach for it when you are already mid-conflict.
 - **`/zj-prototype`** — a small, throwaway program that answers one design question: does this state model feel right, or what should this UI look like. Throwaway is a constraint on how the code is written, not a promise to destroy it: the answer folds into the real code, and the prototype itself is kept as a **primary source** on a `prototype/<name>` branch out of main, pointed at from the implementation issue. It's the detour in step 2 of the main flow, but reach for it any time a design question is hard to settle on paper.
 - **`/zj-research`** — delegate primary-source reading to a **background agent**, or compile commit-pinned evidence for a multi-repository technical comparison. It leaves cited findings and, for technical comparisons, a sealed ledger in the repo. Keep working while it reads. Take those facts into `/zj-grilling`; research feeds the thinking, it doesn't replace it.

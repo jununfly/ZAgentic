@@ -5,7 +5,7 @@ Design baseline: docs/designs/zj-dp-driven-skill-design.md §6 R7 / §8。
 Architecture (选型 A，见 references/dp_driven-viz.md):
 * **Mermaid 仍是图与语义的唯一呈现**：图体直接复用 `dp_driven_viz.render()`（R1–R6 已定稿），
   浏览器端由 mermaid.js 渲染成可点击 SVG。本模块**不做布局**、**不 vendor 布局引擎**——
-  那正是 `zroadmap-driven/viz/` 的形状，违背本 skill 构建期「独立实现、不引用 pair」纪律。
+  本模块不做布局引擎 vendor，保持实现独立（不镜像任何外部 viz 形状）。
 * **node IR 快照**：`dp_driven_viz.build_node_ir()` 的产物以 JSON 内嵌进单文件，
   key 与 Mermaid 节点 id 一一对应；点击 SVG 节点 → 查 IR → 渲染右区卡片。
 * **零回写**（invariant 10 延伸）：IR/HTML 是**生成时快照**，从不写回 carrier、从不回连 CLI。
