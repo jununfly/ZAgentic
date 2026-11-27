@@ -285,6 +285,18 @@ def cmd_orchestrate(args):
     _emit({"executed": True, "applied": applied})
 
 
+# ── visualization (§6) ───────────────────────────────────
+
+def cmd_viz(args):
+    import dp_driven_viz
+    m = _open_model(args.db)                      # read-only, no lock (§6 render)
+    if args.out:
+        path = dp_driven_viz.render_to_file(m, args.out)
+        _emit({"ok": True, "written": path, "format": args.format})
+    else:
+        sys.stdout.write(dp_driven_viz.render(m))  # stdout = the Human's live view
+
+
 # ── parser wiring ────────────────────────────────────────
 
 def build_parser() -> argparse.ArgumentParser:
@@ -372,6 +384,10 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--threshold", type=float, default=dp_driven_optimize.COHESION_THRESHOLD_DEFAULT)
     sp.add_argument("--max-size", type=int, default=dp_driven_optimize.MAX_PLAN_SIZE_DEFAULT)
     sp.set_defaults(fn=cmd_orchestrate)
+
+    sp = sub.add_parser("viz"); add_db(sp)        # §6 read-only render
+    sp.add_argument("--out"); sp.add_argument("--format", default="mermaid", choices=("mermaid",))
+    sp.set_defaults(fn=cmd_viz)
 
     sp = sub.add_parser("closeout"); cosub = sp.add_subparsers(dest="sub", required=True)
     cs = cosub.add_parser("summary"); add_db(cs); cs.add_argument("--out", required=True)
