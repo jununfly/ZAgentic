@@ -38,9 +38,9 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | `renew DB {plan\|ticket} <id> --agent A [--now EPOCH]` | §4.4 heartbeat 续租 | `:449` `renew` |
 | `release DB {plan\|ticket} <id> [--agent A \| --force]` | §4.4 / §4.1 抢占 | `:479` `release` |
 | `claims list DB [--now EPOCH]` | §4.4 观测（含派生 `expired`） | `:505` `list_claims` |
-| `settlement run DB [--name TEXT]` | §4.5 | `:516` `settlement_run` |
+| `settlement run DB [--name TEXT]` | §4.5（结算轮的**唯一**实现入口） | `:516` `settlement_run` |
 | `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
-| `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N] [--now EPOCH] [--lease-seconds N \| --no-lease]` | §4.2 routing；`--execute` 造的 plan-claim 带**真实租约**（§4.4，Phase-4d） | `dp_driven_optimize.py:suggest/execute` |
+| `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N] [--now EPOCH] [--lease-seconds N \| --no-lease]` | §4.2 routing；`--execute` 造的 plan-claim 带**真实租约**（§4.4，Phase-4d）；`settle` 步委派 `settlement_run` 并同样落 §9-5 `settlement` 事件（W5） | `dp_driven_optimize.py:suggest/execute` |
 | `viz DB [--out PATH] [--format mermaid\|html] [--assets cdn\|inline] [--js-path P] [--now EPOCH]` | §6 R1–R6 + R7 (read-only)；`--now` 对**两种格式**同样生效（过期 ⇒ `plan_paused`，Phase-4d） | `dp_driven_viz.py:render` · `dp_driven_viz_html.py:render_html` |
 | `metrics record DB --type {token,…} [--value N] [--agent A] [--kind K] [--ref-id I]` | §9-1 外部事实 / 修补 | `dp_driven_metrics.py:79` `append_event` |
 | `metrics annotate DB plan <id> --verdict {kept\|split\|regrouped} [--agent A]` | §9-3 Human 判定 | `dp_driven_metrics.py:190` `verdicts` |
@@ -100,6 +100,10 @@ is the only writer, so `dp_driven_model.py` stays a pure state machine:
 
 `orchestrate --execute` · `settlement run` · `task status` (terminal only) · `ticket assign`
 · `finding membership add|remove`.
+
+An executed round whose steps include a `settle` writes **one additional** `settlement` line
+(W5: §9-5's numerator must not depend on whether the settlement came from `settlement run` or
+from the optimizer).
 
 Dry runs write nothing: `suggest` and `orchestrate` without `--execute` leave the log
 untouched, and so does a non-terminal `task status`. `metrics record` / `metrics annotate`

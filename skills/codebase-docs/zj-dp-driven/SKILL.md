@@ -18,7 +18,7 @@ source: zagentic
 > (authority-id `design.dp-driven-skill`; not shipped with the install). This `SKILL.md`
 > and `references/` are the runtime-self-contained view; the design page is reviewer context only.
 
-## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b + 4c + 4d-fix (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer→§9 metrics→lease-clock wiring)
+## Status: Phase 1 + 2 + 3a + 3b + 3c + 4a + 4b + 4c + 4d-fix + W5 (carrier→model→CLI/claim/settlement/closeout→optimizer→derivation→viz→claim TTL→R7 HTML viewer→§9 metrics→lease-clock wiring→single settlement implementation)
 
 Implemented: **carrier schema** (`scripts/dp_driven_carrier.py`), **five-entity model +
 derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scripts/dp_driven_cli.py`),
@@ -30,7 +30,7 @@ derived-state core** (`scripts/dp_driven_model.py`), **orchestration CLI** (`scr
 (`claim/renew`, derived `expired`) — with the lease clock injected on **every** CLI path that
 consults it (`claim/renew/claims list`, both `status` writers, `orchestrate --execute`, `viz`),
 **§9 metrics collection** (`scripts/dp_driven_metrics.py`:
-sidecar event log + `report` / `reflow-check` double-entry audit). 231 tests in `tests/` lock
+sidecar event log + `report` / `reflow-check` double-entry audit). 240 tests in `tests/` lock
 every invariant.
 
 Deferred to later phases (design `[未决]` / progressive-rollout §8): **calibration only** — the §9
@@ -80,7 +80,9 @@ These are enforced by code and by failing tests; do not weaken them to make a ca
    --execute` and `viz` — so an expired claim is inert on the real write path, not only in the
    library. `renew` is the heartbeat; `--no-lease` pins a claim (never expires).
 8. **Settlement round (§4.5).** A special plan absorbs the whole pool, `SETTLEMENT_AGENT` sentinel
-   bypasses its plan-claim gate so any agent may claim tickets inside it.
+   bypasses its plan-claim gate so any agent may claim tickets inside it. One implementation only:
+   `settlement_run` — the `settlement run` command and the optimizer's `settle` step are two entry
+   points into it, so `Step.items` is a preview and the live pool decides (§4.5 实现唯一性).
 9. **Two-stage closeout (§5.2).** Export snapshot → require `.governed.json` marker → delete sqlite
    + WAL/SHM/lock sidecars only, never the `.md` corpus. Order is code-enforced (`E_NOT_COMPLETE`,
    `E_CLOSEOUT_NOT_GOVERNED`, `E_CLOSEOUT_CONFIRM_REQUIRED`).

@@ -84,15 +84,18 @@ $DP orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size 
 
 `suggest` and `orchestrate` (without `--execute`) are pure reads. `orchestrate --execute`
 applies the steps — `new_plan` creates a task and places items; `hotplug` uses the §4.4
-lock-free `assign_ticket` / `add_finding_membership`; `settle` creates a `SETTLEMENT_AGENT`
-sentinel plan (§4.5). Empty pool on either → `E_POOL_EMPTY` (exit 2), reusing the settlement
-round's code rather than minting a new one.
+lock-free `assign_ticket` / `add_finding_membership`; `settle` **delegates to
+`model.settlement_run`** (§4.5's only implementation: live pool, topological order, sentinel
+claim row). Empty pool → `E_POOL_EMPTY` (exit 2) — raised by `settlement_run` itself, so a stale
+step can never mint an empty settlement plan. `Step.items` on a settle step is therefore a
+*preview*: what actually gets absorbed is the pool at execution time (equivalent under today's
+`suggest`, which emits at most one of new_plan/settle after hotplugs — locked by
+`test_dp_driven_wiring.SettleDelegation.test_settle_step_items_equal_live_pool`).
 
 **Lease wiring (Phase-4d-fix)**: a `new_plan` created by `execute` claims the plan for `--agent`
 with a *real* lease — `epoch` (default: wall clock, `--now` to replay) stamps `last_seen_at` and
 `--lease-seconds`/`--no-lease` behave exactly like `claim`. Without this, the automation loop's own
-plans were the one case §8's "dead vs thinking" problem could not recover from. The `settle` step's
-sentinel row keeps the same column shape as `settlement_run` (both lease fields present, `NULL`).
+plans were the one case §8's "dead vs thinking" problem could not recover from.
 
 ## Boundaries (what this module does NOT do)
 
@@ -100,3 +103,7 @@ sentinel row keeps the same column shape as `settlement_run` (both lease fields 
 - Module-local only: TTL, §6 rendering, §7 provenance edges and §9 collection all landed in
   other modules (`dp_driven_model.py` / `dp_driven_viz*.py` / carrier columns /
   `dp_driven_metrics.py`); see design page §10 for their anchors, not this file.
+- This module never writes a claim row and owns no settlement logic: `execute` calls
+  `model.claim` (new plans) and `model.settlement_run` (settle). The source-level lock
+  `test_optimize_has_no_second_settlement_implementation` fails if a second implementation
+  of either appears here.
