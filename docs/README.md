@@ -55,6 +55,8 @@ doc-kind: doc-map
 - [designs/zj-docs-convention-distillation-playbook.md](designs/zj-docs-convention-distillation-playbook.md) — 跨仓文档规范蒸馏 playbook（不建 skill 的判决 + 五段法）; authority-id: `design.docs-convention-distillation`
 - [designs/zj-docs-ontology-skill-design.md](designs/zj-docs-ontology-skill-design.md) — zj-docs-ontology skill 设计文档（四层：健康检查→治理→生成知识图谱→遵照 Ontology 设计；既是分层架构也是「做下文档治理」的闭环流程，与实现对齐）; authority-id: `design.docs-ontology-skill`
 - [designs/zj-dp-driven-skill-design.md](designs/zj-dp-driven-skill-design.md) — zj-dp-driven 基准设计页（把复杂任务当作动态规划在部分可观测状态图上的一次运行：两层嵌套状态图 / 编排调度循环 / memoization 双路径 / 状态单一源 / 两段式收摊 / 验证方向种子）; authority-id: `design.dp-driven-skill`
+- [designs/zj-docs-architecture-skill-design.md](designs/zj-docs-architecture-skill-design.md) — zj-docs-architecture skill 设计文档（页面级权威绑定与 doc-map 契约的检查器）; authority-id: `design.docs-architecture-skill`
+- [designs/zj-docs-metrics-skill-design.md](designs/zj-docs-metrics-skill-design.md) — zj-docs-metrics skill 设计文档（文档健康度度量与审计阈值）; authority-id: `design.docs-metrics-skill`
 
 ### Reference（共享规则单一权威，authority: primary）
 - [skill-conventions/skill-conventions.json](skill-conventions/skill-conventions.json) — 命名语法核心与 doc-kind/authority 值域由谁单一拥有？; authority-id: `reference.skill-conventions`

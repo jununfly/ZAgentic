@@ -16,6 +16,15 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 | 10 | `docs/zj-adr/*.md` cross-reference update | when ADR text mentions old skill name |
 | 11 | Copy supporting source files (CONTEXT-FORMAT.md, ADR-FORMAT.md, sub-skill docs...) | when source dir has them |
 | 12 | Delete supporting old files | when old skill had them and they don't survive rename |
+| 13 | Delete dead `.github/workflows/` steps for removed skills | `replace`, `reject`, any rename that changes workflow skill names |
+| 14 | Delete/regenerate `.codex-plugin/` entries (plugin.json 文案、skill 清单) | any add/remove/rename |
+
+## Generated artifacts
+
+Any add/remove/rename must re-run generated artifacts before review and grep-verify no stale references:
+
+- `docs/ontology/extract.py` → `model.json`
+- `zagentic-skills-list`
 
 ## Files this skill touches (per merge)
 
@@ -27,5 +36,7 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 - `ZJ-CONTEXT.md` (if domain terms changed)
 - `docs/zj-adr/*.md` (if ADR refs old name)
 - `docs/plans/dp-driven/<wave>/` (the wave's dp-driven carrier, when execution closes tickets after)
+- `.github/workflows/*.yml` (remove steps referencing deleted/renamed skills)
+- `.codex-plugin/plugin.json` (skill list and description text)
 
 Never touches: scratch dirs, source dirs (read-only), `~/.workbuddy/` (out of repo).
