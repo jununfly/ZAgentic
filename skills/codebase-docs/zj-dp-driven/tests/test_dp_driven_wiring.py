@@ -279,5 +279,119 @@ class DocScope(unittest.TestCase):
         self.assertNotIn("model never reads wall clock", src)   # the #314-era blanket phrasing
 
 
+# Imported at the bottom on purpose: this file's class line numbers are cited as anchors in
+# the design page §10, so SettleDelegation must not shift anything above it.
+import dp_driven_optimize as opt                      # noqa: E402
+from dp_driven_model import DpDrivenError             # noqa: E402
+
+
+class SettleDelegation(Harness):
+    """W5: the optimizer's settle step is a thin façade over model.settlement_run (§4.5) —
+    one implementation of "absorb the pool", not two that can drift."""
+
+    def lib(self):
+        """A library-side model inside this test's temp dir."""
+        db = os.path.join(self.tmp.name, "lib.sqlite")
+        return DpDriven.init(db, "w")
+
+    def settle_step(self, items):
+        return opt.Step(opt.ACT_SETTLE, None, items, None, "hand-made settle step")
+
+    def test_settle_step_items_equal_live_pool(self):
+        """The equivalence claim that makes delegation safe: suggest() emits at most one of
+        new_plan/settle, and hotplugs apply first ⇒ by settle time the pool IS st.items."""
+        m = self.lib()
+        t = m.add_task("P")
+        m.add_ticket(task_id=t)                                  # ticket 0, in plan 0
+        m.add_ticket(parent_id=0)                                # ticket 1, pool, linked
+        m.add_ticket()                                           # ticket 2, pool, isolated
+        m.claim("plan", t, "alice", epoch=1000, lease_seconds=10_000_000)
+        steps = opt.suggest(m)
+        self.assertEqual([s.action for s in steps], [opt.ACT_HOTPLUG, opt.ACT_SETTLE])
+        hp = steps[0]
+        m.assign_ticket(hp.items[0][1], hp.task_id)              # apply the hotplug first
+        live = [(it["kind"], it["id"]) for it in m.pool()]
+        self.assertEqual(sorted(steps[1].items), sorted(live))
+
+    def test_execute_settle_absorbs_whole_pool(self):
+        m = self.lib()
+        for _ in range(3):
+            m.add_ticket()
+        opt.execute(m, [self.settle_step([("ticket", 0)])], agent="bob")   # deliberately partial
+        self.assertEqual(m.pool(), [], "§4.5: the settlement plan absorbs the WHOLE pool")
+        self.assertEqual({t["task_id"] for t in m.data["tickets"].values()}, {0})
+
+    def test_execute_settle_matches_manual_settlement(self):
+        """Two entry points, byte-identical state — the direct proof of the dedupe."""
+        a, b = self.lib(), self.lib()
+        for m in (a, b):
+            for _ in range(2):
+                m.add_ticket()
+        tid_a = opt.execute(a, [self.settle_step([("ticket", 0), ("ticket", 1)])],
+                            name="结算轮", now="2026-01-01 00:00:00")[0]["task_id"]
+        tid_b, _items = b.settlement_run(name="结算轮", now="2026-01-01 00:00:00")
+        self.assertEqual(tid_a, tid_b)
+        self.assertEqual(a.data["claims"], b.data["claims"])
+        self.assertEqual(a.data["tasks"], b.data["tasks"])
+        self.assertEqual(a.data["tickets"], b.data["tickets"])
+
+    def test_settle_order_is_topological_not_stepwise(self):
+        m = self.lib()
+        x = m.add_ticket()
+        y = m.add_ticket()
+        m.add_blocks("ticket", x, "ticket", y)                   # x must precede y
+        applied = opt.execute(m, [self.settle_step([("ticket", y), ("ticket", x)])])  # reversed on purpose
+        self.assertEqual([list(i) for i in applied[0]["items"]], [["ticket", x], ["ticket", y]],
+                         "order comes from _topo_order_pool, not from st.items")
+
+    def test_stale_step_items_follow_live_pool(self):
+        """D2: the advisory items carry no authority — the live pool decides."""
+        m = self.lib()
+        real = m.add_ticket()
+        opt.execute(m, [self.settle_step([("ticket", 999), ("finding", 999)])], agent="bob")
+        self.assertEqual(m.pool(), [])
+        self.assertEqual(m.data["tickets"][str(real)]["task_id"], 0)
+        self.assertEqual(sorted(c["ref_id"] for c in m.data["claims"]), [0])
+
+    def test_empty_pool_raises_not_empty_plan(self):
+        m = self.lib()
+        tk = m.add_ticket()
+        opt.execute(m, [self.settle_step([("ticket", tk)])])
+        before = dict(m.data["tasks"])
+        with self.assertRaises(DpDrivenError) as ctx:
+            opt.execute(m, [self.settle_step([("ticket", 42)])])
+        self.assertEqual(ctx.exception.code, "E_POOL_EMPTY")
+        self.assertEqual(m.data["tasks"], before)                # no phantom settlement plan
+
+    def test_optimize_has_no_second_settlement_implementation(self):
+        """Mechanical anti-re-drift lock (D5): the optimizer must not write claim rows or
+        keep its own wall-clock helper — settlement_run owns both."""
+        src = (SKILL_DIR / "scripts" / "dp_driven_optimize.py").read_text(encoding="utf-8")
+        self.assertNotIn('data["claims"]', src)
+        self.assertNotIn("_fallback_now", src)
+        self.assertIn("model.settlement_run(", src)
+
+    def test_orchestrate_settle_emits_settlement_event(self):
+        """D6: §9-5's numerator is entry-point independent."""
+        self.init()
+        self.run_cli("ticket", "add", self.db)
+        self.run_cli("ticket", "add", self.db)
+        self.run_cli("orchestrate", self.db, "--agent", "alice", "--execute", "--now", "1000")
+        rep = json.loads(self.run_cli("metrics", "report", self.db).stdout)
+        self.assertEqual(rep["metrics"]["orchestration_rounds"]["breakdown"],
+                         {"orchestrate": 1, "settlement": 1})
+        self.assertAlmostEqual(rep["metrics"]["settlement_trigger_rate"]["value"], 50.0, places=1)
+
+    def test_orchestrate_new_plan_emits_no_settlement_event(self):
+        self.init()
+        self.run_cli("ticket", "add", self.db)
+        self.run_cli("ticket", "add", self.db)
+        self.run_cli("blocks", "add", self.db, "--from", "ticket:0", "--to", "ticket:1")
+        self.run_cli("orchestrate", self.db, "--agent", "alice", "--execute", "--now", "1000")
+        rep = json.loads(self.run_cli("metrics", "report", self.db).stdout)
+        self.assertEqual(rep["metrics"]["orchestration_rounds"]["breakdown"],
+                         {"orchestrate": 1, "settlement": 0})
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

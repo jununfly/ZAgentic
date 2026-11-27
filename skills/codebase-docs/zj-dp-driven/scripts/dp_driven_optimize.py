@@ -26,7 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from dp_driven_model import (
-    CLAIM_PLAN, DEFAULT_CLAIM_LEASE_SECONDS, DpDriven, DpDrivenError, SETTLEMENT_AGENT,
+    CLAIM_PLAN, DEFAULT_CLAIM_LEASE_SECONDS, DpDriven, DpDrivenError,
     EDGE_BLOCKS, KIND_FINDING, KIND_TASK, KIND_TICKET, S_DONE, S_OPEN,
 )
 
@@ -279,8 +279,8 @@ def execute(model: DpDriven, steps: list[Step], agent: str | None = None,
            lease_seconds: int | None = DEFAULT_CLAIM_LEASE_SECONDS) -> list[dict]:
     """Apply suggested steps (called only from CLI `--execute`, inside the write lock).
     new_plan → add_task + place items; hotplug → assign/add-membership (lock-free §4.4);
-    settle → settlement_run over the step's items' plan-less remainder is approximated by
-    placing this step's items into a fresh settlement plan. Returns an applied summary.
+    settle → delegates to model.settlement_run (§4.5's ONE implementation: the live pool owns
+    what is absorbed, in which order, and which claim row is written). Returns applied summary.
     `epoch`/`lease_seconds` (§4.4, Phase-4d): the plan-level claim minted for a new plan
     carries a real lease clock, so an agent that dies mid-plan no longer holds the plan
     forever — the claim goes inert at expiry and any agent may take it over."""
@@ -307,21 +307,15 @@ def execute(model: DpDriven, steps: list[Step], agent: str | None = None,
             applied.append({"action": st.action, "task_id": st.task_id,
                             "items": [[kind, nid]]})
         elif st.action == ACT_SETTLE:
-            # §4.5: settlement plan absorbs these items.
-            tid = model.add_task(name or "结算轮", now=now)
-            # Same claim shape as model.settlement_run (§4.5): sentinel, no lease clock,
-            # so the key set is uniform across every row of the claim table.
-            model.data["claims"].append({"kind": CLAIM_PLAN, "ref_id": tid,
-                                         "agent": SETTLEMENT_AGENT,
-                                         "claimed_at": now or _fallback_now(),
-                                         "last_seen_at": None, "lease_seconds": None})
-            for kind, nid in _placement_order(model, st.items):
-                if kind == KIND_TICKET:
-                    model.assign_ticket(nid, tid)
-                else:
-                    model.add_finding_membership(nid, tid)
+            # §4.5: one implementation only. `settlement_run` takes the LIVE pool — which at
+            # this point equals `st.items`, because suggest() emits at most one of new_plan/settle
+            # and every hotplug step has already been applied above (locked by
+            # test_dp_driven_wiring.SettleDelegation.test_settle_step_items_equal_live_pool).
+            # It also owns the topological order and the SETTLEMENT_AGENT sentinel row, and raises
+            # E_POOL_EMPTY rather than minting an empty settlement plan.
+            tid, absorbed = model.settlement_run(name=name, now=now)
             applied.append({"action": st.action, "task_id": tid,
-                            "items": [list(i) for i in st.items]})
+                            "items": [[it["kind"], it["id"]] for it in absorbed]})
     return applied
 
 
@@ -330,8 +324,3 @@ def _placement_order(model, items):
     plain = [{"kind": k, "id": i} for (k, i) in items]
     ordered = model._topo_order_pool(plain)
     return [(o["kind"], o["id"]) for o in ordered]
-
-
-def _fallback_now():
-    from datetime import datetime
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

@@ -13,7 +13,7 @@ model-elements: [entity.design]
 > 4 因子，`effort` 因无单位定义剔除）；§3.5 形态②③ 溯源（finding→新 finding / 新 task）随 Phase-3b PR
 > 落地（`finding/task.derived_from_finding` 单父列，镜像 Q1(a)）；§6 可视化 R1-R6 随 Phase-3c PR 落地
 > （stdlib Mermaid 文本后端，只读+确定，`dp_driven_viz.py`）；§4.4 **claim TTL / heartbeat 租约** 随
-> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随 Phase-4b PR #313 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）；§9 **metric 采集** 随 Phase-4c PR #314 落地（`dp_driven_metrics.py`：sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**）；**Phase-4d-fix** 修掉 code review 磁盘实测出的四条 wiring 缺口（过期租约不作用于 CLI 写路径、编排造的 claim 无租约、`viz --now` 对 `.mmd` 无效、step-2 marker 逃过收摊清理），落点见 §10 标 Phase-4d 的行。
+> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随 Phase-4b PR #313 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）；§9 **metric 采集** 随 Phase-4c PR #314 落地（`dp_driven_metrics.py`：sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**）；**Phase-4d-fix** 修掉 code review 磁盘实测出的四条 wiring 缺口（过期租约不作用于 CLI 写路径、编排造的 claim 无租约、`viz --now` 对 `.mmd` 无效、step-2 marker 逃过收摊清理），落点见 §10 标 Phase-4d 的行；**W5 收口** 随本 PR 落地（`settle` 步委派 `settlement_run`，§4.5 的实现唯一性见 §4.5/§10）。
 > 已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`
 > （§9 阈值与 optimizer 权重 / claim 租约默认值的实跑校准）维持原标记，待后续 Phase 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
@@ -264,6 +264,12 @@ model-elements: [entity.design]
 >
 > **claim 语义**：结算轮不再被 re-optimize，因此 **plan-level claim 退化**——任何 agent 可直接领取其中的 tickets
 > （只需 ticket-level claim），无需独占整个结算 plan 的编排权。
+>
+> **[定稿·已实现] 实现唯一性**：结算轮只有 `dp_driven_model.py:516` `settlement_run` 一处实现。`settlement run`
+> 命令与 optimizer 的 `settle` 步是它的两个入口（W5 收口，此前后者自带一份手写 claim/放置逻辑）；
+> `Step.items` 因此**只是预览**，权威是调用时的 live pool。二者可等价的前提——`suggest` 每轮至多产出
+> `new_plan` 与 `settle` 之一、且 hotplug 步先被应用——由 `test_dp_driven_wiring.py:288` 锁死。
+> 详见 §10。
 
 ### 4.6 终止与收摊
 
@@ -413,7 +419,7 @@ model-elements: [entity.design]
 > （5 个 metric 均有可重复测量方法）；**后半「首份实跑数据落地」仍未达成**——它来自真实 destination
 > 的推进，不是本 skill 的代码，故 Phase-4c 不声称本节收口。
 
-## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b + Phase-4c + Phase-4d-fix 本 PR）
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b + Phase-4c + Phase-4d-fix + W5 收口 本 PR）
 
 > **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
 > Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**；
@@ -428,7 +434,9 @@ model-elements: [entity.design]
 > 全部标 `calibrated: false`，本 PR 不声称 §9 exit condition 收口）；
 > Phase-4d-fix = **时钟接线 + 收摊残留修正**（code review 磁盘实测发现四条 wiring 缺口：§4.4 过期租约
 > 从不作用于 CLI 写路径、`orchestrate --execute` 造的 claim 无租约即永久悬挂、`viz --now` 对 `.mmd`
-> 无效致两视图自相矛盾、`.governed.json` marker 逃过收摊清理；逐条落点见下表标「Phase-4d」的三列）。
+> 无效致两视图自相矛盾、`.governed.json` marker 逃过收摊清理；逐条落点见下表标「Phase-4d」的三列）；
+> W5 收口 = **结算轮实现唯一化**（`optimize.execute` 的 `settle` 步改为委派 `settlement_run`：live pool、
+> 拓扑序、哨兵 claim 行只有一处实现；附带把 §9-5 的 `settlement` 事件补齐到 optimizer 入口）。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
@@ -458,12 +466,12 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 | §4.4 claim TTL（heartbeat/lease，expired 派生不存储） | `dp_driven_carrier.py:113` `last_seen_at/lease_seconds` 列 · `dp_driven_model.py:403,449,498,505,741` `claim/renew/claim_owner/list_claims/_require_claim_free_or_mine`（epoch 注入）· `_is_expired` 派生 · **Phase-4d**：CLI 把时钟接到 `claim/renew/claims list/task status/ticket status/orchestrate/viz` | `test_dp_driven_ttl.py`；`test_dp_driven_cli.py`（`ClaimTtlCli`，`--now` 端到端）；`test_dp_driven_wiring.py:58,108` |
 | §4.5 结算轮（收纳 pool + blocks 拓扑序 + plan-claim 退化） | `dp_driven_model.py:516,762` `settlement_run` + `_topo_order_pool` | `test_dp_driven_settlement.py:24,77`；`test_dp_driven_claim.py:174` |
 | §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:540,611,631` `closeout_export_summary / _verify_governed / _delete_carrier` · **Phase-4d**：step-2 marker 随 carrier 一并清除（`dp_driven_cli.py:cmd_closeout_delete`，顺序门通过后才可达） | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114`；`test_dp_driven_wiring.py:217`（CloseoutMarker：自定义 marker 路径 + 门失败时三者全存活） |
-| §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:826` `in_flight_plans` · **Phase-4d**：`execute:276` 造的 plan-claim 带真实租约（`epoch/lease_seconds` 透传），结算 step 的 claim 行与 `settlement_run` 同键形 | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90`；`test_dp_driven_wiring.py:108`（OrchestrateLease：可续租 + `--no-lease` + 键形一致） |
+| §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:826` `in_flight_plans` · **Phase-4d**：`execute:276` 造的 plan-claim 带真实租约（`epoch/lease_seconds` 透传） · **W5 收口**：`settle` 步**委派** `dp_driven_model.py:516` `settlement_run`——claim 行、拓扑序、live pool 权威只有一处实现（optimize 内已无 `data["claims"]` 写入、`_fallback_now` 已删） | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90`；`test_dp_driven_wiring.py:108`（OrchestrateLease：可续租 + `--no-lease`）；`test_dp_driven_wiring.py:288`（SettleDelegation：等价不变式 + 两入口状态逐字段相同 + live-pool 权威 + 空池不造空 plan + 源码级无第二实现） |
 | §3.5 形态②③ / §7 Q1 溯源列（finding→finding / finding→task） | `dp_driven_carrier.py:78,63` `derived_from_finding` 列 · `dp_driven_model.py:179,121` `add_finding/add_task(derived_from=)` · `_relations` `dp_driven_optimize.py:64` | `test_dp_driven_derivation.py`；`test_dp_driven_model.py`（validate E_REF_MISSING 复用） |
 | §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:109,219` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） · **Phase-4d**：二者收 `epoch`，`viz --now` 对 `.mmd` 同样生效（R5 过期边框不再只在 HTML 里正确） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14`；`test_dp_driven_wiring.py:176`（VizClock） |
 | §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:320,354` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:132,204` `render_html/render_html_to_file` · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） · **Phase-4d**：内嵌图体改用同一 `epoch`（`render(model, epoch=now)`），消除「边框 inflight / 卡片 expired」的文件内自相矛盾 | `test_dp_driven_viz_html.py:57,114,198`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · CLI `:213,224,229,234`）；`test_dp_driven_wiring.py:176` |
 
-| §9 metric 采集（5 指标可重复测量方法；sidecar 事件日志，日志≠状态） | `dp_driven_metrics.py:48,79,105,200,271` `EVENT_TYPES/append_event/read_events/report/render_report_md` · `:133` `reflow_check`（§9-4 双记账等价式） · CLI `metrics record/annotate/report/reflow-check`（`dp_driven_cli.py:cmd_metrics_*`；写命令在锁内自动落事件，preview 不落） | `test_dp_driven_metrics.py:53,111,178,224`（日志对状态惰性 `:84` · 分母诚实 `:125` · 审计可证伪 `:187` · 收摊清日志 `:322`） |
+| §9 metric 采集（5 指标可重复测量方法；sidecar 事件日志，日志≠状态） | `dp_driven_metrics.py:48,79,105,200,271` `EVENT_TYPES/append_event/read_events/report/render_report_md` · `:133` `reflow_check`（§9-4 双记账等价式） · CLI `metrics record/annotate/report/reflow-check`（`dp_driven_cli.py:cmd_metrics_*`；写命令在锁内自动落事件，preview 不落） · **W5/D6**：经 optimizer 触发的结算轮同样落 `settlement` 事件（§9-5 分子不再依赖入口） | `test_dp_driven_metrics.py:53,111,178,224`（日志对状态惰性 `:84` · 分母诚实 `:125` · 审计可证伪 `:187` · 收摊清日志 `:322`）；`test_dp_driven_wiring.py:288`（两条成对：settle ⇒ settlement:1，new_plan ⇒ settlement:0） |
 
 **仍未升级（校准类，待 Project B 实跑 / `[未决]`）**：§9 **阈值校准本身**——token / 轮次依 §9 明令不设先验（`threshold: null`），
 命中率 / 正确率 / 结算率保留 §9 初估目标并标 `calibrated: false`；optimizer 权重与 claim 租约默认值同理。
@@ -549,7 +557,7 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   argparse 原生 usage 退出码是 2，`main` 现只在 parse 阶段映射为 1，使实现与本文档既定的
   「1=usage / 2=业务码」契约一致。
 
-- **Phase-4d-fix（本 PR）**：一次 `zj-code-review` 之后的 wiring 修正，四条缺口全部来自磁盘实测而非推测——
+- **Phase-4d-fix（PR #316）**：一次 `zj-code-review` 之后的 wiring 修正，四条缺口全部来自磁盘实测而非推测——
   (1) `task status` / `ticket status` 从不传 `epoch` ⇒ §4.4「过期 claim 视为 free」在 CLI 真实写路径上
   不生效；(2) `orchestrate --execute` 经 `optimize.execute` 造 claim 时不带 `epoch` ⇒ `last_seen_at=None`
   ⇒ 永不过期，自动化主循环恰好复现了 §8 想解决的"崩溃后永久悬挂"（比 (1) 更严重）；(3) `viz --now` 被
@@ -557,10 +565,26 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   (4) step-2 的 `.governed.json` marker 逃过 `closeout delete` 的清理。
   修复形状：`render/render_to_file/execute` 增 `epoch` 形参（默认 `None` ⇒ Python API 仍不吃时钟，向后
   兼容由 `test_python_api_stays_clock_free` 锁死）、CLI 统一经 `_epoch` 注入、marker 清理放 CLI 层
-  （故 model 的 §10 锚点零漂移）、optimize 结算 claim 与 `settlement_run` 同键形。顺带把「model 从不读
+  （故 model 的 §10 锚点零漂移）、optimize 结算 claim 与 `settlement_run` 同键形（该项在 W5 收口 PR 里
+  被升级为直接委派，见下一条）。顺带把「model 从不读
   墙钟」这句**过度声称**在 SKILL.md + 3 份 reference + 2 处代码 docstring 收窄为「过期判定从不读时钟」
   （事实：`dp_driven_model.py:74` `_now()` 有 12 处调用写时间戳文本），由 `DocScope` 防回退。
   `test_dp_driven_wiring.py` 19 测试（累计 231），其中每组"过期放行"都配一条"未过期仍挡"防伪阳。
+
+- **W5 收口（本 PR）**：把结算轮从两处实现收成一处。`optimize.execute` 的 `settle` 步原先自己
+  `add_task` + 手写 claim dict + 自排放置顺序，是 `settlement_run` 的复制品；现改为直接委派，
+  `Step.items` 降级为**预览**、权威归调用时的 live pool。
+  **性质澄清（避免误读为行为变更）**：`suggest` 每轮至多产出 `new_plan` 与 `settle` 之一，且 hotplug
+  步先被应用，所以走到 settle 时 `pool() == st.items`——委派与旧路径吸收的集合、顺序、claim 行完全一致，
+  等价前提由 `test_settle_step_items_equal_live_pool` 锁死。真实增益三条：live-pool 权威（手搓/过期
+  Step 不再能左右结果）、空池抛 `E_POOL_EMPTY` 而非造空 plan（旧路径会造）、拓扑序与哨兵行只剩一处定义。
+  同时删除因此变为死码的 `_fallback_now()`（第二套墙钟 helper，正是 #316 教训的那类东西）与
+  `SETTLEMENT_AGENT` 冗余 import；源码级锁 `test_optimize_has_no_second_settlement_implementation`
+  断言 optimize 内不再出现 `data["claims"]`。
+  **D6（§9-5 口径）**：`orchestrate --execute` 走 settle 时补记 `settlement` 事件，结算轮触发率不再
+  依赖入口（`settle ⇒ settlement:1` / `new_plan ⇒ settlement:0` 成对锁）。
+  `test_dp_driven_wiring.py` +9（累计 240）。锚点：本 PR 只改 `optimize.py:276` 之后的行与 import 块
+  同行内容，`suggest:202`/`execute:276`/model/carrier 全部被引锚**零漂移**（151-anchor 扫描复验）。
 
 **刻意留待实跑**（见 §10"仍未升级"）：§9 阈值、optimizer 权重与 claim 租约默认值的**实跑校准**
 ——数据只能来自 Project B 首份真实 destination，不属本 skill 的代码范围。各 Phase 均不假装做了后续项。

@@ -46,6 +46,7 @@ own evidence **inside the lock, after `m.save()`**:
 |---|---|---|
 | `orchestrate --execute` | `orchestrate` | `execute()`'s `applied` steps (which plans were created/extended) |
 | `settlement run` | `settlement` | `{"items": n}` |
+| `orchestrate --execute` with a settle step | `settlement` (extra line, W5) | `{"items": n}` |
 | `task status --set 已完成\|已放弃` | `plan_terminal` | `{"status": …}` |
 | `ticket assign` | `reassign` | `{"task_id": …}` |
 | `finding membership add\|remove` | `membership` | `{"op": …, "task_id": …}` |

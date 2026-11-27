@@ -337,6 +337,13 @@ def cmd_orchestrate(args):
         # plans the optimizer created/extended (the dry-run branch above logs nothing).
         dp_driven_metrics.append_event(args.db, "orchestrate", agent=args.agent,
                                        payload=applied)
+        # W5: a settlement round that arrives through the optimizer is the SAME fact the
+        # `settlement run` command logs — §9-5's numerator must not depend on entry point.
+        for a in applied:
+            if a["action"] == "settle":
+                dp_driven_metrics.append_event(args.db, "settlement", kind="plan",
+                                               ref_id=a["task_id"],
+                                               payload={"items": len(a["items"])})
     _emit({"executed": True, "applied": applied})
 
 
