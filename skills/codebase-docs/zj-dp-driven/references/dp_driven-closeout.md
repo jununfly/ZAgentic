@@ -80,6 +80,12 @@ Only the process artifacts, in the same directory as the carrier:
 - `dp_driven.events.jsonl` (the §9 observation log — CLI-layer removal in
   `cmd_closeout_delete`, reported as `sidecars_removed`; locked by
   `test_dp_driven_metrics.py::MetricsCloseout.test_closeout_delete_removes_event_log`)
+- `<stem>.governed.json` (the step-2 marker). Also CLI-layer removal, same `sidecars_removed`
+  list: once the carrier is gone the authority has moved into the governed `.md` corpus, so the
+  marker is process residue by §1「执行完即删」rather than durable evidence. A **custom** `--marker`
+  path is the one honored. Removal is reached only *after* the sequence gate passes, so a failed
+  gate keeps the marker (locked by
+  `test_dp_driven_wiring.py::CloseoutMarker`).
 
 It **never** touches the `.md` corpus — those are the durable output (§5.3). Enforced by
 `test_dp_driven_closeout.py:CloseoutDelete.test_md_corpus_survives_delete` and by the

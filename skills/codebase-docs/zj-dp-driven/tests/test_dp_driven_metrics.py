@@ -338,7 +338,10 @@ class MetricsCloseout(unittest.TestCase):
         self.assertFalse(os.path.exists(evp))          # log removed with the carrier
         self.assertTrue(os.path.exists(out))           # durable corpus survives
         payload = json.loads(p.stdout)
-        self.assertEqual(payload["sidecars_removed"], [evp])
+        # Phase-4d: the step-2 marker is process fuel too, so it dies in the same step.
+        self.assertEqual(payload["sidecars_removed"],
+                         [evp, os.path.join(d, "dp_driven.governed.json")])
+        self.assertFalse(os.path.exists(os.path.join(d, "dp_driven.governed.json")))
 
     def test_closeout_delete_blocked_without_marker(self):
         d = tempfile.mkdtemp()

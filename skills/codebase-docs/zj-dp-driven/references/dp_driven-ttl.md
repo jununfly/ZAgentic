@@ -27,13 +27,18 @@ silent and its claim lapses. So:
    `test_dp_driven_ttl.py::test_expired_still_derived_not_stored` and
    `test_list_claims_expired_is_computed_not_stored`.
 
-2. **The model never reads the wall clock.** Every TTL-aware method takes an explicit
-   `epoch: int` (seconds). With `epoch is None`, expiry is *not evaluated* — this preserves the
-   older "explicit release only" behavior for callers (and the whole pre-4a test suite) that
-   don't drive a clock, and keeps model behavior deterministic/replayable. Only the CLI calls
-   `int(time.time())`, and `--now EPOCH` overrides it for tests. Locked by
+2. **Lease/expiry evaluation never reads the wall clock.** Every TTL-aware method takes an
+   explicit `epoch: int` (seconds). With `epoch is None`, expiry is *not evaluated* — this preserves
+   the older "explicit release only" behavior for callers (and the whole pre-4a test suite) that
+   don't drive a clock, and keeps model behavior deterministic/replayable. Scope: the model *does*
+   call `_now()` to write `created_at`/`completed_at`/`claimed_at` **text**, but no decision derives
+   from it. Only the CLI calls `int(time.time())` (`_epoch`), and `--now EPOCH` overrides it for
+   tests. The CLI injects that clock into every lease-aware path — `claim`, `renew`, `claims list`,
+   `task status`, `ticket status`, `orchestrate --execute`, `viz` — so expiry is real on the write
+   path, not only in the library. Locked by
    `test_dp_driven_ttl.py::test_epoch_none_never_evaluates_expiry` and
-   `test_no_wall_clock_determinism`.
+   `test_no_wall_clock_determinism`; the CLI wiring by
+   `test_dp_driven_wiring.py::StatusGate` / `OrchestrateLease` / `VizClock`.
 
 ## Lease values
 

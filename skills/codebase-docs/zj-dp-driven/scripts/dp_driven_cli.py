@@ -68,7 +68,7 @@ def cmd_task_add(args):
 def cmd_task_status(args):
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
-        m.set_plan_status(args.task_id, args.set, summary=args.summary, agent=args.agent)
+        m.set_plan_status(args.task_id, args.set, summary=args.summary, agent=args.agent, epoch=_epoch(args))
         m.save()
         if args.set in TERMINAL_STATUSES:      # §9 metric-3 evidence: plan reached terminal
             dp_driven_metrics.append_event(args.db, "plan_terminal", kind="plan",
@@ -157,7 +157,7 @@ def cmd_ticket_assign(args):
 def cmd_ticket_status(args):
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
-        m.set_ticket_status(args.ticket_id, args.set, agent=args.agent)
+        m.set_ticket_status(args.ticket_id, args.set, agent=args.agent, epoch=_epoch(args))
         m.save()
     _emit({"ok": True, "ticket_id": args.ticket_id, "status": args.set})
 
@@ -216,7 +216,9 @@ def cmd_complete_check(args):
 
 def _epoch(args):
     """§4.4 lease clock: use --now EPOCH when given (tests/replay), else wall clock.
-    The *model* never reads wall clock — only the CLI does (§4.4 / determinism)."""
+    Lease/expiry evaluation never reads the wall clock inside the *model* — only the CLI
+    supplies the clock (§4.4 / determinism). The model's own `_now()` writes timestamp TEXT
+    (created_at/completed_at/claimed_at) and is never consulted for a decision."""
     return args.now if getattr(args, "now", None) is not None else int(time.time())
 
 
@@ -289,6 +291,13 @@ def cmd_closeout_delete(args):
         if os.path.exists(events):
             os.remove(events)
             removed.append(events)
+        # The step-2 marker is process-zone bookkeeping too: once governance finished and the
+        # carrier is gone, its authority has moved into the durable md corpus (§1 执行完即删).
+        # Reached only after the sequence gate passed, so a failed gate keeps everything intact.
+        marker = args.marker or m._default_marker_path()
+        if os.path.exists(marker):
+            os.remove(marker)
+            removed.append(marker)
     _emit({"ok": True, "deleted": deleted, "sidecars_removed": removed})
 
 
@@ -320,7 +329,9 @@ def cmd_orchestrate(args):
     with dp_driven_lock.acquire(args.db):
         m = _open_model(args.db)
         steps = dp_driven_optimize.suggest(m, threshold=args.threshold, max_size=args.max_size)
-        applied = dp_driven_optimize.execute(m, steps, agent=args.agent, name=args.name)
+        applied = dp_driven_optimize.execute(m, steps, agent=args.agent, name=args.name,
+                                             epoch=_epoch(args),
+                                             lease_seconds=None if args.no_lease else args.lease_seconds)
         m.save()
         # §9 metric-2/-3 evidence: one round per executed orchestration, carrying which
         # plans the optimizer created/extended (the dry-run branch above logs nothing).
@@ -355,10 +366,10 @@ def cmd_viz(args):
         return
     import dp_driven_viz
     if args.out:
-        path = dp_driven_viz.render_to_file(m, args.out)
+        path = dp_driven_viz.render_to_file(m, args.out, epoch=now)
         _emit({"ok": True, "written": path, "format": "mermaid"})
     else:
-        sys.stdout.write(dp_driven_viz.render(m))  # stdout = the Human's live view
+        sys.stdout.write(dp_driven_viz.render(m, epoch=now))  # stdout = the Human's live view
 
 
 # ── metrics (§9) ─────────────────────────────────────────
@@ -423,6 +434,7 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--derived-from-finding", type=int); a.set_defaults(fn=cmd_task_add)
     s = tsub.add_parser("status"); add_db(s); s.add_argument("task_id", type=int)
     s.add_argument("--set", required=True); s.add_argument("--summary"); s.add_argument("--agent")
+    s.add_argument("--now", type=int, help="epoch seconds (default: wall clock)")   # §4.4 lease clock
     s.set_defaults(fn=cmd_task_status)
     sm = tsub.add_parser("summary"); add_db(sm); sm.add_argument("task_id", type=int)
     sm.add_argument("--text", required=True); sm.set_defaults(fn=cmd_task_summary)
@@ -455,6 +467,7 @@ def build_parser() -> argparse.ArgumentParser:
     asg.set_defaults(fn=cmd_ticket_assign)
     st = ksub.add_parser("status"); add_db(st); st.add_argument("ticket_id", type=int)
     st.add_argument("--set", required=True); st.add_argument("--agent")
+    st.add_argument("--now", type=int, help="epoch seconds (default: wall clock)")   # §4.4 lease clock
     st.set_defaults(fn=cmd_ticket_status)
 
     sp = sub.add_parser("blocks"); bsub = sp.add_subparsers(dest="sub", required=True)
@@ -501,6 +514,9 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--agent"); sp.add_argument("--name"); sp.add_argument("--execute", action="store_true")
     sp.add_argument("--threshold", type=float, default=dp_driven_optimize.COHESION_THRESHOLD_DEFAULT)
     sp.add_argument("--max-size", type=int, default=dp_driven_optimize.MAX_PLAN_SIZE_DEFAULT)
+    sp.add_argument("--now", type=int, help="epoch seconds (default: wall clock)")   # §4.4 lease clock
+    sp.add_argument("--lease-seconds", type=int, default=DEFAULT_CLAIM_LEASE_SECONDS)
+    sp.add_argument("--no-lease", action="store_true")
     sp.set_defaults(fn=cmd_orchestrate)
 
     sp = sub.add_parser("viz"); add_db(sp)        # §6 read-only render

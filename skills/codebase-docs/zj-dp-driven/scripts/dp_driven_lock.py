@@ -5,10 +5,11 @@ Design:
                 sqlite 的串行化写入天然确保..."
   §8 [未决]  "claim 超时释放 / TTL 机制"
 
-Phase 2 deliberately does NOT implement claim TTL (§8 `[未决]`). Instead, this module
-provides a **process-level flock** wrapped around every CLI write. That satisfies the
-single-writer invariant (§4.4) for the "先自用（单人单 agent）" rollout (§8 渐进策略)
-without pretending to a distributed lease we have not yet needed.
+Phase 2 introduced this **process-level flock** wrapped around every CLI write, satisfying the
+single-writer invariant (§4.4) for the "先自用（单人单 agent）" rollout (§8 渐进策略). It is
+*not* the lease: claim TTL/heartbeat landed later in Phase-4a (§4.4) and lives in
+`dp_driven_model.claim/renew/_is_expired` — the flock serializes writers, the lease revives a
+plan whose holder died.
 
 Notes
 -----

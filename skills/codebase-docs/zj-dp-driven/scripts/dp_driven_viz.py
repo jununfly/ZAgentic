@@ -106,8 +106,10 @@ def _multi_membership(model: DpDriven) -> set[int]:
     return {fid for fid, plans in by_f.items() if len(plans) > 1}
 
 
-def render(model: DpDriven) -> str:
-    """Return Mermaid `flowchart TD` text for the current DP state graph (§6). Pure read."""
+def render(model: DpDriven, *, epoch: int | None = None) -> str:
+    """Return Mermaid `flowchart TD` text for the current DP state graph (§6). Pure read.
+    `epoch` (§4.4): when given, an expired lease renders its plan as paused; `None` ⇒ the
+    Python API stays clock-free and expiry is not evaluated (CLI injects the clock)."""
     lines = ["flowchart TD", *_CLASSDEFS, ""]
     lines.append(f"  %% destination: {_clean(model.data['meta'].get('destination', ''))}")
 
@@ -134,7 +136,7 @@ def render(model: DpDriven) -> str:
             label = f'{_short_id(kind, nid)} {disp}{suffix}'
             mid = _node_mid(kind, nid, tid)
             lines.append(f'    {mid}["{label}"]:::{cls}')
-        pcls = _plan_claim_class(model, tid)
+        pcls = _plan_claim_class(model, tid, epoch)
         if pcls:
             lines.append(f"    class T{tid} {pcls}")
         lines.append("  end")
@@ -214,10 +216,10 @@ def _plan_of(model: DpDriven, kind: str, nid: int) -> int | None:
     return min(members) if members else None
 
 
-def render_to_file(model: DpDriven, out_path: str) -> str:
+def render_to_file(model: DpDriven, out_path: str, *, epoch: int | None = None) -> str:
     """Write the Mermaid text to out_path (sibling of the carrier, process-zone; §5.4).
     Writes only to the given path — never elsewhere. Returns the path."""
-    text = render(model)
+    text = render(model, epoch=epoch)
     with open(out_path, "w", encoding="utf-8") as fh:
         fh.write(text)
     return out_path

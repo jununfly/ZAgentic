@@ -78,17 +78,25 @@ defaults as optimal.
 # read-only preview (no write lock, no save)
 $DP suggest     DB [--threshold F] [--max-size N]
 # preview + optionally apply (apply takes the single-writer lock, §4.4)
-$DP orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]
+$DP orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N] \
+                   [--now EPOCH] [--lease-seconds N | --no-lease]
 ```
 
 `suggest` and `orchestrate` (without `--execute`) are pure reads. `orchestrate --execute`
 applies the steps — `new_plan` creates a task and places items; `hotplug` uses the §4.4
-lock-free `assign_ticket` / `add_finding_membership`; `settle` creates a `__settlement__`
+lock-free `assign_ticket` / `add_finding_membership`; `settle` creates a `SETTLEMENT_AGENT`
 sentinel plan (§4.5). Empty pool on either → `E_POOL_EMPTY` (exit 2), reusing the settlement
 round's code rather than minting a new one.
 
-## Boundaries (Phase 3a does NOT do)
+**Lease wiring (Phase-4d-fix)**: a `new_plan` created by `execute` claims the plan for `--agent`
+with a *real* lease — `epoch` (default: wall clock, `--now` to replay) stamps `last_seen_at` and
+`--lease-seconds`/`--no-lease` behave exactly like `claim`. Without this, the automation loop's own
+plans were the one case §8's "dead vs thinking" problem could not recover from. The `settle` step's
+sentinel row keeps the same column shape as `settlement_run` (both lease fields present, `NULL`).
 
-- No learned / adaptive weights; no multi-scorer blending.
-- No claim TTL, no §6 rendering, no §7 finding→new-finding/task provenance edges, no §9
-  metric collection. (See the design page §10 "仍未升级".)
+## Boundaries (what this module does NOT do)
+
+- No learned / adaptive weights; no multi-scorer blending. Weights are starter values pending §9 data.
+- Module-local only: TTL, §6 rendering, §7 provenance edges and §9 collection all landed in
+  other modules (`dp_driven_model.py` / `dp_driven_viz*.py` / carrier columns /
+  `dp_driven_metrics.py`); see design page §10 for their anchors, not this file.

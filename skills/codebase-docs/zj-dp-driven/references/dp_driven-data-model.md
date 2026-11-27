@@ -177,8 +177,10 @@ existence, duplicate rows, and lease sanity (`E_CLAIM_REF_MISSING` / `E_CLAIM_KI
 `_is_expired(row, epoch)` ⇔ `epoch is not None ∧ lease_seconds is not None ∧
 last_seen_at is not None ∧ epoch - last_seen_at > lease_seconds`. There is no `expired`
 column. `claim_owner`/`list_claims`/the claim gate evaluate it only when the caller passes
-an `epoch`; `epoch is None` ⇒ not evaluated (backward-compatible explicit-release). The
-model never reads the wall clock — the CLI injects `epoch` (`--now` or `int(time.time())`).
+an `epoch`; `epoch is None` ⇒ not evaluated (backward-compatible explicit-release). Lease/expiry
+evaluation never reads the wall clock — the CLI injects `epoch` (`--now` or `int(time.time())`)
+into `claim/renew/claims list/task status/ticket status/orchestrate/viz`; the model's own `_now()`
+writes timestamp *text* only.
 An expired claim is inert: another agent may take it over (`claim` replaces it), and a
 live claim holder keeps ownership by calling `renew` (heartbeat).
 

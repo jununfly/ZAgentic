@@ -72,8 +72,9 @@ renderer without them still shows correct topology.
 
 ## Guarantees (test-enforced)
 
-- **deterministic** — same `model.data` ⇒ byte-equal text (everything iterated in sorted
-  order; labels use `created_at` ordering only inside status, no wall clock).
+- **deterministic** — same `(model.data, epoch)` ⇒ byte-equal text (everything iterated in sorted
+  order; labels use `created_at` ordering only inside status; the module itself reads no clock —
+  the `epoch` for §4.4 expiry comes from the caller, `None` in the Python API).
 - **pure read** — never mutates/saves the model; writes only the single `--out` path (§5.4).
 - **sanitized labels** — `"`/`[`/`]`/`{`/`}`/backtick are stripped from names so the
   generated text is always valid Mermaid.
@@ -94,8 +95,9 @@ model (read-only)
 ```
 
 - **No second layout truth**: the viewer never re-derives the graph; it embeds `render()`
-  verbatim, so the `.mmd` and the `.html` can never disagree (locked by
-  `test_html_mermaid_body_matches_render`).
+  verbatim **with the same `epoch` it passes to the IR**, so the `.mmd` and the `.html` can
+  never disagree (locked by `test_html_mermaid_body_matches_render` and, for expiry, by
+  `test_dp_driven_wiring.py::VizClock.test_mermaid_and_html_agree_on_expired_plan`).
 - **id parity is load-bearing**: `build_node_ir()` walks the *same* traversal and reuses
   the same mid helpers as `render()`; `test_ir_ids_match_mermaid_ids` fails if anyone
   adds a node to one side only.
@@ -104,7 +106,9 @@ model (read-only)
   context_md / memory_md / memberships / overlap / derived_from_finding / parent_id /
   ref / claim_agent (+claim_expired) / created_at / completed_at / summary(plan)`.
 - **Claim expiry (§4.4)**: `--now EPOCH` (CLI default = wall clock; the Python API stays
-  clock-free) decides whether a plan frame is `plan_inflight` or `plan_paused`. An
+  clock-free, so `render(m)` without `epoch` never judges a lease) decides whether a plan frame
+  is `plan_inflight` or `plan_paused` — in **both** formats, since Phase-4d feeds `epoch` into
+  `render`/`render_to_file` as well as the IR. An
   **expired** lease renders paused **but the card keeps the stale agent +
   `claim_expired: true`** — who dropped it stays visible (`test_claim_expired_surfaced_not_hidden`).
 - **Assets modes**: `cdn` (default) emits `import mermaid from

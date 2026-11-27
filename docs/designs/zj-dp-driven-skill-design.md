@@ -13,7 +13,7 @@ model-elements: [entity.design]
 > 4 因子，`effort` 因无单位定义剔除）；§3.5 形态②③ 溯源（finding→新 finding / 新 task）随 Phase-3b PR
 > 落地（`finding/task.derived_from_finding` 单父列，镜像 Q1(a)）；§6 可视化 R1-R6 随 Phase-3c PR 落地
 > （stdlib Mermaid 文本后端，只读+确定，`dp_driven_viz.py`）；§4.4 **claim TTL / heartbeat 租约** 随
-> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随 Phase-4b PR #313 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）；§9 **metric 采集** 随本 Phase-4c PR 落地（`dp_driven_metrics.py`：sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**）。
+> Phase-4a PR 落地（`last_seen_at/lease_seconds` 列，`expired` 读时派生、绝不存储，§8 "heartbeat? 固定 TTL?" → heartbeat 租约）；§6 **R7 交互式 HTML 卡片** 随 Phase-4b PR #313 落地（`dp_driven_viz_html.py` 单文件 viewer，内嵌同一 `render()` Mermaid 文本 + node IR 快照，点击→右区卡片，只读零回写）；§9 **metric 采集** 随 Phase-4c PR #314 落地（`dp_driven_metrics.py`：sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**）；**Phase-4d-fix** 修掉 code review 磁盘实测出的四条 wiring 缺口（过期租约不作用于 CLI 写路径、编排造的 claim 无租约、`viz --now` 对 `.mmd` 无效、step-2 marker 逃过收摊清理），落点见 §10 标 Phase-4d 的行。
 > 已实现的 `[目标]` 项升级为 `[定稿·已实现]` 并挂 `file:line` 锚点（汇总见 §10）。未落地的 `[目标]` / `[未决]`
 > （§9 阈值与 optimizer 权重 / claim 租约默认值的实跑校准）维持原标记，待后续 Phase 回灌。**贯穿构建期的纪律**：dp-driven 按本页定位与功能模型**独立实现**，
 > 不引用 `zj-wayfinder` / `zj-roadmap-driven` 的实现细节；旧 pair 只作 Human 卡壳时翻检的**参考资料**，
@@ -245,8 +245,8 @@ model-elements: [entity.design]
 
 | 锁层级 | 粒度 | 作用 | 释放条件 |
 |---|---|---|---|
-| **plan-level claim** | 一个 agent 持有一个 plan | 防两个 agent 同时对同一个 plan 做**重编排**（re-optimize 其结构） | plan 终态 / 主动释放（优先级抢占时） / agent 会话结束 / **超时释放**（`[定稿·已实现]` Phase-4a：heartbeat 租约，`expired` 读时派生、`epoch` 由调用方注入，见 §10） |
-| **ticket-level claim** | 一个 agent 持有一张 ticket | 防两个 agent 重复执行同一张 ticket | ticket 到终态 / agent 释放 / **超时释放**（`[定稿·已实现]` Phase-4a，同上） |
+| **plan-level claim** | 一个 agent 持有一个 plan | 防两个 agent 同时对同一个 plan 做**重编排**（re-optimize 其结构） | plan 终态 / 主动释放（优先级抢占时） / agent 会话结束 / **超时释放**（`[定稿·已实现]` Phase-4a heartbeat 租约 + Phase-4d-fix 把时钟接到 `task status` / `orchestrate --execute` 两条写路径，`expired` 读时派生、`epoch` 由调用方注入，见 §10） |
+| **ticket-level claim** | 一个 agent 持有一张 ticket | 防两个 agent 重复执行同一张 ticket | ticket 到终态 / agent 释放 / **超时释放**（`[定稿·已实现]` Phase-4a，Phase-4d-fix 起 `ticket status` 亦按注入时钟判过期，同上） |
 
 **不受 claim 约束的操作（lock-free）**：
 - **finding 处置**：幂等，任何 agent 可直接处置（摘除 + 标态 + 分派下游），即使被触及的 plan 被另一 agent claim——因为 finding 是多归属全局节点，它的处置不是"修改某个 plan 的编排结构"，而是"更新层二图的一个节点 + 从其所有归属 plan 中摘除"。
@@ -324,8 +324,9 @@ model-elements: [entity.design]
 >   R1-R6 契约 + classDef 见 `dp_driven-viz.md`；纯只读、确定性（`test_dp_driven_viz.py`）。
 > - **[定稿·已实现 R7]** 右区"点击→卡片"随 Phase-4b 落地：**单文件 HTML viewer**
 >   （`dp_driven_viz_html.py` `render_html:132`，CLI `viz DB --format html [--out] [--assets cdn|inline] [--now]`）。
->   图体 = 直接内嵌 `dp_driven_viz.py` `render:109` 的 Mermaid 文本（无第二套布局真相），节点点击数据 =
->   `build_node_ir:318` 的生成时快照（key 与 Mermaid 节点 id 逐一对齐，锁测试 `test_dp_driven_viz_html.py:58`）。
+>   图体 = 直接内嵌 `dp_driven_viz.py` `render:109` 的 Mermaid 文本（无第二套布局真相；Phase-4d 起
+>   图体与 IR 共用同一 `epoch`，边框与卡片不会再对过期 claim 各说各话），节点点击数据 =
+>   `build_node_ir:320` 的生成时快照（key 与 Mermaid 节点 id 逐一对齐，锁测试 `test_dp_driven_viz_html.py:58`）。
 >   卡片含 scoped context/memory 引用（`md_path/context_md/memory_md`）、物化/归属/父子关系、时间戳、
 >   claim（过期 claim 边框呈 paused、卡片仍显示原 agent+expired，§4.4）；blocked 一律取派生态（§3.2）。
 >   **零回写**：IR/HTML 是视图快照，从不落库（`test_dp_driven_viz_html.py:121`）。Mermaid JS 默认走官方 CDN，
@@ -356,9 +357,14 @@ model-elements: [entity.design]
 >   内聚命中率 ≥ 80% 的校准基线待实跑数据，Phase 3c+ 再议。
 > - ~~**claim 超时释放 / TTL 机制**（§4.4）：agent 异常退出后如何判定"已死"而非"在思考"——heartbeat？固定 TTL？~~
 >   → **Phase-4a 已实现（heartbeat 租约）**：`claim` 存 `last_seen_at`(epoch) + `lease_seconds`；
->   `expired` **读时派生、绝不存储**（沿用 §3.1/§3.2 反漂移纪律）；**model 从不读时钟**，`epoch` 由
+>   `expired` **读时派生、绝不存储**（沿用 §3.1/§3.2 反漂移纪律）；**过期判定从不读时钟**（作用域见
+>   §10：model 的 `_now()` 只写时间戳文本，不参与判定），`epoch` 由
 >   调用方（CLI 取 `time.time()`，测试传 `--now`）注入；`renew` 心跳续租区分"在思考 vs 已死"，过期
 >   claim 视为 free 可被他人接管。`lease_seconds=None`(`--no-lease`) ⇒ 永不过期。见 §10 + `test_dp_driven_ttl.py`。
+>   **Phase-4d-fix 补上接线**：时钟原先只到 `claim/renew/claims list`，两个 `status` 写命令与
+>   `orchestrate --execute` 造的 claim 都没吃到它——过期租约在真实写路径上不生效、编排造的 plan
+>   干脆永久悬挂（正是本节"已死 vs 在思考"要解决的问题）。现 `task status`/`ticket status`/
+>   `orchestrate`/`viz` 统一走 `_epoch`，`test_dp_driven_wiring.py:58,108` 成对锁死（过期放行 + 未过期仍挡）。
 >   默认租约 300s 仍是起手值（同 optimizer 权重，待 §9 实跑校准）。
 > - **sqlite 损坏 / 进程崩溃的恢复路径**：WAL 是否足够？是否需要 backup-before-mutate？实现期验证。
 > - **首次上线的渐进策略**：先自用（单人单 agent）→ 再推广（多 agent 并发场景）；渐进期间哪些功能可裁剪。
@@ -407,17 +413,22 @@ model-elements: [entity.design]
 > （5 个 metric 均有可重复测量方法）；**后半「首份实跑数据落地」仍未达成**——它来自真实 destination
 > 的推进，不是本 skill 的代码，故 Phase-4c 不声称本节收口。
 
-## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b + Phase-4c 本 PR）
+## 10. 实现回灌（Phase-1 PR #306 + Phase-2 + Phase-3a + Phase-3b + Phase-3c + Phase-4a + Phase-4b + Phase-4c + Phase-4d-fix 本 PR）
 
 > **[定稿·已实现]** Phase-1 = **§2 载体 schema + §3 全部 `[定稿]` 不变式 + §5.1 完成判据 + §7 Q1(a)**；
 > Phase-2 = **§4.0 init / §4.4 两层 claim（含 claim 门与 lock-free 名单）/ §4.4 单写者 / §4.5 结算轮 / §5.2 两段式收摊**；
 > Phase-3a = **§3.6 F3 编排 optimizer + §4.2 内聚算分器**（种子-扩展贪心，4 因子，`effort` 剔除）；
 > Phase-3b = **§3.5 形态②③ 溯源列**（`finding/task.derived_from_finding`，镜像 Q1(a) 单父列）；
 > Phase-3c = **§6 可视化 R1-R6**（stdlib Mermaid 文本后端，只读+确定）；
-> Phase-4a = **§4.4 claim TTL / heartbeat 租约**（`expired` 读时派生不存储、model 无时钟、epoch 注入）；
+> Phase-4a = **§4.4 claim TTL / heartbeat 租约**（`expired` 读时派生不存储；**过期判定**不读时钟，
+> `epoch` 由调用方注入——Phase-4d-fix 复核：model 的 `_now()` 仍写 `created_at/completed_at/claimed_at`
+> 文本戳，但从不参与任何判定）；
 > Phase-4b = **§6 R7 交互式 HTML 卡片**（单文件 viewer：内嵌同一 `render()` 图体 + `build_node_ir()` 快照，点击→卡片，零回写）；
 > Phase-4c = **§9 metric 测量方法**（sidecar 事件日志 + 5 指标算式 + 双记账审计；**阈值仍 `[未决]`**，
-> 全部标 `calibrated: false`，本 PR 不声称 §9 exit condition 收口）。
+> 全部标 `calibrated: false`，本 PR 不声称 §9 exit condition 收口）；
+> Phase-4d-fix = **时钟接线 + 收摊残留修正**（code review 磁盘实测发现四条 wiring 缺口：§4.4 过期租约
+> 从不作用于 CLI 写路径、`orchestrate --execute` 造的 claim 无租约即永久悬挂、`viz --now` 对 `.mmd`
+> 无效致两视图自相矛盾、`.governed.json` marker 逃过收摊清理；逐条落点见下表标「Phase-4d」的三列）。
 > 锚点格式 `basename.py:line`，源在 `skills/codebase-docs/zj-dp-driven/`；每条均有可失败锁测试。
 > 本节末"仍未升级"清单里的项保持原 `[目标]` / `[未决]` 标记，未对齐前不得视作已实现。
 
@@ -442,19 +453,19 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 | §7 Q1(a) `derived_from_finding` 物化列 | `dp_driven_carrier.py:92` | `test_dp_driven_carrier.py:66` |
 | §4.0 init（destination → carrier） | `dp_driven_cli.py:cmd_init` · `dp_driven_model.py:94` | `test_dp_driven_cli.py:39` |
 | §4.4 两层 claim（claim 表 + API） | `dp_driven_carrier.py:113` · `dp_driven_model.py:403,479,505` `claim/release/list_claims` | `test_dp_driven_claim.py:23`；`test_dp_driven_carrier.py:111` |
-| §4.4 claim 门（status 改写受控）+ lock-free（dispose / 热插 / blocks 不受门） | `dp_driven_model.py:741` `_require_claim_free_or_mine` | `test_dp_driven_claim.py:92,116,137` |
+| §4.4 claim 门（status 改写受控）+ lock-free（dispose / 热插 / blocks 不受门） | `dp_driven_model.py:741` `_require_claim_free_or_mine` · **Phase-4d**：门收到的是调用方时钟 `dp_driven_cli.py:cmd_task_status/cmd_ticket_status`（经 `_epoch`） | `test_dp_driven_claim.py:92,116,137`；`test_dp_driven_wiring.py:58`（StatusGate：过期放行 + 未过期仍挡，成对防伪） |
 | §4.4 carrier 单写者原子性 | `dp_driven_lock.py:acquire` | `test_dp_driven_lock.py:45`（跨进程互斥） |
-| §4.4 claim TTL（heartbeat/lease，expired 派生不存储） | `dp_driven_carrier.py:113` `last_seen_at/lease_seconds` 列 · `dp_driven_model.py:403,449,498,505,741` `claim/renew/claim_owner/list_claims/_require_claim_free_or_mine`（epoch 注入）· `_is_expired` 派生 | `test_dp_driven_ttl.py`；`test_dp_driven_cli.py`（`ClaimTtlCli`，`--now` 端到端） |
+| §4.4 claim TTL（heartbeat/lease，expired 派生不存储） | `dp_driven_carrier.py:113` `last_seen_at/lease_seconds` 列 · `dp_driven_model.py:403,449,498,505,741` `claim/renew/claim_owner/list_claims/_require_claim_free_or_mine`（epoch 注入）· `_is_expired` 派生 · **Phase-4d**：CLI 把时钟接到 `claim/renew/claims list/task status/ticket status/orchestrate/viz` | `test_dp_driven_ttl.py`；`test_dp_driven_cli.py`（`ClaimTtlCli`，`--now` 端到端）；`test_dp_driven_wiring.py:58,108` |
 | §4.5 结算轮（收纳 pool + blocks 拓扑序 + plan-claim 退化） | `dp_driven_model.py:516,762` `settlement_run` + `_topo_order_pool` | `test_dp_driven_settlement.py:24,77`；`test_dp_driven_claim.py:174` |
-| §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:540,611,631` `closeout_export_summary / _verify_governed / _delete_carrier` | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114` |
-| §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:826` `in_flight_plans` | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90` |
+| §5.2 两段式收摊（快照→治理门→删） | `dp_driven_model.py:540,611,631` `closeout_export_summary / _verify_governed / _delete_carrier` · **Phase-4d**：step-2 marker 随 carrier 一并清除（`dp_driven_cli.py:cmd_closeout_delete`，顺序门通过后才可达） | `test_dp_driven_closeout.py:23,78,129`；`test_dp_driven_cli.py:114`；`test_dp_driven_wiring.py:217`（CloseoutMarker：自定义 marker 路径 + 门失败时三者全存活） |
+| §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:826` `in_flight_plans` · **Phase-4d**：`execute:276` 造的 plan-claim 带真实租约（`epoch/lease_seconds` 透传），结算 step 的 claim 行与 `settlement_run` 同键形 | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90`；`test_dp_driven_wiring.py:108`（OrchestrateLease：可续租 + `--no-lease` + 键形一致） |
 | §3.5 形态②③ / §7 Q1 溯源列（finding→finding / finding→task） | `dp_driven_carrier.py:78,63` `derived_from_finding` 列 · `dp_driven_model.py:179,121` `add_finding/add_task(derived_from=)` · `_relations` `dp_driven_optimize.py:64` | `test_dp_driven_derivation.py`；`test_dp_driven_model.py`（validate E_REF_MISSING 复用） |
-| §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:109,217` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14` |
-| §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:318,352` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:132,204` `render_html/render_html_to_file` · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） | `test_dp_driven_viz_html.py:57,114,198`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · CLI `:213,224,229,234`） |
+| §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:109,219` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） · **Phase-4d**：二者收 `epoch`，`viz --now` 对 `.mmd` 同样生效（R5 过期边框不再只在 HTML 里正确） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14`；`test_dp_driven_wiring.py:176`（VizClock） |
+| §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:320,354` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:132,204` `render_html/render_html_to_file` · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） · **Phase-4d**：内嵌图体改用同一 `epoch`（`render(model, epoch=now)`），消除「边框 inflight / 卡片 expired」的文件内自相矛盾 | `test_dp_driven_viz_html.py:57,114,198`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · CLI `:213,224,229,234`）；`test_dp_driven_wiring.py:176` |
 
 | §9 metric 采集（5 指标可重复测量方法；sidecar 事件日志，日志≠状态） | `dp_driven_metrics.py:48,79,105,200,271` `EVENT_TYPES/append_event/read_events/report/render_report_md` · `:133` `reflow_check`（§9-4 双记账等价式） · CLI `metrics record/annotate/report/reflow-check`（`dp_driven_cli.py:cmd_metrics_*`；写命令在锁内自动落事件，preview 不落） | `test_dp_driven_metrics.py:53,111,178,224`（日志对状态惰性 `:84` · 分母诚实 `:125` · 审计可证伪 `:187` · 收摊清日志 `:322`） |
 
-**仍未升级（Phase 4d / `[未决]`）**：§9 **阈值校准本身**——token / 轮次依 §9 明令不设先验（`threshold: null`），
+**仍未升级（校准类，待 Project B 实跑 / `[未决]`）**：§9 **阈值校准本身**——token / 轮次依 §9 明令不设先验（`threshold: null`），
 命中率 / 正确率 / 结算率保留 §9 初估目标并标 `calibrated: false`；optimizer 权重与 claim 租约默认值同理。
 校准数据只能来自 Project B 首份真实 destination 的推进，**不属于本 skill 的代码范围**。
 
@@ -504,7 +515,9 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   （累计 140 测试）；落地 §6 R1-R6。
 - **Phase-4a（PR #312）**：`claim` 表加 `last_seen_at`(epoch) + `lease_seconds`（`dp_driven_carrier.py:113`）
   两列实现 §4.4 **claim TTL / heartbeat 租约**——`expired` 是**读时派生**（`_is_expired`，绝不存储，
-  沿用 §3.1/§3.2 反漂移纪律）、**model 从不读时钟**（`epoch` 由调用方注入，只有 CLI 取 `time.time()`）。
+  沿用 §3.1/§3.2 反漂移纪律）、**过期判定从不读时钟**（`epoch` 由调用方注入，只有 CLI 取
+  `time.time()`；model 的 `_now()` 仍写时间戳文本，Phase-4d-fix 已把这一作用域写进 SKILL.md 与
+  三份 reference，不再笼统声称"model 从不读时钟"）。
   `claim` 支持租约 + 过期接管、新增 `renew`（心跳续租）、`claim_owner`/`list_claims`/claim 门按
   `epoch` 判过期、`validate` 校验租约合法；CLI `claim --lease-seconds/--no-lease/--now` + `renew` +
   `claims list --now`；`test_dp_driven_ttl.py` + `ClaimTtlCli`（累计 160 测试）。
@@ -519,7 +532,7 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   视图**零回写**（不变式 10 延伸到 IR/HTML，`test_render_html_is_pure_readonly` 锁死 carrier 字节）。
   `test_dp_driven_viz_html.py`（累计 182 测试）。**未 vendor 任何 JS 进仓库**——cdn 为默认，
   inline 由调用方自备文件，避免向旧 pair 的 `viz/` 形状靠拢。
-- **Phase-4c（本 PR）**：§9 **metric 采集**（只交付"可重复测量方法"这半个 exit condition）——
+- **Phase-4c（PR #314）**：§9 **metric 采集**（只交付"可重复测量方法"这半个 exit condition）——
   新增 `dp_driven_metrics.py`：sidecar 事件日志 `<db-stem>.events.jsonl`（**不进 carrier**，让
   「日志≠状态」§3.1 可被 `test_events_inert_to_state` 机械锁死）、5 指标算式 `report`、
   §9-4 的双记账审计 `reflow_check`。**事件由 CLI 层写**（决策 2：model 仍是纯状态机，库调用者
@@ -536,5 +549,18 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
   argparse 原生 usage 退出码是 2，`main` 现只在 parse 阶段映射为 1，使实现与本文档既定的
   「1=usage / 2=业务码」契约一致。
 
-**刻意留在 Phase 4d**（见 §10"仍未升级"）：§9 阈值、optimizer 权重与 claim 租约默认值的**实跑校准**
+- **Phase-4d-fix（本 PR）**：一次 `zj-code-review` 之后的 wiring 修正，四条缺口全部来自磁盘实测而非推测——
+  (1) `task status` / `ticket status` 从不传 `epoch` ⇒ §4.4「过期 claim 视为 free」在 CLI 真实写路径上
+  不生效；(2) `orchestrate --execute` 经 `optimize.execute` 造 claim 时不带 `epoch` ⇒ `last_seen_at=None`
+  ⇒ 永不过期，自动化主循环恰好复现了 §8 想解决的"崩溃后永久悬挂"（比 (1) 更严重）；(3) `viz --now` 被
+  解析却从不进入 `render()` ⇒ `.mmd` 把过期租约画成 in-flight，且与同一份 HTML 内的卡片自相矛盾；
+  (4) step-2 的 `.governed.json` marker 逃过 `closeout delete` 的清理。
+  修复形状：`render/render_to_file/execute` 增 `epoch` 形参（默认 `None` ⇒ Python API 仍不吃时钟，向后
+  兼容由 `test_python_api_stays_clock_free` 锁死）、CLI 统一经 `_epoch` 注入、marker 清理放 CLI 层
+  （故 model 的 §10 锚点零漂移）、optimize 结算 claim 与 `settlement_run` 同键形。顺带把「model 从不读
+  墙钟」这句**过度声称**在 SKILL.md + 3 份 reference + 2 处代码 docstring 收窄为「过期判定从不读时钟」
+  （事实：`dp_driven_model.py:74` `_now()` 有 12 处调用写时间戳文本），由 `DocScope` 防回退。
+  `test_dp_driven_wiring.py` 19 测试（累计 231），其中每组"过期放行"都配一条"未过期仍挡"防伪阳。
+
+**刻意留待实跑**（见 §10"仍未升级"）：§9 阈值、optimizer 权重与 claim 租约默认值的**实跑校准**
 ——数据只能来自 Project B 首份真实 destination，不属本 skill 的代码范围。各 Phase 均不假装做了后续项。

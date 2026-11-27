@@ -26,8 +26,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from dp_driven_model import (
-    DpDriven, DpDrivenError, EDGE_BLOCKS, KIND_FINDING, KIND_TASK, KIND_TICKET,
-    S_DONE, S_OPEN,
+    CLAIM_PLAN, DEFAULT_CLAIM_LEASE_SECONDS, DpDriven, DpDrivenError, SETTLEMENT_AGENT,
+    EDGE_BLOCKS, KIND_FINDING, KIND_TASK, KIND_TICKET, S_DONE, S_OPEN,
 )
 
 # ── tunable constants (起手值，可解释，非最优) ──────────────
@@ -274,17 +274,23 @@ def _settle_order(model, remaining):
 
 
 def execute(model: DpDriven, steps: list[Step], agent: str | None = None,
-           name: str | None = None, now: str | None = None) -> list[dict]:
+           name: str | None = None, now: str | None = None,
+           epoch: int | None = None,
+           lease_seconds: int | None = DEFAULT_CLAIM_LEASE_SECONDS) -> list[dict]:
     """Apply suggested steps (called only from CLI `--execute`, inside the write lock).
     new_plan → add_task + place items; hotplug → assign/add-membership (lock-free §4.4);
     settle → settlement_run over the step's items' plan-less remainder is approximated by
-    placing this step's items into a fresh settlement plan. Returns an applied summary."""
+    placing this step's items into a fresh settlement plan. Returns an applied summary.
+    `epoch`/`lease_seconds` (§4.4, Phase-4d): the plan-level claim minted for a new plan
+    carries a real lease clock, so an agent that dies mid-plan no longer holds the plan
+    forever — the claim goes inert at expiry and any agent may take it over."""
     applied: list[dict] = []
     for st in steps:
         if st.action == ACT_NEW_PLAN:
             tid = model.add_task(name or "编排计划", now=now)
             if agent:
-                model.claim("plan", tid, agent, now=now)
+                model.claim(CLAIM_PLAN, tid, agent, now=now, epoch=epoch,
+                            lease_seconds=lease_seconds)
             for kind, nid in _placement_order(model, st.items):
                 if kind == KIND_TICKET:
                     model.assign_ticket(nid, tid)
@@ -303,9 +309,12 @@ def execute(model: DpDriven, steps: list[Step], agent: str | None = None,
         elif st.action == ACT_SETTLE:
             # §4.5: settlement plan absorbs these items.
             tid = model.add_task(name or "结算轮", now=now)
-            model.data["claims"].append({"kind": "plan", "ref_id": tid,
-                                         "agent": "__settlement__",
-                                         "claimed_at": now or _fallback_now()})
+            # Same claim shape as model.settlement_run (§4.5): sentinel, no lease clock,
+            # so the key set is uniform across every row of the claim table.
+            model.data["claims"].append({"kind": CLAIM_PLAN, "ref_id": tid,
+                                         "agent": SETTLEMENT_AGENT,
+                                         "claimed_at": now or _fallback_now(),
+                                         "last_seen_at": None, "lease_seconds": None})
             for kind, nid in _placement_order(model, st.items):
                 if kind == KIND_TICKET:
                     model.assign_ticket(nid, tid)

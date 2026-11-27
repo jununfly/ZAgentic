@@ -409,7 +409,7 @@ class DpDriven:
         an EXPIRED claim is inert → any agent may take it over (§4.4 超时释放, §8 TTL).
         `epoch` (int seconds) is the caller-supplied clock for lease/expiry; `None` ⇒
         lease is recorded but not evaluated (preserves explicit-release-only semantics
-        for callers that don't drive a clock — §4.4 model never reads wall clock).
+        for callers that don't drive a clock — §4.4 expiry consults no clock inside the model).
         `lease_seconds=NO_LEASE(None)` ⇒ never expires (§8 opt-in).
         E_INVALID_KIND / E_NO_SUCH_TASK / E_NO_SUCH_TICKET / E_CLAIM_LEASE_INVALID as before.
         """
@@ -467,7 +467,7 @@ class DpDriven:
 
     def _is_expired(self, claim_row: dict, epoch: int | None) -> bool:
         """Pure derivation: expired ⇔ lease set ∧ last_seen set ∧ (epoch - last_seen) > lease.
-        With epoch=None it is NOT evaluated (returns False) — model never reads wall clock."""
+        With epoch=None it is NOT evaluated: expiry itself consults no clock (the model's `_now()` writes timestamp TEXT only, never a decision)."""
         if epoch is None:
             return False
         lease = claim_row.get("lease_seconds")

@@ -17,7 +17,7 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 
 | `init DB --destination TEXT` | §4.0 step 1 | `dp_driven_model.py:94` `DpDriven.init` |
 | `task add DB --name TEXT [--context-md P] [--memory-md P] [--derived-from-finding F]` | §4.0 step 2 / §3.5 form-③ | `:121` `add_task` |
-| `task status DB <id> --set {未完成\|已完成\|已放弃} [--agent A] [--summary S]` | §3.1 / §4.4 gate | `:144` `set_plan_status` |
+| `task status DB <id> --set {未完成\|已完成\|已放弃} [--agent A] [--summary S] [--now EPOCH]` | §3.1 / §4.4 gate（`--now` 决定过期租约是否仍挡写） | `:144` `set_plan_status` |
 | `task summary DB <id> --text TEXT` | §2 终态总结 | `:170` `plan_summary` |
 | `task view DB <id>` | §3.3 派生投影 | `:362` `task_view` |
 | `finding add DB [--md-path P] [--external-hold R] [--derived-from-finding F]` | §2 / §3.5 form-② | `:179` `add_finding` |
@@ -26,7 +26,7 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | `finding membership remove DB <fid> --task <tid>` | §3.4 | `:202` `remove_finding_membership` |
 | `ticket add DB [--task T] [--ref R] [--kv JSON] [--md-path P] [--derived-from-finding F] [--parent T] [--external-hold R]` | §2 / §3.4 / §7 Q1 | `:227` `add_ticket` |
 | `ticket assign DB <id> --task <tid\|NULL>` | §4.3 热插 (§4.4 lock-free) | `:248` `assign_ticket` |
-| `ticket status DB <id> --set {…} [--agent A]` | §4.4 ticket-claim gate | `:256` `set_ticket_status` |
+| `ticket status DB <id> --set {…} [--agent A] [--now EPOCH]` | §4.4 ticket-claim gate（过期 ⇒ 视为无人持有） | `:256` `set_ticket_status` |
 | `blocks add DB --from KIND:ID --to KIND:ID` | §3.2 blocks edge | `:272` `add_blocks` |
 | `edge remove DB <edge-id>` | §3.2 | `:286` `remove_edge` |
 | `hold DB KIND:ID [--reason TEXT]` | §3.2.1 | `:291` `set_external_hold` |
@@ -40,8 +40,8 @@ PYTHONPATH="$SKILL_ROOT/scripts" python3 "$SKILL_ROOT/scripts/dp_driven_cli.py" 
 | `claims list DB [--now EPOCH]` | §4.4 观测（含派生 `expired`） | `:505` `list_claims` |
 | `settlement run DB [--name TEXT]` | §4.5 | `:516` `settlement_run` |
 | `suggest DB [--threshold F] [--max-size N]` | §3.6 F3 / §4.2 (read-only) | `dp_driven_optimize.py:suggest` |
-| `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N]` | §4.2 routing | `dp_driven_optimize.py:suggest/execute` |
-| `viz DB [--out PATH] [--format mermaid\|html] [--assets cdn\|inline] [--js-path P] [--now EPOCH]` | §6 R1–R6 + R7 (read-only) | `dp_driven_viz.py:render` · `dp_driven_viz_html.py:render_html` |
+| `orchestrate DB --agent A [--execute] [--name T] [--threshold F] [--max-size N] [--now EPOCH] [--lease-seconds N \| --no-lease]` | §4.2 routing；`--execute` 造的 plan-claim 带**真实租约**（§4.4，Phase-4d） | `dp_driven_optimize.py:suggest/execute` |
+| `viz DB [--out PATH] [--format mermaid\|html] [--assets cdn\|inline] [--js-path P] [--now EPOCH]` | §6 R1–R6 + R7 (read-only)；`--now` 对**两种格式**同样生效（过期 ⇒ `plan_paused`，Phase-4d） | `dp_driven_viz.py:render` · `dp_driven_viz_html.py:render_html` |
 | `metrics record DB --type {token,…} [--value N] [--agent A] [--kind K] [--ref-id I]` | §9-1 外部事实 / 修补 | `dp_driven_metrics.py:79` `append_event` |
 | `metrics annotate DB plan <id> --verdict {kept\|split\|regrouped} [--agent A]` | §9-3 Human 判定 | `dp_driven_metrics.py:190` `verdicts` |
 | `metrics report DB [--out PATH] [--no-audit]` | §9 汇总（read-only） | `dp_driven_metrics.py:200` `report` · `:271` `render_report_md` |
