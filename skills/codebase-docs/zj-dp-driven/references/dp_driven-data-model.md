@@ -158,7 +158,7 @@ Phase-2 adds (claims / settlement / closeout):
 
 ## Phase-2 / Phase-3 carrier additions
 
-### `claim` — two-layer claim (§4.4), `dp_driven_carrier.py:108`
+### `claim` — two-layer claim (§4.4), `dp_driven_carrier.py:113`
 
 | Column | Type | Meaning |
 |---|---|---|
@@ -166,9 +166,21 @@ Phase-2 adds (claims / settlement / closeout):
 | `ref_id` | INTEGER | task_id (plan) or ticket_id (ticket) |
 | `agent` | TEXT | opaque claimant id (no auth in Phase 2; `__settlement__` is the reserved settlement sentinel) |
 | `claimed_at` | TEXT | timestamp |
+| `last_seen_at` | INTEGER\|NULL | Phase-4a: epoch seconds, refreshed by `claim`/`renew` (lease clock) |
+| `lease_seconds` | INTEGER\|NULL | Phase-4a: lease length; `NULL` = never expires (`--no-lease`) |
 
 PK `(kind, ref_id)` → a plan or ticket has at most one holder. `validate` checks ref
-existence and duplicate rows (`E_CLAIM_REF_MISSING` / `E_CLAIM_KIND` / `E_DUP_CLAIM`).
+existence, duplicate rows, and lease sanity (`E_CLAIM_REF_MISSING` / `E_CLAIM_KIND` /
+`E_DUP_CLAIM` / `E_CLAIM_LEASE_INVALID`).
+
+**`expired` is derived, never stored** (§4.4 TTL / §3.1-3.2 anti-drift):
+`_is_expired(row, epoch)` ⇔ `epoch is not None ∧ lease_seconds is not None ∧
+last_seen_at is not None ∧ epoch - last_seen_at > lease_seconds`. There is no `expired`
+column. `claim_owner`/`list_claims`/the claim gate evaluate it only when the caller passes
+an `epoch`; `epoch is None` ⇒ not evaluated (backward-compatible explicit-release). The
+model never reads the wall clock — the CLI injects `epoch` (`--now` or `int(time.time())`).
+An expired claim is inert: another agent may take it over (`claim` replaces it), and a
+live claim holder keeps ownership by calling `renew` (heartbeat).
 
 ### claim gate + lock-free set (§4.4 [定稿])
 
@@ -181,7 +193,7 @@ existence and duplicate rows (`E_CLAIM_REF_MISSING` / `E_CLAIM_KIND` / `E_DUP_CL
 
 ### derivation columns — §3.5 form-②③ / §7 Q1 扩展 (Phase-3b)
 
-`finding` 表与 `task` 表各加 `derived_from_finding INTEGER`（`dp_driven_carrier.py:73` / `:58`），
+`finding` 表与 `task` 表各加 `derived_from_finding INTEGER`（`dp_driven_carrier.py:78` / `:63`），
 镜像 §7 Q1(a) ticket 的单父物化列：一个 finding 处置时可派生**新 finding**（形态②，写
 `add_finding(derived_from_finding=…)`）或开辟**新 task**（形态③，写 `add_task(..., derived_from_finding=…)`）。
 单父、1→n 天然满足；`validate` 检查源 finding 存在（否则 `E_REF_MISSING`）。optimizer `_relations`

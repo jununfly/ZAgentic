@@ -47,6 +47,13 @@ KIND_FINDING = "finding"
 CLAIM_PLAN = "plan"
 CLAIM_TICKET = "ticket"
 
+# §4.4 claim lease/TTL (Phase-4a). Expiry is DERIVED at read time from (last_seen_at +
+# lease_seconds) vs a caller-supplied `epoch` — never a stored `expired` flag (§3.1/§3.2
+# anti-drift rule). `NO_LEASE` (lease_seconds=None) ⇒ never expires (§8 opt-in `--no-lease`).
+# DEFAULT is a starting value, not calibrated (mirrors the optimizer's "参考值不追求严谨").
+DEFAULT_CLAIM_LEASE_SECONDS = 300
+NO_LEASE = None
+
 # §4.5 sentinel agent: a plan claimed by __settlement__ is the settlement round —
 # its plan-level claim gate is bypassed so any agent may claim tickets inside it.
 SETTLEMENT_AGENT = "__settlement__"
@@ -136,7 +143,7 @@ class DpDriven:
 
     def set_plan_status(self, task_id: int, status: str,
                         summary: str | None = None, now: str | None = None,
-                        agent: str | None = None) -> None:
+                        agent: str | None = None, epoch: int | None = None) -> None:
         """Write the task↔plan lifecycle at its ONLY source: the task_plan (§3.1).
         Rejects 被阻塞 — blocked is derived, never stored (§3.2).
         §4.4 claim gate: if `agent` is provided, that agent must hold (or nobody holds)
@@ -151,7 +158,7 @@ class DpDriven:
         if plan is None:
             raise DpDrivenError("E_NO_SUCH_PLAN", f"task {task_id} 没有 1:1 task_plan")
         if agent is not None:
-            self._require_claim_free_or_mine(CLAIM_PLAN, task_id, agent)
+            self._require_claim_free_or_mine(CLAIM_PLAN, task_id, agent, epoch)
         plan["status"] = status
         if summary is not None:
             plan["summary"] = summary
@@ -247,7 +254,7 @@ class DpDriven:
         t["task_id"] = task_id
 
     def set_ticket_status(self, ticket_id: int, status: str, now: str | None = None,
-                          agent: str | None = None) -> None:
+                          agent: str | None = None, epoch: int | None = None) -> None:
         """§4.4 ticket-level claim gate: if `agent` is provided and someone else holds
         this ticket's claim, the write is rejected. `agent=None` = Human direct."""
         t = self._require_ticket(ticket_id)
@@ -256,7 +263,7 @@ class DpDriven:
         if status not in STORED_STATUSES:
             raise DpDrivenError("E_INVALID_STATUS", f"status 必须 ∈ {list(STORED_STATUSES)}")
         if agent is not None:
-            self._require_claim_free_or_mine(CLAIM_TICKET, ticket_id, agent)
+            self._require_claim_free_or_mine(CLAIM_TICKET, ticket_id, agent, epoch)
         t["status"] = status
         t["completed_at"] = (now or _now()) if status in TERMINAL_STATUSES else None
 
@@ -393,14 +400,21 @@ class DpDriven:
 
     # ── claims (§4.4 two-layer) ───────────────────────────
 
-    def claim(self, kind: str, ref_id: int, agent: str, now: str | None = None) -> bool:
+    def claim(self, kind: str, ref_id: int, agent: str, now: str | None = None,
+              lease_seconds: int | None = DEFAULT_CLAIM_LEASE_SECONDS,
+              epoch: int | None = None) -> bool:
         """Acquire a plan-level or ticket-level claim (§4.4).
         Returns True if newly acquired, False if the same agent already holds it.
-        Raises E_CLAIM_HELD_BY_OTHER if a different agent holds it,
-        E_INVALID_KIND if kind is not 'plan' | 'ticket',
-        E_NO_SUCH_TASK / E_NO_SUCH_TICKET if the ref does not exist.
-        No TTL in Phase 2 (§4.4 释放条件包含超时 is `[未决]` §8) — release is explicit.
+        Raises E_CLAIM_HELD_BY_OTHER if a different agent HOLDS an *unexpired* claim;
+        an EXPIRED claim is inert → any agent may take it over (§4.4 超时释放, §8 TTL).
+        `epoch` (int seconds) is the caller-supplied clock for lease/expiry; `None` ⇒
+        lease is recorded but not evaluated (preserves explicit-release-only semantics
+        for callers that don't drive a clock — §4.4 model never reads wall clock).
+        `lease_seconds=NO_LEASE(None)` ⇒ never expires (§8 opt-in).
+        E_INVALID_KIND / E_NO_SUCH_TASK / E_NO_SUCH_TICKET / E_CLAIM_LEASE_INVALID as before.
         """
+        if lease_seconds is not None and lease_seconds <= 0:
+            raise DpDrivenError("E_CLAIM_LEASE_INVALID", "lease_seconds 必须为正整数或 None")
         if kind == CLAIM_PLAN:
             self._require_task(ref_id)
         elif kind == CLAIM_TICKET:
@@ -409,15 +423,58 @@ class DpDriven:
             raise DpDrivenError("E_INVALID_KIND", f"claim kind 必须是 {CLAIM_PLAN} | {CLAIM_TICKET}")
         existing = self._find_claim(kind, ref_id)
         if existing is None:
-            self.data["claims"].append({
-                "kind": kind, "ref_id": ref_id, "agent": agent,
-                "claimed_at": now or _now(),
-            })
+            self._new_claim(kind, ref_id, agent, now, lease_seconds, epoch)
             return True
         if existing["agent"] == agent:
+            # same holder refreshing: keep claimed_at, advance the lease clock
+            existing["lease_seconds"] = lease_seconds
+            if epoch is not None:
+                existing["last_seen_at"] = epoch
             return False
+        if self._is_expired(existing, epoch):
+            # expired ⇒ treat as free ⇒ take over by replacing the row
+            self.data["claims"] = [c for c in self.data["claims"] if c is not existing]
+            self._new_claim(kind, ref_id, agent, now, lease_seconds, epoch)
+            return True
         raise DpDrivenError("E_CLAIM_HELD_BY_OTHER",
-                            f"{kind}#{ref_id} 已被 agent {existing['agent']!r} claim")
+                            f"{kind}#{ref_id} 已被 agent {existing['agent']!r} claim（未过期）")
+
+    def _new_claim(self, kind, ref_id, agent, now, lease_seconds, epoch) -> None:
+        self.data["claims"].append({
+            "kind": kind, "ref_id": ref_id, "agent": agent,
+            "claimed_at": now or _now(),
+            "last_seen_at": epoch, "lease_seconds": lease_seconds,
+        })
+
+    def renew(self, kind: str, ref_id: int, agent: str, epoch: int | None = None,
+              lease_seconds: int | None = None) -> bool:
+        """§4.4 heartbeat/lease: the holder pushes `last_seen_at` forward, extending the
+        lease so an actively-thinking agent is not mistaken for dead. Returns False if no
+        live claim exists (expired ⇒ None ⇒ caller should re-claim, not renew). A non-holder
+        renewing a live claim → E_CLAIM_NOT_OWNER."""
+        existing = self._find_claim(kind, ref_id)
+        if existing is None or self._is_expired(existing, epoch):
+            return False
+        if existing["agent"] != agent:
+            raise DpDrivenError("E_CLAIM_NOT_OWNER",
+                                f"{kind}#{ref_id} 由 {existing['agent']!r} 持有，{agent!r} 无权 renew")
+        existing["last_seen_at"] = epoch
+        if lease_seconds is not None:
+            if lease_seconds <= 0:
+                raise DpDrivenError("E_CLAIM_LEASE_INVALID", "lease_seconds 必须为正整数或 None")
+            existing["lease_seconds"] = lease_seconds
+        return True
+
+    def _is_expired(self, claim_row: dict, epoch: int | None) -> bool:
+        """Pure derivation: expired ⇔ lease set ∧ last_seen set ∧ (epoch - last_seen) > lease.
+        With epoch=None it is NOT evaluated (returns False) — model never reads wall clock."""
+        if epoch is None:
+            return False
+        lease = claim_row.get("lease_seconds")
+        seen = claim_row.get("last_seen_at")
+        if lease is None or seen is None:      # NO_LEASE / unrecorded clock ⇒ never expires
+            return False
+        return (epoch - seen) > lease
 
     def release(self, kind: str, ref_id: int, agent: str | None = None,
                 force: bool = False) -> bool:
@@ -438,12 +495,21 @@ class DpDriven:
         self.data["claims"] = [c for c in self.data["claims"] if c is not existing]
         return True
 
-    def claim_owner(self, kind: str, ref_id: int) -> str | None:
+    def claim_owner(self, kind: str, ref_id: int, epoch: int | None = None) -> str | None:
+        """Holder agent, or None if there is no live (unexpired) claim (§4.4 超时释放)."""
         c = self._find_claim(kind, ref_id)
-        return c["agent"] if c else None
+        if c is None or self._is_expired(c, epoch):
+            return None
+        return c["agent"]
 
-    def list_claims(self) -> list[dict]:
-        return [dict(c) for c in sorted(self.data["claims"], key=lambda c: (c["kind"], c["ref_id"]))]
+    def list_claims(self, epoch: int | None = None) -> list[dict]:
+        """Each row carries a DERIVED `expired` flag (computed at read, never stored — §3.1)."""
+        out = []
+        for c in sorted(self.data["claims"], key=lambda c: (c["kind"], c["ref_id"])):
+            view = dict(c)
+            view["expired"] = self._is_expired(c, epoch)
+            out.append(view)
+        return out
 
     # ── settlement round (§4.5) ───────────────────────────
 
@@ -460,6 +526,7 @@ class DpDriven:
         self.data["claims"].append({
             "kind": CLAIM_PLAN, "ref_id": tid, "agent": SETTLEMENT_AGENT,
             "claimed_at": now or _now(),
+            "last_seen_at": None, "lease_seconds": None,   # sentinel never expires (§4.5)
         })
         for it in ordered:
             if it["kind"] == KIND_TICKET:
@@ -648,6 +715,9 @@ class DpDriven:
                     errs.append(f"E_CLAIM_REF_MISSING: ticket claim → 不存在的 ticket {c['ref_id']}")
             else:
                 errs.append(f"E_CLAIM_KIND: 未知 claim.kind={c['kind']!r}")
+            ls = c.get("lease_seconds")
+            if ls is not None and (not isinstance(ls, int) or ls <= 0):
+                errs.append(f"E_CLAIM_LEASE_INVALID: {c['kind']}#{c['ref_id']} lease_seconds={ls!r} 非法")
         return errs
 
     # ── helpers ───────────────────────────────────────────
@@ -668,12 +738,15 @@ class DpDriven:
                 return c
         return None
 
-    def _require_claim_free_or_mine(self, kind: str, ref_id: int, agent: str) -> None:
-        """§4.4 claim gate helper: no claim OR claim by same agent OR settlement sentinel
-        → allowed. Any other holder → E_CLAIM_HELD_BY_OTHER."""
+    def _require_claim_free_or_mine(self, kind: str, ref_id: int, agent: str,
+                                    epoch: int | None = None) -> None:
+        """§4.4 claim gate: free claim / same holder / settlement sentinel / EXPIRED ⇒
+        allowed (§4.4 超时释放). An unexpired claim by another holder → E_CLAIM_HELD_BY_OTHER."""
         existing = self._find_claim(kind, ref_id)
         if existing is None or existing["agent"] == agent:
             return
+        if self._is_expired(existing, epoch):
+            return  # expired claim is inert; holder effectively released
         if kind == CLAIM_PLAN and existing["agent"] == SETTLEMENT_AGENT:
             return  # §4.5: settlement plan bypasses plan-claim gate
         raise DpDrivenError("E_CLAIM_HELD_BY_OTHER",

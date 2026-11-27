@@ -109,17 +109,19 @@ class CarrierRoundTrip(unittest.TestCase):
         self.assertEqual(DpDriven.open(self.db).validate(), [])
 
     def test_claim_round_trip(self):
-        """§4.4: claim rows persist to sqlite and reload byte-equivalent."""
+        """§4.4: claim rows (incl. lease columns, Phase-4a) persist and reload byte-equivalent."""
         model = self.build()
-        model.claim(m.CLAIM_PLAN, 0, agent="alice", now="c1")
-        model.claim(m.CLAIM_TICKET, 1, agent="bob", now="c2")
+        model.claim(m.CLAIM_PLAN, 0, agent="alice", now="c1", epoch=100)
+        model.claim(m.CLAIM_TICKET, 1, agent="bob", now="c2", lease_seconds=None, epoch=200)
         model.save()
         reloaded = DpDriven.open(self.db)
         self.assertEqual(
             sorted(reloaded.data["claims"], key=lambda c: (c["kind"], c["ref_id"])),
             [
-                {"kind": m.CLAIM_PLAN, "ref_id": 0, "agent": "alice", "claimed_at": "c1"},
-                {"kind": m.CLAIM_TICKET, "ref_id": 1, "agent": "bob", "claimed_at": "c2"},
+                {"kind": m.CLAIM_PLAN, "ref_id": 0, "agent": "alice", "claimed_at": "c1",
+                 "last_seen_at": 100, "lease_seconds": m.DEFAULT_CLAIM_LEASE_SECONDS},
+                {"kind": m.CLAIM_TICKET, "ref_id": 1, "agent": "bob", "claimed_at": "c2",
+                 "last_seen_at": 200, "lease_seconds": None},
             ],
         )
         self.assertEqual(reloaded.claim_owner(m.CLAIM_PLAN, 0), "alice")
