@@ -23,7 +23,7 @@ Reverse-engineered from 1-3 commits `8fbf5c5` through `a895f47`. Cover every app
 
 Any add/remove/rename must re-run generated artifacts before review and grep-verify no stale references:
 
-- `docs/ontology/extract.py` → `model.json`
+- the repo's ontology extractor (`extract.py`) → its generated `model.json`
 - `zagentic-skills-list`
 
 ## Files this skill touches (per merge)
