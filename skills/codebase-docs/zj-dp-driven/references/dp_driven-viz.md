@@ -91,7 +91,8 @@ model (read-only)
  dp_driven_viz_html.render_html()    single self-contained file:
       <pre class="mermaid">  = render() text (html-escaped, byte-exact)
       <script type="application/json" id="dp-ir"> = the IR snapshot
-      native JS (~70 lines)  = click delegation on g.node / g.cluster → card panel
+       native JS (~70 lines)  = post-render data-id backfill → click delegation on
+                                g.node / g.cluster → card panel
 ```
 
 - **No second layout truth**: the viewer never re-derives the graph; it embeds `render()`
@@ -119,6 +120,13 @@ model (read-only)
 - **XSS-safe**: every model value reaches the DOM through `textContent` only; embedded
   JSON neutralizes `</` as `<\/` so no data can close the script tag early
   (`test_html_escape_node_name`).
+- **v11 id 适配 (issue #320)**: Mermaid v11 dropped `data-id` and prefixes node ids with
+  `mermaid-<ts>-`, so the viewer backfills `data-id` on `g.node`/`g.cluster` after
+  `await mermaid.run()`, resolving each mid against the **closed IR key set** (never
+  Mermaid's id string, so it survives renderer upgrades). `nodeKey()`'s `data-id` path is
+  the load-bearing hit. Structure locked by `test_html_backfills_data_id_on_render` /
+  `test_html_awaits_run_before_backfill`; the browser end-to-end hit is verified by a
+  one-time headless-Chrome probe (not wired into CI — the suite is stdlib Python only).
 - **Zero write-back** (invariant 10 extended to views): the IR/HTML is a generation-time
   snapshot; freshness = re-run `viz`. Locked by `test_render_html_is_pure_readonly`
   (carrier bytes unchanged) and the CLI `test_viz_html_cli_readonly`.

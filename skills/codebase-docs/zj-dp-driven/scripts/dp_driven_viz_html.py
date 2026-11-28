@@ -66,6 +66,36 @@ _JS = """
     return m && IR[m[1]] ? m[1] : null;
   }
 
+  // Mermaid v11 不再给 <g> 写 data-id，且把 id 嵌进 `mermaid-<ts>-…` 前缀，
+  // nodeKey() 两条路径都失效（issue #320）。这里渲染后把 mid 回填成 data-id，
+  // nodeKey() 路径1即命中，点击逻辑不改。mid 取值锚定**封闭 IR 键集**而非
+  // Mermaid 的 id 字符串格式，故不追随版本漂移：
+  //   ① 优先读 Mermaid 绑定的图数据 __data__.id/.name（即我方文本里的节点名）；
+  //   ② 兜底把 g.id 按 '-' 切 token 与 IR 求交（我方 mid 从不含 '-'，切分即天然词边界，
+  //      避免 `T1` ⊂ `tk0_T1` 之类子串误命中；老格式 id 同样命中）。
+  function resolveMid(g) {
+    var d = g.__data__;
+    if (d) {
+      if (d.id && IR[d.id]) return d.id;
+      if (d.name && IR[d.name]) return d.name;
+    }
+    var toks = (g.id || "").split("-");
+    for (var i = 0; i < toks.length; i++) {
+      if (IR[toks[i]]) return toks[i];
+    }
+    return null;
+  }
+
+  function backfill() {
+    var svg = document.querySelector("#graph svg");
+    if (!svg) return;
+    svg.querySelectorAll("g.node, g.cluster").forEach(function (g) {
+      if (g.getAttribute("data-id")) return;
+      var k = resolveMid(g);
+      if (k) g.setAttribute("data-id", k);
+    });
+  }
+
   function row(dl, label, value) {
     if (value === null || value === undefined || value === "") return;
     var dt = document.createElement("dt"); dt.textContent = label;
@@ -118,6 +148,8 @@ _JS = """
   hint.className = "hint";
   hint.textContent = "Click a node or a plan frame to inspect it.";
   card.appendChild(hint);
+
+  window.__dpBackfill = backfill;   // boot() 在 mermaid.run() resolve 后调用一次
 })();
 """.lstrip()
 
@@ -182,10 +214,11 @@ def render_html(model: DpDriven, *, now: int | None = None,
         )
     boot = (
         "<script type=\"module\">\n"
-        "function boot(mermaid) {\n"
+        "async function boot(mermaid) {\n"
         "  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', "
         "htmlLabels: false });\n"
-        "  mermaid.run({ querySelector: 'pre.mermaid' });\n"
+        "  await mermaid.run({ querySelector: 'pre.mermaid' });\n"
+        "  if (window.__dpBackfill) window.__dpBackfill();\n"
         "}\n"
         f"{loader}\n"
         "</script>"

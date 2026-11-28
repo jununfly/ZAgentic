@@ -194,6 +194,22 @@ class HtmlViewer(unittest.TestCase):
         m = seeded()
         self.assertIn("登录改造", vh.render_html(m, now=None, assets="cdn").split("</title>")[0])
 
+    # issue #320: Mermaid v11 DOM 变更打断点击→卡片链路。锁「渲染后回填 data-id」
+    # 这一修复结构，防止退回只放宽 nodeKey 正则、或有人删掉回填步骤。
+    def test_html_backfills_data_id_on_render(self):
+        m = seeded()
+        html = vh.render_html(m, now=1100, assets="cdn")
+        self.assertIn("g.node, g.cluster", html)          # 覆盖 node 与 cluster 两类
+        self.assertIn('setAttribute("data-id"', html)     # 命中 nodeKey() 路径1
+        self.assertIn("window.__dpBackfill", html)        # 钩子已暴露给 boot()
+
+    def test_html_awaits_run_before_backfill(self):
+        # 回填必须发生在渲染之后：run() 被 await，boot() 再调 __dpBackfill()。
+        m = seeded()
+        html = vh.render_html(m, now=1100, assets="cdn")
+        self.assertIn("await mermaid.run(", html)
+        self.assertIn("window.__dpBackfill()", html)
+
 
 class HtmlCli(unittest.TestCase):
     def setUp(self):

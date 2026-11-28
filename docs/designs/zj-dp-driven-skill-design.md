@@ -329,7 +329,7 @@ model-elements: [entity.design]
 >   理由：零依赖、输出可 grep 成失败测试、GitHub/VSCode 直接渲染，且**不向旧 pair 的 viz/ 形状靠拢**。
 >   R1-R6 契约 + classDef 见 `dp_driven-viz.md`；纯只读、确定性（`test_dp_driven_viz.py`）。
 > - **[定稿·已实现 R7]** 右区"点击→卡片"随 Phase-4b 落地：**单文件 HTML viewer**
->   （`dp_driven_viz_html.py` `render_html:132`，CLI `viz DB --format html [--out] [--assets cdn|inline] [--now]`）。
+>   （`dp_driven_viz_html.py` `render_html:164`，CLI `viz DB --format html [--out] [--assets cdn|inline] [--now]`）。
 >   图体 = 直接内嵌 `dp_driven_viz.py` `render:109` 的 Mermaid 文本（无第二套布局真相；Phase-4d 起
 >   图体与 IR 共用同一 `epoch`，边框与卡片不会再对过期 claim 各说各话），节点点击数据 =
 >   `build_node_ir:320` 的生成时快照（key 与 Mermaid 节点 id 逐一对齐，锁测试 `test_dp_driven_viz_html.py:58`）。
@@ -338,6 +338,11 @@ model-elements: [entity.design]
 >   **零回写**：IR/HTML 是视图快照，从不落库（`test_dp_driven_viz_html.py:121`）。Mermaid JS 默认走官方 CDN，
 >   `--assets inline --js-path` 可完全离线自包含；不向旧 pair 的 `viz/` vendor-布局引擎形状靠拢。契约细节见
 >   `dp_driven-viz.md` R7 节。
+>   **v11 适配（issue #320）**：Mermaid v11 不再给节点写 `data-id`、id 形如
+>   `mermaid-<ts>-flowchart-<mid>-<n>`，点击→卡片链路断裂；viewer 在 `await mermaid.run()` 后按
+>   封闭 IR 键集回填 `data-id`（`dp_driven_viz_html.py` `_JS` 的 resolveMid、backfill），复原委托。
+>   结构锁 `test_dp_driven_viz_html.py::test_html_backfills_data_id_on_render`，浏览器端到端由一次性
+>   headless-Chrome 探针验证（不接 CI，套件纯 stdlib）。
 
 ## 7. 本轮锁定的四条判据（Q1–Q4 决策记录）
 
@@ -469,7 +474,7 @@ claim 层名、结算哨兵与租约常量在 `dp_driven_model.py:34-61`（`SETT
 | §3.6 F3 / §4.2 编排 optimizer（种子-扩展贪心，4 因子内聚分） | `dp_driven_optimize.py:202,276` `suggest/execute` · `:113` `score_subset` · 只读输入 `dp_driven_model.py:826` `in_flight_plans` · **Phase-4d**：`execute:276` 造的 plan-claim 带真实租约（`epoch/lease_seconds` 透传） · **W5 收口**：`settle` 步**委派** `dp_driven_model.py:516` `settlement_run`——claim 行、拓扑序、live pool 权威只有一处实现（optimize 内已无 `data["claims"]` 写入、`_fallback_now` 已删） | `test_dp_driven_optimize.py:31,71,121`；`test_dp_driven_orchestrate.py:36,51,90`；`test_dp_driven_wiring.py:108`（OrchestrateLease：可续租 + `--no-lease`）；`test_dp_driven_wiring.py:288`（SettleDelegation：等价不变式 + 两入口状态逐字段相同 + live-pool 权威 + 空池不造空 plan + 源码级无第二实现） |
 | §3.5 形态②③ / §7 Q1 溯源列（finding→finding / finding→task） | `dp_driven_carrier.py:78,63` `derived_from_finding` 列 · `dp_driven_model.py:179,121` `add_finding/add_task(derived_from=)` · `_relations` `dp_driven_optimize.py:64` | `test_dp_driven_derivation.py`；`test_dp_driven_model.py`（validate E_REF_MISSING 复用） |
 | §6 可视化 R1-R6（Mermaid 后端，只读+确定） | `dp_driven_viz.py:109,219` `render/render_to_file` · 消费 model 只读 API（`pool/node_view/task_view/claim_owner/_plan_inner_nodes/in_flight_plans`） · **Phase-4d**：二者收 `epoch`，`viz --now` 对 `.mmd` 同样生效（R5 过期边框不再只在 HTML 里正确） | `test_dp_driven_viz.py:32,69,125,170,211`；`test_dp_driven_viz_cli.py:14`；`test_dp_driven_wiring.py:176`（VizClock） |
-| §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:320,354` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:132,204` `render_html/render_html_to_file` · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） · **Phase-4d**：内嵌图体改用同一 `epoch`（`render(model, epoch=now)`），消除「边框 inflight / 卡片 expired」的文件内自相矛盾 | `test_dp_driven_viz_html.py:57,114,198`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · CLI `:213,224,229,234`）；`test_dp_driven_wiring.py:176` |
+| §6 R7 交互式 HTML 卡片（Phase-4b，内嵌同一 Mermaid 文本 + 节点 IR 快照，零回写） | `dp_driven_viz.py:320,354` `build_node_ir/default_html_path` · `dp_driven_viz_html.py:164,237` `render_html/render_html_to_file`（含 issue #320 v11 data-id 回填） · CLI `viz --format html`（`dp_driven_cli.py:cmd_viz`，`--assets cdn\|inline --js-path --now`） · **Phase-4d**：内嵌图体改用同一 `epoch`（`render(model, epoch=now)`），消除「边框 inflight / 卡片 expired」的文件内自相矛盾 | `test_dp_driven_viz_html.py:57,114,214`（id 对齐 `:58` · 过期透明 `:89` · 只读 `:121` · 转义 `:159` · v11 回填结构锁 `:199,206` · CLI `:229,240,245,250`）；`test_dp_driven_wiring.py:176` |
 
 | §9 metric 采集（5 指标可重复测量方法；sidecar 事件日志，日志≠状态） | `dp_driven_metrics.py:48,79,105,200,271` `EVENT_TYPES/append_event/read_events/report/render_report_md` · `:133` `reflow_check`（§9-4 双记账等价式） · CLI `metrics record/annotate/report/reflow-check`（`dp_driven_cli.py:cmd_metrics_*`；写命令在锁内自动落事件，preview 不落） · **W5/D6**：经 optimizer 触发的结算轮同样落 `settlement` 事件（§9-5 分子不再依赖入口） | `test_dp_driven_metrics.py:53,111,178,224`（日志对状态惰性 `:84` · 分母诚实 `:125` · 审计可证伪 `:187` · 收摊清日志 `:322`）；`test_dp_driven_wiring.py:288`（两条成对：settle ⇒ settlement:1，new_plan ⇒ settlement:0） |
 
