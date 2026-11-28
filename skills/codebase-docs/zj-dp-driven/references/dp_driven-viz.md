@@ -93,6 +93,8 @@ model (read-only)
       <script type="application/json" id="dp-ir"> = the IR snapshot
        native JS (~70 lines)  = post-render data-id backfill → click delegation on
                                 g.node / g.cluster → card panel
+       #toolbar               = zoom −/100%/+ + hand-pan toggle; runtime translate/scale
+                                on #canvas (never baked into the HTML bytes)
 ```
 
 - **No second layout truth**: the viewer never re-derives the graph; it embeds `render()`
@@ -127,11 +129,20 @@ model (read-only)
   the load-bearing hit. Structure locked by `test_html_backfills_data_id_on_render` /
   `test_html_awaits_run_before_backfill`; the browser end-to-end hit is verified by a
   one-time headless-Chrome probe (not wired into CI — the suite is stdlib Python only).
+- **Pan/zoom chrome (§6 R7, was `[未决]`)**: a floating `#toolbar` over the left region —
+  zoom `−/100%/+` (click the % to reset) and a **hand tool** that toggles drag-to-pan mode.
+  The transform (`translate(tx,ty) scale(s)`) is applied to a `#canvas` wrapper at runtime,
+  **never baked into the emitted HTML** — so byte-determinism, `textContent` XSS-safety and
+  zero write-back all still hold. Hand mode is gated by `view.hand`, which suppresses the
+  click-to-inspect delegation so a pan drag never mutates the card; the default (select)
+  mode is unchanged. Structure locked by `test_html_includes_pan_zoom_chrome` /
+  `test_html_click_inspect_gated_on_hand_mode`; browser behaviour via the same one-time
+  headless-Chrome probe.
 - **Zero write-back** (invariant 10 extended to views): the IR/HTML is a generation-time
   snapshot; freshness = re-run `viz`. Locked by `test_render_html_is_pure_readonly`
   (carrier bytes unchanged) and the CLI `test_viz_html_cli_readonly`.
 - **Placement (§5.4)**: output goes only to `--out` (convention `<db-stem>.html` beside
   the carrier, process zone, not git-tracked).
 
-Still open after 4b: pan/zoom chrome and cross-artifact deep links are not implemented
-(click-to-inspect only); §9 metric collection remains a separate phase.
+Still open after 4b: cross-artifact deep links are not implemented (click-to-inspect only;
+pan/zoom chrome landed with §6 R7); §9 metric collection remains a separate phase.
