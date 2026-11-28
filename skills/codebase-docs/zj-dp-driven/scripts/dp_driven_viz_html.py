@@ -38,7 +38,7 @@ _STYLE = """
 :root { color-scheme: light; }
 body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; color: #0f172a;
        display: flex; height: 100vh; }
-#graph { flex: 1 1 auto; overflow: auto; padding: 12px; }
+#graph { flex: 1 1 auto; position: relative; overflow: hidden; padding: 0; }
 #card { flex: 0 0 340px; overflow: auto; border-left: 1px solid #d0d7de; padding: 14px;
         background: #f6f8fa; }
 #card h3 { margin: 0 0 8px; font-size: 15px; }
@@ -50,6 +50,20 @@ body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; color: #
                background: #dafbe1; color: #1a7f37; font-size: 12px; margin-left: 6px; }
 svg .node { cursor: pointer; }
 svg .cluster rect { cursor: pointer; }
+#canvas { transform-origin: 0 0; will-change: transform; padding: 12px; }
+#toolbar { position: absolute; top: 10px; left: 10px; display: flex; gap: 8px;
+           align-items: center; background: #fff; border: 1px solid #d0d7de;
+           border-radius: 8px; padding: 4px 6px; }
+#toolbar .zoom-ctl { display: flex; gap: 4px; align-items: center; }
+#toolbar button { border: 1px solid #d0d7de; background: #f6f8fa; border-radius: 6px;
+                  min-width: 28px; height: 28px; cursor: pointer; font-size: 14px; }
+#toolbar button.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+#toolbar .zoom-label { min-width: 48px; text-align: center; }
+#toolbar .zoom-cap { color: #57606a; font-size: 12px; margin: 0 2px; }
+#graph.hand { cursor: grab; }
+#graph.hand.dragging { cursor: grabbing; }
+#graph.hand svg .node, #graph.hand svg .cluster rect { cursor: grab; }
+#graph.hand.dragging svg .node, #graph.hand.dragging svg .cluster rect { cursor: grabbing; }
 """.lstrip()
 
 # Vanilla JS: click delegation on the rendered SVG → lookup in the embedded IR →
@@ -137,7 +151,57 @@ _JS = """
     card.appendChild(dl);
   }
 
+  // ── 左区 pan/zoom chrome（§6 R7 的 "pan/zoom chrome" 由未决转实现）──────────
+  var graph = document.getElementById("graph");
+  var canvas = document.getElementById("canvas");
+  var zoomLabel = document.getElementById("zoom-reset");
+  var handBtn = document.getElementById("hand-toggle");
+  var view = { scale: 1, tx: 0, ty: 0, hand: false };
+  var MIN = 0.2, MAX = 4, STEP = 1.2;
+
+  function applyTransform() {
+    canvas.style.transform = "translate(" + view.tx + "px," + view.ty + "px) "
+                             + "scale(" + view.scale + ")";
+    zoomLabel.textContent = Math.round(view.scale * 100) + "%";
+  }
+  function zoom(factor) {
+    var s = view.scale * factor;
+    view.scale = s < MIN ? MIN : (s > MAX ? MAX : s);
+    applyTransform();
+  }
+  document.getElementById("zoom-in").addEventListener("click", function () { zoom(STEP); });
+  document.getElementById("zoom-out").addEventListener("click", function () { zoom(1 / STEP); });
+  zoomLabel.addEventListener("click", function () {
+    view.scale = 1; view.tx = 0; view.ty = 0; applyTransform();
+  });
+
+  function setHand(on) {
+    view.hand = on;
+    graph.classList.toggle("hand", on);
+    handBtn.classList.toggle("active", on);
+  }
+  handBtn.addEventListener("click", function () { setHand(!view.hand); });
+
+  var panning = false, sx = 0, sy = 0, stx = 0, sty = 0;
+  graph.addEventListener("mousedown", function (ev) {
+    if (!view.hand || ev.button !== 0) return;
+    panning = true; sx = ev.clientX; sy = ev.clientY; stx = view.tx; sty = view.ty;
+    graph.classList.add("dragging");
+    ev.preventDefault();
+  });
+  window.addEventListener("mousemove", function (ev) {
+    if (!panning) return;
+    view.tx = stx + (ev.clientX - sx);
+    view.ty = sty + (ev.clientY - sy);
+    applyTransform();
+  });
+  window.addEventListener("mouseup", function () {
+    if (!panning) return;
+    panning = false; graph.classList.remove("dragging");
+  });
+
   document.getElementById("graph").addEventListener("click", function (ev) {
+    if (view.hand) return;                 // 手型模式下不触发 inspect，避免拖拽误改卡片
     var g = ev.target.closest("g.node, g.cluster");
     if (!g) return;
     var id = nodeKey(g);
@@ -146,7 +210,8 @@ _JS = """
 
   var hint = document.createElement("p");
   hint.className = "hint";
-  hint.textContent = "Click a node or a plan frame to inspect it.";
+  hint.textContent = "Click a node or a plan frame to inspect it. "
+                     + "Use the toolbar to zoom, or the hand tool to pan.";
   card.appendChild(hint);
 
   window.__dpBackfill = backfill;   // boot() 在 mermaid.run() resolve 后调用一次
@@ -191,9 +256,19 @@ def render_html(model: DpDriven, *, now: int | None = None,
         "<body>",
         # One part so the escaped render() text is byte-exact inside <pre> — the JS
         # hands this same text to mermaid.run(); no extra newlines around the graph.
-        '<div id="graph"><pre class="mermaid">'
+        '<div id="graph"><div id="canvas"><pre class="mermaid">'
         + _html.escape(mermaid_text, quote=False)
-        + "</pre></div>",
+        + '</pre></div>'
+        '<div id="toolbar">'
+        '<span class="zoom-ctl"><span aria-hidden="true">&#128269;</span>'
+        '<span class="zoom-cap">缩放</span>'
+        '<button id="zoom-out" type="button" title="缩小">&#8722;</button>'
+        '<button id="zoom-reset" type="button" class="zoom-label" '
+        'title="重置为 100%">100%</button>'
+        '<button id="zoom-in" type="button" title="放大">+</button></span>'
+        '<button id="hand-toggle" type="button" title="按住左键拖拽平移">'
+        '&#9995; 手型</button>'
+        '</div></div>',
         '<aside id="card"></aside>',
         '<script type="application/json" id="dp-ir">',
         _embed_json(ir),

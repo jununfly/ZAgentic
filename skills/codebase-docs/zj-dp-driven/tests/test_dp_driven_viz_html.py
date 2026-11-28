@@ -210,6 +210,22 @@ class HtmlViewer(unittest.TestCase):
         self.assertIn("await mermaid.run(", html)
         self.assertIn("window.__dpBackfill()", html)
 
+    # §6 R7 pan/zoom chrome（缩放按钮 + 手型拖拽平移）结构锁，纯 Python 可失败。
+    def test_html_includes_pan_zoom_chrome(self):
+        m = seeded()
+        html = vh.render_html(m, now=1100, assets="cdn")
+        for tok in ['id="toolbar"', 'id="zoom-in"', 'id="zoom-out"',
+                    'id="zoom-reset"', 'id="hand-toggle"', 'id="canvas"']:
+            self.assertIn(tok, html)
+        self.assertIn("applyTransform", html)
+        self.assertIn('classList.toggle("hand"', html)
+
+    def test_html_click_inspect_gated_on_hand_mode(self):
+        # 手型模式下左键拖拽不得触发 inspect（避免拖拽误改卡片）。
+        m = seeded()
+        html = vh.render_html(m, now=1100, assets="cdn")
+        self.assertIn("if (view.hand) return;", html)
+
 
 class HtmlCli(unittest.TestCase):
     def setUp(self):
